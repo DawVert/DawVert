@@ -257,6 +257,15 @@ class cxf_region:
 		outdata['loopLength'] = self.loopLength
 		return outdata
 
+	def printtime(self):
+		print([str(x).ljust(20) for x in 
+			[self.sampleOffset, 
+			self.sampleStartPosition, 
+			self.startPosition, 
+			self.endPosition, 
+			self.loopLength]]
+			)
+
 class cxf_auxSend:
 	def __init__(self, indata):
 		self.id = ""

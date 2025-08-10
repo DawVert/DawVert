@@ -62,7 +62,7 @@ class input_cvpj_f(plugins.base):
 
 			events_obj = placement_obj.midievents
 			events_obj.has_duration = True
-			events_obj.ppq = int(192)
+			events_obj.ppq = 192
 
 			events = (project_obj.clips[evo_clip.linked] if evo_clip.linked>-1 else evo_clip).events
 			channel = track_obj.midi.out_chanport.chan
@@ -70,9 +70,9 @@ class input_cvpj_f(plugins.base):
 				if event.type == 9:
 					note, vel, dur = event.data
 					events_obj.add_note_dur(event.pos, channel, note, vel, dur)
-				if event.type == 11:
+				elif event.type == 11:
 					ctrl, val = event.data
 					events_obj.add_control(event.pos, channel, ctrl, val)
-				if event.type == 14:
+				elif event.type == 14:
 					p_lo, p_hi = event.data
 					events_obj.add_pitch_hi_lo(event.pos, channel, p_hi, p_lo)

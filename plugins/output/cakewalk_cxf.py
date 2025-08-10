@@ -260,6 +260,8 @@ def create_track(convproj_obj, project_obj, trackid, track_obj, ids_obj):
 					region_obj.playbackRate = sp_obj.stretch.timing.get__real_rate(sampleref_obj, ids_obj.bpm)
 				add_region_common(region_obj, audiopl_obj, ids_obj, 1)
 
+				#region_obj.printtime()
+
 def do_tracks(convproj_obj, project_obj, current_grouptab, ids_obj):
 	for tracktype, tid, track_obj in current_grouptab:
 		if tracktype == 'GROUP' and tid not in ids_obj.used_groups and tid in ids_obj.track_group:
@@ -367,6 +369,8 @@ class output_bandlab(plugins.base):
 		do_track_auto_params(master_bus.automation, convproj_obj, ids_obj, ['master'])
 		master_bus.idOutput = ids_obj.audiodeviceid
 
+		#print()
+
 		convproj_obj.fx__group__remove_unused()
 
 		for groupid, group_obj in convproj_obj.fx__group__iter():
@@ -407,6 +411,7 @@ def add_region_common(blx_region, audiopl_obj, ids_obj, pmod):
 	time_obj = audiopl_obj.time
 	tempomul = ids_obj.tempomul
 
+	playbackRate = blx_region.playbackRate
 	position, duration = time_obj.get_posdur()
 
 	blx_region.startPosition = (position/2)*tempomul
@@ -420,4 +425,6 @@ def add_region_common(blx_region, audiopl_obj, ids_obj, pmod):
 	cut_start = time_obj.get_offset()
 
 	if cut_type == 'cut':
-		blx_region.sampleOffset += ((cut_start/2)*tempomul)*pmod
+		blx_region.sampleOffset += ((cut_start/2)*tempomul)*playbackRate
+
+	blx_region.sampleStartPosition -= blx_region.sampleOffset

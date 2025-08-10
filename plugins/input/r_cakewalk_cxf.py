@@ -226,6 +226,8 @@ class input_bandlab(plugins.base):
 						stretch_obj.timing.set__real_rate(bpm, speed)
 						stretch_obj.preserve_pitch = True
 
+						#cxf_region.printtime()
+
 		#arranger = project_obj.arranger
 		#arrangerTracks = arranger.arrangerTracks
 		#if arrangerTracks:
@@ -257,7 +259,7 @@ def add_sample(convproj_obj, dawvert_intent, cxf_sample, zip_data, zip_start_pat
 
 def do_loop(time_obj, cxf_region, tempomul, speed):
 	loopLength = tempo_calc(tempomul, cxf_region.loopLength)
-	sampleOffset = tempo_calc(tempomul, cxf_region.sampleOffset)
+	sampleOffset = tempo_calc(tempomul, cxf_region.sampleOffset)/speed
 	duration = tempo_calc(tempomul, cxf_region.startPosition-cxf_region.endPosition)
 
 	if loopLength == 0:

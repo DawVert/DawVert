@@ -190,6 +190,8 @@ class input_acid_old(plugins.base):
 			if dur_sec: samplemul = sample_beats/(dur_sec*2)
 			else: samplemul = sample_tempo/120
 
+			#print(stretch_type, track.flags, trackpitch, songroot, track.name)
+
 			for region in track.regions:
 
 				offsamp = 0
@@ -252,6 +254,7 @@ class input_acid_old(plugins.base):
 						else:
 							sp_obj.usemasterpitch = False
 							sp_obj.pitch = region.pitch
+						sp_obj.pitch += trackpitch
 						pls.append(placement_obj)
 
 				if stretch_type == 4:
@@ -261,7 +264,7 @@ class input_acid_old(plugins.base):
 					sp_obj.sampleref = sample_path
 					time_obj.set_startend(region.start, region.end)
 					time_obj.set_offset_real(offsamp)
-					sampmul = xtramath.pitch_to_speed(region.pitch)
+					sampmul = xtramath.pitch_to_speed(-region.pitch)
 					sp_obj.usemasterpitch = False
 					sp_obj.stretch.timing.set__speed(sampmul)
 					pls.append(placement_obj)
