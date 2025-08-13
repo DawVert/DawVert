@@ -19,6 +19,7 @@ class info_daw:
 		self.track_lanes = False
 		self.track_nopl = False
 		self.track_hybrid = False
+		self.track_arranger = False
 		self.placement_cut = False
 		self.placement_loop = []
 		self.audio_nested = False
@@ -50,6 +51,7 @@ class info_daw:
 		if 'track_lanes' in indict: self.track_lanes = indict['track_lanes']
 		if 'track_nopl' in indict: self.track_nopl = indict['track_nopl']
 		if 'track_hybrid' in indict: self.track_hybrid = indict['track_hybrid']
+		if 'track_arranger' in indict: self.track_arranger = indict['track_arranger']
 		if 'placement_cut' in indict: self.placement_cut = indict['placement_cut']
 		if 'placement_loop' in indict: self.placement_loop = indict['placement_loop']
 		if 'audio_nested' in indict: self.audio_nested = indict['audio_nested']

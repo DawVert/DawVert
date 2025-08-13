@@ -390,6 +390,18 @@ class output_bandlab(plugins.base):
 
 		do_tracks(convproj_obj, project_obj, ids_obj.track_nongroup, ids_obj)
 
+		#if len(convproj_obj.arranger):
+		#	arrangertrack = proj_cakewalk_cxf.cxf_arrangertrack(None)
+		#	project_obj.arranger.used = True
+		#	project_obj.arranger.arrangerTracks = [arrangertrack]
+		#	for n, x in enumerate(convproj_obj.arranger):
+		#		section = arrangertrack.add_section()
+		#		section.id = n
+		#		section.startTimeArrTicks = int(x.position*240)
+		#		section.endTimeArrTicks = section.startTimeArrTicks+int(x.duration*240)
+		#		if x.visual.name: section.name = x.visual.name
+		#		section.color = 4293022804
+
 		jsonwrite = project_obj.write()
 		if dawvert_intent.output_mode == 'file':
 			ids_obj.zipfile.writestr(str(uuid.uuid4())+'.cxf', json.dumps(jsonwrite))

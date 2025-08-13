@@ -19,6 +19,7 @@ class cvpj_project_traits:
 		self.track_hybrid = False
 		self.track_lanes = False
 		self.track_nopl = False
+		self.track_arranger = False
 		self.notespl_features = []
 
 		self.time_seconds = False
@@ -46,6 +47,7 @@ class cvpj_project_traits:
 		if 'track_hybrid' in indict: self.track_hybrid = indict['track_hybrid']
 		if 'track_lanes' in indict: self.track_lanes = indict['track_lanes']
 		if 'track_nopl' in indict: self.track_nopl = indict['track_nopl']
+		if 'track_arranger' in indict: self.track_arranger = indict['track_arranger']
 
 		if 'time_seconds' in indict: 
 			self.time_seconds = indict['time_seconds']

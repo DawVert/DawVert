@@ -23,6 +23,7 @@ from functions.convproj_compat import unhybrid
 from functions.convproj_compat import sep_nest_audio
 from functions.convproj_compat import midi_notes
 from functions.convproj_compat import setup_tempocalc
+from functions.convproj_compat import arranger_region
 
 import json
 import math
@@ -69,6 +70,7 @@ class song_compat:
 		self.process_part('removelanes', removelanes,				 convproj_obj, cvpj_type, traits_obj.track_lanes, out_dawinfo, out_type, dawvert_intent)
 
 		self.process_part('loops_remove', loops_remove,		   convproj_obj, cvpj_type, traits_obj.placement_loop, out_dawinfo.placement_loop, out_type, dawvert_intent)
+		self.process_part('arranger_region', arranger_region,		   convproj_obj, cvpj_type, traits_obj.track_arranger, out_dawinfo.track_arranger, out_type, dawvert_intent)
 
 		if self.currenttime == False:
 			self.process_part('autopl_addrem', autopl_addrem,		 convproj_obj, cvpj_type, traits_obj.auto_types, out_dawinfo.auto_types, out_type, dawvert_intent)

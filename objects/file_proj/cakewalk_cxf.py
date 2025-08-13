@@ -409,7 +409,7 @@ class cxf_arrangertrack_section:
 		outdata['id'] = self.id
 		outdata['name'] = self.name
 		outdata['typeId'] = self.typeId
-		outdata['color'] = self.color
+		if self.color: outdata['color'] = self.color
 		outdata['startTimeArrTicks'] = self.startTimeArrTicks
 		outdata['endTimeArrTicks'] = self.endTimeArrTicks
 		return outdata
@@ -435,6 +435,11 @@ class cxf_arrangertrack:
 		if 'isActive' in indata: self.isActive = indata['isActive']
 		if 'timeFormat' in indata: self.timeFormat = indata['timeFormat']
 		if 'sections' in indata: self.sections = [cxf_arrangertrack_section(x) for x in indata['sections']]
+
+	def add_section(self):
+		section = cxf_arrangertrack_section(None)
+		self.sections.append(section)
+		return section
 
 	def write(self):
 		outdata = {}

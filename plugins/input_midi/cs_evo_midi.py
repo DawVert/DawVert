@@ -41,6 +41,10 @@ class input_cvpj_f(plugins.base):
 		traits_obj = convproj_obj.traits
 		traits_obj.fxrack_params = ['vol','pan','pitch']
 		traits_obj.auto_types = ['nopl_ticks']
+		traits_obj.track_arranger = True
+
+		arranger_valid = -1
+		arranger_data = []
 
 		track_pl = []
 		for n, evo_track in enumerate(project_obj.tracks):
@@ -52,6 +56,8 @@ class input_cvpj_f(plugins.base):
 				track_obj.midi.out_chanport.port = 0
 			if evo_track.patch != -1:
 				track_obj.midi.out_inst.patch = evo_track.patch
+			if evo_track.name == 'Structure' and arranger_valid==-1:
+				arranger_valid = n
 			track_pl.append(track_obj)
 
 		for evo_clip in project_obj.clips:
@@ -59,6 +65,8 @@ class input_cvpj_f(plugins.base):
 			placement_obj = track_obj.placements.add_midi()
 			placement_obj.visual.name = evo_clip.name
 			placement_obj.time.set_startend(evo_clip.position, evo_clip.duration)
+
+			#print(evo_clip.tracknum, evo_clip.name)
 
 			events_obj = placement_obj.midievents
 			events_obj.has_duration = True
@@ -76,3 +84,14 @@ class input_cvpj_f(plugins.base):
 				elif event.type == 14:
 					p_lo, p_hi = event.data
 					events_obj.add_pitch_hi_lo(event.pos, channel, p_hi, p_lo)
+
+			if arranger_valid>-1:
+				if evo_clip.tracknum==arranger_valid:
+					if not True in [x.type==15 for x in events]:
+						arranger_valid = -2
+					else:
+						timemarker_obj = convproj_obj.arranger.add()
+						timemarker_obj.type = 'region'
+						timemarker_obj.position = evo_clip.position
+						timemarker_obj.duration = evo_clip.duration-evo_clip.position
+						timemarker_obj.visual.name = evo_clip.name

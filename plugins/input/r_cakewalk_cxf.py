@@ -19,6 +19,10 @@ from objects.exceptions import ProjectFileParserException
 def tempo_calc(mul, seconds):
 	return ((seconds)/mul)*8
 
+def conv_color(b_color):
+	color = b_color.to_bytes(4, "little")
+	return [color[2],color[1],color[1]]
+
 class input_bandlab(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -50,6 +54,7 @@ class input_bandlab(plugins.base):
 		traits_obj.placement_cut = True
 		traits_obj.placement_loop = ['loop', 'loop_eq', 'loop_off', 'loop_adv', 'loop_adv_off']
 		traits_obj.time_seconds = False
+		traits_obj.track_arranger = True
 
 		convproj_obj.set_timings(4.0)
 
@@ -228,18 +233,16 @@ class input_bandlab(plugins.base):
 
 						#cxf_region.printtime()
 
-		#arranger = project_obj.arranger
-		#arrangerTracks = arranger.arrangerTracks
-		#if arrangerTracks:
-		#	for section in arrangerTracks[0].sections:
-		#		timemarker_obj = convproj_obj.timemarker__add()
-		#		timemarker_obj.type = 'region'
-		#		timemarker_obj.position = (section.startTimeArrTicks/960)
-		#		timemarker_obj.duration = ((section.endTimeArrTicks/960)-timemarker_obj.position)
-		#		timemarker_obj.visual.name = section.name
-#
-		#		timemarker_obj.position /= tempomul
-		#		timemarker_obj.duration /= tempomul
+		arranger = project_obj.arranger
+		arrangerTracks = arranger.arrangerTracks
+		if arrangerTracks:
+			for section in arrangerTracks[0].sections:
+				timemarker_obj = convproj_obj.arranger.add()
+				timemarker_obj.type = 'region'
+				timemarker_obj.position = (section.startTimeArrTicks/240)
+				timemarker_obj.duration = ((section.endTimeArrTicks/240)-timemarker_obj.position)
+				timemarker_obj.visual.name = section.name
+				timemarker_obj.visual.color.set_int(conv_color(section.color))
 
 def add_sample(convproj_obj, dawvert_intent, cxf_sample, zip_data, zip_start_path, samplefolder):
 	filename = os.path.join(dawvert_intent.input_folder, 'Assets', 'Audio', cxf_sample.file)

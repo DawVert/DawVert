@@ -223,6 +223,7 @@ class cvpj_project:
 		self.timesig = [4,4]
 		self.do_actions = []
 		self.timemarkers = timemarker.cvpj_timemarkers(self.time_ppq)
+		self.arranger = timemarker.cvpj_timemarkers(self.time_ppq)
 		self.metadata = visual.cvpj_metadata()
 		self.timesig_auto = autoticks.cvpj_autoticks(self.time_ppq, 'timesig')
 		self.transport = cvpj_transport(self.time_ppq)
@@ -426,6 +427,7 @@ class cvpj_project:
 		self.timesig_auto = autoticks.cvpj_autoticks(self.time_ppq, 'timesig')
 		self.automation.time_ppq = self.time_ppq
 		self.timemarkers = timemarker.cvpj_timemarkers(self.time_ppq)
+		self.arranger = timemarker.cvpj_timemarkers(self.time_ppq)
 		self.transport = cvpj_transport(self.time_ppq)
 
 	def change_timings(self, time_ppq):
@@ -440,6 +442,7 @@ class cvpj_project:
 			n.notelist.change_timings(time_ppq)
 			n.timesig_auto.change_timings(time_ppq)
 		self.timemarkers.change_timings(time_ppq)
+		self.arranger.change_timings(time_ppq)
 		self.timesig_auto.change_timings(time_ppq)
 		self.transport.change_timings(time_ppq)
 		self.time_ppq = time_ppq
