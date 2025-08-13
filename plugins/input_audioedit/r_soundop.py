@@ -187,7 +187,7 @@ class input_soundop(plugins.base):
 
 					sp_obj = placement_obj.sample
 					sp_obj.sampleref = str(clip.FileID)
-					sp_obj.vol = clip.Gain
+					sp_obj.vol = clip.Gain/0.6527777777777778
 
 					placement_obj.visual.name = clip.Title
 					placement_obj.muted = clip.Mute
