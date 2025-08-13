@@ -235,28 +235,29 @@ def create_track(convproj_obj, project_obj, trackid, track_obj, ids_obj):
 
 				ref_found, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
 				if sp_obj.sampleref not in ids_obj.sample_assoc:
-					fileref_obj = sampleref_obj.fileref
-					filepath = fileref_obj.get_path(None, False)
-					filename = str(fileref_obj.file)
-
-					uuiddata = str(uuid.uuid4())
-					ids_obj.sample_assoc[sp_obj.sampleref] = uuiddata
-					ids_obj.samplefilename_assoc[sp_obj.sampleref] = filename
-
-					bl_sample = project_obj.add_sample()
-					bl_sample.id = uuiddata
-					bl_sample.isMidi = False
-					bl_sample.name = uuiddata
-					bl_sample.file = filename
-					audiopath = "/".join(['Assets', 'Audio', filename])
-
-					if os.path.exists(filepath) and audiopath not in ids_obj.zipfile.namelist(): 
-						ids_obj.zipfile.write(filepath, audiopath)
+					if ref_found:
+						fileref_obj = sampleref_obj.fileref
+						filepath = fileref_obj.get_path(None, False)
+						filename = str(fileref_obj.file)
+	
+						uuiddata = str(uuid.uuid4())
+						ids_obj.sample_assoc[sp_obj.sampleref] = uuiddata
+						ids_obj.samplefilename_assoc[sp_obj.sampleref] = filename
+	
+						bl_sample = project_obj.add_sample()
+						bl_sample.id = uuiddata
+						bl_sample.isMidi = False
+						bl_sample.name = uuiddata
+						bl_sample.file = filename
+						audiopath = "/".join(['Assets', 'Audio', filename])
+	
+						if os.path.exists(filepath) and audiopath not in ids_obj.zipfile.namelist(): 
+							ids_obj.zipfile.write(filepath, audiopath)
 
 				region_obj = cxf_track.add_region()
-				region_obj.file = ids_obj.samplefilename_assoc[sp_obj.sampleref]
-				region_obj.sampleId = ids_obj.sample_assoc[sp_obj.sampleref]
 				if ref_found:
+					region_obj.file = ids_obj.samplefilename_assoc[sp_obj.sampleref]
+					region_obj.sampleId = ids_obj.sample_assoc[sp_obj.sampleref]
 					region_obj.playbackRate = sp_obj.stretch.timing.get__real_rate(sampleref_obj, ids_obj.bpm)
 				add_region_common(region_obj, audiopl_obj, ids_obj, 1)
 

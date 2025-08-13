@@ -194,3 +194,4 @@ class input_soundclub2(plugins.base):
 
 		convproj_obj.timesig = [project_obj.ts_num, project_obj.ts_denum]
 		convproj_obj.params.add('bpm', outtempo, 'float')
+		#convproj_obj.do_actions.append('arranger_from_scene')

@@ -9,12 +9,22 @@ logger_project = logging.getLogger('project')
 def convert(convproj_obj, out_dawinfo):
 	logger_project.info('ProjType Convert: MultipleScened > RegularMultiple')
 
+	if 'arranger_from_scene' in convproj_obj.do_actions:
+		convproj_obj.traits.track_arranger = True
+
 	prevsceneid = None
 	for scenepl in convproj_obj.scene_placements:
 		if scenepl.id != prevsceneid:
 			if 'markers_from_scene' in convproj_obj.do_actions:
 				timemarker_obj = convproj_obj.timemarker__add()
 				timemarker_obj.position = scenepl.position
+				if scenepl.id in convproj_obj.scenes:
+					timemarker_obj.visual = convproj_obj.scenes[scenepl.id].visual.copy()
+			if 'arranger_from_scene' in convproj_obj.do_actions:
+				timemarker_obj = convproj_obj.arranger.add()
+				timemarker_obj.type = 'region'
+				timemarker_obj.position = scenepl.position
+				timemarker_obj.duration = scenepl.duration
 				if scenepl.id in convproj_obj.scenes:
 					timemarker_obj.visual = convproj_obj.scenes[scenepl.id].visual.copy()
 			prevsceneid = scenepl.id

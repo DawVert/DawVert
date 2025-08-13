@@ -9,15 +9,27 @@ logger_project = logging.getLogger('project')
 def convert(convproj_obj):
 	logger_project.info('ProjType Convert: RegularScened > Regular')
 
-	if 'markers_from_scene' in convproj_obj.do_actions:
-		prevsceneid = None
-		for scenepl in convproj_obj.scene_placements:
-			if scenepl.id != prevsceneid:
+	if 'arranger_from_scene' in convproj_obj.do_actions:
+		convproj_obj.traits.track_arranger = True
+
+	prevsceneid = None
+	for scenepl in convproj_obj.scene_placements:
+		if scenepl.id != prevsceneid:
+			if 'markers_from_scene' in convproj_obj.do_actions:
 				timemarker_obj = convproj_obj.timemarker__add()
 				timemarker_obj.position = scenepl.position
 				if scenepl.id in convproj_obj.scenes:
 					timemarker_obj.visual = convproj_obj.scenes[scenepl.id].visual.copy()
-				prevsceneid = scenepl.id
+			if 'arranger_from_scene' in convproj_obj.do_actions:
+				timemarker_obj = convproj_obj.arranger.add()
+				timemarker_obj.type = 'region'
+				timemarker_obj.position = scenepl.position
+				timemarker_obj.duration = scenepl.duration
+				if scenepl.id in convproj_obj.scenes:
+					timemarker_obj.visual = convproj_obj.scenes[scenepl.id].visual.copy()
+			prevsceneid = scenepl.id
+			if scenepl.id in convproj_obj.scenes:
+				convproj_obj.automation.merge(convproj_obj.scenes[scenepl.id].automation, scenepl.position, scenepl.duration)
 
 	for trackid, track_obj in convproj_obj.track__iter():
 		lanes = []

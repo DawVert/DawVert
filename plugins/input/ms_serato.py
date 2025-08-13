@@ -573,5 +573,5 @@ class input_serato(plugins.base):
 		#	print(track_obj.plugslots.slots_audio)
 
 		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('markers_from_scene')
+		convproj_obj.do_actions.append('arranger_from_scene')
 		convproj_obj.params.add('bpm', project_obj.bpm, 'float')

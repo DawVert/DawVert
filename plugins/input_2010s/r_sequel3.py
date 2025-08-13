@@ -42,6 +42,7 @@ class input_sequel3(plugins.base):
 		traits_obj.auto_types = ['nopl_points']
 		traits_obj.notes_midi = True
 		traits_obj.placement_cut = True
+		traits_obj.track_arranger = True
 
 		project_obj = proj_sequel.sequel_project()
 		if dawvert_intent.input_mode == 'file':
@@ -68,7 +69,7 @@ class input_sequel3(plugins.base):
 			if isinstance(track, classobj.class_MPlayRangeTrackEvent):
 				track_node = track.node
 				for event in track_node.events:
-					timemarker_obj = convproj_obj.timemarker__add()
+					timemarker_obj = convproj_obj.arranger.add()
 					timemarker_obj.position = event.start
 					timemarker_obj.duration = event.length
 					timemarker_obj.type = 'region'
