@@ -1,11 +1,7 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from functions import note_data
-from functions import value_midi
-import xml.etree.ElementTree as ET
 import plugins
-import json
 
 class input_musicphrase(plugins.base):
 	def is_dawvert_plugin(self):
