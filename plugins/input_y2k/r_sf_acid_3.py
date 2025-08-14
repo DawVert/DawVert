@@ -62,7 +62,7 @@ def extract_audio(filename, sampleref_obj, dawvert_intent, zipfile):
 	filepath = os.path.join(dawvert_intent.path_samples['extracted'], filename)
 	sampleref_obj.set_path(None, filepath)
 
-volumeversion = 4
+volumeversion = 5
 
 def add_audio_regions(
 	placements_obj, ppq, rootnote_auto, 

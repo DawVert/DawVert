@@ -22,7 +22,7 @@ class input_cvpj_f(plugins.base):
 	
 	def get_prop(self, in_dict): 
 		in_dict['plugin_included'] = ['universal:midi']
-		in_dict['projtype'] = 'multi'
+		in_dict['projtype'] = 'cs'
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_past import evolution_midi as proj_evolution_midi
