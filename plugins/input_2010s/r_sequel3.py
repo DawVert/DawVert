@@ -73,26 +73,26 @@ def do_auto(track_obj, convproj_obj, seq_automation, autoloc_start):
 
 def do_effects(track_obj, track_device, convproj_obj):
 	deviceattributes = track_device.deviceattributes
-	if 'hasEQ' in deviceattributes:
-		if deviceattributes['hasEQ']:
-			if 'EQ' in deviceattributes:
-				seq_eq = deviceattributes['EQ']
+	#if 'hasEQ' in deviceattributes:
+	#	if deviceattributes['hasEQ']:
+	#		if 'EQ' in deviceattributes:
+	#			seq_eq = deviceattributes['EQ']
 
-				plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'eq', 'bands')
-				plugin_obj.role = 'effect'
-				track_obj.plugslots.slots_audio.append(pluginid)
+	#			plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'eq', 'bands')
+	#			plugin_obj.role = 'effect'
+	#			track_obj.plugslots.slots_audio.append(pluginid)
 
-				eqbands = seq_eq['Band']
-				for num, band in enumerate(eqbands):
-					filter_obj, filter_id = plugin_obj.eq_add()
-					filter_obj.on = bool(band['Enable'])
-					filter_obj.gain = band['Gain']
-					filter_obj.type.set('notch', None)
-					filter_obj.freq = band['Freq']
-					filter_obj.q = band['Q']/0.08851316571235657
-					if band['Type']:
-						if num==0: filter_obj.type.set('low_pass', None)
-						elif num==(len(eqbands)-1): filter_obj.type.set('high_pass', None)
+	#			eqbands = seq_eq['Band']
+	#			for num, band in enumerate(eqbands):
+	#				filter_obj, filter_id = plugin_obj.eq_add()
+	#				filter_obj.on = bool(band['Enable'])
+	#				filter_obj.gain = band['Gain']
+	#				filter_obj.type.set('peak', None)
+	#				filter_obj.freq = band['Freq']
+	#				#filter_obj.q = 1/(band['Q']/0.08851316571235657)
+	#				if band['Type']:
+	#					if num==0: filter_obj.type.set('high_pass', None)
+	#					elif num==(len(eqbands)-1): filter_obj.type.set('low_pass', None)
 
 	#if 'hasEQ' in deviceattributes:
 	#	insertfolder = track_device.deviceattributes['InsertFolder']
