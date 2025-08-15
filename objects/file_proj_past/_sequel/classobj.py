@@ -488,7 +488,12 @@ class class_PAudioClip:
 		if 'History Number' in obj_data: self.history_number = obj_data['History Number']
 		if 'Name' in obj_data: self.name = obj_data['Name']
 		if 'Origin Time' in obj_data: self.origin_time = obj_data['Origin Time']
-		if 'Path' in obj_data: self.path.from_seqobj(obj_data['Path'])
+		if 'Path' in obj_data: 
+			pathd = obj_data['Path']
+			if pathd.obj_class == None: 
+				globald = func.globalids[pathd.obj_id]
+				self.path.from_seqobj(globald)
+			else: self.path.from_seqobj(pathd)
 		if 'UID' in obj_data: self.uid = obj_data['UID']
 classes['PAudioClip'] = class_PAudioClip
 
@@ -668,6 +673,8 @@ class class_MAudioEvent:
 	length: float = 0
 	priority: int = 1
 	offset: int = 0
+	volume: int = 1
+	flags: int = 0
 	additional_attributes: dict = field(default_factory=dict)
 	def from_seqobj(self, seqobj):
 		obj_data = seqobj.obj_data
@@ -676,6 +683,8 @@ class class_MAudioEvent:
 		if 'Length' in obj_data: self.length = obj_data['Length']
 		if 'Offset' in obj_data: self.offset = obj_data['Offset']
 		if 'Priority' in obj_data: self.priority = obj_data['Priority']
+		if 'Volume' in obj_data: self.volume = obj_data['Volume']
+		if 'Flags' in obj_data: self.flags = obj_data['Flags']
 		if 'AudioClip' in obj_data: 
 			self.node = obj_data['AudioClip']
 			self.idnum = self.node.obj_id
