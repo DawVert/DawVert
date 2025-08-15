@@ -242,9 +242,10 @@ class input_sequel3(plugins.base):
 				for event in track_node.events:
 					placement_obj = track_obj.placements.add_midi()
 					delaystart = -min(event.offset, 0)
+					realoffset = max(event.offset, 0)
 
 					placement_obj.time.set_posdur(event.start, event.length+delaystart)
-					placement_obj.time.set_offset(event.offset)
+					placement_obj.time.set_offset(realoffset)
 
 					events_obj = placement_obj.midievents
 					events_obj.has_duration = True
