@@ -14,7 +14,7 @@ def do_visual(track_obj, track, track_node, colordata):
 	if 'Farb' in track.additional_attributes:
 		farbcolor = track.additional_attributes['Farb']
 		track_obj.visual.color.set_int(colordata.getcolornum(farbcolor))
-	track_obj.visual_ui.height = track.height/73
+	#track_obj.visual_ui.height = track.height/73
 
 def do_params(track_obj, track_device):
 	if 'Volume' in track_device.deviceattributes:
