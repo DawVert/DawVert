@@ -308,6 +308,11 @@
 		<archived type="zip" file="*.cxf" optional="1"/>
 	</plugin>
 
+	<plugin pluginset="midi" name="musicphrase">
+		<file fileext=".mps"/>
+		<bytes_header data="176D757369637068726173652066696C6520666F726D617464"/>
+	</plugin>
+
 	<plugin pluginset="audioedit" name="soundop">
 		<file fileext=".msf"/>
 	</plugin>

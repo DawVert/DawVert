@@ -3,7 +3,7 @@
 
 from objects.file_proj_past._sequel import func
 from objects.file_proj_past._sequel import classobj
-import xml.etree.ElementTree as ET
+from lxml import etree
 
 class sequel_project:
 	def __init__(self):
@@ -16,7 +16,10 @@ class sequel_project:
 		self.obj_guistate = None
 
 	def load_from_file(self, filename):
-		x_root = ET.parse(filename).getroot()
+		parser = etree.XMLParser(recover=True)
+		tree = etree.parse(filename, parser=parser)
+
+		x_root = tree.getroot()
 		func.globalids = {}
 		self.root_objects = {}
 		for x in x_root:

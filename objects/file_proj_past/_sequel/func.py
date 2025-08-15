@@ -41,7 +41,7 @@ class sequel_object:
 				class_collect[self.obj_class].append(self)
 		if 'ID' in attrib: 
 			self.obj_id = int(attrib['ID'])
-			if indata:
+			if len(indata):
 				globalids[self.obj_id] = self
 		for x in iter_xdata(indata):
 			if not x[0]:
@@ -59,7 +59,7 @@ class sequel_object:
 class sequel_member:
 	def __init__(self, indata):
 		self.obj_data = {}
-		if indata: self.read(indata)
+		if len(indata): self.read(indata)
 
 	def __getitem__(self, k):
 		return self.obj_data.__getitem__(k)

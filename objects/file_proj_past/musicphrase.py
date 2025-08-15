@@ -102,6 +102,3 @@ class musicphrase_song:
 			self.tracks.append(track)
 
 		return True
-
-apeinst_obj = musicphrase_song()
-apeinst_obj.load_from_file("C:\\Users\\Topaz\\Desktop\\testy.mps")

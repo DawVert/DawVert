@@ -23,6 +23,37 @@ def conv_color(b_color):
 	color = b_color.to_bytes(4, "little")
 	return [color[2],color[1],color[1]]
 
+class stored_vals():
+	def __init__(self):
+		self.tempomul = 1
+		self.zip_data = None
+		self.zip_namelist = []
+		self.zip_start_path = []
+		self.samplefolder = None
+		self.dawvert_intent = None
+
+	def tempo_calc(self, v):
+		return (v/self.tempomul)*8
+	
+	def zip_get_path(self, cata, filename):
+		outpath = self.zip_start_path+['Assets', cata, filename]
+		return '\\'.join(outpath)
+
+	def zip_get_exists(self, cata, filename):
+		return self.zip_get_path(cata, filename) in self.zip_data.namelist()
+
+	def zip_extract(self, cata, filename):
+		zippath = self.zip_get_path(cata, filename)
+		if zippath in self.zip_data.namelist():
+			outpath = os.path.join(self.samplefolder, filename)
+			return self.zip_data.extract(zippath, outpath, pwd=None)
+
+	def zip_getdata(self, cata, filename):
+		zippath = self.zip_get_path(cata, filename)
+		if zippath in self.zip_data.namelist():
+			outpath = os.path.join(self.samplefolder, filename)
+			return self.zip_data.read(zippath)
+
 class input_bandlab(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -60,24 +91,24 @@ class input_bandlab(plugins.base):
 
 		project_obj = proj_cakewalk_cxf.cxf_project()
 
-		samplefolder = dawvert_intent.path_samples['extracted']
+		stored_vals_obj = stored_vals()
+		stored_vals_obj.samplefolder = dawvert_intent.path_samples['extracted']
+		stored_vals_obj.dawvert_intent = dawvert_intent
 
-		zip_data = None
 		success = False
-		zip_start_path = []
 		try:
 			if dawvert_intent.input_mode == 'file':
-				zip_data = zipfile.ZipFile(dawvert_intent.input_file, 'r')
-				zip_namelist = zip_data.namelist()
-				if True in [x.startswith('Sonar/') for x in zip_namelist]:
+				zip_data = stored_vals_obj.zip_data = zipfile.ZipFile(dawvert_intent.input_file, 'r')
+				stored_vals_obj.zip_namelist = [x.replace('/', '\\').split('\\') for x in zip_data.namelist()]
+				if True in [x.startswith('Sonar/') for x in zip_data.namelist()]:
 					raise ProjectFileParserException('Sonar-Created CXF is not supported.')
 				else:
 
 					for jsonname in zip_data.namelist():
 						if '.cxf' in jsonname: 
 							json_filename = jsonname
-							zip_start_path = jsonname.split('/')
-							if zip_start_path: zip_start_path = zip_start_path[:-1]
+							zip_start_path = jsonname.replace('/', '\\').split('\\')
+							if zip_start_path: stored_vals_obj.zip_start_path = zip_start_path[:-1]
 
 							cxf_project = zip_data.read(json_filename)
 							cxf_proj = json.loads(cxf_project)
@@ -97,13 +128,11 @@ class input_bandlab(plugins.base):
 		globalstore.dataset.load('bandlab', './data_main/dataset/bandlab.dset')
 
 		bpm = project_obj.metronome.bpm
-
 		convproj_obj.params.add('bpm', bpm, 'float')
+		stored_vals_obj.tempomul = 120/bpm
 
 		convproj_obj.metadata.name = project_obj.song.name
 		convproj_obj.metadata.comment_text = project_obj.description
-
-		tempomul = 120/bpm
 
 		debugvis_id_store = debug.id_visual_name()
 		debugvis_id_store.add(project_obj.song.id, 'Song ID')
@@ -111,7 +140,7 @@ class input_bandlab(plugins.base):
 
 		for cxf_sample in project_obj.samples:
 			if not cxf_sample.isMidi:
-				add_sample(convproj_obj, dawvert_intent, cxf_sample, zip_data, zip_start_path, samplefolder)
+				add_sample(convproj_obj, cxf_sample, stored_vals_obj)
 
 		groups = []
 
@@ -145,8 +174,8 @@ class input_bandlab(plugins.base):
 				track_obj.params.add('enabled', not cxf_auxChannel.isMuted, 'float')
 
 				for k, a in cxf_auxChannel.automation.items():
-					if k == 'volume': do_automation(convproj_obj, a, autoloc+['vol'], tempomul)
-					if k == 'pan': do_automation(convproj_obj, a, autoloc+['pan'], tempomul)
+					if k == 'volume': do_automation(convproj_obj, a, autoloc+['vol'], stored_vals_obj)
+					if k == 'pan': do_automation(convproj_obj, a, autoloc+['pan'], stored_vals_obj)
 
 
 		cxf_tracks = sorted(project_obj.tracks, key=lambda x: x.order, reverse=False)
@@ -165,14 +194,14 @@ class input_bandlab(plugins.base):
 					track_obj.visual_inst.name = cxf_track.soundbank
 
 			if track_obj:
-				do_track_common(convproj_obj, track_obj, cxf_track, tempomul, dawvert_intent, zip_data, zip_start_path)
+				do_track_common(convproj_obj, track_obj, cxf_track, stored_vals_obj)
 
 				for cxf_auxSend in cxf_track.auxSends:
 					debugvis_id_store.add(cxf_track.id, 'TrackSend: '+cxf_auxSend.id+' <<< '+cxf_auxChannel.name)
 					sendautoid = cxf_track.id+'__'+'return__'+str(cxf_auxSend.id)
 					track_obj.sends.add(cxf_auxSend.id, sendautoid, cxf_auxSend.sendLevel)
 					for k, a in cxf_auxSend.automation.items():
-						if k == 'sendLevel': do_automation(convproj_obj, a, ['send', sendautoid, 'amount'], tempomul)
+						if k == 'sendLevel': do_automation(convproj_obj, a, ['send', sendautoid, 'amount'], stored_vals_obj)
 
 				if cxf_track.type == 'Instrument':
 					if cxf_track.parentId:
@@ -183,7 +212,7 @@ class input_bandlab(plugins.base):
 					if cxf_track.synth:
 						startid = cxf_track.id
 						fxid = startid+'_-1'
-						plugin_obj, middlenote, pitch = do_plugin(convproj_obj, cxf_track.id, cxf_track.synth, -1, fxid, dawvert_intent, tempomul, zip_data, zip_start_path)
+						plugin_obj, middlenote, pitch = do_plugin(convproj_obj, cxf_track.id, cxf_track.synth, -1, fxid, stored_vals_obj)
 						if plugin_obj: 
 							track_obj.plugslots.set_synth(fxid)
 							track_obj.params.add('pitch', pitch/100, 'float')
@@ -199,10 +228,10 @@ class input_bandlab(plugins.base):
 					for cxf_region in cxf_track.regions:
 						placement_obj = track_obj.placements.add_midi()
 						time_obj = placement_obj.time
-						time_obj.set_pos(tempo_calc(tempomul, cxf_region.startPosition))
-						time_obj.set_dur(tempo_calc(tempomul, cxf_region.endPosition-cxf_region.startPosition))
+						time_obj.set_pos(stored_vals_obj.tempo_calc(cxf_region.startPosition))
+						time_obj.set_dur(stored_vals_obj.tempo_calc(cxf_region.endPosition-cxf_region.startPosition))
 						if cxf_region.name: placement_obj.visual.name = cxf_region.name
-						do_loop(time_obj, cxf_region, tempomul, 1)
+						do_loop(time_obj, cxf_region, stored_vals_obj, 1)
 						if zip_data is None:
 							midipath = os.path.join(dawvert_intent.input_folder, 'Assets', 'MIDI', cxf_region.sampleId+'.mid')
 							placement_obj.midi_from(midipath)
@@ -215,14 +244,14 @@ class input_bandlab(plugins.base):
 					for cxf_region in cxf_track.regions:
 						placement_obj = track_obj.placements.add_audio()
 						time_obj = placement_obj.time
-						time_obj.set_pos(tempo_calc(tempomul, cxf_region.startPosition))
-						time_obj.set_dur(tempo_calc(tempomul, cxf_region.endPosition-cxf_region.startPosition))
+						time_obj.set_pos(stored_vals_obj.tempo_calc(cxf_region.startPosition))
+						time_obj.set_dur(stored_vals_obj.tempo_calc(cxf_region.endPosition-cxf_region.startPosition))
 						if cxf_region.name: placement_obj.visual.name = cxf_region.name
 
 						reverse = cxf_region.playbackRate<0
 						speed = abs(cxf_region.playbackRate)
 
-						do_loop(time_obj, cxf_region, tempomul, speed)
+						do_loop(time_obj, cxf_region, stored_vals_obj, speed)
 
 						sp_obj = placement_obj.sample
 						sp_obj.sampleref = cxf_region.sampleId
@@ -244,36 +273,32 @@ class input_bandlab(plugins.base):
 				timemarker_obj.visual.name = section.name
 				timemarker_obj.visual.color.set_int(conv_color(section.color))
 
-def add_sample(convproj_obj, dawvert_intent, cxf_sample, zip_data, zip_start_path, samplefolder):
-	filename = os.path.join(dawvert_intent.input_folder, 'Assets', 'Audio', cxf_sample.file)
+def add_sample(convproj_obj, cxf_sample, stored_vals_obj):
+	filename = os.path.join(stored_vals_obj.dawvert_intent.input_folder, 'Assets', 'Audio', cxf_sample.file)
+	zip_data = stored_vals_obj.zip_data
 	if zip_data is None:
 		sampleref_obj = convproj_obj.sampleref__add(cxf_sample.id, filename, None)
 		sampleref_obj.convert__path__fileformat()
 	else:
-		audiopath = "/".join(zip_start_path+['Assets', 'Audio', cxf_sample.file])
-		if audiopath in zip_data.namelist(): 
-			audio_filename = samplefolder+cxf_sample.file
-			try:
-				outpath = zip_data.extract(audiopath, path=samplefolder, pwd=None)
-				sampleref_obj = convproj_obj.sampleref__add(cxf_sample.id, outpath, None)
-				sampleref_obj.convert__path__fileformat()
-			except:
-				pass
+		outpath = stored_vals_obj.zip_extract('Audio', cxf_sample.file)
+		if outpath:
+			sampleref_obj = convproj_obj.sampleref__add(cxf_sample.id, outpath, None)
+			sampleref_obj.convert__path__fileformat()
 
-def do_loop(time_obj, cxf_region, tempomul, speed):
-	loopLength = tempo_calc(tempomul, cxf_region.loopLength)
-	sampleOffset = tempo_calc(tempomul, cxf_region.sampleOffset)/speed
-	duration = tempo_calc(tempomul, cxf_region.startPosition-cxf_region.endPosition)
+def do_loop(time_obj, cxf_region, stored_vals_obj, speed):
+	loopLength = stored_vals_obj.tempo_calc(cxf_region.loopLength)
+	sampleOffset = stored_vals_obj.tempo_calc(cxf_region.sampleOffset)/speed
+	duration = stored_vals_obj.tempo_calc(cxf_region.startPosition-cxf_region.endPosition)
 
 	if loopLength == 0:
 		time_obj.set_offset(sampleOffset)
 	else:
 		time_obj.set_loop_data(sampleOffset, sampleOffset, loopLength)
 
-def do_automation(convproj_obj, cxf_auto, autoloc, tempomul):
+def do_automation(convproj_obj, cxf_auto, autoloc, stored_vals_obj):
 	auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
 	for p in cxf_auto.points:
-		pos = tempo_calc(tempomul, p.position)
+		pos = tempo_calc(stored_vals_obj.tempomul, p.position)
 		auto_obj.add_autopoint(pos, p.value, None)
 
 def get_pluginid(startid, uniqueId, num):
@@ -281,12 +306,12 @@ def get_pluginid(startid, uniqueId, num):
 
 def get_pluginfile(startid, uniqueId, num, dawvert_intent):
 	filename = get_pluginid(startid, uniqueId, num)
-	filepath = os.path.join(dawvert_intent.input_folder, 'Assets', 'Plugins', filename)
+	filepath = os.path.join(stored_vals_obj.dawvert_intent.input_folder, 'Assets', 'Plugins', filename)
 	if os.path.exists(filepath):
 		binplug = open(filepath, 'rb')
 		return binplug.read()
 
-def do_plugin(convproj_obj, startid, cxf_effect, num, fxid, dawvert_intent, tempomul, zip_data, zip_start_path):
+def do_plugin(convproj_obj, startid, cxf_effect, num, fxid, stored_vals_obj):
 	plugin_obj = None
 
 	uniqueId = cxf_effect.uniqueId
@@ -308,7 +333,7 @@ def do_plugin(convproj_obj, startid, cxf_effect, num, fxid, dawvert_intent, temp
 				if not dset_param.noauto:
 					plugin_obj.params.add(param_id, paramv, 'float')
 					if param_id in cxf_effect.automation: 
-						do_automation(convproj_obj, cxf_effect.automation[param_id], ['plugin', fxid, param_id], tempomul)
+						do_automation(convproj_obj, cxf_effect.automation[param_id], ['plugin', fxid, param_id], stored_vals_obj)
 				else:
 					plugin_obj.datavals.add(param_id, paramv)
 	
@@ -317,17 +342,17 @@ def do_plugin(convproj_obj, startid, cxf_effect, num, fxid, dawvert_intent, temp
 				if not isinstance(v, str) and isinstance(v, dict):
 					plugparams.add(n, v, 'float')
 					if param_id in cxf_effect.automation:
-						do_automation(convproj_obj, cxf_effect.automation[param_id], ['plugin', fxid, param_id], tempomul)
+						do_automation(convproj_obj, cxf_effect.automation[param_id], ['plugin', fxid, param_id], stored_vals_obj)
 				else:
 					plugin_obj.datavals.add(n, v)
 
 	elif uniqueId:
 
 		plugdata = None
-		if zip_data is None: plugdata = get_pluginfile(startid, uniqueId, num, dawvert_intent)
+		if stored_vals_obj.zip_data is None:
+			plugdata = get_pluginfile(startid, uniqueId, num, stored_vals_obj.dawvert_intent)
 		else: 
-			plugpath = "/".join(zip_start_path+['Assets', 'Plugins', get_pluginid(startid, uniqueId, num)])
-			if plugpath in zip_data.namelist(): plugdata = zip_data.read(plugpath)
+			plugdata = stored_vals_obj.zip_getdata('Plugins', get_pluginid(startid, uniqueId, num))
 
 		if uniqueId == -1273960264:
 			from functions.juce import data_vc2xml
@@ -394,24 +419,24 @@ def do_plugin(convproj_obj, startid, cxf_effect, num, fxid, dawvert_intent, temp
 					plugin_obj, _ = juceobj.to_cvpj(convproj_obj, fxid)
 
 					for param_id in cxf_effect.automation:
-						do_automation(convproj_obj, cxf_effect.automation[param_id], ['plugin', fxid, 'ext_param_'+param_id], tempomul)
+						do_automation(convproj_obj, cxf_effect.automation[param_id], ['plugin', fxid, 'ext_param_'+param_id], stored_vals_obj)
 
 				except:
 					pass
 
 	return plugin_obj, middlenote, pitch
 
-def do_effects(convproj_obj, cxf_effects, startid, plugslots, dawvert_intent, tempomul, zip_data, zip_start_path):
+def do_effects(convproj_obj, cxf_effects, startid, plugslots, stored_vals_obj):
 	for n, cxf_effect in enumerate(cxf_effects):
 		fxid = startid+'_'+str(n)
 
-		plugin_obj, _, _ = do_plugin(convproj_obj, startid, cxf_effect, n, fxid, dawvert_intent, tempomul, zip_data, zip_start_path)
+		plugin_obj, _, _ = do_plugin(convproj_obj, startid, cxf_effect, n, fxid, stored_vals_obj)
 
 		if plugin_obj:
 			plugin_obj.fxdata_add(not cxf_effect.bypass, 1)
 			plugslots.plugin_autoplace(plugin_obj, fxid)
 
-def do_track_common(convproj_obj, track_obj, cxf_track, tempomul, dawvert_intent, zip_data, zip_start_path):
+def do_track_common(convproj_obj, track_obj, cxf_track, stored_vals_obj):
 	track_obj.visual.name = cxf_track.name
 	track_obj.visual.color.set_hex(cxf_track.color)
 	track_obj.params.add('enabled', not cxf_track.isMuted, 'bool')
@@ -425,7 +450,7 @@ def do_track_common(convproj_obj, track_obj, cxf_track, tempomul, dawvert_intent
 		#do_automation(convproj_obj, cxf_auxSend.automation, ['send', sendautoid, 'amount'])
 
 	for name, cxf_auto in cxf_track.automation.items():
-		if name == 'volume': do_automation(convproj_obj, cxf_auto, ['track', cxf_track.id, 'vol'], tempomul)
-		if name == 'pan': do_automation(convproj_obj, cxf_auto, ['track', cxf_track.id, 'pan'], tempomul)
+		if name == 'volume': do_automation(convproj_obj, cxf_auto, ['track', cxf_track.id, 'vol'], stored_vals_obj)
+		if name == 'pan': do_automation(convproj_obj, cxf_auto, ['track', cxf_track.id, 'pan'], stored_vals_obj)
 		
-	do_effects(convproj_obj, cxf_track.effects, cxf_track.id, track_obj.plugslots, dawvert_intent, tempomul, zip_data, zip_start_path)
+	do_effects(convproj_obj, cxf_track.effects, cxf_track.id, track_obj.plugslots, stored_vals_obj)

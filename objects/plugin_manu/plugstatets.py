@@ -4,6 +4,7 @@
 from functions import xtramath
 from objects.valobjs import dualstr
 import lxml.etree as ET
+import os
 
 def fixval(v, vtype):
 	if v:
@@ -576,7 +577,11 @@ class plugstatets:
 		self.state = plugstatets_current_state()
 
 	def load_from_file(self, filepath):
+		filepath = filepath.replace('/', '\\').split('\\')
+		filepath = os.path.join(*filepath)
+
 		parser = ET.XMLParser(remove_comments=True)
+
 		xml_data = ET.parse(filepath, parser)
 		xml_proj = xml_data.getroot()
 

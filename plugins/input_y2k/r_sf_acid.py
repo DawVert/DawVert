@@ -283,6 +283,7 @@ class input_acid_old(plugins.base):
 						sp_obj.stretch.timing.set__orgtempo(sample_tempo)
 						time_obj.set_offset( (offsamp*ppq*(sample_tempo/120))*2 )
 					sp_obj.stretch.preserve_pitch = True
+					sp_obj.pitch = region.pitch
 					pls.append(placement_obj)
 
 				for p in pls:

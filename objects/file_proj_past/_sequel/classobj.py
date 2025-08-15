@@ -532,8 +532,9 @@ class class_MAutomationTrackEvent:
 	start: float = 0
 	length: float = 0
 	node: sequel_object = sequel_object(None)
-	#track_device: sequel_object = sequel_object(None)
+	track_device: sequel_object = sequel_object(None)
 	tag: int = 0
+	trackflags: int = 0
 	def from_seqobj(self, seqobj):
 		obj_data = seqobj.obj_data
 		if 'Flags' in obj_data: self.flags = obj_data['Flags']
@@ -542,6 +543,7 @@ class class_MAutomationTrackEvent:
 		if 'Node' in obj_data: self.node = obj_data['Node']
 		if 'Track Device' in obj_data: self.track_device = obj_data['Track Device']
 		if 'Tag' in obj_data: self.tag = obj_data['Tag']
+		if 'TrackFlags' in obj_data: self.trackflags = obj_data['TrackFlags']
 classes['MAutomationTrackEvent'] = class_MAutomationTrackEvent
 
 @dataclass
