@@ -69,7 +69,7 @@ def do_auto(track_obj, convproj_obj, seq_automation, autoloc_start):
 				do_autopoints(convproj_obj, autoloc_start+['enabled'], auto_node, 0, 1, True)
 			if con_type==7 and trackflags==2:
 				do_autopoints(convproj_obj, autoloc_start+['pan'], auto_node, 1, -1, False)
-			print(con_type, trackflags)
+			#print(con_type, trackflags)
 
 def do_effects(track_obj, track_device, convproj_obj):
 	deviceattributes = track_device.deviceattributes
