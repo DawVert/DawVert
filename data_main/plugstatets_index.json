@@ -1248,6 +1248,36 @@
     ],
     "priority": 0
   },
+  "data_main\\plugstatets\\x_to_bandlab\\sequel__phaser.pstr": {
+    "file": "data_main\\plugstatets\\x_to_bandlab\\sequel__phaser.pstr",
+    "daw_in": [
+      "sequel"
+    ],
+    "daw_out": [
+      "bandlab",
+      "cakewalk_cxf"
+    ],
+    "plugtype_in": "native:sequel:phaser",
+    "plugtype_out": [
+      "native:bandlab:mxrPhase90"
+    ],
+    "priority": 0
+  },
+  "data_main\\plugstatets\\x_to_bandlab\\sequel__reverb.pstr": {
+    "file": "data_main\\plugstatets\\x_to_bandlab\\sequel__reverb.pstr",
+    "daw_in": [
+      "sequel"
+    ],
+    "daw_out": [
+      "bandlab",
+      "cakewalk_cxf"
+    ],
+    "plugtype_in": "native:sequel:reverb",
+    "plugtype_out": [
+      "native:bandlab:reverbHybrid"
+    ],
+    "priority": 0
+  },
   "data_main\\plugstatets\\x_to_waveform\\flm__distortion.pstr": {
     "file": "data_main\\plugstatets\\x_to_waveform\\flm__distortion.pstr",
     "daw_in": [
@@ -2628,6 +2658,39 @@
     "plugtype_in": "native:onlineseq:eq",
     "plugtype_out": [
       "universal:3band"
+    ],
+    "priority": -100
+  },
+  "data_main\\plugstatets\\_to_univ_ex\\sequel__autopan.pstr": {
+    "file": "data_main\\plugstatets\\_to_univ_ex\\sequel__autopan.pstr",
+    "daw_in": [
+      "sequel"
+    ],
+    "plugtype_in": "native:sequel:autopan",
+    "plugtype_out": [
+      "universal:autopan"
+    ],
+    "priority": -100
+  },
+  "data_main\\plugstatets\\_to_univ_ex\\sequel__compressor.pstr": {
+    "file": "data_main\\plugstatets\\_to_univ_ex\\sequel__compressor.pstr",
+    "daw_in": [
+      "sequel"
+    ],
+    "plugtype_in": "native:sequel:compressor",
+    "plugtype_out": [
+      "universal:compressor"
+    ],
+    "priority": -100
+  },
+  "data_main\\plugstatets\\_to_univ_ex\\sequel__gate.pstr": {
+    "file": "data_main\\plugstatets\\_to_univ_ex\\sequel__gate.pstr",
+    "daw_in": [
+      "sequel"
+    ],
+    "plugtype_in": "native:sequel:gate",
+    "plugtype_out": [
+      "universal:gate"
     ],
     "priority": -100
   },

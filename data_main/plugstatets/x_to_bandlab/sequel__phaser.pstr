@@ -1,0 +1,3 @@
+<plugstatetransform daw_in="sequel" daw_out="bandlab;cakewalk_cxf" plugtype="native:sequel:phaser">
+  <replace plugtype="native:bandlab:mxrPhase90" />
+</plugstatetransform>

@@ -1,0 +1,11 @@
+<plugstatetransform daw_in="sequel" plugtype="native:sequel:autopan">
+  <in__param from="rate" type="float" />
+  <in__param from="width" type="float" />
+  
+  <calc name="width" type="div">100</calc>
+
+  <replace plugtype="universal:autopan" />
+
+  <out__param to="freq" from="rate" type="float" />
+  <out__param to="depth" from="width" type="float" />
+</plugstatetransform>

@@ -119,6 +119,9 @@ def do_effect(track_obj, slot, convproj_obj):
 								name, value = do_effect_param(plugindata)
 								params[name] = value
 
+							if 'bypass' in params:
+								plugin_obj.fxdata_add(not bool(params['bypass']), None)
+							
 							for param_id, dset_param in globalstore.dataset.get_params('sequel', 'fx_plugin', plugname):
 								paramval = params[param_id] if param_id in params else dset_param.defv
 								plugin_obj.params.add(param_id, paramval, 'float')
