@@ -28,14 +28,6 @@ def do_params(track_obj, track_device):
 			pandata = pannerdata.float()
 			track_obj.params.add('pan', (pandata-0.5)*2, 'float')
 
-#def do_effect(track_obj, slot):
-#	if 'State' in slot:
-#		if slot['State']:
-#			if slot['Plugin isA'] == 'VstCtrlInternalEffect':
-#				params = {}
-#				#print(slot['Plugin isA'])
-#				#if slot['Plugin isA'] == 
-
 def do_autopoints(convproj_obj, autoloc, auto_node, v_min, v_max, instant):
 	auto_obj = convproj_obj.automation.create(autoloc, 'float' if not instant else 'bool', True)
 	if 'Events' in auto_node:
@@ -71,6 +63,27 @@ def do_auto(track_obj, convproj_obj, seq_automation, autoloc_start):
 				do_autopoints(convproj_obj, autoloc_start+['pan'], auto_node, 1, -1, False)
 			#print(con_type, trackflags)
 
+def do_effect_param(plugindata):
+	name = plugindata.string(128)
+	unkv = plugindata.uint32()
+	value = plugindata.double()
+	return name, value
+
+def do_effect(track_obj, slot):
+	if 'State' in slot:
+		if slot['State']:
+			if slot['Plugin isA'] == 'VstCtrlInternalEffect':
+				plugin = slot['Plugin']
+				plugindata = bytereader.bytereader()
+				plugindata.load_raw(plugin['audioComponent'])
+
+				unkd = plugindata.raw(4)
+
+				print('----------------', plugin['Plugin Name'])
+				for _ in range(2):
+					name, value = do_effect_param(plugindata)
+					print( name, value)
+
 def do_effects(track_obj, track_device, convproj_obj):
 	deviceattributes = track_device.deviceattributes
 	#if 'hasEQ' in deviceattributes:
@@ -94,12 +107,12 @@ def do_effects(track_obj, track_device, convproj_obj):
 	#					if num==0: filter_obj.type.set('high_pass', None)
 	#					elif num==(len(eqbands)-1): filter_obj.type.set('low_pass', None)
 
-	#if 'hasEQ' in deviceattributes:
-	#	insertfolder = track_device.deviceattributes['InsertFolder']
-	#	if 'Slot' in insertfolder:
-	#		insertslots = insertfolder['Slot']
-	#		for slot in insertslots:
-	#			do_effect(track_obj, slot)
+	if 'InsertFolder' in deviceattributes:
+		insertfolder = deviceattributes['InsertFolder']
+		if 'Slot' in insertfolder:
+			insertslots = insertfolder['Slot']
+			for slot in insertslots:
+				do_effect(track_obj, slot)
 
 class input_sequel3(plugins.base):
 	def is_dawvert_plugin(self):
