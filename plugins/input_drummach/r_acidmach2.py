@@ -48,6 +48,9 @@ class input_petaporon(plugins.base):
 
 		proj_song = project_obj.song
 
+		if 'tempo' in proj_song.pglobal:
+			convproj_obj.params.add('bpm', proj_song.pglobal['tempo'], 'float')
+
 		idinstnum_assoc = []
 		tracks = {}
 		for instid, instdata in proj_song.instruments.items():
@@ -69,7 +72,10 @@ class input_petaporon(plugins.base):
 				for _, notes in pattern.pattern.items(): 
 					for note in notes:
 						if note.val is not None:
-							cvpj_notelist.add_r(note.start, note.duration, note.val-60, 1, None)
+							key = note.val
+							if note.octUp: key += 12
+							if note.octDown: key -= 12
+							cvpj_notelist.add_r(note.start, note.duration, key-60, note.veloc/127, None)
 
 		for instid, patternList in proj_song.patternList.items():
 			track_obj = tracks[instid]
@@ -98,3 +104,9 @@ class input_petaporon(plugins.base):
 							dset_param = fldso.params.get(str(num))
 							if dset_param: plugin_obj.dset_param__add(str(num), control, dset_param)
 							else: plugin_obj.params.add(str(num), control, 'float')
+
+		for instnum, mixdata in enumerate(proj_song.mixer):
+			if instnum<len(idinstnum_assoc):
+				instid = idinstnum_assoc[instnum]
+				track_obj = tracks[instid]
+				track_obj.params.add('vol', mixdata[0]/127, 'float')

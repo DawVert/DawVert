@@ -34,6 +34,7 @@ class acid_amx_note:
 		self.accent = 0
 		self.octUp = 0
 		self.octDown = 0
+		self.veloc = 110
 		if indata: self.read(indata)
 
 	def read(self, indata):
@@ -46,6 +47,7 @@ class acid_amx_note:
 		if 'accent' in indata: self.accent = indata['accent']
 		if 'octUp' in indata: self.octUp = indata['octUp']
 		if 'octDown' in indata: self.octDown = indata['octDown']
+		if 'veloc' in indata: self.veloc = indata['veloc']
 
 class acid_amx_pattern:
 	def __init__(self, projectdata):
@@ -105,7 +107,7 @@ class acid_amx_song:
 				if slotnum not in self.fxUnits[instnum]:
 					self.fxUnits[instnum][slotnum] = [fxtype, fxd]
 		if 'mixer' in indata: self.mixer = indata['mixer']
-		if 'pglobal' in indata: self.pglobal = indata['pglobal']
+		if 'global' in indata: self.pglobal = indata['global']
 		if 'patternList' in indata: self.patternList = indata['patternList']
 
 class acid_amx_project:
@@ -122,6 +124,3 @@ class acid_amx_project:
 	def read(self, projectdata):
 		self.info.read(projectdata['info'])
 		self.song.read(projectdata['song'])
-
-apeinst_obj = acid_amx_project()
-apeinst_obj.load_from_file("G:\\RandomMusicFiles\\web\\acid\\Acid_Machine_2_1755347645744.amx")
