@@ -241,7 +241,7 @@
 		<file fileext=".sdml"/>
 	</plugin>
 
-	<plugin pluginset="uncommon" name="hydrogen">
+	<plugin pluginset="drummach" name="hydrogen">
 		<xml root_name="song"/>
 		<file fileext=".h2song"/>
 	</plugin>
@@ -311,6 +311,10 @@
 	<plugin pluginset="midi" name="musicphrase">
 		<file fileext=".mps"/>
 		<bytes_header data="176D757369637068726173652066696C6520666F726D617464"/>
+	</plugin>
+
+	<plugin pluginset="drummach" name="acidmach2">
+		<file fileext=".amx"/>
 	</plugin>
 
 	<plugin pluginset="audioedit" name="soundop">

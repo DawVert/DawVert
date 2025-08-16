@@ -25,7 +25,7 @@ class input_hydrogen(plugins.base):
 		in_dict['projtype'] = 'mi'
 
 	def parse(self, convproj_obj, dawvert_intent):
-		from objects.file_proj_uncommon import hydrogen as proj_hydrogen
+		from objects.file_proj_drummach import hydrogen as proj_hydrogen
 		from objects import colors
 		from objects.convproj import fileref
 

@@ -264,6 +264,7 @@ pluginsets_input = {
 'vgm': ['vgm', 'VGM'],
 'gameres': ['gameres', 'Game Mod'],
 'gamespec': ['gamespec', 'Game Specific'],
+'drummach': ['drummach', 'Drum Machines'],
 'extlib': ['extlib', 'External Lib'],
 'nn': ['nn', 'NeuralNet'],
 'mobile': ['mobile', 'Mobile'],

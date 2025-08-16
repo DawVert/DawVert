@@ -1,0 +1,45 @@
+<dataset>
+    <category id="plugin_inst">
+        <object id="acid_synth">
+            <visual name="Acid Synth" color="#B8BABB" />
+        </object>
+        <object id="dr1">
+            <visual name="DR1 Drummer" color="#CF5C00" />
+        </object>
+    </category>
+    <category id="plugin_fx">
+        <object id="0">
+            <visual name="Distortion" color="#B55718" />
+            <param id="0" name="Bypass" type="int" def="0" max="1" min="0" />
+            <param id="1" name="Curve" type="int" def="64" max="127" min="0" />
+        </object>
+        <object id="5">
+            <visual name="Delay" color="#165265" />
+            <param id="0" name="Bypass" type="int" def="0" max="1" min="0" />
+            <param id="1" name="Feedback" type="int" def="64" max="127" min="0" />
+            <param id="2" name="Cutoff" type="int" def="64" max="127" min="0" />
+            <param id="3" name="Steps" type="int" def="100" max="127" min="0" />
+        </object>
+        <object id="2">
+            <visual name="Chorus" color="#A51464" />
+            <param id="0" name="Bypass" type="int" def="0" max="1" min="0" />
+            <param id="1" name="Rate" type="int" def="16" max="127" min="0" />
+            <param id="2" name="Feedback" type="int" def="32" max="127" min="0" />
+            <param id="3" name="Delay" type="int" def="4" max="127" min="4" />
+        </object>
+        <object id="3">
+            <visual name="Filter" color="#4A3D63" />
+            <param id="0" name="Bypass" type="int" def="0" max="1" min="0" />
+            <param id="1" name="Freq" type="int" def="64" max="127" min="0" />
+            <param id="2" name="Reso" type="int" def="64" max="127" min="0" />
+            <param id="3" name="Type" type="int" def="0" max="127" min="0" />
+        </object>
+        <object id="6">
+            <visual name="Reverb" color="#1F1F1F" />
+            <param id="0" name="Bypass" type="int" def="0" max="1" min="0" />
+            <param id="1" name="Wet" type="int" def="48" max="127" min="0" />
+            <param id="2" name="High" type="int" def="32" max="127" min="0" />
+            <param id="3" name="Low" type="int" def="6" max="127" min="0" />
+        </object>
+    </category>
+</dataset>

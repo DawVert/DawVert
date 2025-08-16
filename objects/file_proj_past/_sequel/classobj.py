@@ -688,7 +688,7 @@ class class_MAudioEvent:
 		if 'AudioClip' in obj_data: 
 			self.node = obj_data['AudioClip']
 			self.idnum = self.node.obj_id
-		if 'Additional Attributes' in obj_data:self.additional_attributes = obj_data['Additional Attributes'].obj_data
+		if 'Additional Attributes' in obj_data: self.additional_attributes = obj_data['Additional Attributes'].obj_data
 classes['MAudioEvent'] = class_MAudioEvent
 
 @dataclass
