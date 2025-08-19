@@ -10,7 +10,7 @@ from objects.data_bytes import bytereader
 import os
 
 def do_visual(track_obj, track, track_node, colordata):
-	track_obj.visual.name = track_node.name
+	track_obj.visual.name = str(track_node.name)
 	if 'Farb' in track.additional_attributes:
 		farbcolor = track.additional_attributes['Farb']
 		track_obj.visual.color.set_int(colordata.getcolornum(farbcolor))
@@ -39,16 +39,16 @@ def do_autopoints(convproj_obj, autoloc, auto_node, v_min, v_max, instant):
 			for x in autoevents:
 				auto_obj.add_autopoint(x['Start'], xtramath.between_from_one(v_min, v_max, x['Value']), 'instant')
 
-def do_auto(track_obj, convproj_obj, seq_automation, autoloc_start):
-	from objects.file_proj_past._sequel import func
+def do_auto(track_obj, convproj_obj, seq_automation, autoloc_start, proj_sequel):
+	globalids = proj_sequel.globalids
 	for autotrack in seq_automation.tracks:
-		nodeid = autotrack.node.obj_id
-		trackdeviceid = autotrack.track_device.obj_id
+		nodeid = autotrack.node.idnum
+		trackdeviceid = autotrack.track_device.idnum
 
 		auto_node = None
 		auto_device = None
-		if nodeid in func.globalids: auto_node = func.globalids[nodeid]
-		if trackdeviceid in func.globalids: auto_device = func.globalids[trackdeviceid]
+		if nodeid in globalids: auto_node = globalids[nodeid]
+		if trackdeviceid in globalids: auto_device = globalids[trackdeviceid]
 		trackflags = autotrack.trackflags
 		
 		if auto_node is not None and auto_device is not None:
@@ -177,8 +177,6 @@ class input_sequel3(plugins.base):
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_past import sequel as proj_sequel
-		from objects.file_proj_past._sequel import classobj
-		from objects.file_proj_past._sequel import func
 		from objects import audio_data
 
 		samplefolder = dawvert_intent.path_samples['extracted']
@@ -207,9 +205,11 @@ class input_sequel3(plugins.base):
 
 		timebase = 480
 
-		tempoid = data_root.tempo_track.obj_id
-		if tempoid in func.globalids:
-			tempo_track = classobj.get_object(func.globalids[tempoid])
+		globalids = proj_sequel.globalids
+
+		tempoid = data_root.tempo_track.idnum
+		if tempoid in globalids:
+			tempo_track = proj_sequel.get_object(globalids[tempoid])
 			convproj_obj.params.add('bpm', tempo_track.rehearsaltempo, 'float')
 			#for tempoevent in tempo_track.tempoevent:
 			#	convproj_obj.automation.add_autotick(['main', 'bpm'], 'float', 0, tempoevent.bpm)
@@ -220,16 +220,16 @@ class input_sequel3(plugins.base):
 		for num, track in enumerate(tracklist.tracks):
 			tracknum = 'track_'+str(num)
 
-			if isinstance(track, classobj.class_MPlayRangeTrackEvent):
+			if isinstance(track, proj_sequel.class_MPlayRangeTrackEvent):
 				track_node = track.node
 				for event in track_node.events:
 					timemarker_obj = convproj_obj.arranger.add()
 					timemarker_obj.position = event.start
 					timemarker_obj.duration = event.length
 					timemarker_obj.type = 'region'
-					timemarker_obj.visual.name = event.name
+					timemarker_obj.visual.name = str(event.name)
 
-			if isinstance(track, classobj.class_MInstrumentTrackEvent):
+			if isinstance(track, proj_sequel.class_MInstrumentTrackEvent):
 				track_node = track.node
 				track_device = track.track_device
 
@@ -237,7 +237,7 @@ class input_sequel3(plugins.base):
 				do_visual(track_obj, track, track_node, colordata)
 				do_params(track_obj, track_device)
 				do_effects(track_obj, track_device, convproj_obj)
-				do_auto(track_obj, convproj_obj, track.automation, ['track', tracknum])
+				do_auto(track_obj, convproj_obj, track.automation, ['track', tracknum], proj_sequel)
 
 				for event in track_node.events:
 					placement_obj = track_obj.placements.add_midi()
@@ -251,18 +251,18 @@ class input_sequel3(plugins.base):
 					events_obj.has_duration = True
 					events_obj.ppq = int(convproj_obj.time_ppq)
 
-					if event.idnum in func.globalids:
-						mmidipart = classobj.get_object(func.globalids[event.idnum])
-						placement_obj.visual.name = mmidipart.name
+					if event.node_idnum in globalids:
+						mmidipart = proj_sequel.get_object(globalids[event.node_idnum])
+						placement_obj.visual.name = str(mmidipart.name)
 
 						for event in mmidipart.events:
 							startpos = max(0, event.start)+delaystart
-							if isinstance(event, classobj.class_MMidiNote):
+							if isinstance(event, proj_sequel.class_MMidiNote):
 								events_obj.add_note_dur(startpos, 0, event.data1, event.data2, event.length)
-							elif isinstance(event, classobj.class_MMidiController):
+							elif isinstance(event, proj_sequel.class_MMidiController):
 								events_obj.add_control(startpos, 0, event.data1, event.data2)
 
-			if isinstance(track, classobj.class_MAudioTrackEvent):
+			if isinstance(track, proj_sequel.class_MAudioTrackEvent):
 				track_node = track.node
 				track_device = track.track_device
 
@@ -270,19 +270,19 @@ class input_sequel3(plugins.base):
 				do_visual(track_obj, track, track_node, colordata)
 				do_params(track_obj, track_device)
 				do_effects(track_obj, track_device, convproj_obj)
-				do_auto(track_obj, convproj_obj, track.automation, ['track', tracknum])
+				do_auto(track_obj, convproj_obj, track.automation, ['track', tracknum], proj_sequel)
 
 				for event in track_node.events:
 					placement_obj = track_obj.placements.add_audio()
 
 					placement_obj.time.set_posdur(event.start, event.length)
 					placement_obj.time.set_offset(event.offset)
-					if event.idnum in func.globalids:
-						paudioclip = classobj.get_object(func.globalids[event.idnum])
-						placement_obj.visual.name = paudioclip.name
+					if event.clip_idnum in globalids:
+						paudioclip = proj_sequel.get_object(globalids[event.clip_idnum])
+						placement_obj.visual.name = str(paudioclip.name)
 
 						audiopath = paudioclip.path
-						filepath = audiopath.path+audiopath.name
+						filepath = str(audiopath.path)+str(audiopath.name)
 
 						if event.flags == 2: placement_obj.muted = True
 
@@ -302,7 +302,7 @@ class input_sequel3(plugins.base):
 							audiofile = audiocluster[0]
 							partapath = paudioclip.path
 
-							afilepath = partapath.path+partapath.name if partapath else filepath
+							afilepath = str(partapath.path)+str(partapath.name) if partapath else filepath
 							sampleref_obj = convproj_obj.sampleref__add(afilepath, afilepath, None)
 							sampleref_obj.search_local(dawvert_intent.input_folder)
 							sampleref_obj.set_hz(audiofile.rate)
@@ -318,10 +318,12 @@ class input_sequel3(plugins.base):
 					
 							stretch_obj.preserve_pitch = True
 
-							if paudioclip.domain['Type'] == 10:
+							is_rate = False
+							if paudioclip.domain.dtype == 10:
 								placement_obj.time.set_dur_real(event.length/audiofile.rate)
 								placement_obj.time.set_offset(event.offset/audiofile.rate)
 								s_timing_obj.set__speed(1)
+								is_rate = True
 							else:
 								if 'Warpscale' in paudioclip.additional_attributes:
 									Warpscale = paudioclip.additional_attributes['Warpscale']
@@ -339,7 +341,7 @@ class input_sequel3(plugins.base):
 							if 'StretchPreset' in paudioclip.additional_attributes:
 								StretchPreset = paudioclip.additional_attributes['StretchPreset']
 								stretch_algo = stretch_obj.algorithm
-								if isinstance(StretchPreset, classobj.class_ElastiquePreset):
+								if isinstance(StretchPreset, proj_sequel.class_ElastiquePreset):
 									if StretchPreset.formantpreservation:
 										stretch_algo.type = 'elastique_v3'
 										stretch_algo.subtype = 'pro'
