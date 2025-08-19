@@ -144,7 +144,8 @@ def iter_xdata(xdata):
 def makeval__dict(xmldata, name, indata):
 	tempxml = ET.SubElement(xmldata, 'member')
 	if name: tempxml.set('name', name)
-	write_xdata(indata, tempxml)
+	if indata: write_xdata(indata, tempxml)
+	else: tempxml.text = ''
 
 def makeval__int(xmldata, name, val):
 	tempxml = ET.SubElement(xmldata, 'int')
@@ -162,9 +163,9 @@ def makeval__bin(xmldata, name, val):
 	tempxml.set('name', name)
 	if not DEBUG_EASY_COMPARE:
 		if val:
-			tempxml.text = '\n'+('\n').join(wrap(binascii.hexlify(val).decode().upper(), 64))+'\n'
+			tempxml.text = '\n'+('\n').join(wrap(binascii.hexlify(val).decode().upper(), 64))
 		else:
-			tempxml.text = '\n'
+			tempxml.text = ''
 
 def makeval__string(xmldata, name, val, iswide):
 	tempxml = ET.SubElement(xmldata, 'string')
@@ -1236,7 +1237,7 @@ class class_MMidiPartEvent:
 		makeval__float(xmlobj, 'Length', self.length)
 		if self.offset: makeval__float(xmlobj, 'Offset', self.offset)
 		if self.node_idnum: makeval__pointer(xmlobj, 'Node', self.node_idnum)
-		makeval__dict(xmlobj, 'Additional Attributes', self.additional_attributes)
+		if self.additional_attributes: makeval__dict(xmlobj, 'Additional Attributes', self.additional_attributes)
 		makeval__int(xmlobj, 'Z-Order', self.z_order)
 		if self.transpose: makeval__int(xmlobj, 'Transpose', self.transpose)
 		makeval__obj(xmlobj, 'Quantize', self.quantize)
@@ -2235,7 +2236,7 @@ class class_PDuplicator:
 		self.idnum = seqobj.obj_id
 		self.data = seqobj.obj_data
 	def make_xml(self, xmlobj):
-		xmlobj.text = '\n      '
+		xmlobj.text = ''
 classes['PDuplicator'] = class_PDuplicator
 
 @dataclass
@@ -2277,6 +2278,7 @@ classes['MiniSequence'] = class_MiniSequence
 
 @dataclass
 class class_Phrasor:
+	version: int = 2
 	idnum: int = 0
 	ARP_SX_Version: int = 5
 	Name: str = 'Arpache SX'
@@ -2339,7 +2341,9 @@ class class_Phrasor:
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
-		if 'ARP SX Version' in obj_data: self.ARP_SX_Version = obj_data['ARP SX Version']
+		if 'ARP SX Version' in obj_data:
+			self.ARP_SX_Version = obj_data['ARP SX Version']
+			self.version = 3
 		if 'Name' in obj_data: self.Name = obj_data['Name']
 		if 'Index' in obj_data: self.Index = obj_data['Index']
 		if 'IsInsert' in obj_data: self.IsInsert = obj_data['IsInsert']
@@ -2388,8 +2392,12 @@ class class_Phrasor:
 		if 'polyphony' in obj_data: self.polyphony = obj_data['polyphony']
 		if 'velocityFix' in obj_data: self.velocityFix = obj_data['velocityFix']
 		if 'transpose' in obj_data: self.transpose = obj_data['transpose']
-		if 'repeats' in obj_data: self.repeats = obj_data['repeats']
-		if 'pitchShift' in obj_data: self.pitchShift = obj_data['pitchShift']
+		if 'repeats' in obj_data:
+			self.repeats = obj_data['repeats']
+			self.version = 3
+		if 'pitchShift' in obj_data:
+			self.pitchShift = obj_data['pitchShift']
+			self.version = 3
 		if 'transposeMode' in obj_data: self.transposeMode = obj_data['transposeMode']
 		if 'PresetIndex' in obj_data: self.PresetIndex = obj_data['PresetIndex']
 		if 'oscTypeIndex' in obj_data: self.oscTypeIndex = obj_data['oscTypeIndex']
@@ -2398,10 +2406,14 @@ class class_Phrasor:
 		if 'amplitude' in obj_data: self.amplitude = obj_data['amplitude']
 		if 'parameterTag' in obj_data: self.parameterTag = obj_data['parameterTag']
 
-		if 'octaveRange' in obj_data: self.repeats = obj_data['octaveRange']
-		if 'transposeStep' in obj_data: self.pitchShift = obj_data['transposeStep']
+		if 'octaveRange' in obj_data:
+			self.octaveRange = obj_data['octaveRange']
+			self.version = 2
+		if 'transposeStep' in obj_data:
+			self.transposeStep = obj_data['transposeStep']
+			self.version = 2
 	def make_xml(self, xmlobj):
-		makeval__int(xmlobj, 'ARP SX Version', self.ARP_SX_Version)
+		if self.version == 3: makeval__int(xmlobj, 'ARP SX Version', self.ARP_SX_Version)
 		makeval__string(xmlobj, 'Name', self.Name, 1)
 		makeval__int(xmlobj, 'Index', self.Index)
 		makeval__int(xmlobj, 'IsInsert', self.IsInsert)
@@ -2450,8 +2462,12 @@ class class_Phrasor:
 		makeval__int(xmlobj, 'polyphony', self.polyphony)
 		makeval__int(xmlobj, 'velocityFix', self.velocityFix)
 		makeval__int(xmlobj, 'transpose', self.transpose)
-		makeval__int(xmlobj, 'repeats', self.repeats)
-		makeval__int(xmlobj, 'pitchShift', self.pitchShift)
+		if self.version == 2:
+			makeval__int(xmlobj, 'octaveRange', self.octaveRange)
+			makeval__int(xmlobj, 'transposeStep', self.transposeStep)
+		if self.version == 3:
+			makeval__int(xmlobj, 'repeats', self.repeats)
+			makeval__int(xmlobj, 'pitchShift', self.pitchShift)
 		makeval__int(xmlobj, 'transposeMode', self.transposeMode)
 		makeval__int(xmlobj, 'PresetIndex', self.PresetIndex)
 		makeval__int(xmlobj, 'oscTypeIndex', self.oscTypeIndex)
@@ -2464,6 +2480,7 @@ classes['Phrasor'] = class_Phrasor
 
 @dataclass
 class class_ChordProcessor:
+	version: int = 2
 	idnum: int = 0
 	name: str = 'Chorder'
 	index: int = 1
@@ -2492,13 +2509,18 @@ class class_ChordProcessor:
 		if 'Outputs' in obj_data: self.outputs = obj_data['Outputs']
 		if 'ChordMask' in obj_data: self.chordmask = obj_data['ChordMask']
 		if 'Channel' in obj_data: self.channel = obj_data['Channel']
-		if 'PlayStyle' in obj_data: self.PlayStyle = obj_data['PlayStyle']
+		if 'PlayStyle' in obj_data: 
+			self.version = 3
+			self.PlayStyle = obj_data['PlayStyle']
 		if 'ChordMode' in obj_data: self.chordmode = obj_data['ChordMode']
 		if 'ThruMode' in obj_data: self.thrumode = obj_data['ThruMode']
-		if 'ThruButton' in obj_data: self.thrubutton = obj_data['ThruButton']
+		if 'ThruButton' in obj_data:
+			self.version = 3
+			self.thrubutton = obj_data['ThruButton']
 		if 'VariationLimiter' in obj_data: self.variationlimiter = obj_data['VariationLimiter']
 		if 'PresetName' in obj_data: self.presetname = obj_data['PresetName']
 		if 'PresetIndex' in obj_data: self.presetindex = obj_data['PresetIndex']
+		if 'SwitchMode' in obj_data: self.switchmode = obj_data['SwitchMode']
 	def make_xml(self, xmlobj):
 		makeval__string(xmlobj, 'Name', self.name, 1)
 		makeval__int(xmlobj, 'Index', self.index)
@@ -2508,10 +2530,11 @@ class class_ChordProcessor:
 		makeval__list(xmlobj, 'Outputs', self.outputs)
 		makeval__list(xmlobj, 'ChordMask', self.chordmask)
 		makeval__int(xmlobj, 'Channel', self.channel)
-		makeval__int(xmlobj, 'PlayStyle', self.channel)
+		if self.version == 3: makeval__int(xmlobj, 'PlayStyle', self.channel)
 		makeval__int(xmlobj, 'ChordMode', self.chordmode)
+		if self.version == 2: makeval__int(xmlobj, 'SwitchMode', self.switchmode)
 		makeval__int(xmlobj, 'ThruMode', self.thrumode)
-		makeval__int(xmlobj, 'ThruButton', self.thrubutton)
+		if self.version == 3: makeval__int(xmlobj, 'ThruButton', self.thrubutton)
 		makeval__int(xmlobj, 'VariationLimiter', self.variationlimiter)
 		makeval__dict(xmlobj, 'PresetName', self.presetname)
 		makeval__int(xmlobj, 'PresetIndex', self.presetindex)
@@ -2548,7 +2571,7 @@ class class_PEventReader:
 		self.idnum = seqobj.obj_id
 		self.data = seqobj.obj_data
 	def make_xml(self, xmlobj):
-		xmlobj.text = '\n'
+		xmlobj.text = ''
 classes['PEventReader'] = class_PEventReader
 
 @dataclass
@@ -2698,6 +2721,30 @@ classes['StMedia::ValueMatrixFilter'] = class_StMedia__ValueMatrixFilter
 
 classesmake = dict([(x[1], x[0]) for x in classes.items()])
 
+def indent(elem, level=0):
+	# Add indentation
+	indent_size = "    "
+	i = "\n" + level * indent_size
+	if elem.tag=='bin': 
+		if elem.text is not None:
+			elem.text = elem.text.replace('\n', "\n"+(level+1)*indent_size)
+			elem.text += i
+		else:
+			elem.text += i
+	elif elem.tag=='obj': 
+		if elem.text is not None:
+			elem.text += i
+	elif elem.tag=='member': 
+		if elem.text is not None:
+			elem.text += i
+	if len(elem):
+		if not elem.text or not elem.text.strip(): elem.text = i + indent_size
+		if not elem.tail or not elem.tail.strip(): elem.tail = i
+		for elem in elem: indent(elem, level + 1)
+		if not elem.tail or not elem.tail.strip(): elem.tail = i
+	else:
+		if level and (not elem.tail or not elem.tail.strip()): elem.tail = i
+
 class sequel_project:
 	def __init__(self):
 		self.root_objects = {}
@@ -2765,8 +2812,9 @@ class sequel_project:
 		for i, o in self.objects.items():
 			makeval__obj(seq_proj, None, o)
 
+		indent(seq_proj)
 		outfile = ET.ElementTree(seq_proj)
-		ET.indent(outfile)
+		#ET.indent(outfile)
 		outfile.write(out_file, xml_declaration = True, encoding="utf-8")
 
 	def initalize(self):
