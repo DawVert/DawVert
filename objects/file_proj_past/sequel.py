@@ -952,7 +952,7 @@ classes['PWarpTab'] = class_PWarpTab
 class class_AudioCluster:
 	idnum: int = 0
 	substreams: sequel_list_obj = field(default_factory=sequel_list_obj)
-	segments: sequel_list_obj = field(default_factory=sequel_list_obj)
+	segments: sequel_list_dict = field(default_factory=sequel_list_dict)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
