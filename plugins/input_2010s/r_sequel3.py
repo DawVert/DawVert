@@ -204,9 +204,6 @@ class input_sequel3(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.dataset.load('sequel', './data_main/dataset/sequel.dset')
-		colordata = colors.colorset.from_dataset('sequel', 'main', 'main')
-
 		seq_project = project_obj.obj_project
 		data_root = seq_project.data_root
 		project_attributes = data_root.additional_attributes
