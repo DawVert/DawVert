@@ -22,7 +22,7 @@ class input_cvpj_f(plugins.base):
 		return 'cakewalk_wrk'
 	
 	def get_name(self):
-		return 'Cakewalk Work'
+		return 'Cakewalk WRK'
 	
 	def get_priority(self):
 		return 0

@@ -311,7 +311,7 @@ class output_bandlab(plugins.base):
 		return 'cakewalk_cxf'
 	
 	def get_name(self):
-		return 'Cakewalk Interchange'
+		return 'Cakewalk CXF'
 	
 	def gettype(self):
 		return 'r'
