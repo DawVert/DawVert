@@ -9,12 +9,19 @@ from objects import colors
 from objects.data_bytes import bytereader
 import os
 
-def do_visual(track_obj, track, track_node, colordata):
+def conv_color(b_color):
+	color = b_color.to_bytes(4, "little")
+	return [color[2],color[1],color[0]]
+
+def do_visual(track_obj, track, track_node, colorset):
 	track_obj.visual.name = str(track_node.name)
 	if 'Farb' in track.additional_attributes:
 		farbcolor = track.additional_attributes['Farb']
-		track_obj.visual.color.set_int(colordata.getcolornum(farbcolor))
-	#track_obj.visual_ui.height = track.height/73
+		try:
+			color_get = colorset[farbcolor]['Color']
+			track_obj.visual.color.set_int(conv_color(color_get))
+		except:
+			pass
 
 def do_params(track_obj, track_device):
 	if 'Volume' in track_device.deviceattributes:
@@ -202,6 +209,8 @@ class input_sequel3(plugins.base):
 
 		seq_project = project_obj.obj_project
 		data_root = seq_project.data_root
+		project_attributes = data_root.additional_attributes
+		colorset = project_attributes['EvCo'] if 'EvCo' else project_attributes
 
 		timebase = 480
 
@@ -234,7 +243,7 @@ class input_sequel3(plugins.base):
 				track_device = track.track_device
 
 				track_obj = convproj_obj.track__add(tracknum, 'instrument', 1, False)
-				do_visual(track_obj, track, track_node, colordata)
+				do_visual(track_obj, track, track_node, colorset)
 				do_params(track_obj, track_device)
 				do_effects(track_obj, track_device, convproj_obj)
 				do_auto(track_obj, convproj_obj, track.automation, ['track', tracknum], proj_sequel)
@@ -267,7 +276,7 @@ class input_sequel3(plugins.base):
 				track_device = track.track_device
 
 				track_obj = convproj_obj.track__add(tracknum, 'audio', 1, False)
-				do_visual(track_obj, track, track_node, colordata)
+				do_visual(track_obj, track, track_node, colorset)
 				do_params(track_obj, track_device)
 				do_effects(track_obj, track_device, convproj_obj)
 				do_auto(track_obj, convproj_obj, track.automation, ['track', tracknum], proj_sequel)
@@ -281,13 +290,16 @@ class input_sequel3(plugins.base):
 						paudioclip = proj_sequel.get_object(globalids[event.clip_idnum])
 						placement_obj.visual.name = str(paudioclip.name)
 
-						audiopath = paudioclip.path
+						if isinstance(paudioclip.path, proj_sequel.class_FNPath):
+							audiopath = paudioclip.path
+						if isinstance(paudioclip.path, proj_sequel.obj_pointer):
+							audiopath = proj_sequel.get_object(globalids[paudioclip.path.idnum])
 						filepath = str(audiopath.path)+str(audiopath.name)
 
 						if event.flags == 2: placement_obj.muted = True
 
 						sp_obj = placement_obj.sample
-						sp_obj.gain = event.volume
+						sp_obj.vol = event.volume
 
 						additional_attributes = event.additional_attributes
 						if 'PitF' in additional_attributes:
@@ -300,7 +312,7 @@ class input_sequel3(plugins.base):
 
 						if audiocluster:
 							audiofile = audiocluster[0]
-							partapath = paudioclip.path
+							partapath = audiopath
 
 							afilepath = str(partapath.path)+str(partapath.name) if partapath else filepath
 							sampleref_obj = convproj_obj.sampleref__add(afilepath, afilepath, None)

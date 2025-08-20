@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import dataclasses
 from dataclasses import dataclass
 from dataclasses import dataclass, field
 from lxml import etree as ET
@@ -18,6 +19,17 @@ def to_wide_string(textd):
 def to_norm_string(textd):
 	o = sequel_string(None)
 	o.text = textd
+	return o
+
+def add_list(list, classname):
+	o = classes[classname]()
+	list.append(o)
+	return o
+
+def add_list_genid(list, classname, counter_obj):
+	o = classes[classname]()
+	o.idnum = counter_obj.get()
+	list.append(o)
 	return o
 
 # ================================================ FUNC READ ================================================
@@ -83,6 +95,80 @@ class sequel_object:
 		if self.obj_id and not self.obj_class:
 			debug_allp[self.obj_id] = self
 
+class sequel_list_int:
+	def __init__(self, *args): self.data = args[0] if args else []
+	def __len__(self): return self.data.__len__()
+	def __getitem__(self, i): return self.data.__getitem__(i)
+	def __setitem__(self, i, v): return self.data.__setitem__(i, v)
+	def setvals(self, x): self.data = x
+	def append(self, i): return self.data.append(i)
+	def make_xml(self, xmldata, name):
+		tempxml = ET.SubElement(xmldata, 'list')
+		if name: tempxml.set('name', name)
+		tempxml.set('type', 'int')
+		for x in self.data:
+			inxml = ET.SubElement(tempxml, 'item')
+			inxml.set('value', str(x))
+
+class sequel_list_float:
+	def __init__(self, *args): self.data = args[0] if args else []
+	def __len__(self): return self.data.__len__()
+	def __getitem__(self, i): return self.data.__getitem__(i)
+	def __setitem__(self, i, v): return self.data.__setitem__(i, v)
+	def setvals(self, x): self.data = x
+	def append(self, i): return self.data.append(i)
+	def make_xml(self, xmldata, name):
+		tempxml = ET.SubElement(xmldata, 'list')
+		if name: tempxml.set('name', name)
+		tempxml.set('type', 'float')
+		for x in self.data:
+			inxml = ET.SubElement(tempxml, 'item')
+			inxml.set('value', str(x))
+
+class sequel_list_string:
+	def __init__(self, *args): self.data = args[0] if args else []
+	def __len__(self): return self.data.__len__()
+	def __getitem__(self, i): return self.data.__getitem__(i)
+	def __setitem__(self, i, v): return self.data.__setitem__(i, v)
+	def setvals(self, x): self.data = x
+	def append(self, i): return self.data.append(i)
+	def make_xml(self, xmldata, name):
+		tempxml = ET.SubElement(xmldata, 'list')
+		if name: tempxml.set('name', name)
+		tempxml.set('type', 'string')
+		for x in self.data:
+			inxml = ET.SubElement(tempxml, 'item')
+			inxml.set('value', x.text)
+
+class sequel_list_dict:
+	def __init__(self, *args): self.data = args[0] if args else []
+	def __len__(self): return self.data.__len__()
+	def __getitem__(self, i): return self.data.__getitem__(i)
+	def __setitem__(self, i, v): return self.data.__setitem__(i, v)
+	def setvals(self, x): self.data = x
+	def append(self, i): return self.data.append(i)
+	def make_xml(self, xmldata, name):
+		tempxml = ET.SubElement(xmldata, 'list')
+		if name: tempxml.set('name', name)
+		tempxml.set('type', 'list')
+		for x in self.data:
+			inxml = ET.SubElement(tempxml, 'item')
+			write_xdata(x, inxml)
+
+class sequel_list_obj:
+	def __init__(self, *args): self.data = args[0] if args else []
+	def __len__(self): return self.data.__len__()
+	def __getitem__(self, i): return self.data.__getitem__(i)
+	def __setitem__(self, i, v): return self.data.__setitem__(i, v)
+	def setvals(self, x): self.data = x
+	def append(self, i): return self.data.append(i)
+	def make_xml(self, xmldata, name):
+		tempxml = ET.SubElement(xmldata, 'list')
+		if name: tempxml.set('name', name)
+		tempxml.set('type', 'obj')
+		for x in self.data:
+			makeval__obj(tempxml, None, x)
+
 def getval__dict(xmldata):
 	outdata = {}
 	for x in iter_xdata(xmldata):
@@ -104,20 +190,24 @@ def getval__string(x):
 
 def getval__list(x):
 	listtype = x.get('type')
-	listdata = []
 	if listtype=='obj':
+		listdata = sequel_list_obj()
 		for d in x:
 			if d.tag=='obj': listdata.append(get_object(sequel_object(d)))
 	elif listtype=='int':
+		listdata = sequel_list_int()
 		for d in x:
 			if d.tag=='item': listdata.append(int(d.get('value')))
 	elif listtype=='float':
+		listdata = sequel_list_float()
 		for d in x:
 			if d.tag=='item': listdata.append(float(d.get('value')))
 	elif listtype=='string':
+		listdata = sequel_list_string()
 		for d in x:
 			if d.tag=='item': listdata.append(sequel_string(d))
 	elif listtype=='list':
+		listdata = sequel_list_dict()
 		for d in x:
 			if d.tag=='item':
 				itemdata = {}
@@ -125,7 +215,7 @@ def getval__list(x):
 					if not i[0]: print('unknown tag in list/list:', i)
 					else: itemdata[i[2]] = i[3]
 				listdata.append(itemdata)
-	else: exit('unknown list type %s' % str(listtype))
+	else: exit(('unknown list type %s' % str(listtype)))
 	return listdata
 
 def iter_xdata(xdata):
@@ -194,50 +284,22 @@ def makeval__pointer(xmldata, name, idnum):
 	tempxml.set('ID', str(idnum))
 
 def makeval__list(xmldata, name, val):
-	tempxml = ET.SubElement(xmldata, 'list')
-	tempxml.set('name', name)
-	listtypes = [type(x) for x in val]
-
-	if listtypes:
-		sametype = all(x == listtypes[0] for x in listtypes)
-		if sametype:
-			listtype = listtypes[0]
-			if listtype == int:
-				tempxml.set('type', 'int')
-				for x in val:
-					inxml = ET.SubElement(tempxml, 'item')
-					inxml.set('value', str(x))
-			elif listtype == float:
-				tempxml.set('type', 'float')
-				for x in val:
-					inxml = ET.SubElement(tempxml, 'item')
-					inxml.set('value', str(x))
-			elif listtype == str:
-				tempxml.set('type', 'string')
-				for x in val:
-					inxml = ET.SubElement(tempxml, 'item')
-					inxml.set('value', x)
-			elif listtype == sequel_string:
-				tempxml.set('type', 'string')
-				for x in val:
-					inxml = ET.SubElement(tempxml, 'item')
-					inxml.set('value', x.text)
-					if x.wide: inxml.set('wide', 'true')
-			elif listtype == dict:
-				tempxml.set('type', 'list')
-				for x in val:
-					inxml = ET.SubElement(tempxml, 'item')
-					write_xdata(x, inxml)
-			#else:
-			#	print('unknown', listtype)
-		allobjs = [(x in classesmake) for x in listtypes]
-		if all(allobjs):
-			tempxml.set('type', 'obj')
-			for x in val:
-				makeval__obj(tempxml, None, x)
+	if isinstance(val, sequel_list_int):
+		val.make_xml(xmldata, name)
+	elif isinstance(val, sequel_list_float):
+		val.make_xml(xmldata, name)
+	elif isinstance(val, sequel_list_string):
+		val.make_xml(xmldata, name)
+	elif isinstance(val, sequel_list_dict):
+		val.make_xml(xmldata, name)
+	elif isinstance(val, sequel_list_obj):
+		val.make_xml(xmldata, name)
+	else:
+		print('unknown list type', xmldata.attrib, val)
 
 def write_xdata(obj_data, xmldata):
 	for k, v in obj_data.items():
+		if isinstance(v, dataclasses.Field): v = v.default_factory()
 		if isinstance(v, dict): makeval__dict(xmldata, k, v)
 		elif isinstance(v, int): makeval__int(xmldata, k, v)
 		elif isinstance(v, bytes): makeval__bin(xmldata, k, v)
@@ -245,9 +307,15 @@ def write_xdata(obj_data, xmldata):
 		elif isinstance(v, sequel_string): makeval__string(xmldata, k, v, 1)
 		elif isinstance(v, list): makeval__list(xmldata, k, v)
 		elif isinstance(v, obj_pointer): makeval__pointer(xmldata, k, v.idnum)
+		elif isinstance(v, sequel_list_int): v.make_xml(xmldata, k)
+		elif isinstance(v, sequel_list_float): v.make_xml(xmldata, k)
+		elif isinstance(v, sequel_list_string): v.make_xml(xmldata, k)
+		elif isinstance(v, sequel_list_obj): v.make_xml(xmldata, k)
+		elif isinstance(v, sequel_list_dict): v.make_xml(xmldata, k)
+		elif isinstance(v, seq_domain): makeval__dict(xmldata, k, v.to_dict())
 		elif type(v) in classesmake: makeval__obj(xmldata, k, v)
 		else:
-			print( type(v) )
+			print( 'write_xdata', type(v) )
 
 # ================================================ OBJECTS ================================================
 globalids = {}
@@ -272,6 +340,10 @@ class seq_value:
 	value: float = 0
 	v_min: float = 0
 	v_max: float = 1
+	def set_vals(self, value, v_min, v_max):
+		self.value = value
+		self.v_min = v_min
+		self.v_max = v_max
 	def from_dict(self, memberobj):
 		if 'Value' in memberobj: self.value = memberobj['Value']
 		if 'Min' in memberobj: self.v_min = memberobj['Min']
@@ -295,13 +367,22 @@ class seq_domain:
 		if 'Tempo Track' in memberobj: self.tempo_track = memberobj['Tempo Track']
 		if 'Signature Track' in memberobj: self.signature_track = memberobj['Signature Track']
 		if 'Period' in memberobj: self.period = memberobj['Period']
+	def set_sync(self, id_trk_bpm, id_trk_meas):
+		self.dtype = 0
+		self.tempo_track = obj_pointer()
+		self.signature_track = obj_pointer()
+		self.tempo_track.idnum = id_trk_bpm
+		self.signature_track.idnum = id_trk_meas
+	def set_period(self, period):
+		self.dtype = 1
+		self.period = period
 	def to_dict(self):
 		if self.dtype == 0:
 			return {'Type': int(self.dtype), 'Tempo Track': self.tempo_track, 'Signature Track': self.signature_track}
 		elif self.dtype == 1:
-			return {'Type': int(self.dtype), 'Period': self.period}
+			return {'Type': int(self.dtype), 'Period': float(self.period)}
 		elif self.dtype == 10:
-			return {'Type': int(self.dtype), 'Period': self.period}
+			return {'Type': int(self.dtype), 'Period': float(self.period)}
 		else:
 			print('Unknown Domain Type', self.dtype)
 			exit()
@@ -323,9 +404,9 @@ classes['UTextEditorBuffer'] = class_UTextEditorBuffer
 @dataclass
 class class_ApplicationVersion:
 	idnum: int = 0
-	application: str = '*Sequel*'
-	version: str = 'Version 3.0.0'
-	builddate: str = 'Jul 26 2011'
+	application: str = 'Sequel'
+	version: str = 'Version 2.0.0'
+	builddate: str = 'Aug  5 2008'
 	internalnumber: int = 300
 	platform: str = 'WIN32'
 	encoding: str = 'UTF-8'
@@ -355,14 +436,18 @@ classes['Application Version'] = class_ApplicationVersion
 class class_UColorSet:
 	idnum: int = 0
 	setname: str = 'Event Colors'
-	c_set: list = field(default_factory=list)
-	c_defset: list = field(default_factory=list)
+	c_set: sequel_list_dict = field(default_factory=sequel_list_dict)
+	c_defset: sequel_list_dict = field(default_factory=sequel_list_dict)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
 		if 'SetName' in obj_data: self.setname = obj_data['SetName']
-		if 'Set' in obj_data: self.c_set = obj_data['Set']
-		if 'DefSet' in obj_data: self.c_defset = obj_data['DefSet']
+		if 'Set' in obj_data: self.c_set.setvals(obj_data['Set'])
+		if 'DefSet' in obj_data: self.c_defset.setvals(obj_data['DefSet'])
+	def __getitem__(self, v):
+		return self.c_set.__getitem__(v)
+	def __len__(self, v):
+		return self.c_set.__len__(v)
 	def make_xml(self, xmlobj):
 		makeval__string(xmlobj, 'SetName', self.setname, 1)
 		makeval__list(xmlobj, 'Set', self.c_set)
@@ -376,8 +461,8 @@ class class_TrackParaEffect:
 	index: int = 0
 	isinsert: int = 1
 	playinstop: int = 0
-	inputs: list = field(default_factory=list)
-	outputs: list = field(default_factory=list)
+	inputs: sequel_list_obj = field(default_factory=sequel_list_obj)
+	outputs: sequel_list_obj = field(default_factory=sequel_list_obj)
 	transpose: seq_value = field(default_factory=seq_value)
 	velocity_shift: seq_value = field(default_factory=seq_value)
 	delay: seq_value = field(default_factory=seq_value)
@@ -405,8 +490,8 @@ class class_TrackParaEffect:
 		if 'Index' in obj_data: self.index = obj_data['Index']
 		if 'IsInsert' in obj_data: self.isinsert = obj_data['IsInsert']
 		if 'PlayInStop' in obj_data: self.playinstop = obj_data['PlayInStop']
-		if 'Inputs' in obj_data: self.inputs = obj_data['Inputs']
-		if 'Outputs' in obj_data: self.outputs = obj_data['Outputs']
+		if 'Inputs' in obj_data: self.inputs.setvals(obj_data['Inputs'])
+		if 'Outputs' in obj_data: self.outputs.setvals(obj_data['Outputs'])
 		if 'Transpose' in obj_data: self.transpose.from_dict(obj_data['Transpose'])
 		if 'Velocity Shift' in obj_data: self.velocity_shift.from_dict(obj_data['Velocity Shift'])
 		if 'Delay' in obj_data: self.delay.from_dict(obj_data['Delay'])
@@ -507,13 +592,13 @@ class class_StepEnvelopeGroup:
 	idnum: int = 0
 	segmentation: class_Segmentation = field(default_factory=class_Segmentation)
 	strategy: str = 'HitPoints'
-	envelope: list = field(default_factory=list)
+	envelope: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
 		if 'segmentation' in obj_data: self.segmentation = obj_data['segmentation']
 		if 'strategy' in obj_data: self.strategy = obj_data['strategy']
-		if 'envelope' in obj_data: self.envelope = obj_data['envelope']
+		if 'envelope' in obj_data: self.envelope.setvals(obj_data['envelope'])
 	def make_xml(self, xmlobj):
 		makeval__obj(xmlobj, 'segmentation', self.segmentation)
 		makeval__string(xmlobj, 'strategy', self.strategy, 0)
@@ -723,7 +808,7 @@ class class_GTreeEntry:
 	flags: int = 0
 	name: str = ''
 	v_id: int = 0
-	subentries: list = field(default_factory=list)
+	subentries: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
@@ -731,7 +816,7 @@ class class_GTreeEntry:
 		if 'Flags' in obj_data: self.flags = obj_data['Flags']
 		if 'Name' in obj_data: self.name = obj_data['Name']
 		if 'ID' in obj_data: self.v_id = obj_data['ID']
-		if 'SubEntries' in obj_data: self.subentries = obj_data['SubEntries']
+		if 'SubEntries' in obj_data: self.subentries.setvals(obj_data['SubEntries'])
 	def make_xml(self, xmlobj):
 		if self.dataobject != -1: makeval__pointer(xmlobj, 'DataObject', self.dataobject)
 		makeval__int(xmlobj, 'Flags', self.flags)
@@ -744,12 +829,12 @@ classes['GTreeEntry'] = class_GTreeEntry
 class class_CmLinkedList:
 	idnum: int = 0
 	ownership: int = 1
-	obj: list = field(default_factory=list)
+	obj: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
 		if 'ownership' in obj_data: self.ownership = obj_data['ownership']
-		if 'obj' in obj_data: self.obj = obj_data['obj']
+		if 'obj' in obj_data: self.obj.setvals(obj_data['obj'])
 	def make_xml(self, xmlobj):
 		makeval__int(xmlobj, 'ownership', self.ownership)
 		if self.obj: makeval__list(xmlobj, 'obj', self.obj)
@@ -839,11 +924,11 @@ classes['PGridDefinition'] = class_PGridDefinition
 @dataclass
 class class_PAudioWarpScale:
 	idnum: int = 0
-	warptab: list = field(default_factory=list)
+	warptab: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
-		if 'WarpTab' in obj_data: self.warptab = obj_data['WarpTab']
+		if 'WarpTab' in obj_data: self.warptab.setvals(obj_data['WarpTab'])
 	def make_xml(self, xmlobj):
 		makeval__list(xmlobj, 'WarpTab', self.warptab)
 classes['PAudioWarpScale'] = class_PAudioWarpScale
@@ -866,13 +951,13 @@ classes['PWarpTab'] = class_PWarpTab
 @dataclass
 class class_AudioCluster:
 	idnum: int = 0
-	substreams: list = field(default_factory=list)
-	segments: list = field(default_factory=list)
+	substreams: sequel_list_obj = field(default_factory=sequel_list_obj)
+	segments: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
-		if 'Substreams' in obj_data: self.substreams = obj_data['Substreams']
-		if 'Segments' in obj_data: self.segments = obj_data['Segments']
+		if 'Substreams' in obj_data: self.substreams.setvals(obj_data['Substreams'])
+		if 'Segments' in obj_data: self.segments.setvals(obj_data['Segments'])
 	def make_xml(self, xmlobj):
 		makeval__list(xmlobj, 'Substreams', self.substreams)
 		makeval__list(xmlobj, 'Segments', self.segments)
@@ -973,10 +1058,10 @@ class class_PAudioClip:
 	history_number: int = 0
 	origin_time: float = 0
 	path: class_FNPath = field(default_factory=class_FNPath)
-	uid: list = field(default_factory=list)
+	uid: sequel_list_string = field(default_factory=sequel_list_string)
 	additional_attributes: dict = field(default_factory=dict)
 	cluster = class_AudioCluster = class_AudioCluster()
-	events: list = field(default_factory=list)
+	events: sequel_list_obj = field(default_factory=sequel_list_obj)
 	domain: seq_domain = field(default_factory=seq_domain)
 
 	def from_seqobj(self, seqobj):
@@ -990,7 +1075,7 @@ class class_PAudioClip:
 		if 'Name' in obj_data: self.name = obj_data['Name']
 		if 'Origin Time' in obj_data: self.origin_time = obj_data['Origin Time']
 		if 'Path' in obj_data: self.path = obj_data['Path']
-		if 'UID' in obj_data: self.uid = obj_data['UID']
+		if 'UID' in obj_data: self.uid.setvals(obj_data['UID'])
 		if 'Additional Attributes' in obj_data: self.additional_attributes = obj_data['Additional Attributes']
 	def make_xml(self, xmlobj):
 		makeval__string(xmlobj, 'Name', self.name, 1)
@@ -1023,7 +1108,7 @@ classes['MParamEvent'] = class_MParamEvent
 @dataclass
 class class_MLinearInterpolator:
 	idnum: int = 0
-	points: list = field(default_factory=list)
+	points: sequel_list_dict = field(default_factory=sequel_list_dict)
 	xmin: float = 0.0
 	xmax: float = 1.0
 	ymin: float = 0.0
@@ -1031,7 +1116,7 @@ class class_MLinearInterpolator:
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
-		if 'Points' in obj_data: self.points = obj_data['Points']
+		if 'Points' in obj_data: self.points.setvals(obj_data['Points'])
 		if 'XMin' in obj_data: self.xmin = obj_data['XMin']
 		if 'XMax' in obj_data: self.xmax = obj_data['XMax']
 		if 'YMin' in obj_data: self.ymin = obj_data['YMin']
@@ -1091,7 +1176,7 @@ class class_MAutomationNode:
 	idnum: int = 0
 	name: str = ''
 	domain: seq_domain = field(default_factory=seq_domain)
-	tracks: list = field(default_factory=list)
+	tracks: sequel_list_obj = field(default_factory=sequel_list_obj)
 	track_device: obj_pointer = field(default_factory=obj_pointer)
 	expanded: int = 0
 	def from_seqobj(self, seqobj):
@@ -1099,7 +1184,7 @@ class class_MAutomationNode:
 		obj_data = seqobj.obj_data
 		if 'Name' in obj_data: self.name = obj_data['Name']
 		if 'Domain' in obj_data: self.domain.from_dict(obj_data['Domain'])
-		if 'Tracks' in obj_data: self.tracks = obj_data['Tracks']
+		if 'Tracks' in obj_data: self.tracks.setvals(obj_data['Tracks'])
 		if 'Track Device' in obj_data: self.track_device = obj_data['Track Device']
 		if 'Expanded' in obj_data: self.expanded = obj_data['Expanded']
 	def make_xml(self, xmlobj):
@@ -1176,6 +1261,16 @@ class class_MAutoFadeSetting:
 		if 'FadeOut Curve' in obj_data: self.fadeout_curve = obj_data['FadeOut Curve']
 		if 'Crossfade In Curve' in obj_data: self.crossfade_in_curve = obj_data['Crossfade In Curve']
 		if 'Crossfade Out Curve' in obj_data: self.crossfade_out_curve = obj_data['Crossfade Out Curve']
+	def init_values(self):
+		self.fadein_curve.points.setvals([{'X': 0.0, 'Y': 0.0}, {'X': 1.0, 'Y': 1.0}])
+		self.fadeout_curve.points.setvals([{'X': 0.0, 'Y': 1.0}, {'X': 1.0, 'Y': 0.0}])
+		self.crossfade_in_curve.points.setvals([{'X': 0.0, 'Y': 0.0}, {'X': 1.0, 'Y': 1.0}])
+		self.crossfade_out_curve.points.setvals([{'X': 0.0, 'Y': 1.0}, {'X': 1.0, 'Y': 0.0}])
+	def spread_counter(self, counter_obj):
+		self.fadein_curve.idnum = counter_obj.get()
+		self.fadeout_curve.idnum = counter_obj.get()
+		self.crossfade_in_curve.idnum = counter_obj.get()
+		self.crossfade_out_curve.idnum = counter_obj.get()
 	def make_xml(self, xmlobj):
 		makeval__int(xmlobj, 'Flags', self.flags)
 		makeval__float(xmlobj, 'Fade Length', self.fade_length)
@@ -1281,7 +1376,7 @@ class class_MListNode:
 	idnum: int = 0
 	name: str = ''
 	domain: seq_domain = field(default_factory=seq_domain)
-	events: list = field(default_factory=list)
+	events: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
@@ -1298,7 +1393,7 @@ classes['MListNode'] = class_MListNode
 class class_MAutoListNode:
 	idnum: int = 0
 	domain: seq_domain = field(default_factory=seq_domain)
-	events: list = field(default_factory=list)
+	events: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
@@ -1421,12 +1516,12 @@ classes['PLaneConfig'] = class_PLaneConfig
 class class_CmArray:
 	idnum: int = 0
 	ownership: int = 1
-	obj: list = field(default_factory=list)
+	obj: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
 		if 'ownership' in obj_data: self.ownership = obj_data['ownership']
-		if 'obj' in obj_data: self.obj = obj_data['obj']
+		if 'obj' in obj_data: self.obj.setvals(obj_data['obj'])
 	def make_xml(self, xmlobj):
 		makeval__int(xmlobj, 'ownership', self.ownership)
 		makeval__list(xmlobj, 'obj', self.obj)
@@ -1454,12 +1549,12 @@ classes['MMidiAfterTouch'] = class_MMidiAfterTouch
 class class_MPlayOrderList:
 	idnum: int = 0
 	po_listname: str = ''
-	po_listitems: list = field(default_factory=list)
+	po_listitems: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
 		if 'PO ListName' in obj_data: self.po_listname = obj_data['PO ListName']
-		if 'PO ListItems' in obj_data: self.po_listitems = obj_data['PO ListItems']
+		if 'PO ListItems' in obj_data: self.po_listitems.setvals(obj_data['PO ListItems'])
 	def make_xml(self, xmlobj):
 		makeval__string(xmlobj, 'PO ListName', self.po_listname, 1)
 		if self.po_listitems: makeval__list(xmlobj, 'PO ListItems', self.po_listitems)
@@ -1491,7 +1586,7 @@ class class_PExtendedDuplicator:
 		if 'Device' in obj_data: self.device = obj_data['Device']
 		if 'Port' in obj_data: self.port = obj_data['Port']
 	def make_xml(self, xmlobj):
-		makeval__string(xmlobj, 'Device', self.device, 1)
+		makeval__string(xmlobj, 'Device', self.device, 0)
 		makeval__string(xmlobj, 'Port', self.port, 1)
 classes['PExtendedDuplicator'] = class_PExtendedDuplicator
 
@@ -1505,7 +1600,7 @@ class class_PQuickControls:
 	idstring: str = 'Quick Controls'
 	nodeflags: int = 0
 	numberclassids: int = 2
-	classids: list = field(default_factory=list)
+	classids: sequel_list_string = field(default_factory=sequel_list_string)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
@@ -1516,7 +1611,7 @@ class class_PQuickControls:
 		if 'IDString' in obj_data: self.idstring = obj_data['IDString']
 		if 'NodeFlags' in obj_data: self.nodeflags = obj_data['NodeFlags']
 		if 'NumberClassIDs' in obj_data: self.numberclassids = obj_data['NumberClassIDs']
-		if 'ClassIDs' in obj_data: self.classids = obj_data['ClassIDs']
+		if 'ClassIDs' in obj_data: self.classids.setvals(obj_data['ClassIDs'])
 	def make_xml(self, xmlobj):
 		makeval__int(xmlobj, 'NumberOfQuickControls', self.numberofquickcontrols)
 		makeval__obj(xmlobj, 'QCDestinations', self.qcdestinations)
@@ -1534,7 +1629,7 @@ class class_MGridQuantize:
 	grid: int = 4
 	type: int = 0
 	swing: float = 0.0
-	unquantized: int = 0
+	unquantized: int = 1
 	legato: int = 50
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
@@ -1578,7 +1673,7 @@ class class_MMidiPart:
 	idnum: int = 0
 	name: str = ''
 	domain: seq_domain = field(default_factory=seq_domain)
-	events: list = field(default_factory=list)
+	events: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
@@ -1626,6 +1721,10 @@ class class_MTransposeTrackEvent:
 		if 'Additional Attributes' in obj_data: self.additional_attributes = obj_data['Additional Attributes']
 		if 'Track Device' in obj_data: self.track_device = obj_data['Track Device']
 		if 'bound' in obj_data: self.bound = obj_data['bound']
+	def spread_counter(self, counter_obj):
+		self.idnum = counter_obj.get()
+		self.node.idnum = counter_obj.get()
+		self.track_device.idnum = counter_obj.get()
 	def make_xml(self, xmlobj):
 		makeval__int(xmlobj, 'Flags', self.flags)
 		makeval__float(xmlobj, 'Start', self.start)
@@ -1639,12 +1738,12 @@ classes['MTransposeTrackEvent'] = class_MTransposeTrackEvent
 @dataclass
 class class_FilterDefaults:
 	idnum: int = 0
-	categories: list = field(default_factory=list)
+	categories: sequel_list_obj = field(default_factory=sequel_list_obj)
 	flags: int = 0
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
-		if 'categories' in obj_data: self.categories = obj_data['categories']
+		if 'categories' in obj_data: self.categories.setvals(obj_data['categories'])
 		if 'Flags' in obj_data: self.flags = obj_data['Flags']
 	def make_xml(self, xmlobj):
 		makeval__list(xmlobj, 'categories', self.categories)
@@ -1679,9 +1778,9 @@ class class_MInstrumentTrack:
 	input_port_name: str = ''
 	solo_flags: int = 0
 	drummapname: str = ''
-	bank: int = -0
-	patch: int = -0
-	presetindex: int = 0
+	bank: int = -1
+	patch: int = -1
+	presetindex: int = -1
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
@@ -1734,6 +1833,11 @@ class class_MInstrumentTrackEvent:
 		if 'Track Device' in obj_data: self.track_device = obj_data['Track Device']
 		if 'Height' in obj_data: self.height = obj_data['Height']
 		if 'Automation' in obj_data: self.automation = obj_data['Automation']
+	def spread_counter(self, counter_obj):
+		self.idnum = counter_obj.get()
+		self.node.idnum = counter_obj.get()
+		self.track_device.idnum = counter_obj.get()
+		self.automation.idnum = counter_obj.get()
 	def make_xml(self, xmlobj):
 		makeval__float(xmlobj, 'Start', self.start)
 		makeval__float(xmlobj, 'Length', self.length)
@@ -1792,6 +1896,12 @@ class class_MAudioTrackEvent:
 		if 'Height' in obj_data: self.height = obj_data['Height']
 		if 'Automation' in obj_data: self.automation = obj_data['Automation']
 		if 'Autofade Settings' in obj_data: self.autofade_settings = obj_data['Autofade Settings']
+	def spread_counter(self, counter_obj):
+		self.idnum = counter_obj.get()
+		self.node.idnum = counter_obj.get()
+		self.track_device.idnum = counter_obj.get()
+		self.automation.idnum = counter_obj.get()
+		self.autofade_settings.idnum = counter_obj.get()
 	def make_xml(self, xmlobj):
 		if self.flags: makeval__int(xmlobj, 'Flags', self.flags)
 		makeval__float(xmlobj, 'Start', self.start)
@@ -1813,7 +1923,7 @@ class class_MPlayRangeTrackEvent:
 	node: class_MListNode = field(default_factory=class_MListNode)
 	additional_attributes: dict = field(default_factory=dict)
 	track_device: class_MTrack = field(default_factory=class_MTrack)
-	po_listbase: list = field(default_factory=list)
+	po_listbase: sequel_list_obj = field(default_factory=sequel_list_obj)
 	po_activelist_index: int = 0
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
@@ -1824,8 +1934,12 @@ class class_MPlayRangeTrackEvent:
 		if 'Node' in obj_data: self.node = obj_data['Node']
 		if 'Additional Attributes' in obj_data: self.additional_attributes = obj_data['Additional Attributes']
 		if 'Track Device' in obj_data: self.track_device = obj_data['Track Device']
-		if 'PO ListBase' in obj_data: self.po_listbase = obj_data['PO ListBase']
+		if 'PO ListBase' in obj_data: self.po_listbase.setvals(obj_data['PO ListBase'])
 		if 'PO ActiveList Index' in obj_data: self.po_activelist_index = obj_data['PO ActiveList Index']
+	def spread_counter(self, counter_obj):
+		self.idnum = counter_obj.get()
+		self.node.idnum = counter_obj.get()
+		self.track_device.idnum = counter_obj.get()
 	def make_xml(self, xmlobj):
 		makeval__int(xmlobj, 'Flags', self.flags)
 		makeval__float(xmlobj, 'Start', self.start)
@@ -1861,11 +1975,11 @@ classes['MTimeSignatureEvent'] = class_MTimeSignatureEvent
 @dataclass
 class class_MSignatureTrackEvent:
 	idnum: int = 0
-	signatureevent: list = field(default_factory=list)
+	signatureevent: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
-		if 'SignatureEvent' in obj_data: self.signatureevent = obj_data['SignatureEvent']
+		if 'SignatureEvent' in obj_data: self.signatureevent.setvals(obj_data['SignatureEvent'])
 	def make_xml(self, xmlobj):
 		makeval__list(xmlobj, 'SignatureEvent', self.signatureevent)
 classes['MSignatureTrackEvent'] = class_MSignatureTrackEvent
@@ -1888,14 +2002,14 @@ classes['MTempoEvent'] = class_MTempoEvent
 @dataclass
 class class_MTempoTrackEvent:
 	idnum: int = 0
-	tempoevent: list = field(default_factory=list)
+	tempoevent: sequel_list_obj = field(default_factory=sequel_list_obj)
 	rehearsaltempo: float = 120
 	rehearsalmode: int = 1
 	additional_attributes: dict = field(default_factory=dict)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
-		if 'TempoEvent' in obj_data: self.tempoevent = obj_data['TempoEvent']
+		if 'TempoEvent' in obj_data: self.tempoevent.setvals(obj_data['TempoEvent'])
 		if 'RehearsalTempo' in obj_data: self.rehearsaltempo = obj_data['RehearsalTempo']
 		if 'RehearsalMode' in obj_data: self.rehearsalmode = obj_data['RehearsalMode']
 		if 'Additional Attributes' in obj_data: self.additional_attributes = obj_data['Additional Attributes']
@@ -1910,25 +2024,30 @@ classes['MTempoTrackEvent'] = class_MTempoTrackEvent
 class class_MTrackList:
 	idnum: int = 0
 	domain: seq_domain = field(default_factory=seq_domain)
-	tracks: list = field(default_factory=list)
+	tracks: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
 		if 'Domain' in obj_data: self.domain.from_dict(obj_data['Domain'])
-		if 'Tracks' in obj_data: self.tracks = obj_data['Tracks']
+		if 'Tracks' in obj_data: self.tracks.setvals(obj_data['Tracks'])
+	def __iter__(self): return self.tracks.__iter__()
 	def make_xml(self, xmlobj):
 		makeval__dict(xmlobj, 'Domain', self.domain.to_dict())
 		makeval__list(xmlobj, 'Tracks', self.tracks)
+	def add_track(self, classname):
+		o = classes[classname]()
+		self.tracks.append(o)
+		return o
 classes['MTrackList'] = class_MTrackList
 
 @dataclass
 class class_PControllerLaneSetup:
 	idnum: int = 0
-	laneinfo: list = field(default_factory=list)
+	laneinfo: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
-		if 'LaneInfo' in obj_data: self.laneinfo = obj_data['LaneInfo']
+		if 'LaneInfo' in obj_data: self.laneinfo.setvals(obj_data['LaneInfo'])
 	def make_xml(self, xmlobj):
 		makeval__list(xmlobj, 'LaneInfo', self.laneinfo)
 classes['PControllerLaneSetup'] = class_PControllerLaneSetup
@@ -1936,11 +2055,11 @@ classes['PControllerLaneSetup'] = class_PControllerLaneSetup
 @dataclass
 class class_PDrumMapPool:
 	idnum: int = 0
-	drum_map: list = field(default_factory=list)
+	drum_map: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
-		if 'Drum Map' in obj_data: self.drum_map = obj_data['Drum Map']
+		if 'Drum Map' in obj_data: self.drum_map.setvals(obj_data['Drum Map'])
 	def make_xml(self, xmlobj):
 		makeval__list(xmlobj, 'Drum Map', self.drum_map)
 classes['PDrumMapPool'] = class_PDrumMapPool
@@ -1951,7 +2070,7 @@ class class_PDrumMap:
 	name: str = ''
 	quantize: list = field(default_factory=list)
 	map: list = field(default_factory=list)
-	order: list = field(default_factory=list)
+	order: sequel_list_int = field(default_factory=sequel_list_int)
 	outputdevices: list = field(default_factory=list)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
@@ -1959,7 +2078,7 @@ class class_PDrumMap:
 		if 'Name' in obj_data: self.name = obj_data['Name']
 		if 'Quantize' in obj_data: self.quantize = obj_data['Quantize']
 		if 'Map' in obj_data: self.map = obj_data['Map']
-		if 'Order' in obj_data: self.order = obj_data['Order']
+		if 'Order' in obj_data: self.order.setvals(obj_data['Order'])
 		if 'OutputDevices' in obj_data: self.outputdevices = obj_data['OutputDevices']
 	def make_xml(self, xmlobj):
 		makeval__string(xmlobj, 'Name', self.name, 1)
@@ -1972,11 +2091,11 @@ classes['PDrumMap'] = class_PDrumMap
 @dataclass
 class class_PInsVeloPreset:
 	idnum: int = 0
-	velocities: list = field(default_factory=list)
+	velocities: sequel_list_int = field(default_factory=sequel_list_int)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
-		if 'Velocities' in obj_data: self.velocities = obj_data['Velocities']
+		if 'Velocities' in obj_data: self.velocities.setvals(obj_data['Velocities'])
 	def make_xml(self, xmlobj):
 		makeval__list(xmlobj, 'Velocities', self.velocities)
 classes['PInsVeloPreset'] = class_PInsVeloPreset
@@ -1988,11 +2107,11 @@ class class_PPatternBank:
 	activepattern: int = 2
 	displayedpattern: int = 0
 	lanestyle: int = 0
-	lanetopitchmap: list = field(default_factory=list)
+	lanetopitchmap: sequel_list_int = field(default_factory=sequel_list_int)
 	mutestates: dict = field(default_factory=dict)
 	solostates: dict = field(default_factory=dict)
-	usedpatterns: list = field(default_factory=list)
-	patterns: list = field(default_factory=list)
+	usedpatterns: sequel_list_int = field(default_factory=sequel_list_int)
+	patterns: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
@@ -2000,11 +2119,11 @@ class class_PPatternBank:
 		if 'ActivePattern' in obj_data: self.activepattern = obj_data['ActivePattern']
 		if 'DisplayedPattern' in obj_data: self.displayedpattern = obj_data['DisplayedPattern']
 		if 'LaneStyle' in obj_data: self.lanestyle = obj_data['LaneStyle']
-		if 'LaneToPitchMap' in obj_data: self.lanetopitchmap = obj_data['LaneToPitchMap']
+		if 'LaneToPitchMap' in obj_data: self.lanetopitchmap.setvals(obj_data['LaneToPitchMap'])
 		if 'MuteStates' in obj_data: self.mutestates = obj_data['MuteStates']
 		if 'SoloStates' in obj_data: self.solostates = obj_data['SoloStates']
-		if 'UsedPatterns' in obj_data: self.usedpatterns = obj_data['UsedPatterns']
-		if 'Patterns' in obj_data: self.patterns = obj_data['Patterns']
+		if 'UsedPatterns' in obj_data: self.usedpatterns.setvals(obj_data['UsedPatterns'])
+		if 'Patterns' in obj_data: self.patterns.list(obj_data['Patterns'])
 	def make_xml(self, xmlobj):
 		makeval__string(xmlobj, 'Name', self.name, 1)
 		makeval__int(xmlobj, 'ActivePattern', self.activepattern)
@@ -2034,8 +2153,8 @@ class class_PPattern:
 	flamvel3b: float = 0
 	flamvel3c: float = 0
 	nrlanes: int = 128
-	laneconfig: list = field(default_factory=list)
-	stepdata: list = field(default_factory=list)
+	laneconfig: sequel_list_obj = field(default_factory=sequel_list_obj)
+	stepdata: sequel_list_obj = field(default_factory=sequel_list_obj)
 	activesteps: int = 3
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
@@ -2054,8 +2173,8 @@ class class_PPattern:
 		if 'FlamVel3b' in obj_data: self.flamvel3b = obj_data['FlamVel3b']
 		if 'FlamVel3c' in obj_data: self.flamvel3c = obj_data['FlamVel3c']
 		if 'NrLanes' in obj_data: self.nrlanes = obj_data['NrLanes']
-		if 'LaneConfig' in obj_data: self.laneconfig = obj_data['LaneConfig']
-		if 'StepData' in obj_data: self.stepdata = obj_data['StepData']
+		if 'LaneConfig' in obj_data: self.laneconfig.setvals(obj_data['LaneConfig'])
+		if 'StepData' in obj_data: self.stepdata.setvals(obj_data['StepData'])
 		if 'ActiveSteps' in obj_data: self.activesteps = obj_data['ActiveSteps']
 	def make_xml(self, xmlobj):
 		makeval__int(xmlobj, 'NrSteps', self.nrsteps)
@@ -2084,8 +2203,8 @@ class class_PStepDesigner2:
 	index: int = 0
 	isinsert: int = 0
 	playinstop: int = 0
-	inputs: list = field(default_factory=list)
-	outputs: list = field(default_factory=list)
+	inputs: sequel_list_obj = field(default_factory=sequel_list_obj)
+	outputs: sequel_list_obj = field(default_factory=sequel_list_obj)
 	patternbank: obj_pointer = field(default_factory=obj_pointer)
 	triggermode: int = 1
 	loopsendlessly: int = 0
@@ -2097,8 +2216,8 @@ class class_PStepDesigner2:
 		if 'Index' in obj_data: self.index = obj_data['Index']
 		if 'IsInsert' in obj_data: self.isinsert = obj_data['IsInsert']
 		if 'PlayInStop' in obj_data: self.playinstop = obj_data['PlayInStop']
-		if 'Inputs' in obj_data: self.inputs = obj_data['Inputs']
-		if 'Outputs' in obj_data: self.outputs = obj_data['Outputs']
+		if 'Inputs' in obj_data: self.inputs.setvals(obj_data['Inputs'])
+		if 'Outputs' in obj_data: self.outputs.setvals(obj_data['Outputs'])
 		if 'PatternBank' in obj_data: self.patternbank = obj_data['PatternBank']
 		if 'TriggerMode' in obj_data: self.triggermode = obj_data['TriggerMode']
 		if 'LoopsEndlessly' in obj_data: self.loopsendlessly = obj_data['LoopsEndlessly']
@@ -2153,11 +2272,11 @@ classes['LastAppliedFileInfo'] = class_LastAppliedFileInfo
 class class_PMidiEffectBase:
 	idnum: int = 0
 	name: str = ''
-	index: int = 2
-	isinsert: int = 0
+	index: int = 0
+	isinsert: int = 1
 	playinstop: int = 0
-	inputs: list = field(default_factory=list)
-	outputs: list = field(default_factory=list)
+	inputs: sequel_list_obj = field(default_factory=sequel_list_obj)
+	outputs: sequel_list_obj = field(default_factory=sequel_list_obj)
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
@@ -2165,8 +2284,8 @@ class class_PMidiEffectBase:
 		if 'Index' in obj_data: self.index = obj_data['Index']
 		if 'IsInsert' in obj_data: self.isinsert = obj_data['IsInsert']
 		if 'PlayInStop' in obj_data: self.playinstop = obj_data['PlayInStop']
-		if 'Inputs' in obj_data: self.inputs = obj_data['Inputs']
-		if 'Outputs' in obj_data: self.outputs = obj_data['Outputs']
+		if 'Inputs' in obj_data: self.inputs.setvals(obj_data['Inputs'])
+		if 'Outputs' in obj_data: self.outputs.setvals(obj_data['Outputs'])
 	def make_xml(self, xmlobj):
 		makeval__string(xmlobj, 'Name', self.name, 1)
 		makeval__int(xmlobj, 'Index', self.index)
@@ -2180,7 +2299,7 @@ classes['PMidiEffectBase'] = class_PMidiEffectBase
 class class_Root_of_Engine:
 	idnum: int = 0
 	start: float = 0.0
-	length: float = 0
+	length: float = 1800
 	node: class_MTrackList = field(default_factory=class_MTrackList)
 	additional_attributes: dict = field(default_factory=dict)
 	working_directory: class_FNPath = field(default_factory=class_FNPath)
@@ -2200,6 +2319,12 @@ class class_Root_of_Engine:
 		if 'Tempo Track' in obj_data: self.tempo_track = obj_data['Tempo Track']
 		if 'Signature Track' in obj_data: self.signature_track = obj_data['Signature Track']
 		if 'Auto Fade Settings' in obj_data: self.auto_fade_settings = obj_data['Auto Fade Settings']
+	def spread_counter(self, counter_obj):
+		self.idnum = counter_obj.get()
+		self.node.idnum = counter_obj.get()
+		self.working_directory.idnum = counter_obj.get()
+		self.pool.idnum = counter_obj.get()
+		self.auto_fade_settings.idnum = counter_obj.get()
 	def make_xml(self, xmlobj):
 		makeval__float(xmlobj, 'Start', self.start)
 		makeval__float(xmlobj, 'Length', self.length)
@@ -2245,12 +2370,12 @@ class class_MiniSequence:
 	lengthppq: int = 1920
 	quantize: int = 120
 	numberofnotes: int = 0
-	events: list = field(default_factory=list)
+	events: sequel_list_obj = field(default_factory=sequel_list_obj)
 	usesExlusivePitch: int = 0
 	usesFixedPitch: int = 0
-	pitches: list = field(default_factory=list)
-	controllerNumbers: list = field(default_factory=list)
-	controllerEvents: list = field(default_factory=list)
+	pitches: sequel_list_int = field(default_factory=sequel_list_int)
+	controllerNumbers: sequel_list_int = field(default_factory=sequel_list_int)
+	controllerEvents: sequel_list_int = field(default_factory=sequel_list_int)
 
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
@@ -2281,20 +2406,20 @@ class class_Phrasor:
 	version: int = 2
 	idnum: int = 0
 	ARP_SX_Version: int = 5
-	Name: str = 'Arpache SX'
+	name: str = 'Arpache SX'
 	Index: int = 2
 	IsInsert: int = 1
 	PlayInStop: int = 1
-	Inputs: list = field(default_factory=list)
-	Outputs: list = field(default_factory=list)
+	inputs: sequel_list_obj = field(default_factory=sequel_list_obj)
+	outputs: sequel_list_obj = field(default_factory=sequel_list_obj)
 	Phrase: int = 0
 	phraseName: dict = field(default_factory=dict)
 	phraseInfo1: dict = field(default_factory=dict)
 	phraseInfo2: dict = field(default_factory=dict)
 	origPhraseLength: int = 1
-	phraseKey: int = 0
+	phraseKey: int = 1254933429
 	playMode: int = 5
-	sortMode: int = 1
+	sortMode: int = 0
 	arpeggiatorMode: int = 2
 	sortByPitch: int = 1
 	hold: int = 0
@@ -2309,7 +2434,7 @@ class class_Phrasor:
 	velocityShift: int = 0
 	pitchOscType: int = 0
 	density: int = 100
-	positionOscType: int = 8
+	positionOscType: int = 1
 	quantize: int = 120
 	velocityOscFrequency: int = 0
 	pitchOscFrequency: int = 0
@@ -2320,7 +2445,7 @@ class class_Phrasor:
 	pitchOscTypeIndex: int = 0
 	positionOscTypeIndex: int = 0
 	playModeIndex: int = 5
-	sortModeIndex: int = 1
+	sortModeIndex: int = 4
 	quantizeIndexIPS: int = 120
 	mod1Target: int = 0
 	mod2Target: int = 0
@@ -2334,22 +2459,24 @@ class class_Phrasor:
 	transposeMode: int = 0
 	PresetIndex: int = -1
 	oscTypeIndex: int = 0
-	quantizeIndex: int = 1
+	quantizeIndex: int = 120
 	frequency: int = 1
 	amplitude: int = 1
-	parameterTag: int = 1
+	parameterTag: int = 0
+	octaveRange: int = 2
+	transposeStep: int = 12
 	def from_seqobj(self, seqobj):
 		self.idnum = seqobj.obj_id
 		obj_data = seqobj.obj_data
 		if 'ARP SX Version' in obj_data:
 			self.ARP_SX_Version = obj_data['ARP SX Version']
 			self.version = 3
-		if 'Name' in obj_data: self.Name = obj_data['Name']
+		if 'Name' in obj_data: self.name = obj_data['Name']
 		if 'Index' in obj_data: self.Index = obj_data['Index']
 		if 'IsInsert' in obj_data: self.IsInsert = obj_data['IsInsert']
 		if 'PlayInStop' in obj_data: self.PlayInStop = obj_data['PlayInStop']
-		if 'Inputs' in obj_data: self.Inputs = obj_data['Inputs']
-		if 'Outputs' in obj_data: self.Outputs = obj_data['Outputs']
+		if 'Inputs' in obj_data: self.inputs.setvals(obj_data['Inputs'])
+		if 'Outputs' in obj_data: self.outputs.setvals(obj_data['Outputs'])
 		if 'Phrase' in obj_data: self.Phrase = obj_data['Phrase'].idnum
 		if 'phraseName' in obj_data: self.phraseName = obj_data['phraseName']
 		if 'phraseInfo1' in obj_data: self.phraseInfo1 = obj_data['phraseInfo1']
@@ -2414,12 +2541,12 @@ class class_Phrasor:
 			self.version = 2
 	def make_xml(self, xmlobj):
 		if self.version == 3: makeval__int(xmlobj, 'ARP SX Version', self.ARP_SX_Version)
-		makeval__string(xmlobj, 'Name', self.Name, 1)
+		makeval__string(xmlobj, 'Name', self.name, 1)
 		makeval__int(xmlobj, 'Index', self.Index)
 		makeval__int(xmlobj, 'IsInsert', self.IsInsert)
 		makeval__int(xmlobj, 'PlayInStop', self.PlayInStop)
-		makeval__list(xmlobj, 'Inputs', self.Inputs)
-		makeval__list(xmlobj, 'Outputs', self.Outputs)
+		makeval__list(xmlobj, 'Inputs', self.inputs)
+		makeval__list(xmlobj, 'Outputs', self.outputs)
 		makeval__pointer(xmlobj, 'Phrase', self.Phrase)
 		makeval__dict(xmlobj, 'phraseName', self.phraseName)
 		makeval__dict(xmlobj, 'phraseInfo1', self.phraseInfo1)
@@ -2486,15 +2613,15 @@ class class_ChordProcessor:
 	index: int = 1
 	isinsert: int = 1
 	playinstop: int = 0
-	inputs: list = field(default_factory=list)
-	outputs: list = field(default_factory=list)
+	inputs: sequel_list_obj = field(default_factory=sequel_list_obj)
+	outputs: sequel_list_obj = field(default_factory=sequel_list_obj)
 	chordmask: list = field(default_factory=list)
 	channel: int = 0
-	chordmode: int = 1
-	switchmode: int = 0
-	thrumode: int = 0
+	chordmode: int = 2
+	switchmode: int = 1
+	thrumode: int = 1
 	thrubutton: int = 0
-	variationlimiter: int = 0
+	variationlimiter: int = 8
 	presetname: dict = field(default_factory=dict)
 	presetindex: int = -1
 
@@ -2505,8 +2632,8 @@ class class_ChordProcessor:
 		if 'Index' in obj_data: self.index = obj_data['Index']
 		if 'IsInsert' in obj_data: self.isinsert = obj_data['IsInsert']
 		if 'PlayInStop' in obj_data: self.playinstop = obj_data['PlayInStop']
-		if 'Inputs' in obj_data: self.inputs = obj_data['Inputs']
-		if 'Outputs' in obj_data: self.outputs = obj_data['Outputs']
+		if 'Inputs' in obj_data: self.inputs.setvals(obj_data['Inputs'])
+		if 'Outputs' in obj_data: self.outputs.setvals(obj_data['Outputs'])
 		if 'ChordMask' in obj_data: self.chordmask = obj_data['ChordMask']
 		if 'Channel' in obj_data: self.channel = obj_data['Channel']
 		if 'PlayStyle' in obj_data: 
@@ -2722,21 +2849,20 @@ classes['StMedia::ValueMatrixFilter'] = class_StMedia__ValueMatrixFilter
 classesmake = dict([(x[1], x[0]) for x in classes.items()])
 
 def indent(elem, level=0):
-	# Add indentation
-	indent_size = "    "
+	indent_size = "   "
 	i = "\n" + level * indent_size
 	if elem.tag=='bin': 
 		if elem.text is not None:
-			elem.text = elem.text.replace('\n', "\n"+(level+1)*indent_size)
+			elem.text = elem.text.replace('\n', "\n"+(level+1)*"\t")
 			elem.text += i
 		else:
 			elem.text += i
 	elif elem.tag=='obj': 
-		if elem.text is not None:
-			elem.text += i
+		if elem.text is not None: elem.text += i
 	elif elem.tag=='member': 
-		if elem.text is not None:
-			elem.text += i
+		if elem.text is not None: elem.text += i
+	elif elem.tag=='list': 
+		if elem.text is None: elem.text = i
 	if len(elem):
 		if not elem.text or not elem.text.strip(): elem.text = i + indent_size
 		if not elem.tail or not elem.tail.strip(): elem.tail = i
@@ -2817,15 +2943,14 @@ class sequel_project:
 		#ET.indent(outfile)
 		outfile.write(out_file, xml_declaration = True, encoding="utf-8")
 
-	def initalize(self):
-		self.def_root_objects['Version'] = -1
-		self.def_root_objects['Project'] = -1
-		self.def_root_objects['Devices'] = -1
-		self.def_root_objects['GuiState'] = -1
-
 	def fsck_file(self, filename):
 		self.load_from_file(filename)
+		copydebug_allp = debug_allp.copy()
 		for x in debug_allp:
 			if x not in debug_alld:
 				print('Pointer Target not found', x)
 				exit()
+		#for x in debug_allp:
+		#	if x in debug_alld: 
+		#		del copydebug_allp[x]
+		#print(list(copydebug_allp))
