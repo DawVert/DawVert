@@ -59,7 +59,9 @@ class output_oldcubase(plugins.base):
 		sequel_list_dict = proj_sequel.sequel_list_dict
 		sequel_list_obj = proj_sequel.sequel_list_obj
 
-		convproj_obj.change_timings(480)
+		timebase = 480
+
+		convproj_obj.change_timings(timebase)
 		
 		project_dur = 6000000
 
@@ -91,10 +93,14 @@ class output_oldcubase(plugins.base):
 
 		project_obj.objects[seq_GuiState.idnum] = seq_GuiState
 
+		bpm = int(convproj_obj.params.get('bpm', 120).value)
+
 		seq_MTempoTrackEvent = proj_sequel.class_MTempoTrackEvent()
 		id_trk_bpm = seq_MTempoTrackEvent.idnum = counter_id.get()
 		project_obj.objects[id_trk_bpm] = seq_MTempoTrackEvent
-		add_list_genid(seq_MTempoTrackEvent.tempoevent, 'MTempoEvent', counter_id)
+		MTempoEvent = add_list_genid(seq_MTempoTrackEvent.tempoevent, 'MTempoEvent', counter_id)
+		seq_MTempoTrackEvent.rehearsaltempo = bpm
+		MTempoEvent.bpm = bpm
 
 		seq_MSignatureTrackEvent = proj_sequel.class_MSignatureTrackEvent()
 		id_trk_meas = seq_MSignatureTrackEvent.idnum = counter_id.get()
@@ -321,11 +327,6 @@ class output_oldcubase(plugins.base):
 		portdescriptors.append({'ID': to_norm_string("O|DawVert Output|Out 2"), 'Type': to_norm_string("audio"), 'Subtype': to_norm_string("system"), 'Role': to_norm_string("right")})
 
 		
-		
-
-
-		# ================================================== OTHER ATTRIB ==================================================
-
 		# ================================================== ROOT ==================================================
 		seq_engineroot = seq_Project.data_root
 		seq_engineroot.length = project_dur
@@ -347,10 +348,10 @@ class output_oldcubase(plugins.base):
 		media_root.flags = 608
 		media_root.name = to_wide_string("Media")
 
-		subtree = add_list_genid(media_root.subentries, 'GTreeEntry', counter_id)
-		subtree.flags = 578
-		subtree.name = to_wide_string("Audio")
-		subtree.v_id = 1
+		subtree_audio = add_list_genid(media_root.subentries, 'GTreeEntry', counter_id)
+		subtree_audio.flags = 578
+		subtree_audio.name = to_wide_string("Audio")
+		subtree_audio.v_id = 1
 
 		subtree = add_list_genid(media_root.subentries, 'GTreeEntry', counter_id)
 		subtree.flags = 578
@@ -418,6 +419,8 @@ class output_oldcubase(plugins.base):
 		transpose_track_node.domain.set_sync(id_trk_bpm, id_trk_meas)
 		transpose_track.additional_attributes = {"TLID": 2, "FixH": 32}
 		transpose_track.track_device.connection_type = 2
+
+		used_paths = {}
 
 		for trackid, track_obj in convproj_obj.track__iter():
 			if track_obj.type == 'instrument' and not DEBUG_DISABLE_INST_TRACK:
@@ -748,9 +751,9 @@ class output_oldcubase(plugins.base):
 
 				mautotrack = proj_sequel.class_MAutomationTrack()
 				mautotrack.idnum = audio_automation.track_device.idnum
-				instautodev.connection_type = 2
-				instautodev.read = 1
-				instautodev.write = 0
+				#instautodev.connection_type = 2
+				#instautodev.read = 1
+				#instautodev.write = 0
 				project_obj.objects[mautotrack.idnum] = mautotrack
 
 				autofade_settings = audio_track.autofade_settings
@@ -759,37 +762,103 @@ class output_oldcubase(plugins.base):
 
 				track_obj.placements.pl_audio.sort()
 				for n, audiopl_obj in enumerate(track_obj.placements.pl_audio):
-					audiopart = add_list_genid(audio_track_node.events, 'MAudioEvent', counter_id)
-					time_obj = audiopl_obj.time
-					audiopart.start, audiopart.length = time_obj.get_posdur()
-					audiopart.offset = time_obj.get_offset()
-					audiopart.priority = n+2
-
 					sp_obj = audiopl_obj.sample
-					if sp_obj.vol != 1: audiopart.volume = sp_obj.vol
-					if audiopl_obj.muted: audiopart.flags = 2
-
-					seq_PAudioClip = proj_sequel.class_PAudioClip()
-					audiopart.clip_idnum = seq_PAudioClip.idnum = counter_id.get()
-					project_obj.objects[seq_PAudioClip.idnum] = seq_PAudioClip
-					seq_PAudioClip.domain.set_sync(id_trk_bpm, id_trk_meas)
-					if audiopl_obj.visual.name: seq_PAudioClip.name = to_wide_string(audiopl_obj.visual.name)
-					if sp_obj.pitch:
-						audiopart.additional_attributes['PitF'] = xtramath.pitch_to_speed(sp_obj.pitch)
-
-					audiopath = seq_PAudioClip.path
-					audiopath.idnum = counter_id.get()
-
 					reffound, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
 					if reffound:
+						samp_dur_samples = sampleref_obj.get_dur_samples()
+						samp_dur_hz = sampleref_obj.get_hz()
+						samp_dur_sec = sampleref_obj.get_dur_sec()
+
+						stretch_obj = sp_obj.stretch
+						timing_obj = stretch_obj.timing
+
+						audiopart = add_list_genid(audio_track_node.events, 'MAudioEvent', counter_id)
+						time_obj = audiopl_obj.time
+						audiopart.priority = n+2
+
+						if sp_obj.vol != 1: audiopart.volume = sp_obj.vol
+						if audiopl_obj.muted: audiopart.flags = 2
+	
+						seq_PAudioClip = proj_sequel.class_PAudioClip()
+						audiopart.clip_idnum = seq_PAudioClip.idnum = counter_id.get()
+						project_obj.objects[seq_PAudioClip.idnum] = seq_PAudioClip
+						if audiopl_obj.visual.name: seq_PAudioClip.name = to_wide_string(audiopl_obj.visual.name)
+						if sp_obj.pitch:
+							audiopart.additional_attributes['PitF'] = xtramath.pitch_to_speed(sp_obj.pitch)
+	
 						fileref_obj = sampleref_obj.fileref
-						audiopath.name = str(fileref_obj.file)
-						audiopath.path = '\\'.join(fileref_obj.folder.getpath('win'))+'\\'
 
+						#print(fileref_obj.get_path(None, 0))
 
+						audiopart.start, audiopart.length = time_obj.get_posdur()
+						audiopart.offset = time_obj.get_offset()
+						seq_PAudioClip.domain.set_sync(id_trk_bpm, id_trk_meas)
 
+						subtree_part = add_list_genid(subtree_audio.subentries, 'GTreeEntry', counter_id)
+						subtree_part.dataobject = seq_PAudioClip.idnum
+						subtree_part.name = to_wide_string(str(fileref_obj.file))
+						subtree_part.flags = 611
+						subtree_part.v_id = len(used_paths)
 
+						if fileref_obj not in used_paths:
+							audiopath = seq_PAudioClip.path
+							audiopath.idnum = counter_id.get()
+							audiopath.name = str(fileref_obj.file)
+							audiopath.path = '\\'.join(fileref_obj.folder.getpath('win'))+'\\'
+							used_paths[fileref_obj] = audiopath.idnum
+						else:
+							seq_PAudioClip.path = proj_sequel.obj_pointer()
+							seq_PAudioClip.path.idnum = used_paths[fileref_obj]
 
+						clipattrib = seq_PAudioClip.additional_attributes
+						clipattrib['Grain Size'] = 1740
+
+						#GridDef = clipattrib['GridDef'] = proj_sequel.class_PGridDefinition()
+						#GridDef.idnum = counter_id.get()
+
+						OrigPath = clipattrib['OrigPath'] = proj_sequel.class_FNPath()
+						OrigPath.idnum = counter_id.get()
+						OrigPath.name = audiopath.name
+						OrigPath.path = audiopath.path
+
+						clipattrib['Stretch Preset'] = 4
+						clipattrib['Warp Overlap'] = 0.14
+						clipattrib['Warp Variance'] = 1.0
+						AudioWarpScale = clipattrib['Warpscale'] = proj_sequel.class_PAudioWarpScale()
+						add_list_genid(AudioWarpScale.warptab, 'PWarpTab', counter_id)
+						warptab = add_list_genid(AudioWarpScale.warptab, 'PWarpTab', counter_id)
+						warptab.position = samp_dur_samples
+						if timing_obj.time_type=='speed':
+							warptab.warped = samp_dur_sec*2*timebase
+						else:
+							warptab.warped = timing_obj.get__beats(sampleref_obj)*timebase
+						clipattrib['unStretch'] = 0
+
+						audiocluster = seq_PAudioClip.cluster
+						audiocluster.idnum = counter_id.get()
+
+						audiofile = add_list_genid(audiocluster.substreams, 'AudioFile', counter_id)
+						audiofile.fpath = proj_sequel.obj_pointer()
+						audiofile.fpath.idnum = audiopath.idnum
+
+						audiofile.framecount = samp_dur_samples
+						audiofile.sample_size = 16
+						audiofile.frame_size = 4
+						audiofile.channels = sampleref_obj.get_channels()
+						audiofile.rate = samp_dur_hz
+						audiofile.format = 65536
+						audiofile.byteorder = 0
+						audiofile.dataoffset = 44
+						if audiofile.channels>1:
+							audiofile.speakerarr = {'Type': sequel_list_int([x+1 for x in range(audiofile.channels)])}
+
+						segment = {}
+						segment["Stream"] = proj_sequel.obj_pointer()
+						segment["Stream"].idnum = audiofile.idnum
+						segment["Offset"] = 0
+						segment["Length"] = samp_dur_samples
+						segment["Start"] = 0
+						audiocluster.segments.setvals([segment])
 
 		for num, colordata in enumerate(total_colors):
 			colordata = decode_color(colordata)
