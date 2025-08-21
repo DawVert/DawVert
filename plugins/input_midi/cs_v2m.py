@@ -58,7 +58,7 @@ class input_v2m(plugins.base):
 				if not note[2]&128:
 					events_obj.add_note_on(cur_pos, n, cur_note, note[2]&127)
 				else:
-					events_obj.add_note_off(cur_pos, n, cur_note, note[2]&127)
+					events_obj.add_note_off_vel(cur_pos, n, cur_note, note[2]&127)
 
 		convproj_obj.do_actions.append('do_addloop')
 		convproj_obj.do_actions.append('do_singlenotelistcut')

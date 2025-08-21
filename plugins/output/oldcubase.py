@@ -581,7 +581,7 @@ class output_oldcubase(plugins.base):
 							midinote.data2 = int(x['val2'])
 							midinote.flags = 512
 							midinote.length = int(x['val3'])
-							midinote.data3 = 64
+							midinote.data3 = int(x['off_vel'])
 						elif etype == 'CONTROL':
 							midictrl = add_list_genid(seq_MMidiPart.events, 'MMidiController', counter_id)
 							midictrl.start = x['pos']

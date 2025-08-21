@@ -599,7 +599,7 @@ class input_reaper(plugins.base):
 										midievents_obj.add_note_on(curpos, midich, int(note[3],16), int(note[4],16))
 	
 									elif midicmd == 8:
-										midievents_obj.add_note_off(curpos, midich, int(note[3],16), 0)
+										midievents_obj.add_note_off_vel(curpos, midich, int(note[3],16), int(note[4],16))
 
 									elif midicmd == 10:
 										midievents_obj.add_note_pressure(curpos, midich, int(note[3],16), int(note[4],16))

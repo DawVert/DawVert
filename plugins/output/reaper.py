@@ -601,7 +601,7 @@ class output_reaper(plugins.base):
 						rpp_source_obj.notes.append([True, posdir, f'{(144+int(x[2])):x}', f'{(int(x[3])):x}', f'{(int(x[4])):x}'])
 						ppos = int(x[0])
 					elif etype == 'NOTE_OFF':
-						rpp_source_obj.notes.append([True,	posdir, f'{(128+int(x[2])):x}', f'{(int(x[3])):x}', '00'])
+						rpp_source_obj.notes.append([True,	posdir, f'{(128+int(x[2])):x}', f'{(int(x[3])):x}', f'{(int(x[4])):x}'])
 						ppos = int(x[0])
 					elif etype == 'NOTE_PRS':
 						rpp_source_obj.notes.append([True,	posdir, f'{(160+int(x[2])):x}', f'{(int(x[3])):x}', f'{(int(x[4])):x}'])

@@ -851,9 +851,9 @@ def add_track(convproj_obj, project_obj, trackid, track_obj):
 						MidiNoteEvent_obj.NoteId = t_id
 						MidiNoteEvent_obj.Time = t_pos
 						MidiNoteEvent_obj.Duration = t_dur
-						MidiNoteEvent_obj.Velocity = t_vol*100
+						MidiNoteEvent_obj.Velocity = t_vol*127
 						if t_extra:
-							if 'off_vol' in t_extra: MidiNoteEvent_obj.OffVelocity = t_extra['off_vol']*100
+							if 'off_vol' in t_extra: MidiNoteEvent_obj.OffVelocity = t_extra['off_vol']*127
 							if 'probability' in t_extra: MidiNoteEvent_obj.Probability = t_extra['probability']
 							if 'disabled' in t_extra: MidiNoteEvent_obj.IsEnabled = not bool(t_extra['disabled'])
 							if 'velocity_range' in t_extra: MidiNoteEvent_obj.VelocityDeviation = t_extra['velocity_range']

@@ -300,7 +300,7 @@ class input_sequel3(plugins.base):
 						for event in mmidipart.events:
 							startpos = max(0, event.start)+delaystart
 							if isinstance(event, proj_sequel.class_MMidiNote):
-								events_obj.add_note_dur(startpos, 0, event.data1, event.data2, event.length)
+								events_obj.add_note_dur_off_vel(startpos, 0, event.data1, event.data2, event.length, event.data3)
 							elif isinstance(event, proj_sequel.class_MMidiController):
 								events_obj.add_control(startpos, 0, event.data1, event.data2)
 							elif isinstance(event, proj_sequel.class_MMidiPitchBend):
