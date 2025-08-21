@@ -24,6 +24,7 @@ from functions.convproj_compat import sep_nest_audio
 from functions.convproj_compat import midi_notes
 from functions.convproj_compat import setup_tempocalc
 from functions.convproj_compat import arranger_region
+from functions.convproj_compat import notepl_pitch
 
 import json
 import math
@@ -62,6 +63,8 @@ class song_compat:
 
 		if self.currenttime == None: self.currenttime = traits_obj.time_seconds
 		if 'time_seconds' in self.finished_processes: self.currenttime = out_dawinfo.time_seconds
+
+		self.process_part('notepl_pitch', notepl_pitch,		convproj_obj, cvpj_type, traits_obj.notepl_pitch, out_dawinfo.notepl_pitch, out_type, dawvert_intent)
 
 		self.process_part('setup_tempocalc', setup_tempocalc,		convproj_obj, cvpj_type, traits_obj, out_dawinfo, out_type, dawvert_intent)
 		self.process_part('fxchange', fxchange,						convproj_obj, cvpj_type, traits_obj, out_dawinfo, out_type, dawvert_intent)

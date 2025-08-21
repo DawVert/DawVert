@@ -13,6 +13,7 @@ class rpp_source:
 		self.startpos = rvs('', float, False)
 		self.overlap = rvs('', float, False)
 		self.hasdata = rvd([0,960,'QN'], ['hasdata', 'ppq', 'ppq_l'], [bool,int,str], False)
+		self.transpose = rvs(0, int, False)
 		self.notes = []
 		self.source = None
 
@@ -26,6 +27,7 @@ class rpp_source:
 			if name == 'STARTPOS': self.startpos.read(values)
 			if name == 'OVERLAP': self.overlap.read(values)
 			if name == 'MODE': self.mode.read(values)
+			if name == 'TRANSPOSE': self.transpose.read(values)
 			if name == 'SOURCE': 
 				source_obj = rpp_source()
 				source_obj.type = values[0]
@@ -39,8 +41,8 @@ class rpp_source:
 		self.startpos.write('STARTPOS', rpp_data)
 		self.overlap.write('OVERLAP', rpp_data)
 		self.hasdata.write('HASDATA', rpp_data)
-		for note in self.notes:
-			rpp_data.children.append(['E' if note[0] else 'e']+note[1:])
+		for note in self.notes: rpp_data.children.append(['E' if note[0] else 'e']+note[1:])
+		if self.transpose.get(): self.transpose.write('TRANSPOSE', rpp_data)
 		if self.source:
 			rpp_sourcedata = robj('SOURCE',[self.source.type])
 			self.source.write(rpp_sourcedata)

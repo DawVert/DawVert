@@ -535,3 +535,7 @@ class midievents:
 
 		midiobj.tracks.append(miditrack)
 		return midiobj
+
+	def mod_transpose(self, pitch):
+		wherevals = np.nonzero(self.data.data['uflags']&FLAGS__NOTE)
+		self.data.data['value'][wherevals] += pitch if pitch>=0 else 256+pitch

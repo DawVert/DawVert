@@ -9,6 +9,7 @@ import shutil
 from objects import globalstore
 from functions import data_values
 from functions import xtramath
+import math
 
 logpreset_def = b'\x00@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n\x00\x00\x00\x01\x00\x00\x00\x00\x00\n\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
@@ -26,6 +27,15 @@ def do_color(visual_obj, total_colors, additional_attributes):
 		colorint = visual_obj.color.get_int()
 		if colorint not in total_colors: total_colors.append(colorint)
 		additional_attributes['Farb'] = total_colors.index(colorint)
+
+def calc_volume(o):
+	if o: 
+		vol = math.log2(o)/3
+		vol = pow(2, vol)
+		#print(o, vol)
+		return xtramath.clamp(vol*25856, 0, 32765)
+	else:
+		return 0
 
 class output_oldcubase(plugins.base):
 	def is_dawvert_plugin(self):
@@ -49,6 +59,7 @@ class output_oldcubase(plugins.base):
 		in_dict['placement_cut'] = True
 		in_dict['track_arranger'] = True
 		in_dict['fxtype'] = 'groupreturn'
+		in_dict['notepl_pitch'] = True
 
 	def parse(self, convproj_obj, dawvert_intent):
 		global to_wide_string
@@ -70,7 +81,7 @@ class output_oldcubase(plugins.base):
 
 		convproj_obj.change_timings(timebase)
 		
-		project_dur = 6000000
+		project_dur = 1000000
 
 		counter_id = counter.counter(5000000, '')
 		returnnum_id = counter.counter(200, '')
@@ -449,7 +460,7 @@ class output_oldcubase(plugins.base):
 			deviceattributes['Type'] = 6
 			deviceattributes['InputGain'] = {'Value': 16383.5}
 			deviceattributes['InputPhase'] = 0
-			deviceattributes['Volume'] = {'Value': float(min(32765, return_obj.params.get('vol', 1).value*25856)), 'AnchorValue': 0.0}
+			deviceattributes['Volume'] = {'Value': float(calc_volume(return_obj.params.get('vol', 1).value)), 'AnchorValue': 0.0}
 			deviceattributes['hasAudioInserts'] = 1
 			deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
 			make_blank_slots(3, deviceattributes['InsertFolder']['Slot'])
@@ -521,23 +532,20 @@ class output_oldcubase(plugins.base):
 
 				instrument_track.height = 74
 
-				track_obj.placements.pl_notes.sort()
+				track_obj.placements.pl_midi.sort()
 				for midipl_obj in track_obj.placements.pl_midi:
 					midipart = add_list_genid(instrument_track_node.events, 'MMidiPartEvent', counter_id)
 					time_obj = midipl_obj.time
 					midipart.start, midipart.length = time_obj.get_posdur()
 					midipart.offset = time_obj.get_offset()
+					midipart.transpose = int(midipl_obj.pitch)
 
 					seq_MMidiPart = proj_sequel.class_MMidiPart()
 					midipart.node_idnum = seq_MMidiPart.idnum = counter_id.get()
 					project_obj.objects[seq_MMidiPart.idnum] = seq_MMidiPart
 					seq_MMidiPart.domain.set_sync(id_trk_bpm, id_trk_meas)
 					if midipl_obj.visual.name: seq_MMidiPart.name = to_wide_string(midipl_obj.visual.name)
-					do_color(midipl_obj.visual, total_colors, seq_MMidiPart.additional_attributes)
-					if midipl_obj.visual.color: 
-						colorint = midipl_obj.visual.color.get_int()
-						if colorint not in total_colors: total_colors.append(colorint)
-						instrument_track.additional_attributes['Farb'] = total_colors.index(colorint)
+					do_color(midipl_obj.visual, total_colors, midipart.additional_attributes)
 
 					midievents_obj = midipl_obj.midievents
 					midievents_obj.sort()
@@ -548,6 +556,7 @@ class output_oldcubase(plugins.base):
 						if etype == 'NOTE_DUR':
 							midinote = add_list_genid(seq_MMidiPart.events, 'MMidiNote', counter_id)
 							midinote.start = x['pos']
+							midinote.channel = x['chan']
 							midinote.data1 = x['val1']
 							midinote.data2 = x['val2']
 							midinote.flags = 512
@@ -569,7 +578,7 @@ class output_oldcubase(plugins.base):
 				deviceattributes['Type'] = 4
 				deviceattributes['InputGain'] = {'Value': 16383.5}
 				deviceattributes['InputPhase'] = 0
-				deviceattributes['Volume'] = {'Value': float(min(32765, track_obj.params.get('vol', 1).value*25856)), 'AnchorValue': 0.0}
+				deviceattributes['Volume'] = {'Value': float(calc_volume(track_obj.params.get('vol', 1).value)), 'AnchorValue': 0.0}
 				deviceattributes['hasAudioInserts'] = 1
 				deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
 				deviceattributes['EQPosition'] = 0
@@ -809,7 +818,7 @@ class output_oldcubase(plugins.base):
 				deviceattributes['Type'] = 1
 				deviceattributes['InputGain'] = {'Value': 16383.5}
 				deviceattributes['InputPhase'] = 0
-				deviceattributes['Volume'] = {'Value': float(min(32765, track_obj.params.get('vol', 1).value*25856)), 'AnchorValue': 0.0}
+				deviceattributes['Volume'] = {'Value': float(calc_volume(track_obj.params.get('vol', 1).value)), 'AnchorValue': 0.0}
 				deviceattributes['hasAudioInserts'] = 1
 				deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
 				make_blank_slots(3, deviceattributes['InsertFolder']['Slot'])
@@ -874,8 +883,7 @@ class output_oldcubase(plugins.base):
 						project_obj.objects[seq_PAudioClip.idnum] = seq_PAudioClip
 						if audiopl_obj.visual.name: seq_PAudioClip.name = to_wide_string(audiopl_obj.visual.name)
 						do_color(audiopl_obj.visual, total_colors, seq_PAudioClip.additional_attributes)
-						if sp_obj.pitch:
-							audiopart.additional_attributes['PitF'] = xtramath.pitch_to_speed(sp_obj.pitch)
+						if sp_obj.pitch: audiopart.additional_attributes['PitF'] = xtramath.pitch_to_speed(sp_obj.pitch)
 	
 						fileref_obj = sampleref_obj.fileref
 

@@ -200,6 +200,7 @@ class input_sequel3(plugins.base):
 		traits_obj.notes_midi = True
 		traits_obj.placement_cut = True
 		traits_obj.track_arranger = True
+		traits_obj.notepl_pitch = True
 
 		project_obj = proj_sequel.sequel_project()
 		if dawvert_intent.input_mode == 'file':
@@ -282,6 +283,7 @@ class input_sequel3(plugins.base):
 
 					placement_obj.time.set_posdur(event.start, event.length+delaystart)
 					placement_obj.time.set_offset(realoffset)
+					placement_obj.pitch = event.transpose
 
 					events_obj = placement_obj.midievents
 					events_obj.has_duration = True
@@ -294,7 +296,7 @@ class input_sequel3(plugins.base):
 						for event in mmidipart.events:
 							startpos = max(0, event.start)+delaystart
 							if isinstance(event, proj_sequel.class_MMidiNote):
-								events_obj.add_note_dur(startpos, 0, event.data1, event.data2, event.length)
+								events_obj.add_note_dur(startpos, event.channel, event.data1, event.data2, event.length)
 							elif isinstance(event, proj_sequel.class_MMidiController):
 								events_obj.add_control(startpos, 0, event.data1, event.data2)
 

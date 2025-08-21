@@ -414,6 +414,7 @@ class output_reaper(plugins.base):
 		in_dict['plugin_ext_platforms'] = ['win', 'unix']
 		in_dict['plugin_included'] = ['universal:sampler:single','universal:sampler:multi']
 		in_dict['projtype'] = 'r'
+		in_dict['notepl_pitch'] = True
 	
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import reaper as proj_reaper
@@ -576,6 +577,7 @@ class output_reaper(plugins.base):
 				rpp_source_obj.hasdata.used = True
 				rpp_source_obj.hasdata['hasdata'] = 1
 				rpp_source_obj.hasdata['ppq'] = midievents_obj.ppq
+				rpp_source_obj.transpose.set(int(midipl_obj.pitch))
 
 				do_auto_clip(midipl_obj, rpp_item_obj.volenv, 'gain', 'float', False, False)
 				do_auto_clip(midipl_obj, rpp_item_obj.panenv, 'pan', 'float', False, False)
