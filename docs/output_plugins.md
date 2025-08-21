@@ -8,6 +8,7 @@
 | R | ```main``` | ```bandlab_blx``` | Bandlab BLX<br>Cakewalk Next<br>Cakewalk Sonar |
 | R | ```main``` | ```dawproject``` | dawproject |
 | M-I | ```main``` | ```flp``` | FL Studio |
+| R | ```main``` | ```oldcubase``` | Cubase 4+ |
 | R | ```main``` | ```lmms``` | LMMS |
 | R | ```main``` | ```midi``` | MIDI |
 | R | ```main``` | ```muse``` | MusE Sequencer |
@@ -16,9 +17,3 @@
 | R | ```main``` | ```soundation``` | Soundation |
 | R | ```main``` | ```waveform``` | Waveform Edit |
 
-
-
-## Old
-| DataType | PluginSet | Short Name | Name |
-| --- | --- | --- | :--- |
-| R | ```old``` | ```wavtool``` | Wavtool |

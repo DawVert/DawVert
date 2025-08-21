@@ -27,7 +27,7 @@
 | DataType | PluginSet | Short Name | Name | Ext | Autodetect | Info |
 | --- | --- | --- | :--- | :--- | :--- | :--- |
 | R | ```2010s``` | ```audiosauna``` | AudioSauna | ```.song``` | ✔️ | |
-| R | ```2010s``` | ```sequel3``` | Sequel 3 | ```.steinberg-project``` | ✔️ | timing is wrong |
+| R | ```2010s``` | ```sequel3``` | Sequel 3 | ```.steinberg-project``` | ✔️ | |
 | R | ```2010s``` | ```z_maestro``` | Z-Maestro | ```.zmm``` | ✔️ | |
 
 ## Y2K
@@ -65,7 +65,8 @@
 ## Drum Machines
 | DataType | PluginSet | Short Name | Name | Ext | Autodetect | Info | 
 | --- | --- | --- | :--- | :--- | :--- | :--- |
-| M-I | ```main``` | ```hydrogen``` | Hydrogen | ```.h2song``` | ✔️ | |
+| M-I | ```drummach``` | ```hydrogen``` | Hydrogen | ```.h2song``` | ✔️ | |
+| M-I | ```drummach``` | ```acidmach2``` | Acid Machine 2 | ```.amx``` | ✔️ | |
 
 ## Modern Web
 | DataType | PluginSet | Short Name | Name | Ext | Autodetect | Info | 
@@ -84,6 +85,12 @@
 | R | ```mobile``` | ```fl_mobile``` | FL Studio Mobile | ```.flm``` | ✔️ | | 
 | R | ```mobile``` | ```nanostudio_v1``` | NanoStudio 1 | ```.prj``` | ✔️ | |
 | R | ```mobile``` | ```viscentsoft_coolbeat``` | 玩酷电音/CoolBeat | ```.mlp``` | ✔️ | |
+
+## Audio Editors
+| DataType | PluginSet | Short Name | Name | Ext | Autodetect | Info | 
+| --- | --- | --- | :--- | :--- | :--- | :--- |
+| C-M | ```audioedit``` | ```eam2``` | easy audio mixer 2 | ```.eamixer``` | ✔️ | 
+| R-M | ```audioedit``` | ```soundop``` | Soundop | ```.msf``` | ✔️ | 
 
 ## Other
 | DataType | PluginSet | Short Name | Name | Ext | Autodetect | Info | 
@@ -108,6 +115,7 @@
 | C-M | ```midi``` | ```mmf``` | Mobile Music File | ```.mmf``` | ✔️ | 
 | C-M | ```midi``` | ```temper``` | Temper | ```.squ``` | ✔️ | |
 | C-S | ```midi``` | ```domino``` | Domino | ```.dms``` | ✔️ | |
+| C-S | ```midi``` | ```musicphrase``` | MusicPhrase XL | ```.mps``` | ✔️ | |
 | C-S | ```midi``` | ```v2m``` | Farbrausch V2M | ```.v2m``` | ✔️ | |
 
 ## Experiments
