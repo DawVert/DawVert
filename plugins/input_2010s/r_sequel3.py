@@ -246,6 +246,10 @@ class input_sequel3(plugins.base):
 					timemarker_obj.duration = event.length
 					timemarker_obj.type = 'region'
 					timemarker_obj.visual.name = str(event.name)
+					if 'Farb' in event.additional_attributes:
+						farbcolor = event.additional_attributes['Farb']
+						try: timemarker_obj.visual.color.set_int(conv_color(colorset[farbcolor]['Color']))
+						except: pass
 
 			if isinstance(track, proj_sequel.class_MDeviceTrackEvent):
 				track_node = track.node

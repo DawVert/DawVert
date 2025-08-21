@@ -430,6 +430,15 @@ class output_oldcubase(plugins.base):
 		for x in range(15):
 			add_list_genid(playrange_track_po_list, 'MPlayOrderList', counter_id).po_listname = to_wide_string("Play Order List %s" % (x+2))
 
+		if len(convproj_obj.arranger):
+			for arr_obj in convproj_obj.arranger:
+				arrevent = add_list_genid(playrange_track.node.events, 'MPlayRangeEvent', counter_id)
+				arrevent.flags = 8960 
+				arrevent.start = arr_obj.position 
+				arrevent.length = arr_obj.duration 
+				if arr_obj.visual.name: arrevent.name = arr_obj.visual.name 
+				do_color(arr_obj.visual, total_colors, arrevent.additional_attributes)
+
 		returnids = {}
 		used_paths = {}
 		used_audio = []
@@ -884,7 +893,7 @@ class output_oldcubase(plugins.base):
 						if audiopl_obj.visual.name: seq_PAudioClip.name = to_wide_string(audiopl_obj.visual.name)
 						do_color(audiopl_obj.visual, total_colors, seq_PAudioClip.additional_attributes)
 						if sp_obj.pitch: audiopart.additional_attributes['PitF'] = xtramath.pitch_to_speed(sp_obj.pitch)
-	
+
 						fileref_obj = sampleref_obj.fileref
 
 						#print(fileref_obj.get_path(None, 0))
