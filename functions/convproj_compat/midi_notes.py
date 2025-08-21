@@ -38,15 +38,9 @@ def process(convproj_obj, in__midi_notes, out__midi_notes, out_type, dawvert_int
 						midi_pl = tpl.pl_midi.make_base_from_notes(notespl_obj)
 						midievents_obj = midi_pl.midievents
 						midievents_obj.ppq = 960
-						for t_pos, t_dur, t_keys, t_vol, t_inst, t_extra, t_autopack in notespl_obj.notelist.iter():
+						for t_pos, t_dur, t_keys, t_vol, t_vol_off, t_chan, t_inst, t_extra, t_autopack in notespl_obj.notelist.iter_midispec():
 							for t_key in t_keys:
-								if t_extra is not None:
-									channel = t_extra['channel'] if 'channel' in t_extra else 0
-								else:
-									channel = 0
-								off_vel = 64
-								if 'off_vol' in t_extra: off_vel = min(127, int(t_extra['off_vol']*127))
-								midievents_obj.add_note_dur_off_vel(t_pos, channel, t_key+60, min(127, t_vol*127), t_dur, off_vel)
+								midievents_obj.add_note_dur_off_vel(t_pos, t_chan, t_key+60, min(127, t_vol*127), t_dur, min(127, t_vol_off*127))
 						midievents_obj.has_duration = True
 						midievents_obj.del_note_durs()
 					tpl.pl_notes.data = []

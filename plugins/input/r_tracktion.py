@@ -352,6 +352,7 @@ def do_track(convproj_obj, wf_track, track_obj, software_mode, dawvert_intent):
 		cvpj_notelist = placement_obj.notelist
 		for note in midiclip.sequence.notes:
 			cvpj_notelist.add_r(note.pos*4, note.dur*4, note.key-60, note.vel/100, {})
+			cvpj_notelist.last_add_channel(note.chan)
 			for a_type, a_data in note.auto.items():
 				autoname = autonames[a_type] if a_type in autonames else None
 				if autoname:

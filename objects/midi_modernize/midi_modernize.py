@@ -107,7 +107,7 @@ class midi_modernize:
 
 			if condpos:
 				if x['type'] == midievents.EVENTID__NOTE_DUR:
-					cur_notes = self.notes_data.add_note_dur(tracknum, pos, x['chan'], portnum, x['value'], x['value2'], x['uhival'])
+					cur_notes = self.notes_data.add_note_dur(tracknum, pos, x['chan'], portnum, x['value'], x['value2'], x['uhival'], x['off_vel'])
 					cur_notes['section'] = in_section
 
 				elif x['type'] == midievents.EVENTID__NOTE_ON:
@@ -115,7 +115,7 @@ class midi_modernize:
 					cur_notes['section'] = in_section
 
 				elif x['type'] == midievents.EVENTID__NOTE_OFF:
-					self.notes_data.add_note_off(x['chan'], portnum, x['value'], pos)
+					self.notes_data.add_note_off(x['chan'], portnum, x['value'], pos, x['off_vel'])
 	
 				elif x['type'] == midievents.EVENTID__CONTROL:
 					chanport = gfunc.calc_channum(x['chan'], portnum, self.num_channels)
@@ -306,6 +306,7 @@ class midi_modernize:
 						int(n['key'])-60, 
 						float(n['vol'])/127, 
 						None)
+					cvpj_notelist.last_add_vol_off(float(n['vol_off'])/127)
 
 	def output_tracks(self, convproj_obj):
 		if self.cvpj_tracks:

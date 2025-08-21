@@ -787,13 +787,13 @@ class input_ableton(plugins.base):
 							for event in kt.NoteEvents:
 								t_note_id = event.NoteId
 								t_note_extra = {}
-								t_note_extra['off_vol'] = event.OffVelocity/127
 								t_note_extra['probability'] = event.Probability
 								t_note_extra['velocity_range'] = event.VelocityDeviation
 								if not event.IsEnabled: t_note_extra['disabled'] = not event.IsEnabled
 								notevol = (event.Velocity/127)
 								#if issampler: notevol = notevol**3
 								cvpj_notelist.add_r(event.Time*4, event.Duration*4, kt.MidiKey-60, notevol, t_note_extra)
+								cvpj_notelist.last_add_vol_off(event.OffVelocity/127)
 								if t_note_id in t_notes_auto:
 									for atype, adata in t_notes_auto[t_note_id].items():
 										mpetype = None

@@ -63,7 +63,7 @@ class input_musicphrase(plugins.base):
 				events_obj.has_duration = True
 				events_obj.ppq = 96
 				for note in clip.notes:
-					events_obj.add_note_dur(note.pos, channel, note.note, note.vel, max(0, note.end-note.pos))
+					events_obj.add_note_dur_off_vel(note.pos, channel, note.note, note.vel, max(0, note.end-note.pos), note.vel_off)
 
 				for ctrl in clip.ctrls:
 					event_type = ctrl.type

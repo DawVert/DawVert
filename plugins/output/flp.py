@@ -287,7 +287,7 @@ class output_cvpjs(plugins.base):
 
 			if not DEBUG_IGNORE_PATTERNS:
 				nle_obj.notelist.sort()
-				for t_pos, t_dur, t_keys, t_vol, t_inst, t_extra, t_autopack in nle_obj.notelist.iter():
+				for t_pos, t_dur, t_keys, t_vol, t_vol_off, t_chan, t_inst, t_extra, t_autopack in nle_obj.notelist.iter_midispec():
 					if t_autopack: t_autopack.convert_to('slide', t_keys, t_vol)
 
 					if t_inst in g_inst_id:

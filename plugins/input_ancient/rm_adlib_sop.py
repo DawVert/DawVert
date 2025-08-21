@@ -78,7 +78,7 @@ class input_sop(plugins.base):
 					instpos.append([curtick, str(event[2])])
 
 				elif event[1] == 'NOTE': 
-					cvpj_notelist.add_m(None, curtick, event[3], event[2]-60, 1, {})
+					cvpj_notelist.add_m(None, curtick, event[3], event[2]-60, 1, None)
 
 				#else:
 				#	print(event)

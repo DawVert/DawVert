@@ -562,6 +562,7 @@ class input_flp(plugins.base):
 						slidenotes.append([note_inst, note_pos, note_dur, note_key, note_vol, note_extra if note_extra else None])
 					else: 
 						cvpj_notelist.add_m(note_inst, note_pos, note_dur, note_key, note_vol, note_extra if note_extra else None)
+						cvpj_notelist.last_add_channel(notechan)
 						if fl_note.finep != 120: cvpj_notelist.last_add_finepitch((fl_note.finep-120)*10)
 						if fl_note.pan != 64: cvpj_notelist.last_add_pan((fl_note.pan-64)/64)
 
