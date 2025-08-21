@@ -1060,7 +1060,7 @@ class class_PAudioClip:
 	path: class_FNPath = field(default_factory=class_FNPath)
 	uid: sequel_list_string = field(default_factory=sequel_list_string)
 	additional_attributes: dict = field(default_factory=dict)
-	cluster = class_AudioCluster = class_AudioCluster()
+	cluster: class_AudioCluster = field(default_factory=class_AudioCluster)
 	events: sequel_list_obj = field(default_factory=sequel_list_obj)
 	domain: seq_domain = field(default_factory=seq_domain)
 
@@ -1445,6 +1445,11 @@ class class_MDeviceTrackEvent:
 		if 'Additional Attributes' in obj_data: self.additional_attributes = obj_data['Additional Attributes']
 		if 'Track Device' in obj_data: self.track_device = obj_data['Track Device']
 		if 'Automation' in obj_data: self.automation = obj_data['Automation']
+	def spread_counter(self, counter_obj):
+		self.idnum = counter_obj.get()
+		self.node.idnum = counter_obj.get()
+		self.track_device.idnum = counter_obj.get()
+		self.automation.idnum = counter_obj.get()
 	def make_xml(self, xmlobj):
 		makeval__int(xmlobj, 'Flags', self.flags)
 		makeval__float(xmlobj, 'Start', self.start)
@@ -2123,7 +2128,7 @@ class class_PPatternBank:
 		if 'MuteStates' in obj_data: self.mutestates = obj_data['MuteStates']
 		if 'SoloStates' in obj_data: self.solostates = obj_data['SoloStates']
 		if 'UsedPatterns' in obj_data: self.usedpatterns.setvals(obj_data['UsedPatterns'])
-		if 'Patterns' in obj_data: self.patterns.list(obj_data['Patterns'])
+		if 'Patterns' in obj_data: self.patterns.setvals(obj_data['Patterns'])
 	def make_xml(self, xmlobj):
 		makeval__string(xmlobj, 'Name', self.name, 1)
 		makeval__int(xmlobj, 'ActivePattern', self.activepattern)
@@ -2853,7 +2858,7 @@ def indent(elem, level=0):
 	i = "\n" + level * indent_size
 	if elem.tag=='bin': 
 		if elem.text is not None:
-			elem.text = elem.text.replace('\n', "\n"+(level+1)*"\t")
+			elem.text = elem.text.replace('\n', "\n"+(level)*"\t")
 			elem.text += i
 		else:
 			elem.text += i
@@ -2954,3 +2959,160 @@ class sequel_project:
 		#	if x in debug_alld: 
 		#		del copydebug_allp[x]
 		#print(list(copydebug_allp))
+
+
+if __name__ == "__main__":
+	import argparse
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-i", default=None)
+	parser.add_argument("-a", default=None)
+	parser.add_argument("-o", default=None)
+	args = parser.parse_args()
+
+	print('Sequel Debug cmd.')
+	if not args.i:
+		print('Input File Not Specified.')
+		exit()
+	if not args.a:
+		print('Actions Not Specified.')
+		exit()
+	if not args.o:
+		print('Output File Not Specified.')
+		exit()
+
+	actions = args.a.split(',')
+
+	parser = ET.XMLParser(recover=True)
+	tree = ET.parse(args.i, parser=parser)
+	seq_proj = tree.getroot()
+
+	if 'allout' in actions: actions.append('normids')
+	if 'allout' in actions: actions.append('binnospace')
+	if 'allout' in actions: actions.append('floatround')
+	if 'all' in actions: actions.append('remove_unused')
+
+	if 'all' in actions: actions.append('normids')
+	if 'all' in actions: actions.append('binnospace')
+	if 'all' in actions: actions.append('floatround')
+	if 'all' in actions: actions.append('midifx')
+	if 'all' in actions: actions.append('audiofx')
+	if 'all' in actions: actions.append('audiosynth')
+	if 'all' in actions: actions.append('remove_unused')
+
+	if 'audiosynth' in actions:
+		for x in tree.findall(".//member"):
+			if x.attrib['name']=='Synth Slot':
+				indata = dict([[r.get('name'), r] for r in x.getchildren()])
+				if 'Plugin' in indata:
+					indatas = dict([[r.get('name'), r] for r in indata['Plugin'].getchildren()])
+					indatas['audioComponent'].text = ''
+
+	if 'midifx' in actions:
+		for x in tree.findall(".//*[@class]"):
+			if x.attrib['class']=='ChordProcessor':
+				indatal = [[r.get('name'), r] for r in x.getchildren()]
+				indata = dict(indatal)
+				for k, v in indatal: x.remove(v)
+				x.set('class', 'PMidiEffectBase')
+				makeval__string(x, 'Name', 'No Effect', 0)
+				x.append(indata['Index'])
+				x.append(indata['IsInsert'])
+				x.append(indata['PlayInStop'])
+				x.append(indata['Inputs'])
+				x.append(indata['Outputs'])
+			if x.attrib['class']=='Phrasor':
+				indatal = [[r.get('name'), r] for r in x.getchildren()]
+				indata = dict(indatal)
+				for k, v in indatal: x.remove(v)
+				x.set('class', 'PMidiEffectBase')
+				makeval__string(x, 'Name', 'No Effect', 0)
+				x.append(indata['Index'])
+				x.append(indata['IsInsert'])
+				x.append(indata['PlayInStop'])
+				x.append(indata['Inputs'])
+				x.append(indata['Outputs'])
+
+		for x in tree.findall(".//member"):
+			if x.attrib['name']=='EQ':
+				for v in x.getchildren(): x.remove(v)
+
+		for x in tree.findall(".//int"):
+			if x.attrib['name']=='hasEQ':
+				x.set('value', '0')
+			if x.attrib['name']=='EQPosition':
+				x.set('value', '0')
+			if x.attrib['name']=='SeparationPosition':
+				x.set('value', '0')
+
+	if 'audiofx' in actions:
+		for x in tree.findall(".//member"):
+			if x.attrib['name']=='InsertFolder':
+				indata = dict([[r.get('name'), r] for r in x.getchildren()])
+				if 'Slot' in indata:
+					slotchild = indata['Slot'].getchildren()
+					for b in slotchild:
+						dc = dict([[r.get('name'), r] for r in b])
+						for v in b.getchildren(): b.remove(v)
+						makeval__int(b, 'State', 0)
+						#print(dc)
+				#for v in x.getchildren(): x.remove(v)
+
+	if 'remove_unused' in actions:
+		proj = sequel_project()
+		proj.load_from_file(args.i)
+		unusedparts = []
+		for x in seq_proj:
+			if x.get('class')=='MiniSequence':
+				seq_proj.remove(x)
+
+		for x in tree.findall(".//*[@class]"):
+			if x.get('class')=='UColorSet':
+				indata = dict([[r.get('name'), r] for r in x.getchildren()])
+				if 'Set' in indata: 
+					setd = indata['Set']
+					for k in setd: setd.remove(k)
+
+		for x in tree.findall(".//member"):
+			if x.attrib['name']=='Additional Attributes':
+				onlyicons = [y for y in x.getchildren() if y.get('class')=='PTrackIconData']
+				for y in onlyicons: x.remove(y)
+
+
+	if 'normids' in actions:
+		remap = {}
+		count = {}
+		for x in tree.findall(".//*[@ID]"):
+			if 'class' in x.attrib:
+				classname = x.attrib['class']
+				if classname not in count: count[classname] = 0
+				remap[int(x.attrib['ID'])] = classname.lower().replace(' ','_')+'_'+str(count[classname])
+				x.set('ID', remap[int(x.attrib['ID'])])
+				count[classname] += 1
+
+		for x in tree.findall(".//*[@ID]"):
+			if 'class' not in x.attrib:
+				x.set('ID', remap[int(x.attrib['ID'])])
+
+	indent(seq_proj)
+
+	if 'floatround' in actions:
+		for x in tree.findall(".//float"):
+			val = round(float(x.get('value')), 6)
+			x.set('value', str(val if val%1 else int(val)) )
+
+		for x in tree.findall(".//*[@class]"):
+			if x.get('class')=='MMidiController':
+				indata = dict([[r.get('name'), r] for r in x.getchildren()])
+				if 'Start' in indata: indata['Start'].set('value', str(int(float(indata['Start'].get('value')))))
+
+
+	if 'binnospace' in actions:
+		for x in tree.findall(".//bin"):
+			x.text = x.text.replace(' ', '')
+			x.text = x.text.replace('\t', '')
+		for x in tree.findall(".//obj"):
+			if x.text:
+				x.text = '\n'.join([d.strip() for d in x.text.split('\n')])
+
+	outfile = ET.ElementTree(seq_proj)
+	outfile.write(args.o, xml_declaration = True, encoding="utf-8")

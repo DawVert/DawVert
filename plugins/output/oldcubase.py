@@ -13,13 +13,19 @@ from functions import xtramath
 logpreset_def = b'\x00@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n\x00\x00\x00\x01\x00\x00\x00\x00\x00\n\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
 DEBUG_DISABLE_INST_TRACK = False
-DEBUG_DISABLE_AUDIO_TRACK = True
+DEBUG_DISABLE_AUDIO_TRACK = False
 
 def make_blank_slots(num, synthslots):
 	for x in range(num): synthslots.append({'State': 0})
 
 def decode_color(intcolor):
 	return int.from_bytes(bytes([intcolor[2], intcolor[1], intcolor[0]]), "little")
+
+def do_color(visual_obj, total_colors, additional_attributes):
+	if visual_obj.color: 
+		colorint = visual_obj.color.get_int()
+		if colorint not in total_colors: total_colors.append(colorint)
+		additional_attributes['Farb'] = total_colors.index(colorint)
 
 class output_oldcubase(plugins.base):
 	def is_dawvert_plugin(self):
@@ -37,11 +43,12 @@ class output_oldcubase(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['audio_stretch'] = ['rate']
 		in_dict['file_ext'] = 'steinberg-project'
-		in_dict['audio_filetypes'] = ['wav']
+		in_dict['audio_filetypes'] = ['wav', 'ogg']
 		in_dict['auto_types'] = ['nopl_points']
 		in_dict['notes_midi'] = True
 		in_dict['placement_cut'] = True
 		in_dict['track_arranger'] = True
+		in_dict['fxtype'] = 'groupreturn'
 
 	def parse(self, convproj_obj, dawvert_intent):
 		global to_wide_string
@@ -66,6 +73,7 @@ class output_oldcubase(plugins.base):
 		project_dur = 6000000
 
 		counter_id = counter.counter(5000000, '')
+		returnnum_id = counter.counter(200, '')
 		inbusnum_id = counter.counter(504, '')
 
 		project_obj = proj_sequel.sequel_project()
@@ -113,8 +121,8 @@ class output_oldcubase(plugins.base):
 
 		mainatt['Mixer'] = {}
 		transport = mainatt['Transport'] = {}
-		transport['Cycle Left'] = {'Time': float(0), 'Domain': {'Type': 1, 'Period': 1.0}}
-		transport['Cycle Right'] = {'Time': float(480), 'Domain': {'Type': 1, 'Period': 1.0}}
+		transport['Cycle Left'] = {'Time': float(convproj_obj.transport.loop_start), 'Domain': {'Type': 1, 'Period': 1.0}}
+		transport['Cycle Right'] = {'Time': float(convproj_obj.transport.loop_end), 'Domain': {'Type': 1, 'Period': 1.0}}
 		transport['RecordMode'] = 1
 		transport['CycleRecordMode'] = 0
 		vst_mixer = mainatt['VST Mixer'] = {}
@@ -251,12 +259,12 @@ class output_oldcubase(plugins.base):
 		deviceattributes['VUSelect'] = 1
 		deviceattributes['VURange'] = 0
 		deviceattributes['Monitor'] = {'Value': 0, 'Min': 0, 'Max': 2}
-		deviceattributes['OwnInputBus'] = {'Name': to_wide_string('In 1'), 'Bus UID': 1000012, 'Bus Type': 10, 'Input Arrangement': {'Type': sequel_list_int([0])}, 'Output Arrangement': {'Type': sequel_list_int([0])}}
+		deviceattributes['OwnInputBus'] = {'Name': to_wide_string('In 2'), 'Bus UID': 1000012, 'Bus Type': 10, 'Input Arrangement': {'Type': sequel_list_int([0])}, 'Output Arrangement': {'Type': sequel_list_int([0])}}
 		incon = deviceattributes['OwnInputBus']['Connections'] = sequel_list_string()
 		incon.append(to_norm_string('I|DawVert Input|In 2'))
 		deviceattributes['InputBusValue'] = {'Value': 0}
 		deviceattributes['OutputBusValue'] = {'Value': 0}
-		deviceattributes['OutputBus'] = {'Name': to_wide_string('In 1'), 'Bus UID': 2000013, 'Bus Type': 12, 'Input Arrangement': {'Type': sequel_list_int([0])}, 'Output Arrangement': {'Type': sequel_list_int([0])}}
+		deviceattributes['OutputBus'] = {'Name': to_wide_string('In 2'), 'Bus UID': 2000013, 'Bus Type': 12, 'Input Arrangement': {'Type': sequel_list_int([0])}, 'Output Arrangement': {'Type': sequel_list_int([0])}}
 		input_channels.append(deviceattributes)
 		deviceattributes["FreezePosition"] = 2
 		deviceattributes["Listen Mode"] = 0
@@ -296,7 +304,7 @@ class output_oldcubase(plugins.base):
 		deviceattributes['VUSelect'] = 1
 		deviceattributes['VURange'] = 0
 		deviceattributes['Monitor'] = {'Value': 0, 'Min': 0, 'Max': 2}
-		deviceattributes['OwnInputBus'] = {'Name': to_norm_string('Master'), 'Bus UID': 5, 'Bus Type': 18, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
+		deviceattributes['OwnInputBus'] = {'Name': to_wide_string('Master'), 'Bus UID': 5, 'Bus Type': 18, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
 		deviceattributes['InputBusValue'] = {'Value': 0}
 		deviceattributes['OutputBusValue'] = {'Value': 0}
 		deviceattributes['OutputBus'] = {'Name': to_wide_string('Master'), 'Bus UID': 6, 'Bus Type': 11, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
@@ -313,8 +321,8 @@ class output_oldcubase(plugins.base):
 		output_channels.append(deviceattributes)
 
 		childinbus = deviceattributes['OwnInputBus']['Child Bus'] = sequel_list_dict()
-		childinbus.append( {'Name': to_norm_string('Left'), 'Bus UID': 7, 'Bus Type': 18, 'Input Arrangement': {'Type': sequel_list_int([1])}, 'Output Arrangement': {'Type': sequel_list_int([1])}} )
-		childinbus.append( {'Name': to_norm_string('Right'), 'Bus UID': 8, 'Bus Type': 18, 'Input Arrangement': {'Type': sequel_list_int([2])}, 'Output Arrangement': {'Type': sequel_list_int([2])}} )
+		childinbus.append( {'Name': to_wide_string('Left'), 'Bus UID': 7, 'Bus Type': 18, 'Input Arrangement': {'Type': sequel_list_int([1])}, 'Output Arrangement': {'Type': sequel_list_int([1])}} )
+		childinbus.append( {'Name': to_wide_string('Right'), 'Bus UID': 8, 'Bus Type': 18, 'Input Arrangement': {'Type': sequel_list_int([2])}, 'Output Arrangement': {'Type': sequel_list_int([2])}} )
 
 		vst_mixer["Default Output"] = 0
 		vst_mixer['Synth Rack'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
@@ -339,6 +347,7 @@ class output_oldcubase(plugins.base):
 		working_directory = seq_engineroot.working_directory
 		working_directory.name = os.path.basename(dawvert_intent.output_file)
 		working_directory.path = dawvert_intent.output_folder
+		working_directory.type = 1
 
 		root_pool = seq_engineroot.pool
 		root_pool.media_tree.idnum = counter_id.get()
@@ -410,17 +419,92 @@ class output_oldcubase(plugins.base):
 		for x in range(15):
 			add_list_genid(playrange_track_po_list, 'MPlayOrderList', counter_id).po_listname = to_wide_string("Play Order List %s" % (x+2))
 
-		transpose_track = tracklist.add_track('MTransposeTrackEvent')
-		transpose_track.spread_counter(counter_id)
-		transpose_track.flags = 32
-		transpose_track.length = project_dur
-		transpose_track_node = transpose_track.node
-		transpose_track_node.name = to_wide_string("Transpose Track")
-		transpose_track_node.domain.set_sync(id_trk_bpm, id_trk_meas)
-		transpose_track.additional_attributes = {"TLID": 2, "FixH": 32}
-		transpose_track.track_device.connection_type = 2
-
+		returnids = {}
 		used_paths = {}
+		used_audio = []
+
+		master_returns = convproj_obj.track_master.returns
+		for num, rd in enumerate(master_returns.items()):
+			returnid, return_obj = rd
+			return_track = tracklist.add_track('MDeviceTrackEvent')
+			return_track.flags = 32
+			return_track.length = project_dur
+
+			return_track.spread_counter(counter_id)
+			return_track_node = return_track.node
+			if return_obj.visual.name: return_track_node.name = to_wide_string(return_obj.visual.name)
+			return_track_node.domain.set_sync(id_trk_bpm, id_trk_meas)
+
+			return_track.additional_attributes['TLID'] = 1
+			return_track.additional_attributes['THid'] = 1
+			returntrack_device = return_track.track_device
+			returntrack_device.connection_type = 1
+			returntrack_device.device_name = "VST Multitrack"
+			returntrack_device.channel_id = 5
+
+			return_track.height = 74
+
+			deviceattributes = returntrack_device.deviceattributes
+			deviceattributes['Name'] = {'String': to_wide_string(return_obj.visual.name if return_obj.visual.name else 'untitled')}
+			deviceattributes['Type'] = 6
+			deviceattributes['InputGain'] = {'Value': 16383.5}
+			deviceattributes['InputPhase'] = 0
+			deviceattributes['Volume'] = {'Value': float(min(32765, return_obj.params.get('vol', 1).value*25856)), 'AnchorValue': 0.0}
+			deviceattributes['hasAudioInserts'] = 1
+			deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
+			make_blank_slots(3, deviceattributes['InsertFolder']['Slot'])
+			deviceattributes['EQPosition'] = 0
+			deviceattributes['hasEQ'] = 0
+			deviceattributes['EQ'] = {}
+
+			pandata = {}
+			pandata['Default SurroundPan UID'] = {'GUID': to_wide_string('56535453506132737572726F756E6470')}
+			pandata['PannerType'] = {'Value': 2, 'Min': 0, 'Max': 11}
+			pandata['Plugin UID'] = {'GUID': to_wide_string('44E1149EDB3E4387BDD827FEA3A39EE7')}
+			pandata['Plugin Name'] = to_wide_string('Panner')
+			pandata['Audio Input Count'] = 1
+			pandata['Audio Input Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+			pandata['Audio Output Count'] = 1
+			pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+			pandata['Event Input Count'] = 0
+			pandata['Event Output Count'] = 0
+			pandata['audioComponent'] = b'\x00\x00\x00?\x00\x00\x00?\x04\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00'
+			pandata['editController'] = b''
+			pandata['Active'] = 1
+			pandata['IDString'] = to_wide_string('Panner')
+			pandata['Bay Program'] = to_wide_string('')
+			deviceattributes['Panner'] = pandata
+			deviceattributes['VUSelect'] = 1
+			deviceattributes['VURange'] = 0
+			deviceattributes['Monitor'] = {'Value': 0, 'Min': 0, 'Max': 2}
+			returnnum = returnnum_id.get()
+			returnids[returnid] = returnnum
+			deviceattributes['OwnInputBus'] = {'Name': to_wide_string('FxBus'), 'Bus UID': returnnum, 'Bus Type': 17, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
+			deviceattributes['InputBusValue'] = {'Value': 0}
+			deviceattributes['OutputBusValue'] = {'Value': 5}
+			deviceattributes['FreezePosition'] = 2
+			deviceattributes['Listen Mode'] = 0
+			deviceattributes['LinkedPanner'] = 0
+			deviceattributes['IDString'] = to_norm_string('FxChannel'+(' '+str(num+1) if num else ' '))
+
+			return_automation = return_track.automation
+			return_automation.name = to_wide_string('Automation')
+			return_automation.domain.set_sync(id_trk_bpm, id_trk_meas)
+			instautodev = return_automation.track_device = proj_sequel.class_MAutomationTrack()
+			instautodev.idnum = counter_id.get()
+			instautodev.connection_type = 2
+			instautodev.read = 0
+			instautodev.write = 0
+
+		#transpose_track = tracklist.add_track('MTransposeTrackEvent')
+		#transpose_track.spread_counter(counter_id)
+		#transpose_track.flags = 32
+		#transpose_track.length = project_dur
+		#transpose_track_node = transpose_track.node
+		#transpose_track_node.name = to_wide_string("Transpose Track")
+		#transpose_track_node.domain.set_sync(id_trk_bpm, id_trk_meas)
+		#transpose_track.additional_attributes = {"TLID": 2, "FixH": 32}
+		#transpose_track.track_device.connection_type = 2
 
 		for trackid, track_obj in convproj_obj.track__iter():
 			if track_obj.type == 'instrument' and not DEBUG_DISABLE_INST_TRACK:
@@ -428,10 +512,7 @@ class output_oldcubase(plugins.base):
 				instrument_track.spread_counter(counter_id)
 				instrument_track_node = instrument_track.node
 				if track_obj.visual.name: instrument_track_node.name = to_wide_string(track_obj.visual.name)
-				if track_obj.visual.color: 
-					colorint = track_obj.visual.color.get_int()
-					if colorint not in total_colors: total_colors.append(colorint)
-					instrument_track.additional_attributes['Farb'] = total_colors.index(colorint)
+				do_color(track_obj.visual, total_colors, instrument_track.additional_attributes)
 				instrument_track_node.domain.set_sync(id_trk_bpm, id_trk_meas)
 				instrument_track_device = instrument_track.track_device
 				instrument_track_device.connection_type = 1
@@ -452,6 +533,11 @@ class output_oldcubase(plugins.base):
 					project_obj.objects[seq_MMidiPart.idnum] = seq_MMidiPart
 					seq_MMidiPart.domain.set_sync(id_trk_bpm, id_trk_meas)
 					if midipl_obj.visual.name: seq_MMidiPart.name = to_wide_string(midipl_obj.visual.name)
+					do_color(midipl_obj.visual, total_colors, seq_MMidiPart.additional_attributes)
+					if midipl_obj.visual.color: 
+						colorint = midipl_obj.visual.color.get_int()
+						if colorint not in total_colors: total_colors.append(colorint)
+						instrument_track.additional_attributes['Farb'] = total_colors.index(colorint)
 
 					midievents_obj = midipl_obj.midievents
 					midievents_obj.sort()
@@ -510,7 +596,7 @@ class output_oldcubase(plugins.base):
 				deviceattributes['VUSelect'] = 1
 				deviceattributes['VURange'] = 0
 				deviceattributes['Monitor'] = {'Value': 0, 'Min': 0, 'Max': 2}
-				deviceattributes['OwnInputBus'] = {'Name': to_norm_string('SynthChannel'), 'Bus UID': inbusnum_id.get(), 'Bus Type': 15, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
+				deviceattributes['OwnInputBus'] = {'Name': to_wide_string('SynthChannel'), 'Bus UID': inbusnum_id.get(), 'Bus Type': 15, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
 				deviceattributes['InputBusValue'] = {'Value': 0}
 				deviceattributes['OutputBusValue'] = {'Value': 5}
 				deviceattributes['FreezePosition'] = 2
@@ -677,9 +763,34 @@ class output_oldcubase(plugins.base):
 				instautodev.read = 1
 				instautodev.write = 0
 
+				for returnid, return_obj in master_returns.items():
+					senddata = {}
+					senddata['Volume'] = {'Value': float(18688), 'AnchorValue': 0.0}
+					senddata['Output'] = {'Value': returnids[returnid]}
+					pandata = {}
+					pandata['Default SurroundPan UID'] = {'GUID': to_wide_string('56535453506132737572726F756E6470')}
+					pandata['PannerType'] = {'Value': 2, 'Min': 0, 'Max': 11}
+					pandata['Plugin UID'] = {'GUID': to_wide_string('44E1149EDB3E4387BDD827FEA3A39EE7')}
+					pandata['Plugin Name'] = to_wide_string('Panner')
+					pandata['Audio Input Count'] = 1
+					pandata['Audio Input Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+					pandata['Audio Output Count'] = 1
+					pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+					pandata['Event Input Count'] = 0
+					pandata['Event Output Count'] = 0
+					pandata['audioComponent'] = b'\x00\x00\x00?\x00\x00\x00?\x01\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00'
+					pandata['editController'] = b''
+					pandata['Active'] = 1
+					pandata['IDString'] = to_wide_string('Panner')
+					pandata['Bay Program'] = to_wide_string('')
+					senddata['Panner'] = pandata
+					deviceattributes['SendFolder']['Slot'].append(senddata)
+
+
+
 			if track_obj.type == 'audio' and not DEBUG_DISABLE_AUDIO_TRACK:
 				audio_track = tracklist.add_track('MAudioTrackEvent')
-				#audio_track.flags = 1
+				audio_track.flags = 1
 				audio_track.spread_counter(counter_id)
 				audio_track_node = audio_track.node
 				if track_obj.visual.name: audio_track_node.name = to_wide_string(track_obj.visual.name)
@@ -701,6 +812,7 @@ class output_oldcubase(plugins.base):
 				deviceattributes['Volume'] = {'Value': float(min(32765, track_obj.params.get('vol', 1).value*25856)), 'AnchorValue': 0.0}
 				deviceattributes['hasAudioInserts'] = 1
 				deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
+				make_blank_slots(3, deviceattributes['InsertFolder']['Slot'])
 				deviceattributes['EQPosition'] = 0
 				deviceattributes['hasEQ'] = 0
 				deviceattributes['EQ'] = {}
@@ -725,13 +837,146 @@ class output_oldcubase(plugins.base):
 				deviceattributes['VUSelect'] = 1
 				deviceattributes['VURange'] = 0
 				deviceattributes['Monitor'] = {'Value': 0, 'Min': 0, 'Max': 2}
-				deviceattributes['OwnInputBus'] = {'Name': to_norm_string('Audio'), 'Bus UID': inbusnum_id.get(), 'Bus Type': 15, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
+				deviceattributes['OwnInputBus'] = {'Name': to_norm_string('Audio'), 'Bus UID': inbusnum_id.get(), 'Bus Type': 13, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
 				deviceattributes['InputBusValue'] = {'Value': 0}
 				deviceattributes['OutputBusValue'] = {'Value': 5}
 				deviceattributes['FreezePosition'] = 2
 				deviceattributes['Listen Mode'] = 0
 				deviceattributes['LinkedPanner'] = 0
 				deviceattributes['IDString'] = to_norm_string('Audio')
+
+				autofade_settings = audio_track.autofade_settings
+				autofade_settings.spread_counter(counter_id)
+				autofade_settings.init_values()
+
+				track_obj.placements.pl_audio.sort()
+				for n, audiopl_obj in enumerate(track_obj.placements.pl_audio):
+					sp_obj = audiopl_obj.sample
+					reffound, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
+					if reffound:
+						samp_dur_samples = sampleref_obj.get_dur_samples()
+						samp_dur_hz = sampleref_obj.get_hz()
+						samp_dur_sec = sampleref_obj.get_dur_sec()
+						samp_channels = sampleref_obj.get_channels()
+
+						stretch_obj = sp_obj.stretch
+						timing_obj = stretch_obj.timing
+
+						audiopart = add_list_genid(audio_track_node.events, 'MAudioEvent', counter_id)
+						time_obj = audiopl_obj.time
+						audiopart.priority = n+2
+
+						if sp_obj.vol != 1: audiopart.volume = sp_obj.vol
+						if audiopl_obj.muted: audiopart.flags = 2
+	
+						seq_PAudioClip = proj_sequel.class_PAudioClip()
+						audiopart.clip_idnum = seq_PAudioClip.idnum = counter_id.get()
+						project_obj.objects[seq_PAudioClip.idnum] = seq_PAudioClip
+						if audiopl_obj.visual.name: seq_PAudioClip.name = to_wide_string(audiopl_obj.visual.name)
+						do_color(audiopl_obj.visual, total_colors, seq_PAudioClip.additional_attributes)
+						if sp_obj.pitch:
+							audiopart.additional_attributes['PitF'] = xtramath.pitch_to_speed(sp_obj.pitch)
+	
+						fileref_obj = sampleref_obj.fileref
+
+						#print(fileref_obj.get_path(None, 0))
+
+						audiopart.start, audiopart.length = time_obj.get_posdur()
+						audiopart.offset = time_obj.get_offset()
+						seq_PAudioClip.domain.set_sync(id_trk_bpm, id_trk_meas)
+
+						subtree_part = add_list_genid(subtree_audio.subentries, 'GTreeEntry', counter_id)
+						subtree_part.dataobject = seq_PAudioClip.idnum
+						subtree_part.name = to_wide_string(str(fileref_obj.file.filename))
+						subtree_part.flags = 611
+						subtree_part.v_id = len(subtree_audio.subentries)
+
+						#if fileref_obj not in used_paths:
+						audiopath = seq_PAudioClip.path
+						audiopath.idnum = counter_id.get()
+						audiopath.name = str(fileref_obj.file)
+						audiopath.path = '\\'.join(fileref_obj.folder.getpath('win'))+'\\'
+						used_paths[fileref_obj] = audiopath.idnum
+						fileext = fileref_obj.file.extension
+						if fileext == 'wav': audiopath.filetype = {"MacType": 1463899717, "DosType": to_wide_string("wav"), "UnixType": to_wide_string("wav"), "Name": to_wide_string("Wave File")}
+						if fileext == 'ogg': audiopath.filetype = {"MacType": 1332176726, "DosType": to_wide_string("ogg"), "Name": to_wide_string("OggVorbis File")}
+						#else:
+						#	seq_PAudioClip.path = proj_sequel.obj_pointer()
+						#	seq_PAudioClip.path.idnum = used_paths[fileref_obj]
+
+						clipattrib = seq_PAudioClip.additional_attributes
+						clipattrib['Grain Size'] = 1740
+
+						GridDef = clipattrib['GridDef'] = proj_sequel.class_PGridDefinition()
+						GridDef.idnum = counter_id.get()
+						GridDef.tempo = bpm
+						GridDef.offsettempo = bpm
+
+						clipattrib['Stretch Preset'] = 4
+						clipattrib['Warp Overlap'] = 0.14
+						clipattrib['Warp Variance'] = 1.0
+						AudioWarpScale = clipattrib['Warpscale'] = proj_sequel.class_PAudioWarpScale()
+						AudioWarpScale.idnum = counter_id.get()
+						add_list_genid(AudioWarpScale.warptab, 'PWarpTab', counter_id)
+						warptab = add_list_genid(AudioWarpScale.warptab, 'PWarpTab', counter_id)
+						warptab.position = samp_dur_samples
+						if timing_obj.time_type=='speed':
+							speed = timing_obj.get__speed(sampleref_obj)
+							warptab.warped = (samp_dur_sec*2*timebase)*speed
+							audiopart.offset *= speed
+						else:
+							warptab.warped = timing_obj.get__beats(sampleref_obj)*timebase
+
+						clipattrib['unStretch'] = 0
+
+						audiocluster = seq_PAudioClip.cluster
+						audiocluster.idnum = counter_id.get()
+
+						audiofile = add_list_genid(audiocluster.substreams, 'AudioFile', counter_id)
+						audiofile.fpath = proj_sequel.obj_pointer()
+						audiofile.fpath.idnum = audiopath.idnum
+
+						audiofile.framecount = samp_dur_samples
+						audiofile.sample_size = 16
+						audiofile.frame_size = 4
+						#audiofile.channels = sampleref_obj.get_channels()
+						audiofile.rate = samp_dur_hz
+						audiofile.format = 65536
+						audiofile.byteorder = 0
+						audiofile.dataoffset = 44
+						if samp_channels>1:
+							audiofile.speakerarr = {'Type': sequel_list_int([x+1 for x in range(samp_channels)])}
+
+						segment = {}
+						segment["Stream"] = proj_sequel.obj_pointer()
+						segment["Stream"].idnum = audiofile.idnum
+						segment["Offset"] = 0
+						segment["Length"] = samp_dur_samples
+						segment["Start"] = 0
+						audiocluster.segments.setvals([segment])
+
+				for returnid, return_obj in master_returns.items():
+					senddata = {}
+					senddata['Volume'] = {'Value': float(18688), 'AnchorValue': 0.0}
+					senddata['Output'] = {'Value': returnids[returnid]}
+					pandata = {}
+					pandata['Default SurroundPan UID'] = {'GUID': to_wide_string('56535453506132737572726F756E6470')}
+					pandata['PannerType'] = {'Value': 2, 'Min': 0, 'Max': 11}
+					pandata['Plugin UID'] = {'GUID': to_wide_string('44E1149EDB3E4387BDD827FEA3A39EE7')}
+					pandata['Plugin Name'] = to_wide_string('Panner')
+					pandata['Audio Input Count'] = 1
+					pandata['Audio Input Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+					pandata['Audio Output Count'] = 1
+					pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+					pandata['Event Input Count'] = 0
+					pandata['Event Output Count'] = 0
+					pandata['audioComponent'] = b'\x00\x00\x00?\x00\x00\x00?\x01\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00'
+					pandata['editController'] = b''
+					pandata['Active'] = 1
+					pandata['IDString'] = to_wide_string('Panner')
+					pandata['Bay Program'] = to_wide_string('')
+					senddata['Panner'] = pandata
+					deviceattributes['SendFolder']['Slot'].append(senddata)
 
 				audio_automation = audio_track.automation
 				audio_automation.name = to_wide_string('Automation')
@@ -751,114 +996,11 @@ class output_oldcubase(plugins.base):
 
 				mautotrack = proj_sequel.class_MAutomationTrack()
 				mautotrack.idnum = audio_automation.track_device.idnum
-				#instautodev.connection_type = 2
-				#instautodev.read = 1
-				#instautodev.write = 0
+				mautotrack.connection_type = 2
+				mautotrack.read = 1
+				mautotrack.write = 0
 				project_obj.objects[mautotrack.idnum] = mautotrack
 
-				autofade_settings = audio_track.autofade_settings
-				autofade_settings.spread_counter(counter_id)
-				autofade_settings.init_values()
-
-				track_obj.placements.pl_audio.sort()
-				for n, audiopl_obj in enumerate(track_obj.placements.pl_audio):
-					sp_obj = audiopl_obj.sample
-					reffound, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
-					if reffound:
-						samp_dur_samples = sampleref_obj.get_dur_samples()
-						samp_dur_hz = sampleref_obj.get_hz()
-						samp_dur_sec = sampleref_obj.get_dur_sec()
-
-						stretch_obj = sp_obj.stretch
-						timing_obj = stretch_obj.timing
-
-						audiopart = add_list_genid(audio_track_node.events, 'MAudioEvent', counter_id)
-						time_obj = audiopl_obj.time
-						audiopart.priority = n+2
-
-						if sp_obj.vol != 1: audiopart.volume = sp_obj.vol
-						if audiopl_obj.muted: audiopart.flags = 2
-	
-						seq_PAudioClip = proj_sequel.class_PAudioClip()
-						audiopart.clip_idnum = seq_PAudioClip.idnum = counter_id.get()
-						project_obj.objects[seq_PAudioClip.idnum] = seq_PAudioClip
-						if audiopl_obj.visual.name: seq_PAudioClip.name = to_wide_string(audiopl_obj.visual.name)
-						if sp_obj.pitch:
-							audiopart.additional_attributes['PitF'] = xtramath.pitch_to_speed(sp_obj.pitch)
-	
-						fileref_obj = sampleref_obj.fileref
-
-						#print(fileref_obj.get_path(None, 0))
-
-						audiopart.start, audiopart.length = time_obj.get_posdur()
-						audiopart.offset = time_obj.get_offset()
-						seq_PAudioClip.domain.set_sync(id_trk_bpm, id_trk_meas)
-
-						subtree_part = add_list_genid(subtree_audio.subentries, 'GTreeEntry', counter_id)
-						subtree_part.dataobject = seq_PAudioClip.idnum
-						subtree_part.name = to_wide_string(str(fileref_obj.file))
-						subtree_part.flags = 611
-						subtree_part.v_id = len(used_paths)
-
-						if fileref_obj not in used_paths:
-							audiopath = seq_PAudioClip.path
-							audiopath.idnum = counter_id.get()
-							audiopath.name = str(fileref_obj.file)
-							audiopath.path = '\\'.join(fileref_obj.folder.getpath('win'))+'\\'
-							used_paths[fileref_obj] = audiopath.idnum
-						else:
-							seq_PAudioClip.path = proj_sequel.obj_pointer()
-							seq_PAudioClip.path.idnum = used_paths[fileref_obj]
-
-						clipattrib = seq_PAudioClip.additional_attributes
-						clipattrib['Grain Size'] = 1740
-
-						#GridDef = clipattrib['GridDef'] = proj_sequel.class_PGridDefinition()
-						#GridDef.idnum = counter_id.get()
-
-						OrigPath = clipattrib['OrigPath'] = proj_sequel.class_FNPath()
-						OrigPath.idnum = counter_id.get()
-						OrigPath.name = audiopath.name
-						OrigPath.path = audiopath.path
-
-						clipattrib['Stretch Preset'] = 4
-						clipattrib['Warp Overlap'] = 0.14
-						clipattrib['Warp Variance'] = 1.0
-						AudioWarpScale = clipattrib['Warpscale'] = proj_sequel.class_PAudioWarpScale()
-						add_list_genid(AudioWarpScale.warptab, 'PWarpTab', counter_id)
-						warptab = add_list_genid(AudioWarpScale.warptab, 'PWarpTab', counter_id)
-						warptab.position = samp_dur_samples
-						if timing_obj.time_type=='speed':
-							warptab.warped = samp_dur_sec*2*timebase
-						else:
-							warptab.warped = timing_obj.get__beats(sampleref_obj)*timebase
-						clipattrib['unStretch'] = 0
-
-						audiocluster = seq_PAudioClip.cluster
-						audiocluster.idnum = counter_id.get()
-
-						audiofile = add_list_genid(audiocluster.substreams, 'AudioFile', counter_id)
-						audiofile.fpath = proj_sequel.obj_pointer()
-						audiofile.fpath.idnum = audiopath.idnum
-
-						audiofile.framecount = samp_dur_samples
-						audiofile.sample_size = 16
-						audiofile.frame_size = 4
-						audiofile.channels = sampleref_obj.get_channels()
-						audiofile.rate = samp_dur_hz
-						audiofile.format = 65536
-						audiofile.byteorder = 0
-						audiofile.dataoffset = 44
-						if audiofile.channels>1:
-							audiofile.speakerarr = {'Type': sequel_list_int([x+1 for x in range(audiofile.channels)])}
-
-						segment = {}
-						segment["Stream"] = proj_sequel.obj_pointer()
-						segment["Stream"].idnum = audiofile.idnum
-						segment["Offset"] = 0
-						segment["Length"] = samp_dur_samples
-						segment["Start"] = 0
-						audiocluster.segments.setvals([segment])
 
 		for num, colordata in enumerate(total_colors):
 			colordata = decode_color(colordata)

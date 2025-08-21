@@ -191,6 +191,7 @@ class input_sequel3(plugins.base):
 		globalstore.dataset.load('z_maestro', './data_main/dataset/z_maestro.dset')
 
 		convproj_obj.type = 'r'
+		convproj_obj.fxtype = 'groupreturn'
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_stretch = ['warp', 'rate']
@@ -205,13 +206,25 @@ class input_sequel3(plugins.base):
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
 		seq_project = project_obj.obj_project
+		obj_devices = project_obj.obj_devices.data
 		data_root = seq_project.data_root
 		project_attributes = data_root.additional_attributes
 		colorset = project_attributes['EvCo'] if 'EvCo' else project_attributes
 
 		timebase = 480
+		convproj_obj.set_timings(timebase)
 
 		globalids = proj_sequel.globalids
+
+		if 'Transport' in obj_devices:
+			Transport = obj_devices['Transport']
+			if 'Cycle Left' in Transport:
+				if 'Time' in Transport['Cycle Left']:
+					convproj_obj.transport.loop_start = Transport['Cycle Left']['Time']
+			if 'Cycle Right' in Transport:
+				if 'Time' in Transport['Cycle Right']:
+					convproj_obj.transport.loop_end = Transport['Cycle Right']['Time']
+
 
 		tempoid = data_root.tempo_track.idnum
 		if tempoid in globalids:
@@ -219,8 +232,6 @@ class input_sequel3(plugins.base):
 			convproj_obj.params.add('bpm', tempo_track.rehearsaltempo, 'float')
 			#for tempoevent in tempo_track.tempoevent:
 			#	convproj_obj.automation.add_autotick(['main', 'bpm'], 'float', 0, tempoevent.bpm)
-
-		convproj_obj.set_timings(timebase)
 
 		tracklist = data_root.node
 		for num, track in enumerate(tracklist.tracks):
@@ -235,6 +246,24 @@ class input_sequel3(plugins.base):
 					timemarker_obj.type = 'region'
 					timemarker_obj.visual.name = str(event.name)
 
+			if isinstance(track, proj_sequel.class_MDeviceTrackEvent):
+				track_node = track.node
+				track_device = track.track_device
+				deviceattributes = track_device.deviceattributes
+
+				busuid = 0
+
+				if 'OwnInputBus' in deviceattributes:
+					OwnInputBus = deviceattributes['OwnInputBus']
+					if 'Bus UID' in OwnInputBus and 'Bus Type' in OwnInputBus:
+						if OwnInputBus['Bus Type'] == 17:
+							busuid = OwnInputBus['Bus UID']
+
+				if busuid:
+					return_obj = convproj_obj.track_master.fx__return__add('return_'+str(busuid))
+					do_visual(return_obj, track, track_node, colorset)
+					do_params(return_obj, track_device)
+
 			if isinstance(track, proj_sequel.class_MInstrumentTrackEvent):
 				track_node = track.node
 				track_device = track.track_device
@@ -244,6 +273,7 @@ class input_sequel3(plugins.base):
 				do_params(track_obj, track_device)
 				do_effects(track_obj, track_device, convproj_obj)
 				do_auto(track_obj, convproj_obj, track.automation, ['track', tracknum], proj_sequel)
+				deviceattributes = track_device.deviceattributes
 
 				for event in track_node.events:
 					placement_obj = track_obj.placements.add_midi()
@@ -277,6 +307,15 @@ class input_sequel3(plugins.base):
 				do_params(track_obj, track_device)
 				do_effects(track_obj, track_device, convproj_obj)
 				do_auto(track_obj, convproj_obj, track.automation, ['track', tracknum], proj_sequel)
+				deviceattributes = track_device.deviceattributes
+
+				#if 'SendFolder' in deviceattributes:
+				#	SendFolder = deviceattributes['SendFolder']
+				#	if 'Slot' in SendFolder:
+				#		for slot in SendFolder['Slot']:
+				#			if 'Output' in slot:
+				#				returnid = 'return_'+str(slot['Output']['Value'])
+				#				track_obj.sends.add(returnid, None, 1)
 
 				for event in track_node.events:
 					placement_obj = track_obj.placements.add_audio()
