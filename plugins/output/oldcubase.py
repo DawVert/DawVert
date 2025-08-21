@@ -356,9 +356,15 @@ class output_oldcubase(plugins.base):
 		seq_engineroot.auto_fade_settings.init_values()
 
 		working_directory = seq_engineroot.working_directory
-		working_directory.name = os.path.basename(dawvert_intent.output_file)
-		working_directory.path = dawvert_intent.output_folder
-		working_directory.type = 1
+		if dawvert_intent.output_mode == 'file':
+			namet = dawvert_intent.output_visname
+			working_directory.name = os.path.basename(dawvert_intent.output_file)
+			working_directory.path = os.path.join(dawvert_intent.output_folder, namet)
+			working_directory.type = 1
+		else:
+			working_directory.name = os.path.basename(dawvert_intent.output_file)
+			working_directory.path = dawvert_intent.output_folder
+			working_directory.type = 1
 
 		root_pool = seq_engineroot.pool
 		root_pool.media_tree.idnum = counter_id.get()
@@ -438,6 +444,11 @@ class output_oldcubase(plugins.base):
 				arrevent.length = arr_obj.duration 
 				if arr_obj.visual.name: arrevent.name = arr_obj.visual.name 
 				do_color(arr_obj.visual, total_colors, arrevent.additional_attributes)
+
+		if dawvert_intent.output_mode == 'file':
+			namet = dawvert_intent.output_visname
+			os.makedirs(os.path.join(dawvert_intent.output_folder, namet), exist_ok=True)
+			os.makedirs(os.path.join(dawvert_intent.output_folder, namet, 'Audio'), exist_ok=True)
 
 		returnids = {}
 		used_paths = {}
@@ -557,6 +568,7 @@ class output_oldcubase(plugins.base):
 					do_color(midipl_obj.visual, total_colors, midipart.additional_attributes)
 
 					midievents_obj = midipl_obj.midievents
+					midievents_obj.change_ppq(480)
 					midievents_obj.sort()
 					midievents_obj.add_note_durs()
 					midievents_obj.sort()
@@ -564,18 +576,29 @@ class output_oldcubase(plugins.base):
 						etype = x[1]
 						if etype == 'NOTE_DUR':
 							midinote = add_list_genid(seq_MMidiPart.events, 'MMidiNote', counter_id)
-							midinote.start = x['pos']
-							midinote.channel = x['chan']
-							midinote.data1 = x['val1']
-							midinote.data2 = x['val2']
+							midinote.start = int(x['pos'])
+							midinote.data1 = int(x['val1'])
+							midinote.data2 = int(x['val2'])
 							midinote.flags = 512
-							midinote.length = x['val3']
+							midinote.length = int(x['val3'])
 							midinote.data3 = 64
-						if etype == 'CONTROL':
+						elif etype == 'CONTROL':
 							midictrl = add_list_genid(seq_MMidiPart.events, 'MMidiController', counter_id)
 							midictrl.start = x['pos']
-							midictrl.data1 = x['val1']
-							midictrl.data2 = x['val2']
+							midictrl.data1 = int(x['val1'])
+							midictrl.data2 = int(x['val2'])
+							midictrl.flags = 512
+						elif etype == 'PITCH':
+							outpitch = int(x[3])+8192
+							midictrl = add_list_genid(seq_MMidiPart.events, 'MMidiPitchBend', counter_id)
+							midictrl.start = int(x['pos'])
+							midictrl.data2 = outpitch>>7
+							midictrl.data1 = outpitch%128
+							midictrl.flags = 512
+						elif etype == 'PRESSURE':
+							midictrl = add_list_genid(seq_MMidiPart.events, 'MMidiAfterTouch', counter_id)
+							midictrl.start = x['pos']
+							midictrl.data1 = int(x['val1'])
 							midictrl.flags = 512
 
 					seq_MGridQuantize = proj_sequel.class_MGridQuantize()
@@ -808,10 +831,10 @@ class output_oldcubase(plugins.base):
 
 			if track_obj.type == 'audio' and not DEBUG_DISABLE_AUDIO_TRACK:
 				audio_track = tracklist.add_track('MAudioTrackEvent')
-				audio_track.flags = 1
 				audio_track.spread_counter(counter_id)
 				audio_track_node = audio_track.node
 				if track_obj.visual.name: audio_track_node.name = to_wide_string(track_obj.visual.name)
+				do_color(track_obj.visual, total_colors, audio_track.additional_attributes)
 				audio_track_node.domain.set_sync(id_trk_bpm, id_trk_meas)
 
 				audio_track.additional_attributes['TLID'] = 0
@@ -872,10 +895,6 @@ class output_oldcubase(plugins.base):
 					sp_obj = audiopl_obj.sample
 					reffound, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
 					if reffound:
-						samp_dur_samples = sampleref_obj.get_dur_samples()
-						samp_dur_hz = sampleref_obj.get_hz()
-						samp_dur_sec = sampleref_obj.get_dur_sec()
-						samp_channels = sampleref_obj.get_channels()
 
 						stretch_obj = sp_obj.stretch
 						timing_obj = stretch_obj.timing
@@ -909,10 +928,22 @@ class output_oldcubase(plugins.base):
 						subtree_part.v_id = len(subtree_audio.subentries)
 
 						#if fileref_obj not in used_paths:
-						audiopath = seq_PAudioClip.path
-						audiopath.idnum = counter_id.get()
-						audiopath.name = str(fileref_obj.file)
-						audiopath.path = '\\'.join(fileref_obj.folder.getpath('win'))+'\\'
+
+						if dawvert_intent.output_mode == 'file':
+							namet = dawvert_intent.output_visname
+							outfile = os.path.join(dawvert_intent.output_folder, namet, 'Audio', str(fileref_obj.file))
+							sampleref_obj.copy_resample('win', outfile)
+
+							audiopath = seq_PAudioClip.path
+							audiopath.idnum = counter_id.get()
+							audiopath.name = str(fileref_obj.file)
+							audiopath.path = '\\'.join(fileref_obj.folder.getpath('win'))+'\\'
+
+						samp_dur_samples = sampleref_obj.get_dur_samples()
+						samp_dur_hz = sampleref_obj.get_hz()
+						samp_dur_sec = sampleref_obj.get_dur_sec()
+						samp_channels = sampleref_obj.get_channels()
+
 						used_paths[fileref_obj] = audiopath.idnum
 						fileext = fileref_obj.file.extension
 						if fileext == 'wav': audiopath.filetype = {"MacType": 1463899717, "DosType": to_wide_string("wav"), "UnixType": to_wide_string("wav"), "Name": to_wide_string("Wave File")}
@@ -1024,5 +1055,6 @@ class output_oldcubase(plugins.base):
 			sq_UColorSet.c_set.append({'Name': to_wide_string("Color %i"%int(num+1)), 'Color': colordata})
 
 		if dawvert_intent.output_mode == 'file':
-			project_obj.save_to_file(dawvert_intent.output_file)
-			project_obj.fsck_file(dawvert_intent.output_file)
+			namet = dawvert_intent.output_visname
+			outfile = os.path.join(dawvert_intent.output_folder, namet, os.path.basename(dawvert_intent.output_file))
+			project_obj.save_to_file(outfile)

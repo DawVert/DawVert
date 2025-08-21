@@ -300,9 +300,13 @@ class input_sequel3(plugins.base):
 						for event in mmidipart.events:
 							startpos = max(0, event.start)+delaystart
 							if isinstance(event, proj_sequel.class_MMidiNote):
-								events_obj.add_note_dur(startpos, event.channel, event.data1, event.data2, event.length)
+								events_obj.add_note_dur(startpos, 0, event.data1, event.data2, event.length)
 							elif isinstance(event, proj_sequel.class_MMidiController):
 								events_obj.add_control(startpos, 0, event.data1, event.data2)
+							elif isinstance(event, proj_sequel.class_MMidiPitchBend):
+								events_obj.add_pitch_hi_lo(startpos, 0, event.data2, event.data1)
+							elif isinstance(event, proj_sequel.class_MMidiAfterTouch):
+								events_obj.add_chan_pressure(startpos, 0, event.data1)
 
 			if isinstance(track, proj_sequel.class_MAudioTrackEvent):
 				track_node = track.node
