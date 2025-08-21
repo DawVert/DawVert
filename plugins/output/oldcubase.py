@@ -879,112 +879,113 @@ class output_oldcubase(plugins.base):
 					reffound, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
 					if reffound:
 
-						stretch_obj = sp_obj.stretch
-						timing_obj = stretch_obj.timing
-
-						audiopart = add_list_genid(audio_track_node.events, 'MAudioEvent', counter_id)
-						time_obj = audiopl_obj.time
-						audiopart.priority = n+2
-
-						if sp_obj.vol != 1: audiopart.volume = sp_obj.vol
-						if audiopl_obj.muted: audiopart.flags = 2
-	
-						seq_PAudioClip = proj_sequel.class_PAudioClip()
-						audiopart.clip_idnum = seq_PAudioClip.idnum = counter_id.get()
-						project_obj.objects[seq_PAudioClip.idnum] = seq_PAudioClip
-						if audiopl_obj.visual.name: seq_PAudioClip.name = to_wide_string(audiopl_obj.visual.name)
-						do_color(audiopl_obj.visual, total_colors, seq_PAudioClip.additional_attributes)
-						if sp_obj.pitch: audiopart.additional_attributes['PitF'] = xtramath.pitch_to_speed(sp_obj.pitch)
-
 						fileref_obj = sampleref_obj.fileref
-
-						#print(fileref_obj.get_path(None, 0))
-
-						audiopart.start, audiopart.length = time_obj.get_posdur()
-						audiopart.offset = time_obj.get_offset()
-						seq_PAudioClip.domain.set_sync(id_trk_bpm, id_trk_meas)
-
-						subtree_part = add_list_genid(subtree_audio.subentries, 'GTreeEntry', counter_id)
-						subtree_part.dataobject = seq_PAudioClip.idnum
-						subtree_part.name = to_wide_string(str(fileref_obj.file.filename))
-						subtree_part.flags = 611
-						subtree_part.v_id = len(subtree_audio.subentries)
-
-						#if fileref_obj not in used_paths:
-
+	
 						if dawvert_intent.output_mode == 'file':
 							namet = dawvert_intent.output_visname
 							outfile = os.path.join(dawvert_intent.output_folder, namet, 'Audio', str(fileref_obj.file))
 							sampleref_obj.copy_resample('win', outfile)
-
-							audiopath = seq_PAudioClip.path
-							audiopath.idnum = counter_id.get()
-							audiopath.name = str(fileref_obj.file)
-							audiopath.path = '\\'.join(fileref_obj.folder.getpath('win'))+'\\'
 
 						samp_dur_samples = sampleref_obj.get_dur_samples()
 						samp_dur_hz = sampleref_obj.get_hz()
 						samp_dur_sec = sampleref_obj.get_dur_sec()
 						samp_channels = sampleref_obj.get_channels()
 
-						used_paths[fileref_obj] = audiopath.idnum
-						fileext = fileref_obj.file.extension
-						if fileext == 'wav': audiopath.filetype = {"MacType": 1463899717, "DosType": to_wide_string("wav"), "UnixType": to_wide_string("wav"), "Name": to_wide_string("Wave File")}
-						if fileext == 'ogg': audiopath.filetype = {"MacType": 1332176726, "DosType": to_wide_string("ogg"), "Name": to_wide_string("OggVorbis File")}
-						#else:
-						#	seq_PAudioClip.path = proj_sequel.obj_pointer()
-						#	seq_PAudioClip.path.idnum = used_paths[fileref_obj]
+						if samp_dur_samples and samp_dur_hz:
+							stretch_obj = sp_obj.stretch
+							timing_obj = stretch_obj.timing
+	
+							audiopart = add_list_genid(audio_track_node.events, 'MAudioEvent', counter_id)
+							time_obj = audiopl_obj.time
+							audiopart.priority = n+2
+	
+							if sp_obj.vol != 1: audiopart.volume = sp_obj.vol
+							if audiopl_obj.muted: audiopart.flags = 2
+		
+							seq_PAudioClip = proj_sequel.class_PAudioClip()
+							audiopart.clip_idnum = seq_PAudioClip.idnum = counter_id.get()
+							project_obj.objects[seq_PAudioClip.idnum] = seq_PAudioClip
+							if audiopl_obj.visual.name: seq_PAudioClip.name = to_wide_string(audiopl_obj.visual.name)
+							do_color(audiopl_obj.visual, total_colors, audiopart.additional_attributes)
+							if sp_obj.pitch: audiopart.additional_attributes['PitF'] = xtramath.pitch_to_speed(sp_obj.pitch)
+	
+							audiopath = seq_PAudioClip.path
+							audiopath.idnum = counter_id.get()
+							audiopath.name = str(fileref_obj.file)
+							audiopath.path = '\\'.join(fileref_obj.folder.getpath('win'))+'\\'
 
-						clipattrib = seq_PAudioClip.additional_attributes
-						clipattrib['Grain Size'] = 1740
+							#print(fileref_obj.get_path(None, 0))
+	
+							audiopart.start, audiopart.length = time_obj.get_posdur()
+							audiopart.offset = time_obj.get_offset()
+							seq_PAudioClip.domain.set_sync(id_trk_bpm, id_trk_meas)
 
-						GridDef = clipattrib['GridDef'] = proj_sequel.class_PGridDefinition()
-						GridDef.idnum = counter_id.get()
-						GridDef.tempo = bpm
-						GridDef.offsettempo = bpm
-
-						clipattrib['Stretch Preset'] = 4
-						clipattrib['Warp Overlap'] = 0.14
-						clipattrib['Warp Variance'] = 1.0
-						AudioWarpScale = clipattrib['Warpscale'] = proj_sequel.class_PAudioWarpScale()
-						AudioWarpScale.idnum = counter_id.get()
-						add_list_genid(AudioWarpScale.warptab, 'PWarpTab', counter_id)
-						warptab = add_list_genid(AudioWarpScale.warptab, 'PWarpTab', counter_id)
-						warptab.position = samp_dur_samples
-						if timing_obj.time_type=='speed':
+							subtree_part = add_list_genid(subtree_audio.subentries, 'GTreeEntry', counter_id)
+							subtree_part.dataobject = seq_PAudioClip.idnum
+							subtree_part.name = to_wide_string(str(fileref_obj.file.filename))
+							subtree_part.flags = 611
+							subtree_part.v_id = len(subtree_audio.subentries)
+	
+							#if fileref_obj not in used_paths:
+	
+							used_paths[fileref_obj] = audiopath.idnum
+							fileext = fileref_obj.file.extension
+							if fileext == 'wav': audiopath.filetype = {"MacType": 1463899717, "DosType": to_wide_string("wav"), "UnixType": to_wide_string("wav"), "Name": to_wide_string("Wave File")}
+							if fileext == 'ogg': audiopath.filetype = {"MacType": 1332176726, "DosType": to_wide_string("ogg"), "Name": to_wide_string("OggVorbis File")}
+							#else:
+							#	seq_PAudioClip.path = proj_sequel.obj_pointer()
+							#	seq_PAudioClip.path.idnum = used_paths[fileref_obj]
+	
+							clipattrib = seq_PAudioClip.additional_attributes
+							clipattrib['Grain Size'] = 1740
+	
+							GridDef = clipattrib['GridDef'] = proj_sequel.class_PGridDefinition()
+							GridDef.idnum = counter_id.get()
+							GridDef.tempo = bpm
+							GridDef.offsettempo = bpm
+	
+							clipattrib['Stretch Preset'] = 4
+							clipattrib['Warp Overlap'] = 0.14
+							clipattrib['Warp Variance'] = 1.0
+							AudioWarpScale = clipattrib['Warpscale'] = proj_sequel.class_PAudioWarpScale()
+							AudioWarpScale.idnum = counter_id.get()
+							add_list_genid(AudioWarpScale.warptab, 'PWarpTab', counter_id)
+							warptab = add_list_genid(AudioWarpScale.warptab, 'PWarpTab', counter_id)
+							warptab.position = samp_dur_samples
+	
 							speed = timing_obj.get__speed(sampleref_obj)
 							warptab.warped = (samp_dur_sec*2*timebase)*speed
-							audiopart.offset *= speed
-						else:
-							warptab.warped = timing_obj.get__beats(sampleref_obj)*timebase
 
-						clipattrib['unStretch'] = 0
+							if timing_obj.time_type=='speed': audiopart.offset *= speed
 
-						audiocluster = seq_PAudioClip.cluster
-						audiocluster.idnum = counter_id.get()
-
-						audiofile = add_list_genid(audiocluster.substreams, 'AudioFile', counter_id)
-						audiofile.fpath = proj_sequel.obj_pointer()
-						audiofile.fpath.idnum = audiopath.idnum
-
-						audiofile.framecount = samp_dur_samples
-						audiofile.sample_size = 16
-						audiofile.frame_size = 4
-						#audiofile.channels = sampleref_obj.get_channels()
-						audiofile.rate = samp_dur_hz
-						audiofile.format = 65536
-						audiofile.byteorder = 0
-						audiofile.dataoffset = 44
-						if samp_channels>1:
-							audiofile.speakerarr = {'Type': sequel_list_int([x+1 for x in range(samp_channels)])}
-
-						segment = {}
-						segment["Stream"] = proj_sequel.obj_pointer()
-						segment["Stream"].idnum = audiofile.idnum
-						segment["Offset"] = 0
-						segment["Length"] = samp_dur_samples
-						segment["Start"] = 0
-						audiocluster.segments.setvals([segment])
+							clipattrib['unStretch'] = 0
+	
+							audiocluster = seq_PAudioClip.cluster
+							audiocluster.idnum = counter_id.get()
+	
+							audiofile = add_list_genid(audiocluster.substreams, 'AudioFile', counter_id)
+							audiofile.fpath = proj_sequel.obj_pointer()
+							audiofile.fpath.idnum = audiopath.idnum
+	
+							audiofile.framecount = samp_dur_samples
+							audiofile.sample_size = 16
+							audiofile.frame_size = 4
+							#audiofile.channels = sampleref_obj.get_channels()
+							audiofile.rate = samp_dur_hz
+							audiofile.format = 65536
+							audiofile.byteorder = 0
+							audiofile.dataoffset = 44
+							if samp_channels is not None:
+								if samp_channels>1:
+									audiofile.speakerarr = {'Type': sequel_list_int([x+1 for x in range(samp_channels)])}
+	
+							segment = {}
+							segment["Stream"] = proj_sequel.obj_pointer()
+							segment["Stream"].idnum = audiofile.idnum
+							segment["Offset"] = 0
+							segment["Length"] = samp_dur_samples
+							segment["Start"] = 0
+							audiocluster.segments.setvals([segment])
 
 				for returnid, return_obj in master_returns.items():
 					senddata = {}
