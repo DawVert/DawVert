@@ -96,32 +96,30 @@ native_names['E4B91D8420B74C48A8B10F2DB9CB707E'] = 'ampsimulator'
 native_names['E97A6873690F40E986F3EE1007B5C8FC'] = 'tremolo'
 native_names['FDD7243578EF434A833705ECC4E4CE46'] = 'flanger'
 
-def do_effect(track_obj, slot, convproj_obj):
+def do_plugin(plugslots, slot, convproj_obj, issynth):
 	if 'State' in slot:
 		if slot['State']:
-			if slot['Plugin isA'] == 'VstCtrlInternalEffect':
-				#if native_names
+			PluginisA = str(slot['Plugin isA'])
+			if PluginisA == 'VstCtrlInternalEffect':
 				plugin = slot['Plugin']
 				if 'Plugin UID' in plugin:
 					if 'GUID' in plugin['Plugin UID']:
-						guid = plugin['Plugin UID']['GUID']
+						guid = str(plugin['Plugin UID']['GUID'])
+						IDString = str(plugin['IDString'])
+
+						plugin_obj = None
 
 						if guid in native_names:
 							plugname = native_names[guid]
 
-							plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'sequel', plugname)
-							plugin_obj.role = 'effect'
-							track_obj.plugslots.slots_audio.append(pluginid)
+							plugin_obj = convproj_obj.plugin__add(IDString, 'native', 'sequel', plugname)
 
 							plugindata = bytereader.bytereader()
 							plugindata.load_raw(plugin['audioComponent'])
 		
-							unkd = plugindata.uint8()
-							numparams = plugindata.uint8()
-							plugindata.skip(2)
+							sizemaybe = plugindata.uint32()
 
 							params = {}
-
 							while plugindata.remaining():
 								name, value = do_effect_param(plugindata)
 								params[name] = value
@@ -133,8 +131,18 @@ def do_effect(track_obj, slot, convproj_obj):
 								paramval = params[param_id] if param_id in params else dset_param.defv
 								plugin_obj.params.add(param_id, paramval, 'float')
 
-						#else:
-						#	print('plugin not found:', plugin['Plugin Name'], guid)
+						else:
+							plugin_obj = convproj_obj.plugin__add(IDString, 'external', 'vst3', None)
+							extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, IDString)
+							plugin_obj.external_info.name = plugin['Plugin Name']
+							extmanu_obj.vst3__replace_data('id', guid, plugin['audioComponent'], None)
+
+						if plugin_obj: 
+							if not issynth: plugin_obj.role = 'fx'
+							else: plugin_obj.role = 'synth' 
+
+						if not issynth: plugslots.slots_audio.append(IDString)
+						else: plugslots.set_synth(IDString)
 
 def do_effects(track_obj, track_device, convproj_obj):
 	deviceattributes = track_device.deviceattributes
@@ -164,7 +172,7 @@ def do_effects(track_obj, track_device, convproj_obj):
 		if 'Slot' in insertfolder:
 			insertslots = insertfolder['Slot']
 			for slot in insertslots:
-				do_effect(track_obj, slot, convproj_obj)
+				do_plugin(track_obj.plugslots, slot, convproj_obj, 0)
 
 class input_sequel3(plugins.base):
 	def is_dawvert_plugin(self):
@@ -279,6 +287,8 @@ class input_sequel3(plugins.base):
 				do_effects(track_obj, track_device, convproj_obj)
 				do_auto(track_obj, convproj_obj, track.automation, ['track', tracknum], proj_sequel)
 				deviceattributes = track_device.deviceattributes
+
+				do_plugin(track_obj.plugslots, deviceattributes['Synth Slot'], convproj_obj, 1)
 
 				for event in track_node.events:
 					placement_obj = track_obj.placements.add_midi()

@@ -17,10 +17,9 @@ def process(convproj_obj, in__midi_notes, out__midi_notes, out_type, dawvert_int
 						etype = x[1]
 						if etype == 'NOTE_DUR':
 							channel = int(x[2])
-							ext = {}
-							if channel: ext['channel'] = channel
-							if x[9]!=64: ext['off_vol'] = float(x[9])/127
-							notelist_obj.add_r(int(x[0]), int(x[5]), int(x[3])-60, int(x[4])/127, ext if ext else None)
+							notelist_obj.add_r(int(x[0]), int(x[5]), int(x[3])-60, int(x[4])/127, None)
+							notelist_obj.last_add_vol_off(float(x[9])/127)
+							notelist_obj.last_add_channel(channel)
 					notelist_obj.change_timings(midpl.time_ppq)
 				track_obj.placements.pl_midi.data = []
 

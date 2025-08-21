@@ -771,24 +771,7 @@ class output_oldcubase(plugins.base):
 
 				deviceattributes["hasVSTi"] = 1
 				deviceatt_synthslot = deviceattributes["Synth Slot"] = {}
-				deviceatt_synthslot["Plugin isA"] = to_norm_string("VstCtrlInternalEffect")
-				deviceatt_plugin = deviceatt_synthslot["Plugin"] = {}
-				deviceatt_synthslot["WasEnableBeforeFreeze"] = 0
-				deviceatt_synthslot["State"] = 1
-
-				deviceatt_plugin['Plugin UID'] = {'GUID': to_wide_string('FFF583CCDFB246F894308DB9C5D94C8D')}
-				deviceatt_plugin['Plugin Name'] = to_wide_string('Instrument')
-				deviceatt_plugin['Audio Input Count'] = 0
-				deviceatt_plugin['Audio Output Count'] = 1
-				deviceatt_plugin['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
-				deviceatt_plugin['Event Input Count'] = 1
-				deviceatt_plugin['Event Input Name'] = sequel_list_string([to_norm_string('Midi In')])
-				deviceatt_plugin['Event Output Count'] = 0
-				deviceatt_plugin['audioComponent'] = b''
-				deviceatt_plugin['editController'] = b''
-				deviceatt_plugin['Active'] = 1
-				deviceatt_plugin['IDString'] = to_wide_string('FFF583CCDFB246F894308DB9C5D94C8D-0')
-				deviceatt_plugin['Bay Program'] = to_wide_string('')
+				deviceatt_synthslot["State"] = 0
 
 				instrument_track_device.input_type = 3
 				instrument_track_device.input_device_id = to_norm_string('All MIDI Inputs')
