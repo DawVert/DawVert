@@ -188,6 +188,7 @@ class input_reaper(plugins.base):
 		traits_obj.plugin_ext_platforms = ['win', 'unix']
 		traits_obj.time_seconds = True
 		traits_obj.track_hybrid = True
+		traits_obj.notepl_pitch = True
 
 		convproj_obj.set_timings(4.0)
 
@@ -633,7 +634,7 @@ class input_reaper(plugins.base):
 										midievents_obj.add_note_on(curpos, midich, int(note[3],16), int(note[4],16))
 	
 									elif midicmd == 8:
-										midievents_obj.add_note_off(curpos, midich, int(note[3],16), 0)
+										midievents_obj.add_note_off_vel(curpos, midich, int(note[3],16), int(note[4],16))
 
 									elif midicmd == 10:
 										midievents_obj.add_note_pressure(curpos, midich, int(note[3],16), int(note[4],16))
@@ -652,10 +653,11 @@ class input_reaper(plugins.base):
 
 									elif midicmd == 14:
 										midievents_obj.add_pitch_hi_lo(curpos, midich, int(note[4],16), int(note[3],16))
-
 							else:
 								midifile = os.path.join(dawvert_intent.input_folder, midifile)
 								placement_obj.midi_from(midifile)
+
+							placement_obj.pitch = rpp_source.transpose.get()
 
 							maxdur = int(midievents_obj.get_dur())
 

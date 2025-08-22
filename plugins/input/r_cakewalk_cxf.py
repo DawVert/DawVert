@@ -37,7 +37,7 @@ class stored_vals():
 	
 	def zip_get_path(self, cata, filename):
 		outpath = self.zip_start_path+['Assets', cata, filename]
-		return '\\'.join(outpath)
+		return '/'.join(outpath)
 
 	def zip_get_exists(self, cata, filename):
 		return self.zip_get_path(cata, filename) in self.zip_data.namelist()

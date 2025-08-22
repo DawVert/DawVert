@@ -14,6 +14,7 @@ midinote_premake = dynbytearr.dynbytearr_premake([
 	('end', np.uint64),
 	('key', np.uint8),
 	('vol', np.uint8),
+	('vol_off', np.uint8),
 	('inst', instruments.midi_instrument),
 	('section', np.uint64),
 	])
@@ -51,7 +52,7 @@ class notes_data:
 	def alloc(self, allocsize):
 		self.all_notes.alloc(allocsize)
 
-	def add_note_dur(self, track, pos, chan, port, key, vol, dur):
+	def add_note_dur(self, track, pos, chan, port, key, vol, dur, offvel):
 		cur_notes = self.cur_notes
 		cur_notes.add()
 		cur_notes['track'] = track
@@ -61,6 +62,7 @@ class notes_data:
 		cur_notes['vol'] = vol
 		cur_notes['complete'] = 1
 		cur_notes['end'] = pos+dur
+		cur_notes['vol_off'] = offvel
 		return cur_notes
 
 	def add_note_on(self, track, pos, chan, port, key, vol):
@@ -74,13 +76,14 @@ class notes_data:
 		self.notes[port][chan][key].append(self.cur_notes.pos)
 		return cur_notes
 
-	def add_note_off(self, chan, port, key, pos):
+	def add_note_off(self, chan, port, key, pos, offvel):
 		nd = self.notes[port][chan][key]
 		if nd:
 			notenum = nd.pop()
 			non = self.all_notes.data[notenum]
 			non['complete'] = 1
 			non['end'] = pos
+			non['vol_off'] = offvel
 
 	def sort(self):
 		self.all_notes.sort(['start'])

@@ -165,8 +165,10 @@ class notelist_data:
 		('used', np.int8), 
 		('pos', np.float64), 
 		('dur', np.float64), 
-		('vol', np.float16),
 		('key', np.int16),
+		('vol', np.float32),
+		('vol_off', np.float32),
+		('chan', np.int8),
 		('is_inst', np.int8), 
 		('is_extra', np.int8), 
 		('is_auto', np.int8), 
@@ -408,6 +410,14 @@ class cvpj_notelist:
 		note = self.cursor.getcur()
 		note['vol'] = i_val
 
+	def last_add_vol_off(self, i_val):
+		note = self.cursor.getcur()
+		note['vol_off'] = i_val
+
+	def last_add_channel(self, i_val):
+		note = self.cursor.getcur()
+		note['chan'] = i_val
+
 	def last_add_pan(self, pan):
 		if pan!=0:
 			if self.__len__():
@@ -644,6 +654,21 @@ class cvpj_notelist:
 				t_extra = cursor_obj.assoc_extra_get()
 				t_auto = cursor_obj.assoc_auto_get()
 				yield t_pos, t_dur, t_keys, t_vol, t_inst, t_extra, t_auto
+
+	def iter_midispec(self):
+		cursor_obj = self.create_cursor()
+		for note in cursor_obj:
+			if note['used']:
+				t_pos = note['pos']
+				t_dur = note['dur']
+				t_keys = cursor_obj.assoc_multikey_get()
+				t_vol = note['vol']
+				t_vol_off = note['vol_off']
+				t_chan = note['chan']
+				t_inst = cursor_obj.assoc_inst_get()
+				t_extra = cursor_obj.assoc_extra_get()
+				t_auto = cursor_obj.assoc_auto_get()
+				yield t_pos, t_dur, t_keys, t_vol, t_vol_off, t_chan, t_inst, t_extra, t_auto
 
 	def extra_to_noteenv(self):
 		cursor_obj = self.create_cursor()

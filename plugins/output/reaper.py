@@ -436,6 +436,7 @@ class output_reaper(plugins.base):
 		in_dict['plugin_ext_platforms'] = ['win', 'unix']
 		in_dict['plugin_included'] = ['universal:sampler:single','universal:sampler:multi']
 		in_dict['projtype'] = 'r'
+		in_dict['notepl_pitch'] = True
 	
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import reaper as proj_reaper
@@ -598,6 +599,7 @@ class output_reaper(plugins.base):
 				rpp_source_obj.hasdata.used = True
 				rpp_source_obj.hasdata['hasdata'] = 1
 				rpp_source_obj.hasdata['ppq'] = midievents_obj.ppq
+				rpp_source_obj.transpose.set(int(midipl_obj.pitch))
 
 				do_auto_clip(midipl_obj, rpp_item_obj.volenv, 'gain', 'float', False, False)
 				do_auto_clip(midipl_obj, rpp_item_obj.panenv, 'pan', 'float', False, False)
@@ -621,7 +623,7 @@ class output_reaper(plugins.base):
 						rpp_source_obj.notes.append([True, posdir, f'{(144+int(x[2])):x}', f'{(int(x[3])):x}', f'{(int(x[4])):x}'])
 						ppos = int(x[0])
 					elif etype == 'NOTE_OFF':
-						rpp_source_obj.notes.append([True,	posdir, f'{(128+int(x[2])):x}', f'{(int(x[3])):x}', '00'])
+						rpp_source_obj.notes.append([True,	posdir, f'{(128+int(x[2])):x}', f'{(int(x[3])):x}', f'{(int(x[4])):x}'])
 						ppos = int(x[0])
 					elif etype == 'NOTE_PRS':
 						rpp_source_obj.notes.append([True,	posdir, f'{(160+int(x[2])):x}', f'{(int(x[3])):x}', f'{(int(x[4])):x}'])

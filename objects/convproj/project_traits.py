@@ -21,6 +21,7 @@ class cvpj_project_traits:
 		self.track_nopl = False
 		self.track_arranger = False
 		self.notespl_features = []
+		self.notepl_pitch = False
 
 		self.time_seconds = False
 		self.time_seconds_tracks = False
@@ -48,6 +49,7 @@ class cvpj_project_traits:
 		if 'track_lanes' in indict: self.track_lanes = indict['track_lanes']
 		if 'track_nopl' in indict: self.track_nopl = indict['track_nopl']
 		if 'track_arranger' in indict: self.track_arranger = indict['track_arranger']
+		if 'notepl_pitch' in indict: self.notepl_pitch = indict['notepl_pitch']
 
 		if 'time_seconds' in indict: 
 			self.time_seconds = indict['time_seconds']

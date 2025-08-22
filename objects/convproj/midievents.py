@@ -18,6 +18,7 @@ in_dtype = np.dtype([
 	('value2', np.uint8),
 	('uhival', np.uint64),
 	('shival', np.int32),
+	('off_vel', np.uint8),
 	])
 
 EVENTID__NOTE_OFF = 8
@@ -57,6 +58,7 @@ state_dtype = np.dtype([
 	('hqval', np.double),
 	('pos_prev', np.uint64),
 	('pos_dif', np.uint64),
+	('off_vel', np.uint8),
 	])
 
 class midievents:
@@ -86,6 +88,7 @@ class midievents:
 					state[1] = "NOTE_OFF"
 					state[3] = x['value']
 					state[4] = x['value2']
+					state[9] = x['value2']
 				elif etype == EVENTID__NOTE_ON:
 					state[1] = "NOTE_ON"
 					state[3] = x['value']
@@ -95,6 +98,7 @@ class midievents:
 					state[3] = x['value']
 					state[4] = x['value2']
 					state[5] = x['uhival']
+					state[9] = x['off_vel']
 				elif etype == EVENTID__CONTROL:
 					state[1] = "CONTROL"
 					state[3] = x['value']
@@ -191,6 +195,7 @@ class midievents:
 						non['uhival'] = d['pos']-non['pos']
 						non['type'] = EVENTID__NOTE_DUR
 						non['uflags'] = PBFLAGVAL__NOTE_DUR
+						non['off_vel'] = d['value2']
 			self.has_duration = True
 
 	def del_note_durs(self):
@@ -203,7 +208,7 @@ class midievents:
 			self.data.data['uhival'][wherebools] = 0
 			self.data.extend(len(wb))
 			for n in wb:
-				self.add_note_off(n['pos']+n['uhival'], n['chan'], n['value'], n['value2'])
+				self.add_note_off_vel(n['pos']+n['uhival'], n['chan'], n['value'], n['off_vel'])
 			self.has_duration = False
 
 	def detect_duration(self):
@@ -212,7 +217,18 @@ class midievents:
 		durn = np.count_nonzero(used_data['type']==EVENTID__NOTE_ON)
 		print(durc, durn)
 
-	def add_note_off(self, curpos, channel, key, vol):
+	def add_note_off(self, curpos, channel, key):
+		self.cursor.add()
+		cursor = self.cursor
+		cursor['pos'] = curpos
+		cursor['type'] = EVENTID__NOTE_OFF
+		cursor['chan'] = channel
+		cursor['uflags'] = PBFLAGVAL__NOTE
+		cursor['value'] = key
+		cursor['value2'] = 64
+		cursor['uhival'] = 0
+
+	def add_note_off_vel(self, curpos, channel, key, vol):
 		self.cursor.add()
 		cursor = self.cursor
 		cursor['pos'] = curpos
@@ -222,6 +238,7 @@ class midievents:
 		cursor['value'] = key
 		cursor['value2'] = vol
 		cursor['uhival'] = 0
+		cursor['off_vel'] = vol
 
 	def add_note_on(self, curpos, channel, key, vol):
 		self.cursor.add()
@@ -244,6 +261,18 @@ class midievents:
 		cursor['value'] = key
 		cursor['value2'] = vol
 		cursor['uhival'] = dur
+
+	def add_note_dur_off_vel(self, curpos, channel, key, vol, dur, off_vel):
+		self.cursor.add()
+		cursor = self.cursor
+		cursor['pos'] = curpos
+		cursor['type'] = EVENTID__NOTE_DUR
+		cursor['chan'] = channel
+		cursor['uflags'] = PBFLAGVAL__NOTE_DUR
+		cursor['value'] = key
+		cursor['value2'] = vol
+		cursor['uhival'] = dur
+		cursor['off_vel'] = off_vel
 
 	def add_note_pressure(self, curpos, channel, note, pressure):
 		self.cursor.add()
@@ -535,3 +564,7 @@ class midievents:
 
 		midiobj.tracks.append(miditrack)
 		return midiobj
+
+	def mod_transpose(self, pitch):
+		wherevals = np.nonzero(self.data.data['uflags']&FLAGS__NOTE)
+		self.data.data['value'][wherevals] += pitch if pitch>=0 else 256+pitch

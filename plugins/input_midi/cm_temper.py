@@ -80,7 +80,7 @@ class input_cvpj_f(plugins.base):
 						ncurpos += event.td
 						if isinstance(event, proj_temper.event_note):
 							note = note_data.text_to_note(event.p)+24
-							midievents_obj.add_note_dur(ncurpos, channel, note+60, event.v, event.d)
+							midievents_obj.add_note_dur_off_vel(ncurpos, channel, note+60, event.v, event.d, event.r)
 						elif isinstance(event, proj_temper.event_control):
 							midievents_obj.add_control(ncurpos, channel, event.n, int(event.v))
 						elif isinstance(event, proj_temper.event_patch):

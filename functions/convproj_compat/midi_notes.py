@@ -17,10 +17,10 @@ def process(convproj_obj, in__midi_notes, out__midi_notes, out_type, dawvert_int
 						etype = x[1]
 						if etype == 'NOTE_DUR':
 							channel = int(x[2])
-							ext = {'channel': channel} if channel else None
-							notelist_obj.add_r(int(x[0]), int(x[5]), int(x[3])-60, int(x[4])/127, ext)
+							notelist_obj.add_r(int(x[0]), int(x[5]), int(x[3])-60, int(x[4])/127, None)
+							notelist_obj.last_add_vol_off(float(x[9])/127)
+							notelist_obj.last_add_channel(channel)
 					notelist_obj.change_timings(midpl.time_ppq)
-					notelist_obj.mod_transpose(midpl.pitch)
 				track_obj.placements.pl_midi.data = []
 
 			return True
@@ -37,13 +37,9 @@ def process(convproj_obj, in__midi_notes, out__midi_notes, out_type, dawvert_int
 						midi_pl = tpl.pl_midi.make_base_from_notes(notespl_obj)
 						midievents_obj = midi_pl.midievents
 						midievents_obj.ppq = 960
-						for t_pos, t_dur, t_keys, t_vol, t_inst, t_extra, t_autopack in notespl_obj.notelist.iter():
+						for t_pos, t_dur, t_keys, t_vol, t_vol_off, t_chan, t_inst, t_extra, t_autopack in notespl_obj.notelist.iter_midispec():
 							for t_key in t_keys:
-								if t_extra is not None:
-									channel = t_extra['channel'] if 'channel' in t_extra else 0
-								else:
-									channel = 0
-								midievents_obj.add_note_dur(t_pos, channel, t_key+60, min(127, t_vol*127), t_dur)
+								midievents_obj.add_note_dur_off_vel(t_pos, t_chan, t_key+60, min(127, t_vol*127), t_dur, min(127, t_vol_off*127))
 						midievents_obj.has_duration = True
 						midievents_obj.del_note_durs()
 					tpl.pl_notes.data = []

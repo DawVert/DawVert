@@ -67,6 +67,7 @@ class event_note:
 		self.d = 0
 		self.p = ''
 		self.v = 0
+		self.r = 0
 
 	@classmethod
 	def fromxml(cls, xmldata):
@@ -75,6 +76,7 @@ class event_note:
 		if "d" in xmldata.attrib: cls.d = int(xmldata.attrib['d'])
 		if "p" in xmldata.attrib: cls.p = xmldata.attrib['p']
 		if "v" in xmldata.attrib: cls.v = int(xmldata.attrib['v'])
+		if "r" in xmldata.attrib: cls.r = int(xmldata.attrib['r'])
 		return cls
 
 class event_aftertouch:

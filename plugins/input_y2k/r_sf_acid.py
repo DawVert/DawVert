@@ -166,7 +166,7 @@ class input_acid_old(plugins.base):
 					outaudio = bytearray(project_obj.audios[tracknum])
 					if len(outaudio)>12:
 						if outaudio[8:12] == b'wave': outaudio[8:12] = b'WAVE'
-
+					os.makedirs(samplefolder, exist_ok=True)
 					wav_fileobj = open(wave_path, 'wb')
 					wav_fileobj.write(outaudio)
 					sampleref_obj = convproj_obj.sampleref__add(wave_path, wave_path, 'win')

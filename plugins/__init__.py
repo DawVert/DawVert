@@ -31,6 +31,7 @@ class info_daw:
 		self.fxtype = 'none'
 		self.notes_midi = False
 		self.projtype = '?'
+		self.notepl_pitch = False
 
 		self.time_seconds = False
 		self.time_seconds_tracks = False
@@ -63,6 +64,7 @@ class info_daw:
 		if 'fxtype' in indict: self.fxtype = indict['fxtype']
 		if 'projtype' in indict: self.projtype = indict['projtype']
 		if 'notes_midi' in indict: self.notes_midi = indict['notes_midi']
+		if 'notepl_pitch' in indict: self.notepl_pitch = indict['notepl_pitch']
 
 		if 'time_seconds' in indict: 
 			self.time_seconds = indict['time_seconds']

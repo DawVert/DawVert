@@ -166,7 +166,7 @@ class cvpj_placement_midi:
 				for msg in eventlist.events:
 					curpos += msg.deltaTime
 					if type(msg) == MidiEvents.NoteOnEvent: events_obj.add_note_on(curpos, msg.channel, msg.note, msg.velocity)
-					elif type(msg) == MidiEvents.NoteOffEvent: events_obj.add_note_off(curpos, msg.channel, msg.note, 0)
+					elif type(msg) == MidiEvents.NoteOffEvent: events_obj.add_note_off(curpos, msg.channel, msg.note)
 					elif type(msg) == MidiEvents.CopyrightEvent: events_obj.add_copyright(msg.copyright)
 					elif type(msg) == MidiEvents.PitchBendEvent: events_obj.add_pitch(curpos, msg.channel, msg.pitch)
 					elif type(msg) == MidiEvents.ControllerEvent: events_obj.add_control(curpos, msg.channel, msg.controller, msg.value)

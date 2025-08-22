@@ -247,11 +247,9 @@ def do_notes(track_obj, clip, notes):
 		note_vel = note.vel if note.vel != None else 1
 		note_extra = {}
 		if note.rel != None: note_extra['release'] = note.rel
-		if note.channel != None: note_extra['channel'] = note.channel
-
 		cvpj_notelist = placement_obj.notelist
-
 		cvpj_notelist.add_r(note.time, note.duration, note.key-60, note_vel, note_extra)
+		cvpj_notelist.last_add_channel(note.channel)
 		if note.points: do_mpe(cvpj_notelist, note.points)
 		if note.lanes:
 			for points in note.lanes.points: do_mpe(cvpj_notelist, points)
