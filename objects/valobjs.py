@@ -166,3 +166,17 @@ class indexed_value:
 		for n, x in other.items():
 			out[n+1] = self.add(x)
 		return out
+
+def au__id_to_combid(manufacturer, maintype, subtype):
+	import struct
+	return ':'.join([struct.pack('<I', x).hex() for x in [manufacturer, maintype, subtype]])
+
+def au__combid_to_id(combid):
+	import struct
+	manufacturer, maintype, subtype = 0,0,0
+	if len(combid)==26:
+		try:
+			manufacturer, maintype, subtype = [struct.unpack('<I', bytearray.fromhex(x))[0] for x in combid.split(':')]
+		except:
+			pass
+	return manufacturer, maintype, subtype

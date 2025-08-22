@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from objects import globalstore
+from objects import valobjs
 from objects.data_bytes import bytereader
 from objects.data_bytes import bytewriter
 import numpy as np
@@ -216,7 +217,6 @@ class extplug_manu:
 		icomp.text = juce_memoryblock.toJuceBase64Encoding(rawdata)
 		if rawdata: return data_vc2xml.make(x_root)
 
-
 # --------------------------------------------------- DIRECTX ---------------------------------------------------
 
 	def dx__import_presetdata(self, datatype, indata):
@@ -257,6 +257,15 @@ class extplug_manu:
 			logger_plugins.warning('dx: id is missing')
 
 		return outdata
+
+# --------------------------------------------------- AU ---------------------------------------------------
+
+	def au__replace_data(self, manufacturer, maintype, subtype, chunk):
+		self.set_type('au', None)
+		external_info = self.plugin_obj.external_info
+		external_info.plugtype = 'au'
+		external_info.id = valobjs.au__id_to_combid(manufacturer, maintype, subtype)
+		self.external__set_chunk(chunk)
 
 # --------------------------------------------------- CLAP ---------------------------------------------------
 
