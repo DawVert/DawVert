@@ -350,6 +350,8 @@ def make_group(convproj_obj, sampleref_assoc, sampleref_obj_assoc, groupid, grou
 			wf_foldertrack = proj_tracktion_edit.tracktion_foldertrack()
 			wf_foldertrack.id_num = counter_id.get()
 			wf_foldertrack.height = group_obj.visual_ui.height*35.41053828354546
+			wf_foldertrack.mute = int(not bool(group_obj.params.get('enabled', False).value))
+			wf_foldertrack.solo = int(group_obj.params.get('solo', False).value)
 			wf_maintrack.append(wf_foldertrack)
 			if group_obj.visual.name: wf_foldertrack.name = group_obj.visual.name
 			if group_obj.visual.color: wf_foldertrack.colour ='ff'+group_obj.visual.color.get_hex()
@@ -497,6 +499,8 @@ class output_tracktion_edit(plugins.base):
 			wf_track = proj_tracktion_edit.tracktion_track()
 			wf_track.id_num = counter_id.get()
 			wf_track.height = track_obj.visual_ui.height*35.41053828354546
+			wf_track.mute = int(not bool(track_obj.params.get('enabled', False).value))
+			wf_track.solo = int(track_obj.params.get('solo', False).value)
 
 			if track_obj.visual.name: wf_track.name = track_obj.visual.name
 			if track_obj.visual.color: wf_track.colour ='ff'+track_obj.visual.color.get_hex()

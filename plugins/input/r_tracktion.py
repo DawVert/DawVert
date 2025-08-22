@@ -280,6 +280,8 @@ def do_foldertrack(convproj_obj, wf_track, counter_track, software_mode, dawvert
 	if wf_track.colour != '0': 
 		track_obj.visual.color.set_hex(wf_track.colour)
 		track_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+	track_obj.params.add('enabled', int(not wf_track.mute), 'bool')
+	track_obj.params.add('solo', wf_track.solo, 'bool')
 	#track_obj.visual_ui.height = wf_track.height/35.41053828354546
 
 	vol = 1
@@ -351,7 +353,7 @@ def do_track(convproj_obj, wf_track, track_obj, software_mode, dawvert_intent):
 
 		cvpj_notelist = placement_obj.notelist
 		for note in midiclip.sequence.notes:
-			cvpj_notelist.add_r(note.pos*4, note.dur*4, note.key-60, note.vel/100, {})
+			cvpj_notelist.add_r(note.pos*4, note.dur*4, note.key-60, note.vel/100, None)
 			cvpj_notelist.last_add_channel(note.chan)
 			for a_type, a_data in note.auto.items():
 				autoname = autonames[a_type] if a_type in autonames else None
@@ -359,8 +361,32 @@ def do_track(convproj_obj, wf_track, track_obj, software_mode, dawvert_intent):
 					for pos, val in a_data.items():
 						cvpj_notelist.last_add_auto_instant(autoname, pos*4, val)
 
-	for audioclip in wf_track.audioclips:
+	for stepclip in wf_track.stepclips:
+		placement_obj = track_obj.placements.add_notes()
+		time_obj = placement_obj.time
+		time_obj.set_posdur_real(stepclip.start, stepclip.length)
 
+		placement_obj.group = str(midiclip.groupID) if midiclip.groupID!=-1 else None
+
+		curpos = 0
+		stepchannels = stepclip.channels
+		cvpj_notelist = placement_obj.notelist
+		for seqnum in stepclip.sequence:
+			curpat = stepclip.patterns[seqnum]
+			for channum, patdata in curpat.data.items():
+				stepchannel = stepchannels[channum]
+				patdata = [n for n, x in enumerate(reversed(patdata)) if x=='1']
+				for pos in patdata:
+					cvpj_notelist.add_r(pos+curpos, curpat.noteLength*4, stepchannel.note-60, stepchannel.velocity/100, None)
+					cvpj_notelist.last_add_channel(note.chan)
+			curpos += curpat.numNotes
+
+		if not stepclip.repeatSequence:
+			time_obj.set_offset(midiclip.offset*4)
+		else:
+			time_obj.set_loop_data(midiclip.offset*4, 0, curpos)
+	
+	for audioclip in wf_track.audioclips:
 		if not audioclip.srcVideo:
 			placement_obj = track_obj.placements.add_audio()
 			time_obj = placement_obj.time

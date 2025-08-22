@@ -636,6 +636,7 @@ class tracktion_stepclip:
 		self.mute = 0
 		self.channels = []
 		self.patterns = []
+		self.groupID = -1
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -644,7 +645,7 @@ class tracktion_stepclip:
 			elif n == 'start': self.start = float(v)
 			elif n == 'length': self.length = float(v)
 			elif n == 'offset': self.offset = float(v)
-			elif n == 'sequence': self.sequence = int(v)
+			elif n == 'sequence': self.sequence = [int(x) for x in v.split(',')]
 			elif n == 'colour': self.colour = str(v)
 			elif n == 'repeatSequence': self.repeatSequence = int(v)
 			elif n == 'volDb': self.volDb = float(v)
@@ -653,6 +654,7 @@ class tracktion_stepclip:
 			elif n == 'sync': self.sync = int(v)
 			elif n == 'showingTakes': self.showingTakes = int(v)
 			elif n == 'mute': self.mute = int(v)
+			elif n == 'groupID': self.groupID = int(v)
 			else: print('[waveform] stepclip: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
@@ -678,7 +680,7 @@ class tracktion_stepclip:
 		tempxml.set('start', str(self.start))
 		tempxml.set('length', str(self.length))
 		tempxml.set('offset', str(self.offset))
-		tempxml.set('sequence', str(self.sequence))
+		tempxml.set('sequence', ','.join([str(x) for x in self.sequence]))
 		tempxml.set('colour', str(self.colour))
 		tempxml.set('repeatSequence', str(self.repeatSequence))
 		tempxml.set('volDb', str(self.volDb))
@@ -695,6 +697,7 @@ class tracktion_stepclip:
 			patxml = ET.SubElement(tempxml, "PATTERNS")
 			for chan_obj in self.patterns:
 				chan_obj.write(patxml)
+		if self.groupID != -1: tempxml.set('groupID', str(self.groupID))
 
 # =================================================== TRACK ===================================================
 
@@ -722,6 +725,8 @@ class tracktion_foldertrack:
 		self.macroparameters = tracktion_macroparameters()
 		self.name = None
 		self.colour = None
+		self.mute = 0
+		self.solo = 0
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -730,6 +735,8 @@ class tracktion_foldertrack:
 			elif n == 'expanded': self.expanded = int(v)
 			elif n == 'name': self.name = v
 			elif n == 'colour': self.colour = v
+			elif n == 'mute': self.mute = int(v)
+			elif n == 'solo': self.solo = int(v)
 
 		for subxml in xmldata:
 			if subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
@@ -747,6 +754,8 @@ class tracktion_foldertrack:
 		tempxml.set('id', str(self.id_num))
 		tempxml.set('height', str(self.height))
 		tempxml.set('expanded', str(self.expanded))
+		if self.mute: tempxml.set('mute', str(self.mute))
+		if self.solo: tempxml.set('solo', str(self.solo))
 		self.macroparameters.write(tempxml)
 		for track_obj in self.tracks:
 			track_obj.write(tempxml)
