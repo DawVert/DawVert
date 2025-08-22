@@ -42,6 +42,10 @@ def maketrack_synth(project_obj, convproj_obj, track_obj, portnum):
 	controller_obj.cur = track_obj.params.get('vol', 1).value
 	controller_obj.color = '#ff0000'
 
+	controller_obj = muse_track.add_controller(1)
+	controller_obj.cur = track_obj.params.get('pan', 1).value
+	controller_obj.color = '#ffff00'
+
 	track_mute = not track_obj.params.get('enabled', True).value
 	if track_obj.visual.name: muse_track.name = track_obj.visual.name
 	if track_obj.visual.color: muse_track.color = '#'+track_obj.visual.color.get_hex()
@@ -169,6 +173,14 @@ def maketrack_wave(project_obj, placements_obj, convproj_obj, track_obj, muse_bp
 	muse_track.channels = 2
 	if track_obj.visual.color: muse_track.color = '#'+track_obj.visual.color.get_hex()
 	muse_track.height = 70
+	
+	controller_obj = muse_track.add_controller(0)
+	controller_obj.cur = track_obj.params.get('vol', 1).value
+	controller_obj.color = '#ff0000'
+
+	controller_obj = muse_track.add_controller(1)
+	controller_obj.cur = track_obj.params.get('pan', 1).value
+	controller_obj.color = '#ffff00'
 
 	bpmcalc = (120/muse_bpm)
 

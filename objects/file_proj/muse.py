@@ -7,19 +7,19 @@ import xml.etree.ElementTree as ET
 
 class muse_controller:
 	def __init__(self):
-		self.cur = 1
+		self.cur = 0.0
 		self.color = ''
 		self.visible = 0
 
 	def read(self, xmltag):
-		if 'cur' in xmltag.attrib: self.cur = float(xmltag.attrib['cur'])
+		if 'cur' in xmltag.attrib: self.cur = float.fromhex(xmltag.attrib['cur'])
 		if 'color' in xmltag.attrib: self.color = xmltag.attrib['color']
 		if 'visible' in xmltag.attrib: self.visible = int(xmltag.attrib['visible'])
 
 	def write(self, xmltag, idnum):
 		trackx = ET.SubElement(xmltag, "controller")
 		trackx.set('id', str(idnum))
-		trackx.set('cur', str(self.cur))
+		trackx.set('cur', float(self.cur).hex())
 		trackx.set('color', self.color)
 		trackx.set('visible', str(self.visible))
 
