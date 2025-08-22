@@ -369,6 +369,7 @@ class muse_track:
 
 
 		if self.type == 'wavetrack':
+			ET.SubElement(trackx, 'color').text = str(self.color)
 			ET.SubElement(trackx, 'recMonitor').text = str(self.recMonitor)
 			ET.SubElement(trackx, 'prefader').text = str(self.prefader)
 			ET.SubElement(trackx, 'sendMetronome').text = str(self.sendMetronome)

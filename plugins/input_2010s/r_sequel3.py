@@ -41,10 +41,10 @@ def do_autopoints(convproj_obj, autoloc, auto_node, v_min, v_max, instant):
 		autoevents = auto_node['Events']
 		if not instant:
 			for x in autoevents:
-				auto_obj.add_autopoint(x['Start'], xtramath.between_from_one(v_min, v_max, x['Value']), None)
+				auto_obj.add_autopoint(x.start, xtramath.between_from_one(v_min, v_max, x.value), None)
 		else:
 			for x in autoevents:
-				auto_obj.add_autopoint(x['Start'], xtramath.between_from_one(v_min, v_max, x['Value']), 'instant')
+				auto_obj.add_autopoint(x.start, xtramath.between_from_one(v_min, v_max, x.value), 'instant')
 
 def do_auto(track_obj, convproj_obj, seq_automation, autoloc_start, proj_sequel):
 	globalids = proj_sequel.globalids
