@@ -174,6 +174,8 @@ def maketrack_wave(project_obj, placements_obj, convproj_obj, track_obj, muse_bp
 	if track_obj.visual.color: muse_track.color = '#'+track_obj.visual.color.get_hex()
 	muse_track.height = 70
 	
+	muse_track.mute = int(not track_obj.params.get('enabled', True).value)
+
 	controller_obj = muse_track.add_controller(0)
 	controller_obj.cur = track_obj.params.get('vol', 1).value
 	controller_obj.color = '#ff0000'
