@@ -83,6 +83,12 @@ class output_bandlab(plugins.base):
 				qt_track = proj_qtractor.qtractor_track(None)
 				if track_obj.type == 'instrument': qt_track.type = 'midi'
 
+				qt_track.state.gain = track_obj.params.get('vol', 1).value
+				qt_track.state.panning = track_obj.params.get('pan', 0).value
+				qt_track.state.mute = int(not bool(track_obj.params.get('enabled', False).value))
+				qt_track.state.solo = int(track_obj.params.get('solo', False).value)
+				qt_track.state.record = int(track_obj.armed.on)
+
 				if track_obj.visual.name: qt_track.name = track_obj.visual.name
 				if track_obj.visual.color: 
 					color = track_obj.visual.color
@@ -105,6 +111,7 @@ class output_bandlab(plugins.base):
 						qt_clip.properties.fade_out_type = 'OutQuad'
 						qt_clip.properties.fade_in = calcsec(audiopl_obj.fade_in.get_dur_seconds(bpm), ppq)
 						qt_clip.properties.fade_out = calcsec(audiopl_obj.fade_out.get_dur_seconds(bpm), ppq)
+						qt_clip.properties.mute = int(audiopl_obj.muted)
 						qt_clip.audioclip = proj_qtractor.qtractor_clip_audioclip(None)
 
 						sp_obj = audiopl_obj.sample
@@ -133,6 +140,7 @@ class output_bandlab(plugins.base):
 						qt_clip.properties.start = calcsec(position, ppq)
 						qt_clip.properties.length = calcsec(duration, ppq)
 						qt_clip.properties.name = notespl_obj.visual.name
+						qt_clip.properties.mute = int(notespl_obj.muted)
 						qt_clip.midiclip = proj_qtractor.qtractor_clip_midiclip(None)
 
 						notelist = notespl_obj.notelist

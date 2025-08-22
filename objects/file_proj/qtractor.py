@@ -16,6 +16,7 @@ class qtractor_clip_properties:
 		self.length = 0
 		self.gain = 1
 		self.panning = 0
+		self.mute = 0
 		self.fade_in = 0
 		self.fade_out = 0
 		self.fade_in_type = ''

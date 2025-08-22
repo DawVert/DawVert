@@ -77,6 +77,9 @@ class input_midi(plugins.base):
 			track_obj.params.add('pan', qtrack.state.panning, 'float')
 			track_obj.params.add('enabled', bool(not qtrack.state.mute), 'bool')
 			track_obj.params.add('solo', bool(qtrack.state.solo), 'bool')
+			track_obj.armed.on = bool(qtrack.state.record)
+			if qtrack.type == 'audio': track_obj.armed.in_audio = track_obj.armed.on
+			if qtrack.type == 'midi': track_obj.armed.in_keys = track_obj.armed.on
 
 			midiauto_obj = convproj_obj.automation.create_midi_auto_obj()
 
@@ -163,6 +166,7 @@ class input_midi(plugins.base):
 						calcsec(clip.properties.length, ppq)
 						)
 					placement_obj.visual.name = clip.name
+					placement_obj.muted = bool(clip.properties.mute)
 
 					if clipcolor: placement_obj.visual.color.set_hex(clipcolor)
 					filepath = clip.midiclip.filename
