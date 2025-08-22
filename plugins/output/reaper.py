@@ -10,6 +10,7 @@ import base64
 import os.path
 from rpp import Element
 from objects import globalstore
+from objects import valobjs
 from functions import data_bytes
 from functions import data_values
 from functions import xtramath
@@ -279,6 +280,27 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj):
 					add_auto_all(rpp_project, convproj_obj, parmenv_obj, list(autoloc), 'float', False)
 			else:
 				logger_output.warning('VST2 plugin not placed: no ID found.')
+
+		#if plugin_obj.check_wildmatch('external', 'au', None):
+		#	manufacturer, maintype, subtype = valobjs.au__combid_to_id(plugin_obj.external_info.id)
+		#	rpp_plug_obj, rpp_au_obj, rpp_guid = rpp_fxchain.add_au()
+		#	external_info = plugin_obj.external_info
+		#	if plugin_obj.visual.name:
+		#		rpp_au_obj.vis = plugin_obj.visual.name
+		#	if external_info.name:
+		#		if plugin_obj.role == 'fx': rpp_au_obj.name = 'AUi: '+external_info.name
+		#		if plugin_obj.role == 'synth': rpp_au_obj.name = 'AU: '+external_info.name
+		#	rpp_au_obj.type = maintype
+		#	rpp_au_obj.subtype = subtype
+		#	rpp_au_obj.manufacturer = manufacturer
+#
+		#	dxhdrwriter = bytewriter.bytewriter()
+		#	dxhdrwriter.uint32(vst_fx_fourid)
+		#	dxhdrwriter.uint32(1001)
+		#	dxhdrwriter.uint32(0)
+		#	dxhdrwriter.uint32(1)
+#
+		#	rpp_au_obj.data_chunk = b'test'
 
 		if plugin_obj.check_wildmatch('external', 'vst3', None):
 			vst_fx_id = plugin_obj.external_info.id

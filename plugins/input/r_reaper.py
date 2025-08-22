@@ -315,6 +315,7 @@ class input_reaper(plugins.base):
 
 			if rpp_track.fxchain != None:
 				rpp_plugins = rpp_track.fxchain.plugins
+
 				for n, rpp_plugin in enumerate(rpp_plugins):
 					rpp_extplug = rpp_plugin.plugin
 					pluginid = os.urandom(15).hex()
@@ -473,6 +474,40 @@ class input_reaper(plugins.base):
 							extmanu_obj.dx__import_presetdata('raw', rpp_extplug.data_chunk)
 						except:
 							pass
+
+					if rpp_plugin.type == 'AU':
+						plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'au', None)
+						plugin_obj.role = 'fx'
+						external_info = plugin_obj.external_info
+						name = rpp_extplug.name
+						plugin_obj.visual.name = rpp_extplug.vis
+
+						try:
+							if name.startswith('AU: '):
+								plugin_obj.role = 'fx'
+								external_info.name = name[4:]
+							if name.startswith('AUi: '):
+								plugin_obj.role = 'synth'
+								external_info.name = name[5:]
+						except:
+							external_info.name = name
+
+						rpp_extplug = rpp_plugin.plugin
+
+						vstdataconreader = bytereader.bytereader()
+						vstdataconreader.load_raw(rpp_extplug.data_chunk)
+						vstdataconreader.raw(4) # 1001
+						vstdataconreader.raw(4) # 0
+						num_inchannels = vstdataconreader.uint32()
+						vstdataconreader.raw(4) # 1
+						aud_in_chan = [vstdataconreader.flags64() for x in range(num_inchannels)]
+						aud_out_chan = [vstdataconreader.flags64() for x in range(num_inchannels)]
+						size = vstdataconreader.uint64() # chunk size
+						audata = vstdataconreader.raw(size)
+
+						track_obj.plugin_autoplace(plugin_obj, pluginid)
+						extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
+						extmanu_obj.au__replace_data(rpp_extplug.manufacturer, rpp_extplug.type, rpp_extplug.subtype, audata)
 
 			if samplers:
 				outsamplers = []
