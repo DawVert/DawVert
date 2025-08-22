@@ -702,3 +702,12 @@ class cvpj_autopoints:
 			p_pos = numblock*blocks_obj.time
 			p_value = xtramath.between_to_one(0, blocks_obj.max, blocks_obj.values[numblock])
 			self.points__add_normal(p_pos, p_value, 0, None)
+
+	def add_inital_val(self):
+		useddata = self.points.get_used()
+		if 0 not in useddata['pos']:
+			points_cur = self.points_cur
+			points_cur.add()
+			points_cur['pos'] = 0
+			points_cur['value'] = useddata['value'][0]
+			self.sort()
