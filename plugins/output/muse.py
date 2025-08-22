@@ -161,7 +161,19 @@ WAVE_FREQUENCY = 48000
 
 wavetime = WAVE_FREQUENCY/768
 
-def maketrack_wave(project_obj, placements_obj, convproj_obj, track_obj, muse_bpm):
+def do_automation(convproj_obj, autoloc, controller_obj):
+	autopoints = controller_obj.autopoints
+	ap_f, ap_d = convproj_obj.automation.get(autoloc, 'float')
+	if ap_f: 
+		if ap_d.u_nopl_points:
+			nopl_points = ap_d.nopl_points
+			nopl_points.remove_instant()
+			nopl_points.add_inital_val()
+			for autopoint in nopl_points:
+				museauto = [int(autopoint.pos*38.4), autopoint.value, 1]
+				autopoints.append(museauto)
+
+def maketrack_wave(project_obj, placements_obj, convproj_obj, track_obj, muse_bpm, trackid):
 	from objects.file_proj import muse as proj_muse
 	global tracknum
 	global synthidnum
@@ -179,10 +191,12 @@ def maketrack_wave(project_obj, placements_obj, convproj_obj, track_obj, muse_bp
 	controller_obj = muse_track.add_controller(0)
 	controller_obj.cur = track_obj.params.get('vol', 1).value
 	controller_obj.color = '#ff0000'
+	#do_automation(convproj_obj, ['track', trackid, 'vol'], controller_obj, bpmcalc)
 
 	controller_obj = muse_track.add_controller(1)
 	controller_obj.cur = track_obj.params.get('pan', 1).value
 	controller_obj.color = '#ffff00'
+	#do_automation(convproj_obj, ['track', trackid, 'pan'], controller_obj, bpmcalc)
 
 	bpmcalc = (120/muse_bpm)
 
@@ -258,6 +272,7 @@ class output_cvpj(plugins.base):
 	
 	def get_prop(self, in_dict): 
 		in_dict['file_ext'] = 'med'
+		in_dict['audio_filetypes'] = ['wav']
 		in_dict['plugin_arch'] = [64]
 		in_dict['track_lanes'] = True
 		in_dict['placement_cut'] = True
@@ -268,6 +283,7 @@ class output_cvpj(plugins.base):
 		in_dict['auto_types'] = ['nopl_points']
 		in_dict['projtype'] = 'r'
 		in_dict['notes_midi'] = True
+		in_dict['time_seconds_auto'] = True
 	
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import muse as proj_muse
@@ -303,7 +319,7 @@ class output_cvpj(plugins.base):
 				maketrack_synth(project_obj, convproj_obj, track_obj, synthidnum)
 
 			if track_obj.type == 'audio':
-				maketrack_wave(project_obj, track_obj.placements, convproj_obj, track_obj, muse_bpm)
+				maketrack_wave(project_obj, track_obj.placements, convproj_obj, track_obj, muse_bpm, trackid)
 
 		tempo_point = proj_muse.muse_tempo()
 		tempo_point.at = 21474837

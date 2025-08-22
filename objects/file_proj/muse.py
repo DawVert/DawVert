@@ -10,11 +10,13 @@ class muse_controller:
 		self.cur = 0.0
 		self.color = ''
 		self.visible = 0
+		self.autopoints = []
 
 	def read(self, xmltag):
 		if 'cur' in xmltag.attrib: self.cur = float.fromhex(xmltag.attrib['cur'])
 		if 'color' in xmltag.attrib: self.color = xmltag.attrib['color']
 		if 'visible' in xmltag.attrib: self.visible = int(xmltag.attrib['visible'])
+		if xpart.text: self.autopoints = [x.split(' ') for x in xpart.text.strip().split(',')]
 
 	def write(self, xmltag, idnum):
 		trackx = ET.SubElement(xmltag, "controller")
@@ -22,6 +24,8 @@ class muse_controller:
 		trackx.set('cur', float(self.cur).hex())
 		trackx.set('color', self.color)
 		trackx.set('visible', str(self.visible))
+		stretchtxt = [' '.join([(n.hex() if isinstance(n, float) else str(n)) for n in x]) for x in self.autopoints]
+		trackx.text = ','.join(stretchtxt)
 
 class muse_midi_event:
 	def __init__(self):
