@@ -586,6 +586,27 @@ class output_tracktion_edit(plugins.base):
 								wf_ctrl.val = v<<7
 								wf_midiclip.sequence.controls.append(wf_ctrl)
 						except: pass
+					if autoid == 'midi_pitch':
+						for p, v in autodata:
+							wf_ctrl = proj_tracktion_edit.tracktion_control()
+							wf_ctrl.pos = p/4
+							wf_ctrl.ctype = 4101
+							wf_ctrl.val = v+8192
+							wf_midiclip.sequence.controls.append(wf_ctrl)
+					if autoid == 'midi_pressure':
+						for p, v in autodata:
+							wf_ctrl = proj_tracktion_edit.tracktion_control()
+							wf_ctrl.pos = p/4
+							wf_ctrl.ctype = 4103
+							wf_ctrl.val = v<<7
+							wf_midiclip.sequence.controls.append(wf_ctrl)
+					if autoid == 'midi_program':
+						for p, v in autodata:
+							wf_ctrl = proj_tracktion_edit.tracktion_control()
+							wf_ctrl.pos = p/4
+							wf_ctrl.ctype = 4097
+							wf_ctrl.val = v<<7
+							wf_midiclip.sequence.controls.append(wf_ctrl)
 
 					#print(autoid, autodata)
 
