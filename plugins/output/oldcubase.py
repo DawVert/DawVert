@@ -9,6 +9,7 @@ import shutil
 from objects import globalstore
 from functions import data_values
 from functions import xtramath
+from objects.data_bytes import bytewriter
 import math
 
 logpreset_def = b'\x00@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n\x00\x00\x00\x01\x00\x00\x00\x00\x00\n\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -32,10 +33,12 @@ def calc_volume(o):
 	if o: 
 		vol = math.log2(o)/3
 		vol = pow(2, vol)
-		#print(o, vol)
 		return xtramath.clamp(vol*25856, 0, 32765)
 	else:
 		return 0
+
+def calc_pan(o):
+	return ((o/2)+0.5)
 
 class output_oldcubase(plugins.base):
 	def is_dawvert_plugin(self):
@@ -170,7 +173,13 @@ class output_oldcubase(plugins.base):
 		pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
 		pandata['Event Input Count'] = 0
 		pandata['Event Output Count'] = 0
-		pandata['audioComponent'] = b'\x00\x00\x00?\x00\x00\x00?\x04\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00'
+		pannerbytes = bytewriter.bytewriter()
+		pannerbytes.float(0.5)
+		pannerbytes.float(0.5)
+		pannerbytes.uint32(4)
+		pannerbytes.uint32(2)
+		pannerbytes.uint32(0)
+		pandata['audioComponent'] = pannerbytes.getvalue()
 		pandata['editController'] = b''
 		pandata['Active'] = 1
 		pandata['IDString'] = to_wide_string('Panner')
@@ -218,7 +227,13 @@ class output_oldcubase(plugins.base):
 		pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([0])}])
 		pandata['Event Input Count'] = 0
 		pandata['Event Output Count'] = 0
-		pandata['audioComponent'] = b'\x00\x00\x00?\x00\x00\x00?\x04\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00'
+		pannerbytes = bytewriter.bytewriter()
+		pannerbytes.float(0.5)
+		pannerbytes.float(0.5)
+		pannerbytes.uint32(4)
+		pannerbytes.uint32(2)
+		pannerbytes.uint32(0)
+		pandata['audioComponent'] = pannerbytes.getvalue()
 		pandata['editController'] = b''
 		pandata['Active'] = 1
 		pandata['IDString'] = to_wide_string('Panner')
@@ -261,7 +276,13 @@ class output_oldcubase(plugins.base):
 		pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([0])}])
 		pandata['Event Input Count'] = 0
 		pandata['Event Output Count'] = 0
-		pandata['audioComponent'] = b'\x00\x00\x00?\x00\x00\x00?\x04\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00'
+		pannerbytes = bytewriter.bytewriter()
+		pannerbytes.float(0.5)
+		pannerbytes.float(0.5)
+		pannerbytes.uint32(4)
+		pannerbytes.uint32(2)
+		pannerbytes.uint32(0)
+		pandata['audioComponent'] = pannerbytes.getvalue()
 		pandata['editController'] = b''
 		pandata['Active'] = 1
 		pandata['IDString'] = to_wide_string('Panner')
@@ -306,7 +327,13 @@ class output_oldcubase(plugins.base):
 		pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
 		pandata['Event Input Count'] = 0
 		pandata['Event Output Count'] = 0
-		pandata['audioComponent'] = b'\x00\x00\x00?\x00\x00\x00?\x04\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00'
+		pannerbytes = bytewriter.bytewriter()
+		pannerbytes.float(0.5)
+		pannerbytes.float(0.5)
+		pannerbytes.uint32(4)
+		pannerbytes.uint32(2)
+		pannerbytes.uint32(0)
+		pandata['audioComponent'] = pannerbytes.getvalue()
 		pandata['editController'] = b''
 		pandata['Active'] = 1
 		pandata['IDString'] = to_wide_string('Panner')
@@ -499,7 +526,13 @@ class output_oldcubase(plugins.base):
 			pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
 			pandata['Event Input Count'] = 0
 			pandata['Event Output Count'] = 0
-			pandata['audioComponent'] = b'\x00\x00\x00?\x00\x00\x00?\x04\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00'
+			pannerbytes = bytewriter.bytewriter()
+			pannerbytes.float(calc_pan(return_obj.params.get('pan', 0).value))
+			pannerbytes.float(0.5)
+			pannerbytes.uint32(4)
+			pannerbytes.uint32(2)
+			pannerbytes.uint32(0)
+			pandata['audioComponent'] = pannerbytes.getvalue()
 			pandata['editController'] = b''
 			pandata['Active'] = 1
 			pandata['IDString'] = to_wide_string('Panner')
@@ -628,7 +661,13 @@ class output_oldcubase(plugins.base):
 				pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
 				pandata['Event Input Count'] = 0
 				pandata['Event Output Count'] = 0
-				pandata['audioComponent'] = b'\x00\x00\x00?\x00\x00\x00?\x04\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00'
+				pannerbytes = bytewriter.bytewriter()
+				pannerbytes.float(calc_pan(track_obj.params.get('pan', 0).value))
+				pannerbytes.float(0.5)
+				pannerbytes.uint32(4)
+				pannerbytes.uint32(2)
+				pannerbytes.uint32(0)
+				pandata['audioComponent'] = pannerbytes.getvalue()
 				pandata['editController'] = b''
 				pandata['Active'] = 1
 				pandata['IDString'] = to_wide_string('Panner')
@@ -802,15 +841,19 @@ class output_oldcubase(plugins.base):
 					pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
 					pandata['Event Input Count'] = 0
 					pandata['Event Output Count'] = 0
-					pandata['audioComponent'] = b'\x00\x00\x00?\x00\x00\x00?\x01\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00'
+					pannerbytes = bytewriter.bytewriter()
+					pannerbytes.float(0.5)
+					pannerbytes.float(0.5)
+					pannerbytes.uint32(1)
+					pannerbytes.uint32(2)
+					pannerbytes.uint32(0)
+					pandata['audioComponent'] = pannerbytes.getvalue()
 					pandata['editController'] = b''
 					pandata['Active'] = 1
 					pandata['IDString'] = to_wide_string('Panner')
 					pandata['Bay Program'] = to_wide_string('')
 					senddata['Panner'] = pandata
 					deviceattributes['SendFolder']['Slot'].append(senddata)
-
-
 
 			if track_obj.type == 'audio' and not DEBUG_DISABLE_AUDIO_TRACK:
 				audio_track = tracklist.add_track('MAudioTrackEvent')
@@ -852,7 +895,13 @@ class output_oldcubase(plugins.base):
 				pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
 				pandata['Event Input Count'] = 0
 				pandata['Event Output Count'] = 0
-				pandata['audioComponent'] = b'\x00\x00\x00?\x00\x00\x00?\x04\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00'
+				pannerbytes = bytewriter.bytewriter()
+				pannerbytes.float(calc_pan(track_obj.params.get('pan', 0).value))
+				pannerbytes.float(0.5)
+				pannerbytes.uint32(4)
+				pannerbytes.uint32(2)
+				pannerbytes.uint32(0)
+				pandata['audioComponent'] = pannerbytes.getvalue()
 				pandata['editController'] = b''
 				pandata['Active'] = 1
 				pandata['IDString'] = to_wide_string('Panner')
@@ -1002,7 +1051,13 @@ class output_oldcubase(plugins.base):
 					pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
 					pandata['Event Input Count'] = 0
 					pandata['Event Output Count'] = 0
-					pandata['audioComponent'] = b'\x00\x00\x00?\x00\x00\x00?\x01\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00'
+					pannerbytes = bytewriter.bytewriter()
+					pannerbytes.float(0.5)
+					pannerbytes.float(0.5)
+					pannerbytes.uint32(1)
+					pannerbytes.uint32(2)
+					pannerbytes.uint32(0)
+					pandata['audioComponent'] = pannerbytes.getvalue()
 					pandata['editController'] = b''
 					pandata['Active'] = 1
 					pandata['IDString'] = to_wide_string('Panner')
