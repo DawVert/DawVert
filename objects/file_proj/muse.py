@@ -27,21 +27,27 @@ class muse_midi_event:
 	def __init__(self):
 		self.tick = 0
 		self.len = 0
+		self.type = 0
 		self.a = 0
 		self.b = 100
+		self.c = 0
 
 	def read(self, xmltag):
 		if 'tick' in xmltag.attrib: self.tick = int(xmltag.attrib['tick'])
-		if 'len' in xmltag.attrib: self.len = xmltag.attrib['len']
-		if 'a' in xmltag.attrib: self.a = xmltag.attrib['a']
-		if 'b' in xmltag.attrib: self.b = xmltag.attrib['b']
+		if 'len' in xmltag.attrib: self.len = int(xmltag.attrib['len'])
+		if 'type' in xmltag.attrib: self.type = int(xmltag.attrib['type'])
+		if 'a' in xmltag.attrib: self.a = int(xmltag.attrib['a'])
+		if 'b' in xmltag.attrib: self.b = int(xmltag.attrib['b'])
+		if 'c' in xmltag.attrib: self.c = int(xmltag.attrib['c'])
 
 	def write(self, xmltag):
 		trackx = ET.SubElement(xmltag, "event")
 		trackx.set('tick', str(self.tick))
-		trackx.set('len', str(self.len))
+		if self.type: trackx.set('type', str(self.type))
+		if self.len: trackx.set('len', str(self.len))
 		trackx.set('a', str(self.a))
 		trackx.set('b', str(self.b))
+		if self.c: trackx.set('c', str(self.c))
 
 class muse_poslen_audio:
 	def __init__(self):
@@ -132,14 +138,15 @@ class muse_midi_part:
 		self.color = ''
 		self.poslen = muse_poslen()
 		self.events = []
+		self.mute = 0
 
 	def read(self, xmltag):
 		for xpart in xmltag:
-
 			if xpart.tag == 'name': self.name = xpart.text
 			if xpart.tag == 'selected': self.selected = int(xpart.text)
 			if xpart.tag == 'color': self.color = xpart.text
 			if xpart.tag == 'poslen': self.poslen.read(xpart)
+			if xpart.tag == 'mute': self.mute = int(xpart.text)
 			if xpart.tag == 'event': 
 				event_obj = muse_midi_event()
 				event_obj.read(xpart)
@@ -153,6 +160,7 @@ class muse_midi_part:
 		ET.SubElement(trackx, 'color').text = str(self.color)
 		for event_obj in self.events:
 			event_obj.write(trackx)
+		if self.mute: ET.SubElement(trackx, 'mute').text = str(self.mute)
 
 class muse_geometry:
 	def __init__(self):

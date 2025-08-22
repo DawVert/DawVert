@@ -13,6 +13,8 @@ from functions import xtramath
 import logging
 logger_output = logging.getLogger('output')
 
+midiDivision = 384
+
 def addvalue(xmltag, name, value):
 	x_temp = ET.SubElement(xmltag, name)
 	x_temp.text = str(value)
@@ -88,25 +90,63 @@ def maketrack_midi(project_obj, placements_obj, trackname, portnum, track_obj):
 	muse_track.device = portnum
 	muse_track.transposition = -track_obj.datavals.get('middlenote', 0)
 
-	for notespl_obj in placements_obj.pl_notes:
-		time_obj = notespl_obj.time
+	track_obj.placements.pl_midi.sort()
+	for midipl_obj in track_obj.placements.pl_midi:
+		time_obj = midipl_obj.time
 
 		muse_part = proj_muse.muse_midi_part()
-		if notespl_obj.visual.name: muse_part.name = notespl_obj.visual.name
+		if midipl_obj.visual.name: muse_part.name = midipl_obj.visual.name
 		position, duration = time_obj.get_posdur()
 		muse_part.poslen.len = int(duration)
 		muse_part.poslen.tick = int(position)
+		muse_part.mute = int(midipl_obj.muted)
 
 		offset = time_obj.get_offset()
-		
-		notespl_obj.notelist.sort()
-		for t_pos, t_dur, t_keys, t_vol, t_inst, t_extra, t_autopack in notespl_obj.notelist.iter():
-			for t_key in t_keys:
+
+		midievents_obj = midipl_obj.midievents
+		midievents_obj.change_ppq(480)
+		midievents_obj.sort()
+		midievents_obj.add_note_durs()
+		midievents_obj.sort()
+
+		eventstartpos = muse_part.poslen.tick-offset
+		for x in midievents_obj.iter_events():
+			etype = x[1]
+			if etype == 'NOTE_DUR':
 				muse_event = proj_muse.muse_midi_event()
-				muse_event.tick = int(t_pos+muse_part.poslen.tick-offset)
-				muse_event.len = int(t_dur)
-				muse_event.a = int(t_key+60)
-				muse_event.b = int(t_vol*100)
+				muse_event.tick = int(x['pos'])+eventstartpos
+				muse_event.len = int(x['val3'])
+				muse_event.a = int(x['val1'])
+				muse_event.b = int(x['val2'])
+				muse_event.c = int(x['off_vel'])
+				muse_part.events.append(muse_event)
+			elif etype == 'CONTROL':
+				muse_event = proj_muse.muse_midi_event()
+				muse_event.tick = int(x['pos'])+eventstartpos
+				muse_event.type = 1
+				muse_event.a = int(x['val1'])
+				muse_event.b = int(x['val2'])
+				muse_part.events.append(muse_event)
+			elif etype == 'PROGRAM':
+				muse_event = proj_muse.muse_midi_event()
+				muse_event.tick = int(x['pos'])+eventstartpos
+				muse_event.type = 1
+				muse_event.a = int(262145)
+				muse_event.b = int(x[3])
+				muse_part.events.append(muse_event)
+			elif etype == 'PITCH':
+				muse_event = proj_muse.muse_midi_event()
+				muse_event.tick = int(x['pos'])+eventstartpos
+				muse_event.type = 1
+				muse_event.a = int(262144)
+				muse_event.b = int(x[3])
+				muse_part.events.append(muse_event)
+			elif etype == 'PRESSURE':
+				muse_event = proj_muse.muse_midi_event()
+				muse_event.tick = int(x['pos'])+eventstartpos
+				muse_event.type = 1
+				muse_event.a = int(262148)
+				muse_event.b = int(x[3])
 				muse_part.events.append(muse_event)
 
 		muse_track.note_parts.append(muse_part)
@@ -213,6 +253,7 @@ class output_cvpj(plugins.base):
 		in_dict['audio_stretch'] = ['rate']
 		in_dict['auto_types'] = ['nopl_points']
 		in_dict['projtype'] = 'r'
+		in_dict['notes_midi'] = True
 	
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import muse as proj_muse
@@ -221,7 +262,6 @@ class output_cvpj(plugins.base):
 		tracknum = 1
 		synthidnum = 4
 
-		midiDivision = 384
 		convproj_obj.change_timings(midiDivision)
 		muse_bpm = convproj_obj.params.get('bpm', 120).value
 
