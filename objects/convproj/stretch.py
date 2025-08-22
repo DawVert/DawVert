@@ -43,8 +43,11 @@ class cvpj_stretch:
 				dur_sec = sampleref_obj.get_dur_sec()
 				if dur_sec: self.timing.changestretch_rate2warp(pl_timemul, sampleref_obj, tempo, pitch)
 
-			if is_warped and target == 'rate':
-				self.timing.changestretch_warp2rate(pl_timemul)
+			if is_warped:
+				if target == 'rate':
+					self.timing.changestretch_warp2rate(pl_timemul)
+				if target == 'simplewarp2rate':
+					self.timing.simplewarp2rate()
 
 		return pl_timemul
 

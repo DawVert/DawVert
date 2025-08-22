@@ -85,7 +85,7 @@ class output_bandlab(plugins.base):
 
 				qt_track.state.gain = track_obj.params.get('vol', 1).value
 				qt_track.state.panning = track_obj.params.get('pan', 0).value
-				qt_track.state.mute = int(not bool(track_obj.params.get('enabled', False).value))
+				qt_track.state.mute = int(not bool(track_obj.params.get('enabled', True).value))
 				qt_track.state.solo = int(track_obj.params.get('solo', False).value)
 				qt_track.state.record = int(track_obj.armed.on)
 

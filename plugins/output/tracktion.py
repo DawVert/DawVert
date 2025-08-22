@@ -350,7 +350,7 @@ def make_group(convproj_obj, sampleref_assoc, sampleref_obj_assoc, groupid, grou
 			wf_foldertrack = proj_tracktion_edit.tracktion_foldertrack()
 			wf_foldertrack.id_num = counter_id.get()
 			wf_foldertrack.height = group_obj.visual_ui.height*35.41053828354546
-			wf_foldertrack.mute = int(not bool(group_obj.params.get('enabled', False).value))
+			wf_foldertrack.mute = int(not bool(group_obj.params.get('enabled', True).value))
 			wf_foldertrack.solo = int(group_obj.params.get('solo', False).value)
 			wf_maintrack.append(wf_foldertrack)
 			if group_obj.visual.name: wf_foldertrack.name = group_obj.visual.name
@@ -499,7 +499,7 @@ class output_tracktion_edit(plugins.base):
 			wf_track = proj_tracktion_edit.tracktion_track()
 			wf_track.id_num = counter_id.get()
 			wf_track.height = track_obj.visual_ui.height*35.41053828354546
-			wf_track.mute = int(not bool(track_obj.params.get('enabled', False).value))
+			wf_track.mute = int(not bool(track_obj.params.get('enabled', True).value))
 			wf_track.solo = int(track_obj.params.get('solo', False).value)
 
 			if track_obj.visual.name: wf_track.name = track_obj.visual.name
@@ -574,6 +574,20 @@ class output_tracktion_edit(plugins.base):
 							nautop = wf_note.auto['PITCHBEND'] = {}
 							nautop[0] = notepitch/100
 						wf_midiclip.sequence.notes.append(wf_note)
+
+				for autoid, autodata in notespl_obj.auto_ticks.items():
+					if autoid.startswith('midi_cc_'):
+						try:
+							ccnum = int(autoid[8:])
+							for p, v in autodata:
+								wf_ctrl = proj_tracktion_edit.tracktion_control()
+								wf_ctrl.pos = p/4
+								wf_ctrl.ctype = ccnum
+								wf_ctrl.val = v<<7
+								wf_midiclip.sequence.controls.append(wf_ctrl)
+						except: pass
+
+					#print(autoid, autodata)
 
 				wf_track.midiclips.append(wf_midiclip)
 

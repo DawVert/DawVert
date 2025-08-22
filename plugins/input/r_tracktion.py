@@ -353,13 +353,33 @@ def do_track(convproj_obj, wf_track, track_obj, software_mode, dawvert_intent):
 
 		cvpj_notelist = placement_obj.notelist
 		for note in midiclip.sequence.notes:
-			cvpj_notelist.add_r(note.pos*4, note.dur*4, note.key-60, note.vel/100, None)
-			cvpj_notelist.last_add_channel(note.chan)
+			cvpj_notelist.add_r(note.pos*4, note.dur*4, note.key-60, note.vel/127, None)
+			#cvpj_notelist.last_add_channel(note.chan)
 			for a_type, a_data in note.auto.items():
 				autoname = autonames[a_type] if a_type in autonames else None
 				if autoname:
 					for pos, val in a_data.items():
 						cvpj_notelist.last_add_auto_instant(autoname, pos*4, val)
+
+		midictrls = {}
+		for control in midiclip.sequence.controls:
+			ctype = control.ctype
+			if ctype not in midictrls: midictrls[ctype] = []
+			midictrls[ctype].append(control)
+
+		for idnum, vals in midictrls.items():
+			if idnum<128:
+				autoticks = placement_obj.add_autoticks('midi_cc_'+str(idnum))
+				for val in vals: autoticks.add_point(val.pos*4, int(val.val)>>7)
+			elif idnum==4103:
+				autoticks = placement_obj.add_autoticks('midi_pressure')
+				for val in vals: autoticks.add_point(val.pos*4, int(val.val)>>7)
+			elif idnum==4101:
+				autoticks = placement_obj.add_autoticks('midi_pitch')
+				for val in vals: autoticks.add_point(val.pos*4, val.val-8192)
+			elif idnum==4097:
+				autoticks = placement_obj.add_autoticks('midi_program')
+				for val in vals: autoticks.add_point(val.pos*4, int(val.val)>>7)
 
 	for stepclip in wf_track.stepclips:
 		placement_obj = track_obj.placements.add_notes()
@@ -377,7 +397,7 @@ def do_track(convproj_obj, wf_track, track_obj, software_mode, dawvert_intent):
 				stepchannel = stepchannels[channum]
 				patdata = [n for n, x in enumerate(reversed(patdata)) if x=='1']
 				for pos in patdata:
-					cvpj_notelist.add_r(pos+curpos, curpat.noteLength*4, stepchannel.note-60, stepchannel.velocity/100, None)
+					cvpj_notelist.add_r(pos+curpos, curpat.noteLength*4, stepchannel.note-60, stepchannel.velocity/127, None)
 					cvpj_notelist.last_add_channel(note.chan)
 			curpos += curpat.numNotes
 

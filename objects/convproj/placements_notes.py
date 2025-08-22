@@ -37,8 +37,8 @@ class cvpj_placements_notes:
 				pl.notelist.change_timings(time_ppq)
 				pl.timesig_auto.change_timings(time_ppq)
 				pl.timemarkers.change_timings(time_ppq)
-				for mpename, autodata in pl.auto.items():
-					autodata.change_timings(time_ppq)
+				for mpename, autodata in pl.auto.items(): autodata.change_timings(time_ppq)
+				for mpename, autodata in pl.auto_ticks.items(): autodata.change_timings(time_ppq)
 		self.time_ppq = time_ppq
 
 	def merge_crop(self, npl_obj, pos, dur, visualfill):
@@ -159,7 +159,7 @@ class cvpj_placements_notes:
 		return plb_obj
 
 class cvpj_placement_notes:
-	__slots__ = ['time','muted','visual','notelist','time_ppq','auto','fade_in','fade_out','timesig_auto','timemarkers','group','locked','pitch']
+	__slots__ = ['time','muted','visual','notelist','time_ppq','auto','fade_in','fade_out','timesig_auto','timemarkers','group','locked','pitch','auto_ticks']
 	def __init__(self, time_ppq):
 		self.time = placements.cvpj_placement_timing(time_ppq)
 		self.time_ppq = time_ppq
@@ -167,6 +167,7 @@ class cvpj_placement_notes:
 		self.muted = False
 		self.visual = visual.cvpj_visual()
 		self.auto = {}
+		self.auto_ticks = {}
 		self.timesig_auto = autoticks.cvpj_autoticks(self.time_ppq, 'timesig')
 		self.timemarkers = timemarker.cvpj_timemarkers(self.time_ppq)
 		self.fade_in = placements.cvpj_placement_fade()
@@ -218,3 +219,7 @@ class cvpj_placement_notes:
 	def add_autopoints(self, a_type):
 		self.auto[a_type] = autopoints.cvpj_autopoints(self.time_ppq, 'float')
 		return self.auto[a_type]
+
+	def add_autoticks(self, a_type):
+		self.auto_ticks[a_type] = autoticks.cvpj_autoticks(self.time_ppq, 'float')
+		return self.auto_ticks[a_type]

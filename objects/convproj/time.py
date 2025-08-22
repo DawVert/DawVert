@@ -648,7 +648,14 @@ class time_content:
 		#pl_timemul.pos_offset = fw_p*4
 		#pl_timemul.cut_offset = (fw_s*8)
 
-
+	def simplewarp2rate(self):
+		warp_obj = self.warp
+		warppoints = warp_obj.points
+		if len(warp_obj.points) == 2:
+			firstwarp = warp_obj.points[0]
+			lastwarp = warp_obj.points[1]
+			if not (firstwarp.beat or firstwarp.second):
+				self.set__orgtempo(firstwarp.speed*120)
 
 # --------------------------------------------- PLUGINS ---------------------------------------------
 

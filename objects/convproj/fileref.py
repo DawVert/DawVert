@@ -147,7 +147,7 @@ class cvpj_folderpath:
 		else: self.reset()
 
 	def internal__getpath__win(self):
-		if self.os_type == 'win':
+		if self.os_type == 'win' and self.win_drive:
 			return [self.win_drive+':']+self.folderloc.copy()
 		else: 
 			win_drive, splitpath = self.internal__path_win_from_unix()
