@@ -149,6 +149,36 @@ class rpp_rewire:
 		reaper_func.writebin(rpp_rwdata, self.data_chunk)
 		rpp_data.children.append(rpp_rwdata)
 
+class rpp_au:
+	def __init__(self):
+		self.data_chunk = b''
+		self.name = ''
+		self.vis = ''
+		self.unk1 = ''
+		self.type = 0
+		self.subtype = 0
+		self.manufacturer = 0
+
+	def load(self, values, inside_dat):
+		for n, v in enumerate(values):
+			if n == 0: self.name = v
+			if n == 1: self.vis = v
+			if n == 2: self.unk1 = v
+			if n == 3: self.type = int(v)
+			if n == 4: self.subtype = int(v)
+			if n == 5: self.manufacturer = int(v)
+
+		if inside_dat: 
+			for x in inside_dat:
+				self.data_chunk += reaper_func.getbin(x)
+
+		#print(self.data_chunk[0:64].hex())
+
+	def write(self, rpp_data):
+		rpp_vstdata = robj('AU',[self.name, self.vis, self.unk1, self.type, self.subtype, self.manufacturer])
+		reaper_func.writebin(rpp_vstdata, self.data_chunk)
+		rpp_data.children.append(rpp_vstdata)
+
 class rpp_plugin:
 	def __init__(self):
 		self.plugin = None
@@ -218,6 +248,16 @@ class rpp_fxchain:
 		self.plugins.append(plug_obj)
 		return plug_obj, dx_obj, guid
 
+	def add_au(self):
+		guid = '{'+str(uuid.uuid4())+'}'
+		js_obj = rpp_au()
+		plug_obj = rpp_plugin()
+		plug_obj.type = 'AU'
+		plug_obj.plugin = js_obj
+		plug_obj.fxid.set(guid)
+		self.plugins.append(plug_obj)
+		return plug_obj, js_obj, guid
+
 	def load(self, rpp_data):
 		bypassval = [0,0,0]
 		for name, is_dir, values, inside_dat in reaper_func.iter_rpp(rpp_data):
@@ -268,6 +308,14 @@ class rpp_fxchain:
 					self.plugins.append(plug_obj)
 				elif name in 'DX': 
 					js_obj = rpp_dx()
+					js_obj.load(values, inside_dat)
+					plug_obj = rpp_plugin()
+					plug_obj.type = name
+					plug_obj.plugin = js_obj
+					plug_obj.bypass.read(bypassval)
+					self.plugins.append(plug_obj)
+				elif name in 'AU': 
+					js_obj = rpp_au()
 					js_obj.load(values, inside_dat)
 					plug_obj = rpp_plugin()
 					plug_obj.type = name
