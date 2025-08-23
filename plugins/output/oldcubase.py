@@ -120,14 +120,27 @@ class output_oldcubase(plugins.base):
 		seq_MTempoTrackEvent = proj_sequel.class_MTempoTrackEvent()
 		id_trk_bpm = seq_MTempoTrackEvent.idnum = counter_id.get()
 		project_obj.objects[id_trk_bpm] = seq_MTempoTrackEvent
-		MTempoEvent = add_list_genid(seq_MTempoTrackEvent.tempoevent, 'MTempoEvent', counter_id)
+
+		tempopoints = {}
+		tempopoints[0] = bpm
+		if_found, autodata = convproj_obj.automation.get(['main', 'bpm'], 'float')
+		if if_found:
+			if autodata.u_nopl_ticks:
+				for pos, val in autodata.nopl_ticks:
+					tempopoints[pos] = val
+
 		seq_MTempoTrackEvent.rehearsaltempo = bpm
-		MTempoEvent.bpm = bpm
+		for pos, bpm in tempopoints.items():
+			MTempoEvent = add_list_genid(seq_MTempoTrackEvent.tempoevent, 'MTempoEvent', counter_id)
+			MTempoEvent.ppq = pos
+			MTempoEvent.bpm = bpm
 
 		seq_MSignatureTrackEvent = proj_sequel.class_MSignatureTrackEvent()
 		id_trk_meas = seq_MSignatureTrackEvent.idnum = counter_id.get()
 		project_obj.objects[id_trk_meas] = seq_MSignatureTrackEvent
-		add_list_genid(seq_MSignatureTrackEvent.signatureevent, 'MTimeSignatureEvent', counter_id)
+
+		MTimeSignatureEvent = add_list_genid(seq_MSignatureTrackEvent.signatureevent, 'MTimeSignatureEvent', counter_id)
+		MTimeSignatureEvent.numerator, MTimeSignatureEvent.denominator = convproj_obj.timesig
 
 		mainatt = seq_Devices.data
 		storeddevices = mainatt['StoredDevices'] = sequel_list_string([])

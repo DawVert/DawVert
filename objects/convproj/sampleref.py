@@ -38,6 +38,7 @@ class cvpj_sampleref:
 		self.slices = []
 		self.visual = visual.cvpj_visual()
 		self.defined_meta = []
+		self.fileinfo_source = 'none'
 
 
 
@@ -166,8 +167,13 @@ class cvpj_sampleref:
 				logger_project.warning('sampleref: Started Resampling '+str(self.fileref.file))
 				audiof_obj.resample(44100)
 				audiof_obj.to_file_wav(outfilename)
-				self.set_path(os_type, outfilename)
+			self.set_path(os_type, outfilename)
+
+			if 'dur_samples' in self.defined_meta and 'hz' in self.defined_meta:
+				self.dur_samples = self.dur_samples*(44100/self.hz)
+
 			self.hz = 44100
+			self.timebase = 44100
 			return True
 		except:
 			filename = self.fileref.get_path(None, False)
@@ -214,7 +220,9 @@ class cvpj_sampleref:
 				try:
 					if fileextlow in prop_obj.file_formats:
 						isvalid = plug_obj.getinfo(wav_realpath, self, fileextlow)
-						if isvalid: break
+						if isvalid: 
+							self.fileinfo_source = shortname
+							break
 				except: 
 					if VERBOSE:
 						import traceback
