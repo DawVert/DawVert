@@ -1292,6 +1292,40 @@
     ],
     "priority": 0
   },
+  "data_main\\plugstatets\\_from_simple\\ableton__reverb.pstr": {
+    "file": "data_main\\plugstatets\\_from_simple\\ableton__reverb.pstr",
+    "daw_out": [
+      "ableton"
+    ],
+    "plugtype_in": "simple:reverb",
+    "plugtype_out": [
+      "native:ableton:Reverb"
+    ],
+    "priority": 0
+  },
+  "data_main\\plugstatets\\_from_simple\\amped__reverb.pstr": {
+    "file": "data_main\\plugstatets\\_from_simple\\amped__reverb.pstr",
+    "daw_out": [
+      "amped"
+    ],
+    "plugtype_in": "simple:reverb",
+    "plugtype_out": [
+      "native:amped:Reverb"
+    ],
+    "priority": 0
+  },
+  "data_main\\plugstatets\\_from_simple\\bandlab__reverb.pstr": {
+    "file": "data_main\\plugstatets\\_from_simple\\bandlab__reverb.pstr",
+    "daw_out": [
+      "bandlab",
+      "cakewalk_cxf"
+    ],
+    "plugtype_in": "simple:reverb",
+    "plugtype_out": [
+      "native:bandlab:reverbHybrid"
+    ],
+    "priority": 0
+  },
   "data_main\\plugstatets\\_from_simple\\flp__bassboost.pstr": {
     "file": "data_main\\plugstatets\\_from_simple\\flp__bassboost.pstr",
     "daw_out": [

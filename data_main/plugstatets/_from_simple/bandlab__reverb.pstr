@@ -1,0 +1,7 @@
+<plugstatetransform daw_out="bandlab;cakewalk_cxf" plugtype="simple:reverb">
+  <in__wet to="mix" type="float">0.5</in__wet>
+  <replace plugtype="native:bandlab:reverbHybrid" />
+  <out__param to="roomSize" only_value="1" type="float">8</out__param>
+  <out__param to="dampening" only_value="1" type="float">4000</out__param>
+  <out__param to="dryWetMix" from="mix" type="float" />
+</plugstatetransform>

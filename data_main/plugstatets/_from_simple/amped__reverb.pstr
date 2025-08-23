@@ -1,0 +1,8 @@
+<plugstatetransform daw_out="amped" plugtype="simple:reverb">
+  <in__wet to="mix" type="float">0.5</in__wet>
+  <replace plugtype="native:amped:Reverb" />
+  <out__param type="float">0.5</out__param>
+  <out__param to="size" only_value="1" type="float">0.5</out__param>
+  <out__param to="color" only_value="1" type="float">0.5</out__param>
+  <out__wet from="mix" type="float">1</out__wet>
+</plugstatetransform>

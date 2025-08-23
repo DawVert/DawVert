@@ -63,7 +63,8 @@ def do_idparams(amped_track, convproj_obj, plugin_obj, pluginid, amped_device, a
 		if ap_f: 
 			if ap_d.u_nopl_points:
 				autospec = {"type": "numeric", "min": param_obj.min, "max": param_obj.max, "curve": 0, "step": 0}
-				amped_track.add_auto(paramid, True, amped_device.id, convauto_man(ap_d.nopl_points, param_obj), autospec)
+				if amped_track:
+					amped_track.add_auto(paramid, True, amped_device.id, convauto_man(ap_d.nopl_points, param_obj), autospec)
 
 		amped_device.add_param(paramnum, ampedpid, param_obj.value)
 	return paramout
