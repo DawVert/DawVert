@@ -1,0 +1,20 @@
+<plugstatetransform daw_out="flp" plugtype="simple:reverb">
+  <replace plugtype="native:flstudio:fruity reeverb 2" />
+  <out__param to="lowcut" only_value="1" type="int">75</out__param>
+  <out__param to="highcut" only_value="1" type="int">40</out__param>
+  <out__param to="predelay" only_value="1" type="int">0</out__param>
+  <out__param to="room_size" only_value="1" type="int">50</out__param>
+  <out__param to="diffusion" only_value="1" type="int">100</out__param>
+  <out__param to="decay" only_value="1" type="int">15</out__param>
+  <out__param to="hidamping" only_value="1" type="int">40</out__param>
+  <out__param to="bass" only_value="1" type="int">100</out__param>
+  <out__param to="cross" only_value="1" type="int">500</out__param>
+  <out__param to="stereo" only_value="1" type="int">0</out__param>
+  <out__param to="dry" only_value="1" type="int">128</out__param>
+  <out__param to="er" only_value="1" type="int">64</out__param>
+  <out__param to="wet" only_value="1" type="int">128</out__param>
+  <out__param to="mod_speed" only_value="1" type="int">684</out__param>
+  <out__param to="mod" only_value="1" type="int">0</out__param>
+  <out__param to="mid_side" only_value="1" type="bool">0</out__param>
+  <out__param to="tempo_predelay" only_value="1" type="bool">0</out__param>
+</plugstatetransform>

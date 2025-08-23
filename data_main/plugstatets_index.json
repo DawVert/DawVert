@@ -1348,6 +1348,50 @@
     ],
     "priority": 0
   },
+  "data_main\\plugstatets\\_from_simple\\flp__reverb.pstr": {
+    "file": "data_main\\plugstatets\\_from_simple\\flp__reverb.pstr",
+    "daw_out": [
+      "flp"
+    ],
+    "plugtype_in": "simple:reverb",
+    "plugtype_out": [
+      "native:flstudio:fruity reeverb 2"
+    ],
+    "priority": 0
+  },
+  "data_main\\plugstatets\\_from_simple\\lmms__reverb.pstr": {
+    "file": "data_main\\plugstatets\\_from_simple\\lmms__reverb.pstr",
+    "daw_out": [
+      "lmms"
+    ],
+    "plugtype_in": "simple:reverb",
+    "plugtype_out": [
+      "native:lmms:reverbsc"
+    ],
+    "priority": 0
+  },
+  "data_main\\plugstatets\\_from_simple\\soundation__reverb.pstr": {
+    "file": "data_main\\plugstatets\\_from_simple\\soundation__reverb.pstr",
+    "daw_out": [
+      "soundation"
+    ],
+    "plugtype_in": "simple:reverb",
+    "plugtype_out": [
+      "native:soundation:com.soundation.reverb"
+    ],
+    "priority": 0
+  },
+  "data_main\\plugstatets\\_from_simple\\waveform__reverb.pstr": {
+    "file": "data_main\\plugstatets\\_from_simple\\waveform__reverb.pstr",
+    "daw_out": [
+      "waveform"
+    ],
+    "plugtype_in": "simple:reverb",
+    "plugtype_out": [
+      "native:tracktion:naturalReverb"
+    ],
+    "priority": 0
+  },
   "data_main\\plugstatets\\_from_univ\\ableton__bitcrush.pstr": {
     "file": "data_main\\plugstatets\\_from_univ\\ableton__bitcrush.pstr",
     "daw_out": [

@@ -1,0 +1,9 @@
+<plugstatetransform daw_out="soundation" plugtype="simple:reverb">
+  <in__wet to="mix" type="float">0.5</in__wet>
+  <replace plugtype="native:soundation:com.soundation.reverb" />
+  <out__param to="size" only_value="1" type="float">0.5</out__param>
+  <out__param to="wet" from="mix" type="float">1</out__param>
+  <out__param to="dry" only_value="1" type="float">1</out__param>
+  <out__param to="damp" only_value="1" type="float">0.4</out__param>
+  <out__param to="width" only_value="1" type="float">1</out__param>
+</plugstatetransform>

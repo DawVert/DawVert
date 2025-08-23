@@ -1,0 +1,17 @@
+<plugstatetransform daw_out="waveform" plugtype="simple:reverb">
+  <in__wet to="mix" type="float">0.5</in__wet>
+  <replace plugtype="native:tracktion:naturalReverb" />
+  <out__param to="decay" only_value="1" type="float">0.2</out__param>
+  <out__param to="definition" only_value="1" type="float">0.8</out__param>
+  <out__param to="diffusion" only_value="1" type="float">0.8</out__param>
+  <out__param to="highCut" only_value="1" type="float">1.0</out__param>
+  <out__param to="highDamp" only_value="1" type="float">1.0</out__param>
+  <out__param to="lowCut" only_value="1" type="float">0.0</out__param>
+  <out__param to="lowDamp" only_value="1" type="float">0.0</out__param>
+  <out__param to="mix" type="float">0.5</out__param>
+  <out__param to="mixLock" only_value="1" type="bool">0</out__param>
+  <out__param to="pan" only_value="1" type="float">0.5</out__param>
+  <out__param to="preDelay" only_value="1" type="float">0.0</out__param>
+  <out__param to="size" only_value="1" type="float">0.5</out__param>
+  <out__param to="slope" only_value="1" type="float">0.25</out__param>
+</plugstatetransform>
