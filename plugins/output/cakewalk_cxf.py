@@ -101,11 +101,11 @@ def do_track_effects(btrack_obj, plugslots, convproj_obj, ids_obj):
 	fx_num = 0
 	for pluginid in plugslots.slots_audio:
 		plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
-
-		if plugin_supported(plugin_obj):
-			cxf_fx = btrack_obj.add_effect()
-			do_plugin(convproj_obj, plugin_obj, pluginid, cxf_fx, ids_obj, btrack_obj.id, fx_num)
-			fx_num += 1
+		if plugin_found:
+			if plugin_supported(plugin_obj):
+				cxf_fx = btrack_obj.add_effect()
+				do_plugin(convproj_obj, plugin_obj, pluginid, cxf_fx, ids_obj, btrack_obj.id, fx_num)
+				fx_num += 1
 
 def do_track_auto_params(btrackauto_obj, convproj_obj, ids_obj, autoloc):
 	do_automation(convproj_obj, autoloc+['vol'], 'volume', btrackauto_obj, ids_obj)

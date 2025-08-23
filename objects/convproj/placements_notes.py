@@ -34,11 +34,7 @@ class cvpj_placements_notes:
 		for pl in self.data:
 			pl.time.change_timing(self.time_ppq, time_ppq)
 			if not is_indexed: 
-				pl.notelist.change_timings(time_ppq)
-				pl.timesig_auto.change_timings(time_ppq)
-				pl.timemarkers.change_timings(time_ppq)
-				for mpename, autodata in pl.auto.items(): autodata.change_timings(time_ppq)
-				for mpename, autodata in pl.auto_ticks.items(): autodata.change_timings(time_ppq)
+				pl.change_timings_internal(time_ppq)
 		self.time_ppq = time_ppq
 
 	def merge_crop(self, npl_obj, pos, dur, visualfill):
@@ -223,3 +219,16 @@ class cvpj_placement_notes:
 	def add_autoticks(self, a_type):
 		self.auto_ticks[a_type] = autoticks.cvpj_autoticks(self.time_ppq, 'float')
 		return self.auto_ticks[a_type]
+
+	def add_autoticks_ppq(self, a_type, time_ppq):
+		self.auto_ticks[a_type] = autoticks.cvpj_autoticks(time_ppq, 'float')
+		return self.auto_ticks[a_type]
+
+	def change_timings_internal(self, time_ppq):
+		self.notelist.change_timings(time_ppq)
+		self.timesig_auto.change_timings(time_ppq)
+		self.timemarkers.change_timings(time_ppq)
+		for mpename, autodata in self.auto.items(): autodata.change_timings(time_ppq)
+		for mpename, autodata in self.auto_ticks.items(): autodata.change_timings(time_ppq)
+
+		self.time_ppq = time_ppq

@@ -14,24 +14,45 @@ def process(convproj_obj, in__midi_notes, out__midi_notes, out_type, dawvert_int
 					notelist_obj = notes_pl.notelist
 					notelist_obj.time_ppq = midievents_obj.ppq
 					auto_data_cc = {}
+					auto_data_pitch = {}
+					auto_data_pressure = {}
+					auto_data_program = {}
 
 					for x in midievents_obj.iter_events():
 						etype = x[1]
 						if etype == 'NOTE_DUR':
 							channel = int(x[2])
-							notelist_obj.add_r(int(x[0]), int(x[5]), int(x[3])-60, int(x[4])/127, None)
-							notelist_obj.last_add_vol_off(float(x[9])/127)
+							notelist_obj.add_r(int(x['pos']), int(x['val3']), int(x['val1'])-60, int(x['val2'])/127, None)
+							notelist_obj.last_add_vol_off(float(x['off_vel'])/127)
 							notelist_obj.last_add_channel(channel)
-						if etype == 'CONTROL':
-							if x[3] not in auto_data_cc: auto_data_cc[x[3]] = {}
-							auto_data_cc[x[3]][x[0]] = x[4]
+						elif etype == 'CONTROL':
+							if x['val1'] not in auto_data_cc: auto_data_cc[x['val1']] = {}
+							auto_data_cc[x['val1']][x['pos']] = x['val2']
+						elif etype == 'PRESSURE':
+							auto_data_pressure[x['pos']] = x['val1']
+						elif etype == 'PITCH':
+							auto_data_pitch[x['pos']] = x['val1']
+						elif etype == 'PROGRAM':
+							auto_data_program[x['pos']] = x['val1']
 
 					for ccnum, data in auto_data_cc.items():
-						autoticks = notes_pl.add_autoticks('midi_cc_'+str(int(ccnum)))
+						autoticks = notes_pl.add_autoticks_ppq('midi_cc_'+str(int(ccnum)), midievents_obj.ppq)
 						for pos, val in data.items(): autoticks.add_point(int(pos), int(val))
-						autoticks.change_timings(960)
 
-					notelist_obj.change_timings(midpl.time_ppq)
+					if auto_data_pitch:
+						autoticks = notes_pl.add_autoticks_ppq('midi_pitch', midievents_obj.ppq)
+						for pos, val in auto_data_pitch.items(): autoticks.add_point(int(pos), int(val))
+
+					if auto_data_pressure:
+						autoticks = notes_pl.add_autoticks_ppq('midi_pressure', midievents_obj.ppq)
+						for pos, val in auto_data_pressure.items(): autoticks.add_point(int(pos), int(val))
+
+					if auto_data_program:
+						autoticks = notes_pl.add_autoticks_ppq('midi_program', midievents_obj.ppq)
+						for pos, val in auto_data_program.items(): autoticks.add_point(int(pos), int(val))
+
+					notes_pl.change_timings_internal(convproj_obj.time_ppq)
+
 				track_obj.placements.pl_midi.data = []
 
 			return True
