@@ -542,8 +542,8 @@ class input_flp(plugins.base):
 					note_pos = fl_note.pos
 					note_dur = fl_note.dur
 					note_key = fl_note.key-60
-					note_vol = fl_note.velocity/128
-					note_rel = fl_note.rel/128
+					note_vol = fl_note.velocity/127
+					note_rel = fl_note.rel/127
 
 					if not note_dur: oneshotnotenum_chans[fl_note.rack] += 1
 					numnotenum_chans[fl_note.rack] += 1

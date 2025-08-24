@@ -297,8 +297,8 @@ class output_cvpjs(plugins.base):
 							fl_note_obj.pos = int(t_pos)
 							fl_note_obj.dur = int(t_dur)
 							fl_note_obj.key = int(t_key)+60
-							fl_note_obj.velocity = int(xtramath.clamp(t_vol,0,1)*128)
-							fl_note_obj.rel = int(xtramath.clamp(t_vol_off,0,1)*128)
+							fl_note_obj.velocity = int(xtramath.clamp(t_vol,0,1)*127)
+							fl_note_obj.rel = int(xtramath.clamp(t_vol_off,0,1)*127)
 
 							if t_autopack:
 								fl_note_obj.finep = int((t_autopack.mod_pitch/10)+120)
