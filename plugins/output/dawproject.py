@@ -11,6 +11,7 @@ from xml.dom import minidom
 from objects import globalstore
 from functions import data_values
 from functions import note_data
+from functions import xtramath
 
 import logging
 logger_output = logging.getLogger('output')
@@ -89,6 +90,7 @@ def make_time(clip_obj, time_obj):
 
 	clip_obj.time = round(position, 7)
 	clip_obj.duration = round(duration, 7)
+	clip_obj.contentTimeUnit = 'beats'
 
 	cut_start, loop_loopstart, loop_loopend = time_obj.get_loop_data()
 
@@ -96,6 +98,40 @@ def make_time(clip_obj, time_obj):
 	if time_obj.cut_type in ['loop','loop_off','loop_adv','loop_adv_off','loop_eq']:
 		clip_obj.loopStart = round(loop_loopstart, 7)
 		clip_obj.loopEnd = round(loop_loopend, 7)
+
+def do_auto_notes(mpetype, autopoints):
+	v_min = 0
+	v_max = 1
+	ompetype = None
+	mpevalt = 'linear'
+
+	if mpetype == 'midi_pitch': 
+		ompetype = 'pitchBend'
+		mpevalt = 'normalized'
+		v_min = -8192
+		v_max = 8192
+	elif mpetype == 'midi_pressure':
+		ompetype = 'channelPressure'
+		mpevalt = 'normalized'
+		v_min = 0
+		v_max = 127
+
+	isnormalized = mpevalt == 'normalized'
+
+	dppoints_obj = None
+	if mpetype:
+		dppoints_obj = points.dawproject_points()
+		dppoints_obj.target = points.dawproject_pointtarget()
+		dppoints_obj.target.expression = ompetype
+		dppoints_obj.unit = mpevalt
+		for autopoint in autopoints:
+			val = xtramath.between_to_one(v_min, v_max, autopoint.value) if isnormalized else autopoint.value
+			dppoint_obj = points.dawproject_realpoint()
+			dppoint_obj.time = autopoint.pos/4
+			dppoint_obj.value = val
+			dppoint_obj.interpolation = "linear" 
+			dppoints_obj.points.append(dppoint_obj)
+	return ompetype, dppoints_obj
 
 def do_mpe_val(value, mpetype):
 	dppoints_obj = points.dawproject_points()
@@ -304,8 +340,17 @@ def make_clips(starttxt, convproj_obj, track_obj, lane_obj, trackid):
 		make_time(clip_obj, notespl_obj.time)
 		do_visual_clip(notespl_obj.visual, clip_obj)
 
-		clip_obj.notes = clips.dawproject_notes()
-		for t_pos, t_dur, t_keys, t_vol, t_inst, t_extra, t_autopack in notespl_obj.notelist.iter():
+		if not notespl_obj.auto:
+			clipnotes = clip_obj.notes = clips.dawproject_notes()
+		else:
+			laneobj = clip_obj.lanes = clips.dawproject_lane()
+			clipnotes = laneobj.notes = clips.dawproject_notes()
+			clippoints = laneobj.points = []
+			for mpetype, autodata in notespl_obj.auto.items():
+				ompetype, dp_points = do_auto_notes(mpetype, autodata)
+				if dp_points: clippoints.append(dp_points)
+
+		for t_pos, t_dur, t_keys, t_vol, t_vol_off, t_chan, t_inst, t_extra, t_autopack in notespl_obj.notelist.iter_midispec():
 			if t_autopack: t_autopack.convert_to('auto', t_keys, t_vol)
 			for t_key in t_keys:
 				note_obj = clips.dawproject_note()
@@ -313,9 +358,8 @@ def make_clips(starttxt, convproj_obj, track_obj, lane_obj, trackid):
 				note_obj.duration = t_dur
 				note_obj.key = t_key+60
 				note_obj.vel = t_vol
-				if t_extra: 
-					note_obj.channel = t_extra['channel'] if 'channel' in t_extra else 0
-					note_obj.rel = t_extra['release'] if 'release' in t_extra else t_vol
+				note_obj.rel = t_vol_off
+				note_obj.channel = t_chan
 				if t_autopack is not None:
 					t_auto = t_autopack.auto
 					if len(t_auto) == 1:
@@ -328,7 +372,7 @@ def make_clips(starttxt, convproj_obj, track_obj, lane_obj, trackid):
 							dp_points = points.dawproject_points()
 							do_auto_mpe(a, mpetype, dp_points)
 							note_obj.lanes.points.append(dp_points)
-				clip_obj.notes.notes.append(note_obj)
+				clipnotes.notes.append(note_obj)
 		lane_obj.clips.clips.append(clip_obj)
 
 	for audiopl_obj in track_obj.placements.pl_audio:

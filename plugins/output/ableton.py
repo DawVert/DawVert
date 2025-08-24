@@ -555,6 +555,7 @@ def do_audio_mpe(audiopl_obj, als_track, als_audioclip):
 
 		if mpeid:
 			clipenv.PointeeId = mpeid
+			x.add_inital_val()
 			for num, autopoint in enumerate(x):
 				alsevent = proj_ableton.ableton_FloatEvent(None)
 				alsevent.Time = autopoint.pos
@@ -896,6 +897,7 @@ def add_track(convproj_obj, project_obj, trackid, track_obj):
 
 					if mpeid:
 						clipenv.PointeeId = mpeid
+						x.add_inital_val()
 						for num, autopoint in enumerate(x):
 							alsevent = proj_ableton.ableton_FloatEvent(None)
 							alsevent.Time = autopoint.pos/4

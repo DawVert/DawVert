@@ -232,6 +232,7 @@ class dawproject_lane:
 		self.clips = None
 		self.warps = None
 		self.audio = None
+		self.notes = None
 		self.points = []
 		self.track = ''
 		self.id = ''
@@ -259,6 +260,9 @@ class dawproject_lane:
 			if x_part.tag == 'Audio': 
 				self.audio = dawproject_audio()
 				self.audio.read(x_part)
+			if x_part.tag == 'Notes': 
+				self.notes = dawproject_notes()
+				self.notes.read(x_part)
 
 	def write(self, xmltag):
 		tempxml = ET.SubElement(xmltag, 'Lanes')
@@ -267,6 +271,7 @@ class dawproject_lane:
 		if self.clips: self.clips.write(tempxml)
 		if self.warps: self.warps.write(tempxml)
 		if self.audio: self.audio.write(tempxml)
+		if self.notes: self.notes.write(tempxml)
 		if self.fadeTimeUnit != None: tempxml.set('fadeTimeUnit', str(self.fadeTimeUnit))
 		if self.fadeInTime != None: tempxml.set('fadeInTime', str(self.fadeInTime))
 		if self.fadeOutTime != None: tempxml.set('fadeOutTime', str(self.fadeOutTime))

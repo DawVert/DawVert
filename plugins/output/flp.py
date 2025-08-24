@@ -297,7 +297,8 @@ class output_cvpjs(plugins.base):
 							fl_note_obj.pos = int(t_pos)
 							fl_note_obj.dur = int(t_dur)
 							fl_note_obj.key = int(t_key)+60
-							fl_note_obj.velocity = int(xtramath.clamp(t_vol,0,1)*100)
+							fl_note_obj.velocity = int(xtramath.clamp(t_vol,0,1)*128)
+							fl_note_obj.rel = int(xtramath.clamp(t_vol_off,0,1)*128)
 
 							if t_autopack:
 								fl_note_obj.finep = int((t_autopack.mod_pitch/10)+120)
@@ -307,11 +308,9 @@ class output_cvpjs(plugins.base):
 								fl_note_obj.pan = 64
 
 							if t_extra:
-								if 'release' in t_extra: fl_note_obj.rel = int(xtramath.clamp(t_extra['release'],0,1)*128)
 								if 'mod_x' in t_extra: fl_note_obj.mod_x = int(xtramath.clamp(t_extra['mod_x'],0,1)*255)
 								if 'mod_y' in t_extra: fl_note_obj.mod_y = int(xtramath.clamp(t_extra['mod_y'],0,1)*255)
 							else:
-								fl_note_obj.rel = 64
 								fl_note_obj.mod_x = 128
 								fl_note_obj.mod_y = 128
 		

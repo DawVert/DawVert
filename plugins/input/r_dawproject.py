@@ -3,6 +3,7 @@
 
 from objects.exceptions import ProjectFileParserException
 from functions import note_data
+from functions import xtramath
 import plugins
 import zipfile
 import os
@@ -238,21 +239,32 @@ def do_mpe(cvpj_notelist, mpepoints):
 		for point in mpepoints.points:
 			cvpj_notelist.last_add_auto(mpetype, point.time, point.value)
 
-def do_notes(track_obj, clip, notes):
-	placement_obj = track_obj.placements.add_notes()
-	docliptime(placement_obj.time, clip)
-	if clip.name: placement_obj.visual.name = clip.name
-	if clip.color: placement_obj.visual.color.set_hex(clip.color.upper())
-	for note in notes.notes:
+def do_notes(cvpj_notelist, notes):
+	for note in notes:
 		note_vel = note.vel if note.vel != None else 1
-		note_extra = {}
-		if note.rel != None: note_extra['release'] = note.rel
-		cvpj_notelist = placement_obj.notelist
-		cvpj_notelist.add_r(note.time, note.duration, note.key-60, note_vel, note_extra)
-		cvpj_notelist.last_add_channel(note.channel)
+		cvpj_notelist.add_r(note.time, note.duration, note.key-60, note_vel, None)
+		if note.channel is not None: cvpj_notelist.last_add_channel(note.channel)
+		if note.rel is not None: cvpj_notelist.last_add_vol_off(note.rel)
 		if note.points: do_mpe(cvpj_notelist, note.points)
 		if note.lanes:
 			for points in note.lanes.points: do_mpe(cvpj_notelist, points)
+
+def do_noteclip(track_obj, clip):
+	dp_notes = None
+	if clip.notes: dp_notes = clip.notes
+	if clip.lanes:
+		if clip.lanes.notes: dp_notes = clip.lanes.notes
+
+	if dp_notes:
+		placement_obj = track_obj.placements.add_notes()
+		docliptime(placement_obj.time, clip)
+		if clip.name: placement_obj.visual.name = clip.name
+		if clip.color: placement_obj.visual.color.set_hex(clip.color.upper())
+		cvpj_notelist = placement_obj.notelist
+		do_notes(cvpj_notelist, dp_notes.notes)
+		if clip.lanes:
+			for points in clip.lanes.points:
+				do_noteclipauto(placement_obj, points)
 
 def do_audio(convproj_obj, npa_obj, audio_obj):
 	global samplefolder
@@ -340,9 +352,30 @@ def do_audioauto(npa_obj, mpepoints):
 				npa_obj.sample.stretch.algorithm.formant = outval
 
 		elif len(mpepoints.points)>1:
-			autopoints_obj = npa_obj.add_autopoints(mpetype, 1, True)
+			autopoints_obj = npa_obj.add_autopoints(mpetype, 1.0)
 			for point in mpepoints.points:
 				autopoints_obj.points__add_normal(point.time, point.value, 0, None)
+
+def do_noteclipauto(npa_obj, mpepoints):
+	target_obj = mpepoints.target
+	mpetype = target_obj.expression
+	if mpetype:
+		v_min = 0
+		v_max = 1
+
+		if mpetype == 'pitchBend':
+			mpetype = 'midi_pitch'
+			v_min = -8192
+			v_max = 8192
+		if mpetype == 'channelPressure':
+			mpetype = 'midi_pressure'
+			v_min = 0
+			v_max = 127
+
+		autopoints_obj = npa_obj.add_autopoints(mpetype)
+		for point in mpepoints.points:
+			val = xtramath.between_from_one(v_min, v_max, point.value)
+			autopoints_obj.points__add_normal(point.time*4, val, 0, None)
 
 def do_clips(convproj_obj, track_obj, clip, clips):
 	placement_obj = track_obj.placements.add_nested_audio()
@@ -444,7 +477,7 @@ class input_dawproject(plugins.base):
 				track_obj = trackdata[lane.track]
 				if track_obj:
 					for clip in lane.clips.clips:
-						if clip.notes: do_notes(track_obj, clip, clip.notes)
+						do_noteclip(track_obj, clip)
 						if clip.clips: do_clips(convproj_obj, track_obj, clip, clip.clips)
 				for points in lane.points:
 					target_obj = points.target

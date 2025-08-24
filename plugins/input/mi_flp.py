@@ -542,13 +542,13 @@ class input_flp(plugins.base):
 					note_pos = fl_note.pos
 					note_dur = fl_note.dur
 					note_key = fl_note.key-60
-					note_vol = fl_note.velocity/100
+					note_vol = fl_note.velocity/128
+					note_rel = fl_note.rel/128
 
 					if not note_dur: oneshotnotenum_chans[fl_note.rack] += 1
 					numnotenum_chans[fl_note.rack] += 1
 
 					note_extra = {}
-					if fl_note.rel != 64: note_extra['release'] = fl_note.rel/128
 					if fl_note.mod_x != 128: note_extra['mod_x'] = fl_note.mod_x/255
 					if fl_note.mod_y != 128: note_extra['mod_y'] = fl_note.mod_y/255
 					notechan = data_bytes.splitbyte(fl_note.midich)[1]
@@ -563,6 +563,7 @@ class input_flp(plugins.base):
 					else: 
 						cvpj_notelist.add_m(note_inst, note_pos, note_dur, note_key, note_vol, note_extra if note_extra else None)
 						cvpj_notelist.last_add_channel(notechan)
+						cvpj_notelist.last_add_vol_off(note_rel)
 						if fl_note.finep != 120: cvpj_notelist.last_add_finepitch((fl_note.finep-120)*10)
 						if fl_note.pan != 64: cvpj_notelist.last_add_pan((fl_note.pan-64)/64)
 

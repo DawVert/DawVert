@@ -60,6 +60,7 @@ class notelist_cursor:
 		note['dur'] = t_dur
 		note['vol'] = t_vol
 		note['key'] = t_key
+		note['vol_off'] = 0.5
 		self.assoc_extra_add(t_extra)
 
 	def add_r_multi(self, t_pos, t_dur, m_keys, t_vol, t_extra):
@@ -67,6 +68,7 @@ class notelist_cursor:
 		note['pos'] = t_pos
 		note['dur'] = t_dur
 		note['vol'] = t_vol
+		note['vol_off'] = 0.5
 		self.assoc_extra_add(t_extra)
 		self.assoc_multikey_add(m_keys)
 
@@ -76,6 +78,7 @@ class notelist_cursor:
 		note['dur'] = t_dur
 		note['vol'] = t_vol
 		note['key'] = t_key
+		note['vol_off'] = 0.5
 		self.assoc_inst_add(t_inst)
 		self.assoc_extra_add(t_extra)
 
@@ -84,6 +87,7 @@ class notelist_cursor:
 		note['pos'] = t_pos
 		note['dur'] = t_dur
 		note['vol'] = t_vol
+		note['vol_off'] = 0.5
 		self.assoc_inst_add(t_inst)
 		self.assoc_extra_add(t_extra)
 		self.assoc_multikey_add(m_keys)
