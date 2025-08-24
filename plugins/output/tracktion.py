@@ -380,6 +380,8 @@ class output_tracktion_edit(plugins.base):
 		in_dict['time_seconds'] = True
 		in_dict['time_seconds_tempo'] = False
 		in_dict['time_seconds_timesig'] = False
+		in_dict['time_seconds_timemarkers'] = False
+		in_dict['track_arranger'] = True
 		in_dict['track_hybrid'] = True
 		in_dict['audio_stretch'] = ['rate', 'warp']
 		in_dict['auto_types'] = ['nopl_points']
@@ -476,6 +478,28 @@ class output_tracktion_edit(plugins.base):
 
 		counter_id = counter.counter(1000, '')
 
+		project_obj.arrangertrack.id_num = counter_id.get()
+		project_obj.markertrack.id_num = counter_id.get()
+
+		for timemarker_obj in convproj_obj.arranger:
+			wf_arrangerclip = proj_tracktion_edit.tracktion_arrangerclip()
+			if timemarker_obj.visual.name: wf_arrangerclip.name = timemarker_obj.visual.name
+			wf_arrangerclip.start = timemarker_obj.position
+			wf_arrangerclip.length = timemarker_obj.duration
+			wf_arrangerclip.id_num = counter_id.get()
+			if timemarker_obj.visual.color: wf_arrangerclip.colour = 'ff'+timemarker_obj.visual.color.get_hex()
+			project_obj.arrangertrack.clips.append(wf_arrangerclip)
+
+		for num, timemarker_obj in enumerate(convproj_obj.timemarkers):
+			wf_arrangerclip = proj_tracktion_edit.tracktion_markerclip()
+			wf_arrangerclip.markerID = num
+			if timemarker_obj.visual.name: wf_arrangerclip.name = timemarker_obj.visual.name
+			wf_arrangerclip.start = timemarker_obj.position
+			wf_arrangerclip.length = timemarker_obj.duration
+			wf_arrangerclip.id_num = counter_id.get()
+			if timemarker_obj.visual.color: wf_arrangerclip.colour = 'ff'+timemarker_obj.visual.color.get_hex()
+			project_obj.markertrack.clips.append(wf_arrangerclip)
+
 		get_plugins(convproj_obj, convproj_obj.params, sampleref_assoc, sampleref_obj_assoc, project_obj.masterplugins, convproj_obj.track_master.plugslots.slots_audio)
 
 		groups_data = {}
@@ -503,7 +527,7 @@ class output_tracktion_edit(plugins.base):
 			wf_track.solo = int(track_obj.params.get('solo', False).value)
 
 			if track_obj.visual.name: wf_track.name = track_obj.visual.name
-			if track_obj.visual.color: wf_track.colour ='ff'+track_obj.visual.color.get_hex()
+			if track_obj.visual.color: wf_track.colour = 'ff'+track_obj.visual.color.get_hex()
 			
 			middlenote = track_obj.datavals.get('middlenote', 0)
 

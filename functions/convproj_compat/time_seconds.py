@@ -47,9 +47,10 @@ def process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
 
 		# -- timemarkers --
 		dochange, is_sec = get_sec(in_compat.time_seconds_timemarkers, out_compat.time_seconds_timemarkers)
-		if dochange: 
-			convproj_obj.timemarkers.change_seconds(is_sec, tempo, ppq)
-			convproj_obj.arranger.change_seconds(is_sec, tempo, ppq)
+		if dochange: convproj_obj.timemarkers.change_seconds(is_sec, tempo, ppq)
+
+		dochange, is_sec = get_sec(in_compat.time_seconds_arranger, out_compat.time_seconds_arranger)
+		if dochange: convproj_obj.arranger.change_seconds(is_sec, tempo, ppq)
 
 		#if convproj_obj.type in ['m', 'mi']: 
 		#s	for pl_id, playlist_obj in convproj_obj.playlist.items(): 

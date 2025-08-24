@@ -838,6 +838,121 @@ class tracktion_track:
 		for midiclip_obj in self.midiclips: midiclip_obj.write(tempxml)
 		self.outputdevices.write(tempxml)
 
+# =================================================== PROJECT OTHER TRACKS ===================================================
+
+class tracktion_arrangerclip:
+	def __init__(self):
+		self.name = 'New Arranger'
+		self.start = 0
+		self.length = 0
+		self.offset = 0
+		self.id_num = 0
+		self.colour = 'ffaa00ff'
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'id': self.id_num = v
+			elif n == 'name': self.name = v
+			elif n == 'start': self.start = float(v)
+			elif n == 'length': self.length = float(v)
+			elif n == 'offset': self.offset = float(v)
+			elif n == 'colour': self.colour = v
+			else: logger_projparse.warning('tracktion_edit: arrangerclip: unimplemented attrib: '+n)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "ARRANGERCLIP")
+		tempxml.set('name', self.name)
+		tempxml.set('start', str(self.start))
+		tempxml.set('length', str(self.length))
+		tempxml.set('offset', str(self.offset))
+		tempxml.set('id', str(self.id_num))
+		tempxml.set('colour', self.colour)
+
+class tracktion_arrangertrack:
+	def __init__(self):
+		self.clips = []
+		self.name = 'Arranger'
+		self.id_num = 0
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'id': self.id_num = v
+			elif n == 'name': self.name = v
+
+		for subxml in xmldata:
+			if subxml.tag == 'ARRANGERCLIP': 
+				arrc_obj = tracktion_arrangerclip()
+				arrc_obj.load(subxml)
+				self.clips.append(arrc_obj)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "ARRANGERTRACK")
+		tempxml.set('id', str(self.id_num))
+		if self.name: tempxml.set('name', str(self.name))
+		for clip_obj in self.clips:
+			clip_obj.write(tempxml)
+
+class tracktion_markerclip:
+	def __init__(self):
+		self.name = 'Marker'
+		self.start = 0
+		self.length = 0
+		self.offset = 0
+		self.id_num = 0
+		self.colour = 'ffaa00ff'
+		self.markerID = 0
+		self.speed = 1.0
+		self.sync = 0
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'id': self.id_num = v
+			elif n == 'name': self.name = v
+			elif n == 'start': self.start = float(v)
+			elif n == 'length': self.length = float(v)
+			elif n == 'offset': self.offset = float(v)
+			elif n == 'colour': self.colour = v
+			elif n == 'markerID': self.markerID = int(v)
+			elif n == 'speed': self.speed = float(v)
+			elif n == 'sync': self.sync = int(v)
+			else: logger_projparse.warning('tracktion_edit: markerclip: unimplemented attrib: '+n)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "MARKERCLIP")
+		tempxml.set('name', self.name)
+		tempxml.set('start', str(self.start))
+		tempxml.set('length', str(self.length))
+		tempxml.set('offset', str(self.offset))
+		tempxml.set('id', str(self.id_num))
+		tempxml.set('colour', self.colour)
+		tempxml.set('markerID', str(self.markerID))
+		tempxml.set('speed', str(self.speed))
+		tempxml.set('sync', str(self.sync))
+
+class tracktion_markertrack:
+	def __init__(self):
+		self.clips = []
+		self.name = 'Marker'
+		self.id_num = 0
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'id': self.id_num = v
+			elif n == 'name': self.name = v
+
+		for subxml in xmldata:
+			if subxml.tag == 'MARKERCLIP': 
+				arrc_obj = tracktion_markerclip()
+				arrc_obj.load(subxml)
+				self.clips.append(arrc_obj)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "MARKERTRACK")
+		tempxml.set('id', str(self.id_num))
+		if self.name: tempxml.set('name', str(self.name))
+		for clip_obj in self.clips:
+			clip_obj.write(tempxml)
+
 # =================================================== PROJECT ===================================================
 
 class tracktion_transport:
@@ -890,6 +1005,8 @@ class tracktion_edit:
 		self.clicktrack = 0.6
 		self.id3vorbismetadata = {}
 		self.mastervolume = tracktion_plugin()
+		self.arrangertrack = tracktion_arrangertrack()
+		self.markertrack = tracktion_markertrack()
 		self.masterplugins = []
 		self.tracks = []
 
@@ -918,6 +1035,8 @@ class tracktion_edit:
 			elif xmlpart.tag == 'CLICKTRACK':
 				level = xmlpart.get('level')
 				if level: self.clicktrack = float(level)
+			elif xmlpart.tag == 'ARRANGERTRACK': self.arrangertrack.load(xmlpart)
+			elif xmlpart.tag == 'MARKERTRACK': self.markertrack.load(xmlpart)
 			elif xmlpart.tag == 'ID3VORBISMETADATA': self.id3vorbismetadata = xmlpart.attrib
 			elif xmlpart.tag == 'MASTERVOLUME':
 				for subxml in xmlpart:
@@ -973,6 +1092,9 @@ class tracktion_edit:
 		ET.SubElement(wf_proj, "TRACKCOMPS")
 		ET.SubElement(wf_proj, "ARADOCUMENT")
 		ET.SubElement(wf_proj, "CONTROLLERMAPPINGS")
+
+		self.arrangertrack.write(wf_proj)
+		self.markertrack.write(wf_proj)
 
 		for track_obj in self.tracks:
 			track_obj.write(wf_proj)

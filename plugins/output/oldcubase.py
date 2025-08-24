@@ -56,7 +56,7 @@ class output_oldcubase(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['audio_stretch'] = ['rate']
 		in_dict['file_ext'] = 'steinberg-project'
-		in_dict['audio_filetypes'] = ['wav', 'ogg']
+		in_dict['audio_filetypes'] = ['wav']
 		in_dict['auto_types'] = ['nopl_points']
 		in_dict['notes_midi'] = True
 		in_dict['placement_cut'] = True
@@ -479,12 +479,12 @@ class output_oldcubase(plugins.base):
 		if len(convproj_obj.arranger):
 			sortarr = dict([[x.position, x] for x in convproj_obj.arranger])
 			sortarr = [sortarr[x] for x in sorted(list(sortarr))]
-			
+
 			for arr_obj in sortarr:
 				arrevent = add_list_genid(playrange_track.node.events, 'MPlayRangeEvent', counter_id)
 				arrevent.flags = 8960 
 				arrevent.start = arr_obj.position 
-				arrevent.length = arr_obj.duration 
+				arrevent.length = arr_obj.duration
 				if arr_obj.visual.name: arrevent.name = arr_obj.visual.name 
 				do_color(arr_obj.visual, total_colors, arrevent.additional_attributes)
 

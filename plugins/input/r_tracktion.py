@@ -301,21 +301,22 @@ def do_foldertrack(convproj_obj, wf_track, counter_track, software_mode, dawvert
 	track_obj.params.add('pan', pan, 'float')
 	do_tracks(convproj_obj, wf_track.tracks, counter_track, groupid, software_mode, dawvert_intent)
 
-def do_track(convproj_obj, wf_track, track_obj, software_mode, dawvert_intent): 
-	track_obj.visual.name = str(wf_track.name)
-	colour = str(wf_track.colour)
+def do_color(visual_obj, hexcolor): 
 	try:
-		if colour != '0': 
-			if len(colour)==8:
-				track_obj.visual.color.set_hex(colour[2:])
-				track_obj.visual.color.fx_allowed = ['saturate', 'brighter']
-			if len(colour)==6:
-				track_obj.visual.color.set_hex(colour)
-				track_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+		if hexcolor != '0': 
+			if len(hexcolor)==8:
+				visual_obj.color.set_hex(hexcolor[2:])
+				visual_obj.color.fx_allowed = ['saturate', 'brighter']
+			if len(hexcolor)==6:
+				visual_obj.color.set_hex(hexcolor)
+				visual_obj.color.fx_allowed = ['saturate', 'brighter']
 	except:
 		pass
 
-	#track_obj.visual_ui.height = wf_track.height/35.41053828354546
+def do_track(convproj_obj, wf_track, track_obj, software_mode, dawvert_intent): 
+	track_obj.visual.name = str(wf_track.name)
+	colour = str(wf_track.colour)
+	do_color(track_obj.visual, colour)
 
 	bpm = convproj_obj.params.get('bpm', 120).value
 
@@ -524,7 +525,9 @@ class input_tracktion_edit(plugins.base):
 		traits_obj.time_seconds = True
 		traits_obj.time_seconds_tempo = False
 		traits_obj.time_seconds_timesig = False
+		traits_obj.time_seconds_timemarkers = False
 		traits_obj.track_hybrid = True
+		traits_obj.track_arranger = True
 
 		convproj_obj.set_timings(4.0)
 
@@ -608,6 +611,23 @@ class input_tracktion_edit(plugins.base):
 		#	for pos, timesig in project_obj.temposequence.timesig.items():
 		#		convproj_obj.timesig_auto.add_point(pos*4, timesig)
 
+		for arrclip in project_obj.arrangertrack.clips:
+			timemarker_obj = convproj_obj.arranger.add()
+			timemarker_obj.position = arrclip.start
+			timemarker_obj.duration = arrclip.length
+			timemarker_obj.type = 'region'
+			timemarker_obj.visual.name = str(arrclip.name)
+			do_color(timemarker_obj.visual, arrclip.colour)
+
+		for markclip in project_obj.markertrack.clips:
+			if not markclip.sync:
+				timemarker_obj = convproj_obj.timemarker__add()
+				timemarker_obj.position = markclip.start*8
+				timemarker_obj.duration = markclip.length*8
+				timemarker_obj.type = 'region'
+				timemarker_obj.visual.name = str(markclip.name)
+				do_color(timemarker_obj.visual, arrclip.colour)
+
 		for wf_plugin in project_obj.masterplugins:
 			do_plugin(convproj_obj, wf_plugin, convproj_obj.track_master, software_mode)
 
@@ -619,7 +639,7 @@ class input_tracktion_edit(plugins.base):
 		#convproj_obj.transport.start_pos = max(0, transport_obj.start)
 		convproj_obj.transport.current_pos = transport_obj.position
 		convproj_obj.transport.is_seconds = True
-		convproj_obj.timemarkers.is_seconds = True
+		convproj_obj.timemarkers.is_seconds = False
 		
 		tracknum = 0
 		counter_track = counter.counter(1000, '')

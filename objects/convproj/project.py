@@ -608,7 +608,7 @@ class cvpj_project:
 	def fileref__add__prefix(self, fileid, prefix, filepath):
 		if fileid not in self.filerefs: 
 			self.filerefs[fileid] = fileref.cvpj_fileref()
-			self.filerefs[fileid].set_path_prefix(prefix, filepath)
+			self.filerefs[fileid].set_path_prefix(prefix, filepath, 1)
 			logger_project.info('FileRef - '+fileid+' - '+filepath)
 		return self.filerefs[fileid]
 

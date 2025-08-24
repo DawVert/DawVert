@@ -30,6 +30,7 @@ class cvpj_project_traits:
 		self.time_seconds_timesig = False
 		self.time_seconds_transport = False
 		self.time_seconds_timemarkers = False
+		self.time_seconds_arranger = False
 		
 	def from_dict(self, indict):
 		if 'audio_filetypes' in indict: self.audio_filetypes = indict['audio_filetypes']
@@ -59,6 +60,7 @@ class cvpj_project_traits:
 			self.time_seconds_timesig = self.time_seconds
 			self.time_seconds_transport = self.time_seconds
 			self.time_seconds_timemarkers = self.time_seconds
+			self.time_seconds_arranger = self.time_seconds
 
 		if 'time_seconds_tracks' in indict: self.time_seconds_tracks = indict['time_seconds_tracks']
 		if 'time_seconds_auto' in indict: self.time_seconds_auto = indict['time_seconds_auto']
@@ -66,3 +68,4 @@ class cvpj_project_traits:
 		if 'time_seconds_timesig' in indict: self.time_seconds_timesig = indict['time_seconds_timesig']
 		if 'time_seconds_transport' in indict: self.time_seconds_transport = indict['time_seconds_transport']
 		if 'time_seconds_timemarkers' in indict: self.time_seconds_timemarkers = indict['time_seconds_timemarkers']
+		if 'time_seconds_arranger' in indict: self.time_seconds_arranger = indict['time_seconds_arranger']

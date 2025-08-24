@@ -65,7 +65,7 @@ class cvpj_timemarkers:
 			for m in self.data: 
 				m.position = xtramath.change_timing(self.time_ppq, time_ppq, m.position)
 				m.duration = xtramath.change_timing(self.time_ppq, time_ppq, m.duration)
-			self.time_ppq = time_ppq
+		self.time_ppq = time_ppq
 		
 	def change_seconds(self, is_seconds, bpm, ppq):
 		if is_seconds and not self.is_seconds:
