@@ -167,7 +167,7 @@ class cvpj_sampleref:
 				logger_project.warning('sampleref: Started Resampling '+str(self.fileref.file))
 				audiof_obj.resample(44100)
 				audiof_obj.to_file_wav(outfilename)
-				self.set_path(os_type, outfilename)
+			self.set_path(os_type, outfilename)
 
 			if ('dur_samples' in self.defined_meta, 'dur_sec' in self.defined_meta) and 'hz' in self.defined_meta:
 				self.dur_samples = self.get_dur_samples()*(44100/self.hz)

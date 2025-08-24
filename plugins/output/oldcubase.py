@@ -477,7 +477,10 @@ class output_oldcubase(plugins.base):
 			add_list_genid(playrange_track_po_list, 'MPlayOrderList', counter_id).po_listname = to_wide_string("Play Order List %s" % (x+2))
 
 		if len(convproj_obj.arranger):
-			for arr_obj in convproj_obj.arranger:
+			sortarr = dict([[x.position, x] for x in convproj_obj.arranger])
+			sortarr = [sortarr[x] for x in sorted(list(sortarr))]
+			
+			for arr_obj in sortarr:
 				arrevent = add_list_genid(playrange_track.node.events, 'MPlayRangeEvent', counter_id)
 				arrevent.flags = 8960 
 				arrevent.start = arr_obj.position 
