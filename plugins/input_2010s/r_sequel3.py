@@ -182,7 +182,7 @@ class input_sequel3(plugins.base):
 		return 'sequel3'
 	
 	def get_name(self):
-		return 'steinberg Sequel'
+		return 'Steinberg Sequel 2+'
 	
 	def get_priority(self):
 		return 0
