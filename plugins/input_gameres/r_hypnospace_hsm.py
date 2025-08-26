@@ -38,8 +38,6 @@ class input_hypnospace_hsm(plugins.base):
 		if project_obj.title: convproj_obj.metadata.name = project_obj.title
 		if project_obj.artist: convproj_obj.metadata.author = project_obj.artist
 
-		print(project_obj.title, project_obj.artist)
-
 		for tracknum in range(5):
 			track_obj = convproj_obj.track__add('track_'+str(tracknum), 'instruments', 1, False)
 			track_obj.visual.name = 'Track #%s' % str(tracknum+1)
