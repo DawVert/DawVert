@@ -3,6 +3,7 @@
 
 from functions import data_values
 from functions import xtramath
+from objects import regions
 
 #from functions.convproj_compat import fxrack2trackfx
 #from functions.convproj_compat import trackfx2fxrack

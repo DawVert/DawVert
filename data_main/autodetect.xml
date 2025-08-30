@@ -321,6 +321,10 @@
 		<file fileext=".msf"/>
 	</plugin>
 
+	<plugin pluginset="gameres" name="hypnospace_hsm">
+		<file fileext=".hsm"/>
+	</plugin>
+
 	<plugin pluginset="extlib" name="libopenmpt">
 		<file fileext=".669"/>
 	</plugin>

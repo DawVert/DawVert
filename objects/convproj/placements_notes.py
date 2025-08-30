@@ -52,6 +52,7 @@ class cvpj_placements_notes:
 					copy_npl_obj.visual.name = visualfill.name
 				if visualfill.color and not copy_npl_obj.visual.color:
 					copy_npl_obj.visual.color = visualfill.color
+				copy_npl_obj.time.cut_type = 'cut'
 				self.data.append(copy_npl_obj)
 
 	def append(self, value):

@@ -457,6 +457,7 @@ class core:
 		out_type = self.currentplug_output.selected_plugin.plug_obj.gettype()
 		in_dawinfo = self.currentplug_input.selected_plugin.prop_obj
 		out_dawinfo = self.currentplug_output.selected_plugin.prop_obj
+
 		globalstore.os_info_target.bits = out_dawinfo.plugin_ext_arch
 
 		logger_core.info('' + convproj.typelist[in_type] + ' > ' + convproj.typelist[out_type])
