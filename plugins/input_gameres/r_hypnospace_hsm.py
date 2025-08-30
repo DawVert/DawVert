@@ -5,7 +5,6 @@ import plugins
 import json
 from objects import globalstore
 from objects import colors
-from objects import regions
 
 def conv_color(b_color):
 	color = b_color.to_bytes(4, "little")
@@ -71,13 +70,9 @@ class input_hypnospace_hsm(plugins.base):
 		convproj_obj.params.add('bpm', project_obj.patterns[0].header[0], 'float')
 
 		firstpat = project_obj.patterns[0]
-		tempoblocks = regions.posdurblocks(len(project_obj.patterns), firstpat.header[1], firstpat.header[0])
 
 		for patnum, pattern_obj in enumerate(project_obj.patterns):
 			tempo, steps, highlight, color = pattern_obj.header
-
-			#tempoblocks.set_tempo(patnum, tempo)
-			tempoblocks.set_steps(patnum, steps)
 
 			patnum_id = 'pat_'+str(patnum+1)
 			if steps:
@@ -102,9 +97,6 @@ class input_hypnospace_hsm(plugins.base):
 
 							if note_active:
 								cvpj_notelist.last_extend(1)
-
-		tempoblocks.proc()
-		tempoblocks.to_cvpj(convproj_obj)
 
 		curpos = 0
 		for patnum in project_obj.patternorder:
