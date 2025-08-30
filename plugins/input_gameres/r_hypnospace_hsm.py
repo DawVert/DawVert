@@ -65,7 +65,7 @@ class input_hypnospace_hsm(plugins.base):
 				inst_obj.plugslots.set_synth(instid)
 
 			#a_predelay, a_attack, a_hold, a_decay, a_sustain, a_release, a_amount
-			plugin_obj.env_asdr_add('vol', 0, sample.attack/4, 0, sample.decay/4, 1, 0, 1)
+			plugin_obj.env_asdr_add('vol', 0, 0, 0, sample.decay/4, 1, 0, 1)
 
 		convproj_obj.params.add('bpm', project_obj.patterns[0].header[0], 'float')
 
