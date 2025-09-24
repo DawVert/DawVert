@@ -74,6 +74,13 @@ class input_bandlab(plugins.base):
 			if not blx_sample.isMidi:
 				add_sample(convproj_obj, dawvert_intent, blx_sample)
 
+		if project_obj.samplerKits:
+			for sample in project_obj.samplerKits.samples:
+				filename = os.path.join(dawvert_intent.input_folder, 'Assets', 'Audio', sample.id+'.*')
+				for file in glob.glob(filename):
+					sampleref_obj = convproj_obj.sampleref__add(sample.id, file, None)
+					sampleref_obj.convert__path__fileformat()
+
 		blx_tracks = sorted(project_obj.tracks, key=lambda x: x.order, reverse=False)
 		
 		for blx_track in blx_tracks:
@@ -134,7 +141,7 @@ class input_bandlab(plugins.base):
 
 			else:
 				do_track_common(convproj_obj, track_obj, blx_track, tempomul)
-				if blx_track.type == 'creators-kit':
+				if blx_track.type in ['creators-kit', 'sampler']:
 					track_obj.is_drum = True
 					samplerkit = blx_track.samplerKit
 					if samplerkit:
@@ -153,9 +160,11 @@ class input_bandlab(plugins.base):
 									maxKeyRange = layer['maxKeyRange'] if 'maxKeyRange' in layer else 60
 									if (minKeyRange-maxKeyRange): use_drum = False
 
+								sampleids = samplerkit['sampleIds'] if 'sampleIds' in samplerkit else None
+
 								if not use_drum:
 									plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'multi')
-									for layer in layers_list:
+									for laynum, layer in enumerate(layers_list):
 										pitch = layer['pitch'] if 'pitch' in layer else 60
 										minKeyRange = layer['minKeyRange'] if 'minKeyRange' in layer else pitch
 										maxKeyRange = layer['maxKeyRange'] if 'maxKeyRange' in layer else pitch
@@ -166,9 +175,11 @@ class input_bandlab(plugins.base):
 										sp_obj.vel_max = layer['minVelRange']/127 if 'minVelRange' in layer else 0
 										sp_obj.vol = layer['volume'] if 'volume' in layer else 1
 										sp_obj.visual.color.set_int(colorint)
+										sp_obj.sampleref = layer['sampleId']
 								else:
 									plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'drums')
-									for layer in layers_list:
+
+									for laynum, layer in enumerate(layers_list):
 										minKeyRange = layer['minKeyRange'] if 'minKeyRange' in layer else pitch
 
 										drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
@@ -179,6 +190,7 @@ class input_bandlab(plugins.base):
 										drumpad_obj.visual.color.set_int(colorint)
 										layer_obj.samplepartid = 'drum_%i' % minKeyRange
 										sp_obj = plugin_obj.samplepart_add(layer_obj.samplepartid)
+										sp_obj.sampleref = layer['sampleId']
 								track_obj.plugslots.set_synth(pluginid)
 				else:
 					if blx_track.soundbank:
