@@ -240,22 +240,29 @@ class audio_obj:
 	def resample(self, samplerate):
 		if len(self.data):
 			if samplerate != self.rate:
+				from scipy.ndimage import zoom
+
 				self.pcm_changecodec('float')
 				orgnumsamples = len(self.data)
 				codec_obj = self.codec
 				codectxt = codec_obj.codectxt_to()
 
-				#numsamples = int(orgnumsamples*(samplerate/self.rate))
-
-				self.data = numpy.reshape(self.data, (orgnumsamples//self.channels, self.channels))
+				numsamples = int(orgnumsamples*(samplerate/self.rate))
 
 				#from scipy import signal
 				#self.data = signal.resample_poly(self.data, numsamples, orgnumsamples)
 
-				from scipy.ndimage import zoom
-				self.data = numpy.rot90(self.data)
-				self.data = zoom(self.data, samplerate/self.rate)
-				self.data = numpy.rot90(self.data, k=3)
+				ratechange = samplerate/self.rate
+
+				if self.channels == 1:
+					self.data = numpy.rot90(self.data)
+					self.data = zoom(self.data, ratechange)
+					self.data = numpy.rot90(self.data, k=3)
+				elif self.channels > 1:
+					self.data = numpy.reshape(self.data, (orgnumsamples//self.channels, self.channels))
+					tempdata = [zoom(self.data[:,x], ratechange) for x in range(self.channels)]
+					self.data = numpy.zeros( (len(tempdata[0]), self.channels) )
+					for c in range(self.channels): self.data[:,c] = tempdata[c]
 
 				self.data = self.data.flatten()
 				self.rate = samplerate
