@@ -5,53 +5,53 @@ from objects.file_proj_past._cakewalk_wrk import events
 from objects.file_proj_past._cakewalk_wrk import chunks
 
 class gen3_track_evn_part:
-	def __init__(self, byr_stream):
+	def __init__(self, ebrw_readstr):
 		self.headerdata = []
 		self.envdata = []
-		if byr_stream: self.read(byr_stream)
+		if ebrw_readstr: self.read(ebrw_readstr)
 
-	def read(self, byr_stream):
-		time1 = byr_stream.uint16()
-		time2 = byr_stream.uint16()
+	def read(self, ebrw_readstr):
+		time1 = ebrw_readstr.int_u16()
+		time2 = ebrw_readstr.int_u16()
 		self.headerdata.append( time2+(time1/65535) )
-		self.headerdata.append( byr_stream.uint8() )
-		self.headerdata.append( byr_stream.uint8() )
-		self.headerdata.append( byr_stream.int16() )
-		self.cmdnum, self.channum = byr_stream.bytesplit()
+		self.headerdata.append( ebrw_readstr.int_u8() )
+		self.headerdata.append( ebrw_readstr.int_u8() )
+		self.headerdata.append( ebrw_readstr.int_s16() )
+		self.cmdnum, self.channum = ebrw_readstr.bytesplit()
 
 		if self.cmdnum == 0 and self.channum == 4:
-			self.envdata.append( byr_stream.uint8() )
-			self.envdata.append( byr_stream.uint8() )
-			self.envdata.append( byr_stream.uint8() )
-			self.envdata.append( byr_stream.raw(4).hex() )
-			self.envdata.append( byr_stream.uint8() )
-			d = byr_stream.uint32()
-			self.envdata.append( byr_stream.raw(d) )
-			self.envdata.append( byr_stream.uint32() )
-			self.envdata.append( byr_stream.raw(4).hex() )
+			self.envdata.append( ebrw_readstr.int_u8() )
+			self.envdata.append( ebrw_readstr.int_u8() )
+			self.envdata.append( ebrw_readstr.int_u8() )
+			self.envdata.append( ebrw_readstr.raw(4).hex() )
+			self.envdata.append( ebrw_readstr.int_u8() )
+			d = ebrw_readstr.int_u32()
+			self.envdata.append( ebrw_readstr.raw(d) )
+			self.envdata.append( ebrw_readstr.int_u32() )
+			self.envdata.append( ebrw_readstr.raw(4).hex() )
 		elif self.cmdnum == 6: # rpn
-			self.envdata.append( byr_stream.uint32() )
-			self.envdata.append( byr_stream.uint32() )
-			self.envdata.append( byr_stream.uint32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
 		elif self.cmdnum == 7: # nrpn
-			self.envdata.append( byr_stream.uint32() )
-			self.envdata.append( byr_stream.uint32() )
-			self.envdata.append( byr_stream.uint32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
 		elif self.cmdnum == 9: # note
-			self.envdata.append( byr_stream.uint32() )
-			self.envdata.append( byr_stream.uint32() )
-			self.envdata.append( byr_stream.uint32() )
-			self.envdata.append( byr_stream.uint32() )
-			self.envdata.append( byr_stream.uint32() )
-			self.envdata.append( byr_stream.uint32() )
-			self.envdata.append( byr_stream.uint32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
 		elif self.cmdnum == 11: # control
-			self.envdata.append( byr_stream.uint32() )
-			self.envdata.append( byr_stream.uint32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
 		elif self.cmdnum == 14: # wheel
-			self.envdata.append( byr_stream.uint32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
 		elif self.cmdnum == 13: # aftertouch
-			self.envdata.append( byr_stream.uint32() )
+			self.envdata.append( ebrw_readstr.int_u32() )
 		else:
 			print('unknown event ', self.channum, channum)
 			exit()
@@ -59,76 +59,76 @@ class gen3_track_evn_part:
 		#print('part', self.headerdata, self.envdata)
 
 class chunk_gen3_track_events:
-	def __init__(self, byr_stream):
+	def __init__(self, ebrw_readstr):
 		self.parts = []
-		if byr_stream: self.read(byr_stream)
+		if ebrw_readstr: self.read(ebrw_readstr)
 
-	def read(self, byr_stream):
+	def read(self, ebrw_readstr):
 		self.unkdata = []
-		self.tracknum = byr_stream.uint32()
-		self.unkdata.append( byr_stream.uint32() )
-		self.unkdata.append( byr_stream.uint32() )
-		self.unkdata.append( byr_stream.uint8() )
-		self.unkdata.append( byr_stream.uint8() )
-		self.pos = byr_stream.uint32()
-		self.unkdata.append( byr_stream.uint16() )
-		self.unkdata.append( byr_stream.uint32() )
-		self.offset = byr_stream.double()
-		self.unkdata.append( byr_stream.uint32() )
-		self.seconds = byr_stream.double()
-		self.id = byr_stream.raw(16).hex()
-		self.unkdata.append( byr_stream.raw(4).hex() )
-		self.name = byr_stream.c_raw__int8()
-		self.unkdata.append( byr_stream.raw(4).hex() )
-		self.unkdata.append( byr_stream.uint32() )
-		self.unkdata.append( byr_stream.raw(8).hex() )
-		self.unkdata.append( byr_stream.raw(8).hex() )
-		self.unkdata.append( byr_stream.raw(16).hex() )
+		self.tracknum = ebrw_readstr.int_u32()
+		self.unkdata.append( ebrw_readstr.int_u32() )
+		self.unkdata.append( ebrw_readstr.int_u32() )
+		self.unkdata.append( ebrw_readstr.int_u8() )
+		self.unkdata.append( ebrw_readstr.int_u8() )
+		self.pos = ebrw_readstr.int_u32()
+		self.unkdata.append( ebrw_readstr.int_u16() )
+		self.unkdata.append( ebrw_readstr.int_u32() )
+		self.offset = ebrw_readstr.double()
+		self.unkdata.append( ebrw_readstr.int_u32() )
+		self.seconds = ebrw_readstr.double()
+		self.id = ebrw_readstr.raw(16).hex()
+		self.unkdata.append( ebrw_readstr.raw(4).hex() )
+		self.name = ebrw_readstr.raw_i8()
+		self.unkdata.append( ebrw_readstr.raw(4).hex() )
+		self.unkdata.append( ebrw_readstr.int_u32() )
+		self.unkdata.append( ebrw_readstr.raw(8).hex() )
+		self.unkdata.append( ebrw_readstr.raw(8).hex() )
+		self.unkdata.append( ebrw_readstr.raw(16).hex() )
 
-		self.unkdata.append( byr_stream.uint32() )
-		self.unkdata.append( byr_stream.int32() )
-		self.unkdata.append( byr_stream.uint32() )
-		self.unkdata.append( byr_stream.uint32() )
-		self.unkdata.append( byr_stream.uint32() )
-		self.unkdata.append( byr_stream.uint32() )
+		self.unkdata.append( ebrw_readstr.int_u32() )
+		self.unkdata.append( ebrw_readstr.int_s32() )
+		self.unkdata.append( ebrw_readstr.int_u32() )
+		self.unkdata.append( ebrw_readstr.int_u32() )
+		self.unkdata.append( ebrw_readstr.int_u32() )
+		self.unkdata.append( ebrw_readstr.int_u32() )
 
-		num_something = byr_stream.uint32()
-
-		for x in range(num_something):
-			self.parts.append(gen3_track_evn_part(byr_stream))
-
-	def viewchunks(byr_stream):
-
-		print( 'tracknum', byr_stream.uint32() )
-		print( '?', byr_stream.uint32() )
-		print( '?', byr_stream.uint32() )
-		print( '?', byr_stream.uint8() )
-		print( '?', byr_stream.uint8() )
-		print( 'pos', byr_stream.uint32() )
-		print( '?', byr_stream.uint16() )
-		print( '?', byr_stream.uint32() )
-		print( 'offset', byr_stream.double() )
-		print( '?', byr_stream.uint32() )
-		print( 'seconds', byr_stream.double() )
-		print( 'id', byr_stream.raw(16).hex() )
-		print( '?', byr_stream.raw(4).hex() )
-		print( 'name', byr_stream.c_raw__int8() )
-		print( '?', byr_stream.raw(4).hex() )
-		print( '?', byr_stream.uint32() )
-		print( '?', byr_stream.raw(8).hex() )
-		print( '?', byr_stream.raw(8).hex() )
-		print( '?', byr_stream.raw(16).hex() )
-
-		print( '?', byr_stream.uint32() )
-		print( '?', byr_stream.int32() )
-		print( '?', byr_stream.uint32() )
-		print( '?', byr_stream.uint32() )
-		print( '?', byr_stream.uint32() )
-		print( '?', byr_stream.uint32() )
-
-		num_something = byr_stream.uint32()
+		num_something = ebrw_readstr.int_u32()
 
 		for x in range(num_something):
-			T = gen3_track_evn_part(byr_stream)
+			self.parts.append(gen3_track_evn_part(ebrw_readstr))
+
+	def viewchunks(ebrw_readstr):
+
+		print( 'tracknum', ebrw_readstr.int_u32() )
+		print( '?', ebrw_readstr.int_u32() )
+		print( '?', ebrw_readstr.int_u32() )
+		print( '?', ebrw_readstr.int_u8() )
+		print( '?', ebrw_readstr.int_u8() )
+		print( 'pos', ebrw_readstr.int_u32() )
+		print( '?', ebrw_readstr.int_u16() )
+		print( '?', ebrw_readstr.int_u32() )
+		print( 'offset', ebrw_readstr.double() )
+		print( '?', ebrw_readstr.int_u32() )
+		print( 'seconds', ebrw_readstr.double() )
+		print( 'id', ebrw_readstr.raw(16).hex() )
+		print( '?', ebrw_readstr.raw(4).hex() )
+		print( 'name', ebrw_readstr.raw_i8() )
+		print( '?', ebrw_readstr.raw(4).hex() )
+		print( '?', ebrw_readstr.int_u32() )
+		print( '?', ebrw_readstr.raw(8).hex() )
+		print( '?', ebrw_readstr.raw(8).hex() )
+		print( '?', ebrw_readstr.raw(16).hex() )
+
+		print( '?', ebrw_readstr.int_u32() )
+		print( '?', ebrw_readstr.int_s32() )
+		print( '?', ebrw_readstr.int_u32() )
+		print( '?', ebrw_readstr.int_u32() )
+		print( '?', ebrw_readstr.int_u32() )
+		print( '?', ebrw_readstr.int_u32() )
+
+		num_something = ebrw_readstr.int_u32()
+
+		for x in range(num_something):
+			T = gen3_track_evn_part(ebrw_readstr)
 
 			print(T.headerdata, T.envdata)

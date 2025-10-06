@@ -1,8 +1,7 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later 
 
-from objects.data_bytes import bytereader
-from objects.data_bytes import bytewriter
+from external.easybinrw import easybinrw
 
 class clap_preset:
 	def __init__(self):
@@ -10,32 +9,31 @@ class clap_preset:
 		self.data = b''
 
 	def read_file(self, fxfile):
-		byr_stream = self.byr_stream = bytereader.bytereader()
-		byr_stream.load_file(fxfile)
-		self.parse(byr_stream)
+		ebrw_readstr = self.ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(fxfile)
+		self.parse(ebrw_readstr)
 
 	def read_raw(self, bytesd):
-		byr_stream = self.byr_stream = bytereader.bytereader()
-		byr_stream.load_raw(bytesd)
-		self.parse(byr_stream)
+		ebrw_readstr = self.ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_raw(bytesd)
+		self.parse(ebrw_readstr)
 
-	def parse(self, byr_stream):
-		byr_stream.magic_check(b'clap')
-		self.id = byr_stream.c_string__int32(True)
-		self.data = byr_stream.rest()
+	def parse(self, ebrw_readstr):
+		ebrw_readstr.magic_check(b'clap')
+		self.id = ebrw_readstr.string_i32_b(True)
+		self.data = ebrw_readstr.rest()
 
-	def write(self, byw_stream):
-		byw_stream.raw(b'clap')
-		byw_stream.c_string__int32_b(self.id)
-		byw_stream.raw(self.data)
+	def write(self, ebrw_writestr):
+		ebrw_writestr.raw(b'clap')
+		ebrw_writestr.string_i32_b(self.id)
+		ebrw_writestr.raw(self.data)
 
 	def write_to_file(self, output_file):
-		byw_stream = bytewriter.bytewriter()
-		self.write(byw_stream)
-		f = open(output_file, 'wb')
-		f.write(byw_stream.getvalue())
+		ebrw_writestr = easybinrw.binwrite()
+		self.write(ebrw_writestr)
+		ebrw_writestr.to_file(output_file)
 
 	def write_to_raw(self):
-		byw_stream = bytewriter.bytewriter()
-		self.write(byw_stream)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		self.write(ebrw_writestr)
+		return ebrw_writestr.getvalue()

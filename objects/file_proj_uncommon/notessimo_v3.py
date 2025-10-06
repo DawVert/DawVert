@@ -3,7 +3,6 @@
 
 import zlib
 import zipfile
-from objects.data_bytes import bytereader
 import xml.etree.ElementTree as ET
 from functions import note_data
 import os

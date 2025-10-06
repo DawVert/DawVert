@@ -8,7 +8,6 @@ import copy
 import json
 import base64
 from objects.convproj import fileref
-from objects.data_bytes import bytereader
 
 contentpath = os.path.join(os.path.expanduser('~'), 'Music\\Serato Studio\\Content\\')
 

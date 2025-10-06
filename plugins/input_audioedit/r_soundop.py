@@ -5,7 +5,7 @@ import plugins
 import struct
 from functions import xtramath
 from objects import globalstore
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 
 def do_auto(convproj_obj, hz, autopoints, autoloc, valtype, minval, maxval):
 	auto_obj = convproj_obj.automation.create(autoloc, valtype, True)
@@ -38,13 +38,13 @@ def do_fx(convproj_obj, fxdata):
 	if fxtype == 'native' and StateChunk:
 		#try:
 		if True:
-			vstdataconreader = bytereader.bytereader()
-			vstdataconreader.load_raw(StateChunk)
-			vstdataconreader.magic_check(b'XEFD')
-			unk1 = vstdataconreader.uint32()
-			unk2 = vstdataconreader.uint32()
-			numparams = vstdataconreader.uint32()
-			fxparams = dict([[vstdataconreader.uint32(), vstdataconreader.double()] for _ in range(numparams)])
+			ebrw_readstr = easybinrw.binread()
+			ebrw_readstr.load_file(StateChunk)
+			ebrw_readstr.magic_check(b'XEFD')
+			unk1 = ebrw_readstr.int_u32()
+			unk2 = ebrw_readstr.int_u32()
+			numparams = ebrw_readstr.int_u32()
+			fxparams = dict([[ebrw_readstr.int_u32(), ebrw_readstr.double()] for _ in range(numparams)])
 
 			plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'soundop', fxname)
 

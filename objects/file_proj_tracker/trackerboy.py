@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import numpy as np
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
+from external.easybinrw import chunked
 from objects.exceptions import ProjectFileParserException
 
 dtype_patdata = np.dtype([
@@ -15,7 +16,7 @@ dtype_patdata = np.dtype([
 # ============================================= instrument ============================================= 
 
 class trackerboy_instrument:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.id = 0
 		self.name = ''
 		self.channel = 0
@@ -25,60 +26,61 @@ class trackerboy_instrument:
 		self.param2 = 0
 		self.envs = []
 
-		if song_data:
-			self.id = song_data.uint8()+1
-			self.name = song_data.c_raw__int16(False)
-			self.channel = song_data.uint8()
-			self.envelopeEnabled = song_data.uint8()
-			self.param1, self.param2 = song_data.bytesplit()
-			self.envs = [trackerboy_env(song_data) for _ in range(4)]
+		if ebrw_readstr:
+			self.id = ebrw_readstr.int_u8()+1
+			self.name = ebrw_readstr.raw_i16()
+			self.channel = ebrw_readstr.int_u8()
+			self.envelopeEnabled = ebrw_readstr.int_u8()
+			self.param1, self.param2 = ebrw_readstr.int_u4_2()
+			self.envs = [trackerboy_env(ebrw_readstr) for _ in range(4)]
 
 class trackerboy_env:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.loopEnabled = 0
 		self.loopIndex = 0
 		self.values = []
 
-		if song_data:
-			envlength = song_data.uint16()
-			self.loopEnabled = song_data.uint8()
-			self.loopIndex = song_data.uint8()
-			self.values = list(song_data.l_int8(envlength))
+		if ebrw_readstr:
+			envlength = ebrw_readstr.int_u16()
+			self.loopEnabled = ebrw_readstr.int_u8()
+			self.loopIndex = ebrw_readstr.int_u8()
+			self.values = list(ebrw_readstr.list_int_u8(envlength))
 
 	def __bool__(self):
 		return bool(len(self.values))
 
 class trackerboy_wave:
-	def __init__(self, song_data):
-		if song_data:
-			self.id = song_data.uint8()+1
-			self.name = song_data.c_raw__int16(False)
-			self.wave = song_data.l_int4(16)
+	def __init__(self, ebrw_readstr):
+		if ebrw_readstr:
+			self.id = ebrw_readstr.int_u8()+1
+			self.name = ebrw_readstr.raw_i16()
+			self.wave = ebrw_readstr.list_int_u4(16)
 
 # ============================================= song ============================================= 
 
 class trackerboy_song:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.patterns = {}
 
-		if song_data:
-			self.name = song_data.c_raw__int16(False)
-			self.beat = song_data.uint8()
-			self.measure = song_data.uint8()
-			self.speed = song_data.uint8()
-			self.len = song_data.uint8()+1
-			self.rows = song_data.uint8()+1
-			self.pat_num = song_data.uint16()
-			self.numfxareas = song_data.uint8()
-			self.orders = song_data.table8([self.len, 4])
+		if ebrw_readstr:
+			self.name = ebrw_readstr.raw_i16()
+			self.beat = ebrw_readstr.int_u8()
+			self.measure = ebrw_readstr.int_u8()
+			self.speed = ebrw_readstr.int_u8()
+			self.len = ebrw_readstr.int_u8()+1
+			self.rows = ebrw_readstr.int_u8()+1
+			self.pat_num = ebrw_readstr.int_u16()
+			self.numfxareas = ebrw_readstr.int_u8()
+			self.orders = ebrw_readstr.list_int_u8(self.len*4)
+			self.orders = np.reshape(self.orders, [self.len, 4])
 
 			self.orders = np.rot90(self.orders)
 
 			for _ in range(self.pat_num):
-				pate_ch = song_data.uint8()
-				pate_trkid = song_data.uint8()
-				pate_rows = song_data.uint8()+1
-				pate_data = np.frombuffer(song_data.read(9*pate_rows), dtype=dtype_patdata)
+				pate_ch = ebrw_readstr.int_u8()
+				pate_trkid = ebrw_readstr.int_u8()
+				pate_rows = ebrw_readstr.int_u8()+1
+				pate_data = np.frombuffer(ebrw_readstr.read(9*pate_rows), dtype=dtype_patdata)
 
 				if pate_ch not in self.patterns: self.patterns[pate_ch] = {}
 				self.patterns[pate_ch][pate_trkid] = pate_data
@@ -92,36 +94,36 @@ class trackerboy_project:
 		self.waves = {}
 
 	def load_from_file(self, input_file):
-		song_data = bytereader.bytereader()
-		song_data.load_file(input_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
 		try: 
-			song_data.magic_check(b'\x00TRACKERBOY\x00')
+			ebrw_readstr.magic_check(b'\x00TRACKERBOY\x00')
 		except ValueError as t:
 			raise ProjectFileParserException('trackerboy: '+str(t))
 
-		song_data.seek(24)
-		self.m_rev = song_data.uint8()
-		self.n_rev = song_data.uint8()
-		song_data.skip(2)
+		ebrw_readstr.seek(24)
+		self.m_rev = ebrw_readstr.int_u8()
+		self.n_rev = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(2)
 
-		self.title = song_data.string(23, encoding="utf")
-		self.artist = song_data.string(23, encoding="utf")
-		self.copyright = song_data.string(23, encoding="utf")
-		self.icount = song_data.uint8()
-		self.scount = song_data.uint8()
-		self.wcount = song_data.uint8()
-		self.system = song_data.uint8()
+		self.title = ebrw_readstr.string(23, encoding="utf")
+		self.artist = ebrw_readstr.string(23, encoding="utf")
+		self.copyright = ebrw_readstr.string(23, encoding="utf")
+		self.icount = ebrw_readstr.int_u8()
+		self.scount = ebrw_readstr.int_u8()
+		self.wcount = ebrw_readstr.int_u8()
+		self.system = ebrw_readstr.int_u8()
 
-		main_iff_obj = song_data.chunk_objmake()
-		for chunk_obj in main_iff_obj.iter(160, song_data.end):
-			if chunk_obj.id == b'INST':
-				inst_obj = trackerboy_instrument(song_data)
+		ebrw_readstr.seek(160)
+		for part_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
+			if part_obj.id == b'INST':
+				inst_obj = trackerboy_instrument(ebrw_readstr)
 				self.insts[inst_obj.id] = inst_obj
-			if chunk_obj.id == b'SONG':
-				song_obj = trackerboy_song(song_data)
+			if part_obj.id == b'SONG':
+				song_obj = trackerboy_song(ebrw_readstr)
 				self.songs.append(song_obj)
-			if chunk_obj.id == b'WAVE':
-				wave_obj = trackerboy_wave(song_data)
+			if part_obj.id == b'WAVE':
+				wave_obj = trackerboy_wave(ebrw_readstr)
 				self.waves[wave_obj.id] = wave_obj
 		return True

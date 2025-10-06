@@ -1,23 +1,23 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond and B0ney
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 from objects.exceptions import ProjectFileParserException
 import logging
 
 MINIMUM_VERSION = 61
 
-def get_entry(version, song_file):
-	if version < 64: return song_file.string_t()
-	else: return song_file.c_string__int8()
+def get_entry(version, ebrw_readstr):
+	if version < 64: return ebrw_readstr.string_t()
+	else: return ebrw_readstr.string_i8()
 
 # https://wiki.beyondunreal.com/Legacy:Package_File_Format/Data_Details
-def read_compact_index(song_file):
+def read_compact_index(ebrw_readstr):
 	output = 0
 	signed = False
 
 	for i in range(5):
-		x = song_file.uint8()
+		x = ebrw_readstr.int_u8()
 
 		if i == 0:
 			if (x & 0x80) > 0: signed = True
@@ -36,49 +36,49 @@ def read_compact_index(song_file):
 
 class umx_file:
 	def load_from_file(self, input_file):
-		song_file = bytereader.bytereader()
-		song_file.load_file(input_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
-		try: song_file.magic_check(b'\xc1\x83\x2a\x9e')
+		try: ebrw_readstr.magic_check(b'\xc1\x83\x2a\x9e')
 		except ValueError as t: raise ProjectFileParserException('umx: '+str(t))
 
-		self.version = song_file.uint32()
+		self.version = ebrw_readstr.int_u32()
 
 		if self.version < MINIMUM_VERSION: raise ProjectFileParserException("umx: UMX versions below {MINIMUM_VERSION} are not supported")
 
-		song_file.skip(4)
-		name_count = song_file.uint32()
-		name_offset = song_file.uint32()
-		song_file.skip(4)
-		export_offset = song_file.uint32()
+		ebrw_readstr.skip(4)
+		name_count = ebrw_readstr.int_u32()
+		name_offset = ebrw_readstr.int_u32()
+		ebrw_readstr.skip(4)
+		export_offset = ebrw_readstr.int_u32()
 
-		song_file.seek(name_offset) # Jump to the name table
+		ebrw_readstr.seek(name_offset) # Jump to the name table
 
 		self.nametable = []
 		for _ in range(name_count):
-			self.nametable.append(get_entry(self.version, song_file))
-			song_file.skip(4)
+			self.nametable.append(get_entry(self.version, ebrw_readstr))
+			ebrw_readstr.skip(4)
 
-		song_file.seek(export_offset)
+		ebrw_readstr.seek(export_offset)
 	
-		self.classindex = read_compact_index(song_file)
-		self.superindex = read_compact_index(song_file)
-		self.group = song_file.uint32()
-		self.objname = read_compact_index(song_file)
-		self.objflags = song_file.flags32()
+		self.classindex = read_compact_index(ebrw_readstr)
+		self.superindex = read_compact_index(ebrw_readstr)
+		self.group = ebrw_readstr.int_u32()
+		self.objname = read_compact_index(ebrw_readstr)
+		self.objflags = ebrw_readstr.flags_i32()
 
-		serial_size = read_compact_index(song_file)
+		serial_size = read_compact_index(ebrw_readstr)
 
 		if serial_size == 0: raise ProjectFileParserException("umx: UMX doesn't contain anything")
 		
-		serial_offset = read_compact_index(song_file)
-		song_file.seek(serial_offset)  
-		self.nameindex = read_compact_index(song_file)
+		serial_offset = read_compact_index(ebrw_readstr)
+		ebrw_readstr.seek(serial_offset)  
+		self.nameindex = read_compact_index(ebrw_readstr)
 	
-		if self.version > MINIMUM_VERSION: song_file.skip(4)
+		if self.version > MINIMUM_VERSION: ebrw_readstr.skip(4)
 	
-		objsizefield = read_compact_index(song_file)
-		inner_size = read_compact_index(song_file)
-		self.outdata = song_file.raw(inner_size)
+		objsizefield = read_compact_index(ebrw_readstr)
+		inner_size = read_compact_index(ebrw_readstr)
+		self.outdata = ebrw_readstr.raw(inner_size)
 
 		return True

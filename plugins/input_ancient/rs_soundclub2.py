@@ -147,7 +147,10 @@ class input_soundclub2(plugins.base):
 					elif event.type == 54: 
 						t_active_notes[event.p_key] = t_active_notes[event.value]
 						t_active_notes[event.p_key].porta.append([curpos-t_active_notes[event.value].start, event.p_len, event.p_key])
-						t_active_notes[event.value] = notestate.blank() 
+						t_active_notes[event.value] = notestate.blank()
+					#else:
+					#	print('unknown event', event.type)
+					#	exit()
 
 				scenedur = max(scenedur, curpos)
 
@@ -186,7 +189,7 @@ class input_soundclub2(plugins.base):
 
 		outtempo = globaltempo
 
-		if project_obj.sequence:
+		if len(project_obj.sequence):
 			vstart = project_obj.patterns[project_obj.sequence[0]].tempos 
 			if vstart: 
 				startpoint = vstart[0]

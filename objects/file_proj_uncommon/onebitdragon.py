@@ -3,7 +3,6 @@
 
 from functions import data_values
 from io import BytesIO
-from objects.data_bytes import bytereader
 from objects.exceptions import ProjectFileParserException
 import base64
 import json

@@ -4,7 +4,7 @@
 import struct
 import zlib
 from functions import data_bytes
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 from objects.inst_params import fm_opn2
 from objects.inst_params import chip_sid
 from objects.exceptions import ProjectFileParserException
@@ -19,15 +19,15 @@ class deflemask_envelope:
 		self.values = []
 		self.looppos = 0
 
-	def readenv(self, bio_dmf):
-		env_size = bio_dmf.uint8()
-		self.values = bio_dmf.l_uint32(env_size)
-		if env_size != 0: self.looppos = bio_dmf.int8()
+	def readenv(self, ebrw_readstr):
+		env_size = ebrw_readstr.int_u8()
+		self.values = ebrw_readstr.list_int_u32(env_size)
+		if env_size != 0: self.looppos = ebrw_readstr.int_s8()
 
 class deflemask_instrument:
-	def __init__(self, bio_dmf, system):
-		self.name = bio_dmf.c_string__int8()
-		self.mode = bio_dmf.uint8()
+	def __init__(self, ebrw_readstr, system):
+		self.name = ebrw_readstr.string_i8()
+		self.mode = ebrw_readstr.int_u8()
 		self.fm_data = fm_opn2.opn2_inst()
 		self.sid_data = chip_sid.sid_inst()
 		self.sid_data.num_oscs = 1
@@ -44,56 +44,56 @@ class deflemask_instrument:
 		self.sound_length = 0
 
 		if self.mode == 1:
-			self.fm_data.algorithm = bio_dmf.uint8()
-			self.fm_data.feedback = bio_dmf.uint8()
-			self.fm_data.fms = bio_dmf.uint8() #(FMS on YM2612, PMS on YM2151)
-			self.fm_data.ams = bio_dmf.uint8() #(AMS on YM2612, AMS on YM2151)
+			self.fm_data.algorithm = ebrw_readstr.int_u8()
+			self.fm_data.feedback = ebrw_readstr.int_u8()
+			self.fm_data.fms = ebrw_readstr.int_u8() #(FMS on YM2612, PMS on YM2151)
+			self.fm_data.ams = ebrw_readstr.int_u8() #(AMS on YM2612, AMS on YM2151)
 			for opnum in [0,2,1,3]:
 				op_obj = self.fm_data.ops[opnum]
-				op_obj.am = bio_dmf.uint8()
-				op_obj.env_attack = bio_dmf.uint8()
-				op_obj.env_decay = bio_dmf.uint8()
-				op_obj.freqmul = bio_dmf.uint8()
-				op_obj.env_release = bio_dmf.uint8()
-				op_obj.env_sustain = bio_dmf.uint8()
-				op_obj.level = (bio_dmf.uint8()*-1)+127
-				op_obj.detune2 = bio_dmf.uint8()
-				op_obj.ratescale = bio_dmf.uint8()
-				op_obj.detune = bio_dmf.uint8()
-				op_obj.env_decay2 = bio_dmf.uint8()
-				op_obj.ssg_byte(bio_dmf.uint8())
+				op_obj.am = ebrw_readstr.int_u8()
+				op_obj.env_attack = ebrw_readstr.int_u8()
+				op_obj.env_decay = ebrw_readstr.int_u8()
+				op_obj.freqmul = ebrw_readstr.int_u8()
+				op_obj.env_release = ebrw_readstr.int_u8()
+				op_obj.env_sustain = ebrw_readstr.int_u8()
+				op_obj.level = (ebrw_readstr.int_u8()*-1)+127
+				op_obj.detune2 = ebrw_readstr.int_u8()
+				op_obj.ratescale = ebrw_readstr.int_u8()
+				op_obj.detune = ebrw_readstr.int_u8()
+				op_obj.env_decay2 = ebrw_readstr.int_u8()
+				op_obj.ssg_byte(ebrw_readstr.int_u8())
 		else:
-			if system != int("04",16): self.env_volume.readenv(bio_dmf)
-			self.env_arpeggio.readenv(bio_dmf)
-			self.arpeggio_mode = bio_dmf.uint8()
-			self.env_duty.readenv(bio_dmf)
-			self.env_wavetable.readenv(bio_dmf)
+			if system != int("04",16): self.env_volume.readenv(ebrw_readstr)
+			self.env_arpeggio.readenv(ebrw_readstr)
+			self.arpeggio_mode = ebrw_readstr.int_u8()
+			self.env_duty.readenv(ebrw_readstr)
+			self.env_wavetable.readenv(ebrw_readstr)
 			if system == int("07",16) or system == int("47",16):
 				op_obj = self.sid_data.ops[0]
-				op_obj.wave_triangle = bio_dmf.uint8()
-				op_obj.wave_saw = bio_dmf.uint8()
-				op_obj.wave_pulse = bio_dmf.uint8()
-				op_obj.wave_noise = bio_dmf.uint8()
-				op_obj.attack = bio_dmf.uint8()
-				op_obj.decay = bio_dmf.uint8()
-				op_obj.sustain = bio_dmf.uint8()
-				op_obj.release = bio_dmf.uint8()
-				op_obj.pulse_width = bio_dmf.uint8()
-				op_obj.ringmod = bio_dmf.uint8()
-				op_obj.syncmod = bio_dmf.uint8()
-				op_obj.to_filter = bio_dmf.uint8()
-				op_obj.volume_macro_to_filter_cutoff = bio_dmf.uint8()
-				op_obj.use_filter_values_from_instrument = bio_dmf.uint8()
-				op_obj.filter_resonance = bio_dmf.uint8()
-				op_obj.filter_cutoff = bio_dmf.uint8()
-				op_obj.filter_highpass = bio_dmf.uint8()
-				op_obj.filter_lowpass = bio_dmf.uint8()
-				op_obj.filter_CH2off = bio_dmf.uint8()
+				op_obj.wave_triangle = ebrw_readstr.int_u8()
+				op_obj.wave_saw = ebrw_readstr.int_u8()
+				op_obj.wave_pulse = ebrw_readstr.int_u8()
+				op_obj.wave_noise = ebrw_readstr.int_u8()
+				op_obj.attack = ebrw_readstr.int_u8()
+				op_obj.decay = ebrw_readstr.int_u8()
+				op_obj.sustain = ebrw_readstr.int_u8()
+				op_obj.release = ebrw_readstr.int_u8()
+				op_obj.pulse_width = ebrw_readstr.int_u8()
+				op_obj.ringmod = ebrw_readstr.int_u8()
+				op_obj.syncmod = ebrw_readstr.int_u8()
+				op_obj.to_filter = ebrw_readstr.int_u8()
+				op_obj.volume_macro_to_filter_cutoff = ebrw_readstr.int_u8()
+				op_obj.use_filter_values_from_instrument = ebrw_readstr.int_u8()
+				op_obj.filter_resonance = ebrw_readstr.int_u8()
+				op_obj.filter_cutoff = ebrw_readstr.int_u8()
+				op_obj.filter_highpass = ebrw_readstr.int_u8()
+				op_obj.filter_lowpass = ebrw_readstr.int_u8()
+				op_obj.filter_CH2off = ebrw_readstr.int_u8()
 			if system == int("04",16):
-				self.gb_env_volume = bio_dmf.uint8()
-				self.gb_env_direction = bio_dmf.uint8()
-				self.gb_env_length = bio_dmf.uint8()
-				self.sound_length = bio_dmf.uint8()
+				self.gb_env_volume = ebrw_readstr.int_u8()
+				self.gb_env_direction = ebrw_readstr.int_u8()
+				self.gb_env_length = ebrw_readstr.int_u8()
+				self.sound_length = ebrw_readstr.int_u8()
 
 class deflemask_sample:
 	def __init__(self):
@@ -144,20 +144,20 @@ class deflemask_project:
 
 	def load_from_file(self, input_file):
 		bytestream = open(input_file, 'rb')
-
-		bio_dmf = bytereader.bytereader()
 		try:
 			decompdata = zlib.decompress(bytestream.read())
 		except zlib.error as t:
 			raise ProjectFileParserException('deflemask: '+str(t))
-		bio_dmf.load_raw(decompdata)
-		bio_dmf.magic_check(b'.DelekDefleMask.')
-		self.version = bio_dmf.uint8()
+
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(decompdata)
+		ebrw_readstr.magic_check(b'.DelekDefleMask.')
+		self.version = ebrw_readstr.int_u8()
 
 		if self.version != 24:
 			raise ProjectFileParserException('deflemask: only version 24 is supported.')
 
-		self.system = bio_dmf.uint8()
+		self.system = ebrw_readstr.int_u8()
 
 		# SYSTEM SET
 		if self.system == int("02",16): #GENESIS
@@ -203,59 +203,59 @@ class deflemask_project:
 		self.total_channels = len(self.channels)
 
 		# VISUAL INFORMATION
-		self.song_name = bio_dmf.c_string__int8()
-		self.song_author = bio_dmf.c_string__int8()
-		self.highlight_a_pat = bio_dmf.uint8()
-		self.highlight_b_pat = bio_dmf.uint8()
+		self.song_name = ebrw_readstr.string_i8()
+		self.song_author = ebrw_readstr.string_i8()
+		self.highlight_a_pat = ebrw_readstr.int_u8()
+		self.highlight_b_pat = ebrw_readstr.int_u8()
 
 		# MODULE INFORMATION
-		self.timebase = bio_dmf.uint8()
-		self.ticktime1 = bio_dmf.uint8()
-		self.ticktime2 = bio_dmf.uint8()
-		self.frames_mode = bio_dmf.uint8()
-		self.custom_hz_using = bio_dmf.uint8()
-		self.custom_hz_1 = bio_dmf.uint8()
-		self.custom_hz_2 = bio_dmf.uint8()
-		self.custom_hz_3 = bio_dmf.uint8()
-		self.total_rows_per_pattern = bio_dmf.uint32()
-		self.total_rows_in_pattern_matrix = bio_dmf.uint8()
+		self.timebase = ebrw_readstr.int_u8()
+		self.ticktime1 = ebrw_readstr.int_u8()
+		self.ticktime2 = ebrw_readstr.int_u8()
+		self.frames_mode = ebrw_readstr.int_u8()
+		self.custom_hz_using = ebrw_readstr.int_u8()
+		self.custom_hz_1 = ebrw_readstr.int_u8()
+		self.custom_hz_2 = ebrw_readstr.int_u8()
+		self.custom_hz_3 = ebrw_readstr.int_u8()
+		self.total_rows_per_pattern = ebrw_readstr.int_u32()
+		self.total_rows_in_pattern_matrix = ebrw_readstr.int_u8()
 
 		self.pat_orders = []
-		for c in self.channels: c.orders = bio_dmf.l_uint8(self.total_rows_in_pattern_matrix)
+		for c in self.channels: c.orders = ebrw_readstr.list_int_u8(self.total_rows_in_pattern_matrix)
 
-		num_insts = bio_dmf.uint8()
-		self.insts = [deflemask_instrument(bio_dmf, self.system) for _ in range(num_insts)]
+		num_insts = ebrw_readstr.int_u8()
+		self.insts = [deflemask_instrument(ebrw_readstr, self.system) for _ in range(num_insts)]
 
 		self.wavetables = []
-		for _ in range(bio_dmf.uint8()):
-			wavesize = bio_dmf.uint32()
-			self.wavetables.append(bio_dmf.l_uint32(wavesize))
+		for _ in range(ebrw_readstr.int_u8()):
+			wavesize = ebrw_readstr.int_u32()
+			self.wavetables.append(ebrw_readstr.list_int_u32(wavesize))
  
 		for num, chan_obj in enumerate(self.channels):
-			fx_columns_count = bio_dmf.uint8()
+			fx_columns_count = ebrw_readstr.int_u8()
 			for patnum in chan_obj.orders:
 				table_rows = []
 				for rownum in range(self.total_rows_per_pattern):
-					r_note = bio_dmf.uint16()
-					r_oct = bio_dmf.uint16()
-					r_vol = bio_dmf.int16()
-					r_fx = [bio_dmf.l_int16(2) for _ in range(fx_columns_count)]
-					r_inst = bio_dmf.int16()
+					r_note = ebrw_readstr.int_u16()
+					r_oct = ebrw_readstr.int_u16()
+					r_vol = ebrw_readstr.int_s16()
+					r_fx = [ebrw_readstr.list_int_s16(2) for _ in range(fx_columns_count)]
+					r_inst = ebrw_readstr.int_s16()
 					table_rows.append([r_note, r_oct, r_vol, r_inst, r_fx])
 				chan_obj.patterns[patnum] = table_rows
 
-		num_samples = bio_dmf.uint8()
+		num_samples = ebrw_readstr.int_u8()
 
 		for _ in range(num_samples):
 			sample_obj = deflemask_sample()
-			sample_obj.size = bio_dmf.uint32()
-			sample_obj.name = bio_dmf.c_string__int8()
-			sample_obj.rate = bio_dmf.uint8()
-			sample_obj.pitch = bio_dmf.uint8()
-			sample_obj.amp = bio_dmf.uint8()
-			sample_obj.bits = bio_dmf.uint8()
-			if sample_obj.bits == 16: sample_obj.data = bio_dmf.l_int16(sample_obj.size)
-			if sample_obj.bits == 8: sample_obj.data = bio_dmf.l_int8(sample_obj.size)
+			sample_obj.size = ebrw_readstr.int_u32()
+			sample_obj.name = ebrw_readstr.string_i8()
+			sample_obj.rate = ebrw_readstr.int_u8()
+			sample_obj.pitch = ebrw_readstr.int_u8()
+			sample_obj.amp = ebrw_readstr.int_u8()
+			sample_obj.bits = ebrw_readstr.int_u8()
+			if sample_obj.bits == 16: sample_obj.data = ebrw_readstr.list_int_s16(sample_obj.size)
+			if sample_obj.bits == 8: sample_obj.data = ebrw_readstr.list_int_s8(sample_obj.size)
 			self.samples.append(sample_obj)
 
 		return True

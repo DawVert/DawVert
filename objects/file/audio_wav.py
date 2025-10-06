@@ -7,25 +7,26 @@ import pathlib
 import os
 import copy
 import logging
-from objects.data_bytes import riff_chunks
+from external.easybinrw import easybinrw
+from external.easybinrw import riff_chunks
 
 logger_audiofile = logging.getLogger('audiofile')
 
 class wav_loop:
-	def __init__(self, bye_stream):
+	def __init__(self, ebrw_readstr):
 		self.identifier = 0
 		self.type = 0
 		self.start = 0
 		self.end = 0
 		self.fraction = 0
 		self.playcount = 0
-		if bye_stream != None:
-			self.identifier = bye_stream.int32()
-			self.type = bye_stream.int32()
-			self.start = bye_stream.int32()
-			self.end = bye_stream.int32()
-			self.fraction = bye_stream.int32()
-			self.playcount = bye_stream.int32()
+		if ebrw_readstr != None:
+			self.identifier = ebrw_readstr.int_s32()
+			self.type = ebrw_readstr.int_s32()
+			self.start = ebrw_readstr.int_s32()
+			self.end = ebrw_readstr.int_s32()
+			self.fraction = ebrw_readstr.int_s32()
+			self.playcount = ebrw_readstr.int_s32()
 
 	def write(self):
 		return struct.pack('<iiiiii', self.identifier, self.type, self.start, self.end, self.fraction, self.playcount)
@@ -41,13 +42,13 @@ class wav_slice:
 		self.data3 = 0
 		self.id2 = 0
 
-	def read(self, bye_stream):
-		self.id1 = bye_stream.uint32()
-		self.samplePositionUpper = bye_stream.uint32()
-		self.samplePositionLower = bye_stream.uint32()
-		self.samplePosition2Upper = bye_stream.uint32()
-		self.samplePosition2Lower = bye_stream.uint32()
-		self.id2 = bye_stream.uint32()
+	def read(self, ebrw_readstr):
+		self.id1 = ebrw_readstr.int_u32()
+		self.samplePositionUpper = ebrw_readstr.int_u32()
+		self.samplePositionLower = ebrw_readstr.int_u32()
+		self.samplePosition2Upper = ebrw_readstr.int_u32()
+		self.samplePosition2Lower = ebrw_readstr.int_u32()
+		self.id2 = ebrw_readstr.int_u32()
 
 		print(self.header, self.id1, self.samplePositionUpper, self.samplePositionLower, self.samplePosition2Upper, self.samplePosition2Lower, self.data3, self.id2)
 
@@ -61,13 +62,13 @@ class wav_marker:
 		self.sampleoffset = 0
 		self.label = None
 
-	def read(self, bye_stream):
-		self.id = bye_stream.uint32()
-		self.position = bye_stream.uint32()
-		self.datachunkid = bye_stream.raw(4)
-		self.chunkstart = bye_stream.uint32()
-		self.blockstart = bye_stream.uint32()
-		self.sampleoffset = bye_stream.uint32()
+	def read(self, ebrw_readstr):
+		self.id = ebrw_readstr.int_u32()
+		self.position = ebrw_readstr.int_u32()
+		self.datachunkid = ebrw_readstr.raw(4)
+		self.chunkstart = ebrw_readstr.int_u32()
+		self.blockstart = ebrw_readstr.int_u32()
+		self.sampleoffset = ebrw_readstr.int_u32()
 
 	def write(self):
 		return struct.pack('<iiiiii', self.id, self.position, self.datachunkid, self.chunkstart, self.blockstart, self.sampleoffset)
@@ -84,18 +85,18 @@ class wav_smpl:
 		self.sampler_specific = b''
 		self.loops = []
 
-	def read(self, bye_stream, size):
-		self.manu = bye_stream.int32()
-		self.product = bye_stream.int32()
-		self.sampleperiod = bye_stream.int32()
-		self.note_middle = bye_stream.int32()
-		self.midi_pitchfrac = bye_stream.uint32()
-		self.smpte_format = bye_stream.int32()
-		self.smpte_offset = bye_stream.int32()
-		numloops = bye_stream.int32()
-		sampspecsize = bye_stream.int32()
-		for _ in range(numloops): self.loops.append(wav_loop(bye_stream))
-		self.sampler_specific = bye_stream.raw(sampspecsize)
+	def read(self, ebrw_readstr, size):
+		self.manu = ebrw_readstr.int_s32()
+		self.product = ebrw_readstr.int_s32()
+		self.sampleperiod = ebrw_readstr.int_s32()
+		self.note_middle = ebrw_readstr.int_s32()
+		self.midi_pitchfrac = ebrw_readstr.int_u32()
+		self.smpte_format = ebrw_readstr.int_s32()
+		self.smpte_offset = ebrw_readstr.int_s32()
+		numloops = ebrw_readstr.int_s32()
+		sampspecsize = ebrw_readstr.int_s32()
+		for _ in range(numloops): self.loops.append(wav_loop(ebrw_readstr))
+		self.sampler_specific = ebrw_readstr.raw(sampspecsize)
 
 	def write(self):
 		outdata = struct.pack('<iiiiIiiii', self.manu, self.product, self.sampleperiod, self.note_middle, self.midi_pitchfrac, self.smpte_format, self.smpte_offset, len(self.loops), len(self.sampler_specific))
@@ -114,15 +115,15 @@ class wav_inst:
 		self.vel_high = 127
 		self.found = False
 
-	def read(self, bye_stream, size):
+	def read(self, ebrw_readstr, size):
 		self.found = True
-		self.rootnote = bye_stream.uint8()
-		self.finetune = bye_stream.uint8()
-		self.gain = bye_stream.int8()
-		self.note_low = bye_stream.uint8()
-		self.note_high = bye_stream.uint8()
-		self.vel_low = bye_stream.uint8()
-		self.vel_high = bye_stream.uint8()
+		self.rootnote = ebrw_readstr.int_u8()
+		self.finetune = ebrw_readstr.int_u8()
+		self.gain = ebrw_readstr.int_s8()
+		self.note_low = ebrw_readstr.int_u8()
+		self.note_high = ebrw_readstr.int_u8()
+		self.vel_low = ebrw_readstr.int_u8()
+		self.vel_high = ebrw_readstr.int_u8()
 
 	def write(self):
 		return struct.pack('<BBBBBBB', self.rootnote, self.finetune, self.gain, self.note_low, self.note_high, self.vel_low, self.vel_high)
@@ -164,7 +165,7 @@ class wav_main:
 			if (self.format == 3): self.uses_float = True
 			if (size>16): fid.read(size-16)
 
-	def read_chunk_data(self, bye_stream, size, normalized=False):
+	def read_chunk_data(self, ebrw_readstr, size, normalized=False):
 		if self.bits in [8, 24]:
 			bytes = 1
 			dtype = 'u1'
@@ -174,7 +175,7 @@ class wav_main:
 			
 		if self.bits == 32 and self.uses_float: dtype = 'float32'
 			
-		self.data = numpy.frombuffer(bye_stream.raw(size), dtype=dtype, count=size//bytes)
+		self.data = numpy.frombuffer(ebrw_readstr.raw(size), dtype=dtype, count=size//bytes)
 		
 		if self.bits == 24:
 			dsize = len(self.data)//3
@@ -213,64 +214,66 @@ class wav_main:
 		self.set_blksize()
 
 	def read_bytes(self, rawdata):
-		riff_data = riff_chunks.riff_chunk()
-		byr_stream = riff_data.load_from_bytes(rawdata, False)
-		self.read_internal(byr_stream, riff_data, True)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(rawdata)
+		riffchunks = riff_chunks.riff_chunk()
+		riffchunks.read(ebrw_readstr, 1)
+		self.read_internal(ebrw_readstr, riffchunks, True)
 
 	def read(self, wavfile):
-		riff_data = riff_chunks.riff_chunk()
-		byr_stream = riff_data.load_from_file(wavfile, False)
-		self.read_internal(byr_stream, riff_data, True)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(wavfile)
+		riffchunks = riff_chunks.riff_chunk()
+		riffchunks.read(ebrw_readstr, 1)
+		self.read_internal(ebrw_readstr, riffchunks, True)
 
 	def readinfo_bytes(self, rawdata):
-		riff_data = riff_chunks.riff_chunk()
-		byr_stream = riff_data.load_from_bytes(rawdata, False)
-		self.read_internal(byr_stream, riff_data, False)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(rawdata)
+		riffchunks = riff_chunks.riff_chunk()
+		riffchunks.read(ebrw_readstr, 0)
+		self.read_internal(ebrw_readstr, riffchunks, False)
 
 	def readinfo(self, wavfile):
-		riff_data = riff_chunks.riff_chunk()
-		byr_stream = riff_data.load_from_file(wavfile, False)
-		self.read_internal(byr_stream, riff_data, False)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(wavfile)
+		riffchunks = riff_chunks.riff_chunk()
+		riffchunks.read(ebrw_readstr, 0)
+		self.read_internal(ebrw_readstr, riffchunks, False)
 
-	def read_internal(self, byr_stream, riff_data, parsedata):
-		for riff_part in riff_data.in_data:
+	def read_internal(self, ebrw_readstr, riffchunks, parsedata):
+		for riff_part in riffchunks.iter_reader(ebrw_readstr):
 
-			if riff_part.name == b'fmt ': 
-				with byr_stream.isolate_range(riff_part.start, riff_part.end, False) as bye_stream: 
-					self.format = bye_stream.uint16()
-					self.channels = bye_stream.uint16()
-					self.rate = bye_stream.uint32()
-					self.bytessec = bye_stream.uint32()
-					self.datablocksize = bye_stream.uint16()
-					self.bits = bye_stream.uint16()
-					if (self.format == 3): self.uses_float = True
+			if riff_part.id == b'fmt ': 
+				self.format = ebrw_readstr.int_u16()
+				self.channels = ebrw_readstr.int_u16()
+				self.rate = ebrw_readstr.int_u32()
+				self.bytessec = ebrw_readstr.int_u32()
+				self.datablocksize = ebrw_readstr.int_u16()
+				self.bits = ebrw_readstr.int_u16()
+				if (self.format == 3): self.uses_float = True
 
-			elif riff_part.name == b'data': 
-				if parsedata:
-					with byr_stream.isolate_range(riff_part.start, riff_part.end, False) as bye_stream: 
-						self.read_chunk_data(bye_stream, riff_part.size)
+			elif riff_part.id == b'data': 
+				if parsedata: self.read_chunk_data(ebrw_readstr, riff_part.size)
 
-			elif riff_part.name == b'smpl':
-				with byr_stream.isolate_range(riff_part.start, riff_part.end, False) as bye_stream: 
-					self.smpl.read(bye_stream, riff_part.size)
+			elif riff_part.id == b'smpl':
+				self.smpl.read(ebrw_readstr, riff_part.size)
 
-			elif riff_part.name == b'inst':
-				with byr_stream.isolate_range(riff_part.start, riff_part.end, False) as bye_stream: 
-					self.inst.read(bye_stream, riff_part.size)
+			elif riff_part.id == b'inst':
+				self.inst.read(ebrw_readstr, riff_part.size)
 
-			elif riff_part.name == b'cue ':
-				with byr_stream.isolate_range(riff_part.start, riff_part.end, False) as bye_stream: 
-					numcue = bye_stream.int32()
-					for c in range(numcue): 
-						marker_obj = wav_marker()
-						marker_obj.read(bye_stream)
-						self.markers[marker_obj.id] = marker_obj
+			elif riff_part.id == b'cue ':
+				numcue = ebrw_readstr.int_s32()
+				for c in range(numcue): 
+					marker_obj = wav_marker()
+					marker_obj.read(ebrw_readstr)
+					self.markers[marker_obj.id] = marker_obj
 
 			#else:
-			#	logger_audiofile.warning('WAV: Unknown Chunk: '+str(riff_part.name))
+			#	logger_audiofile.warning('WAV: Unknown Chunk: '+str(riff_part.id))
 
-				#with byr_stream.isolate_range(riff_part.start, riff_part.end, False) as bye_stream: 
-				#	print(byr_stream.raw(riff_part.size))
+				#with ebrw_readstr.isolate_range(riff_part.start, riff_part.end, False) as ebrw_readstr: 
+				#	print(ebrw_readstr.raw(riff_part.size))
 
 	def write(self, wavfile, normalized=False):
 		filepath = pathlib.Path(wavfile)
@@ -296,7 +299,8 @@ class wav_main:
 				data = numpy.asarray(data * (2 ** 31 - 1), dtype=numpy.int32)
 
 		riff_data = riff_chunks.riff_chunk()
-		riff_data.name = b'WAVE'
+		riff_data.id = b'WAVE'
+		riff_data.is_header = True
 
 		noc = 1 if data.ndim == 1 else data.shape[1]
 		bits = data.dtype.itemsize * 8 if self.bits != 24 else 24

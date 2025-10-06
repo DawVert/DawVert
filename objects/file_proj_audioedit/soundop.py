@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 import logging
 import numpy as np
 
@@ -10,57 +10,57 @@ def valprint(tabv, txt, val, **k):
 
 VERBOSE = True
 
-def decode_value_debug(byr_stream, tabnum):
-	vtype = byr_stream.uint8()
+def decode_value_debug(ebrw_readstr, tabnum):
+	vtype = ebrw_readstr.int_u8()
 	if vtype == 2: 
-		value = byr_stream.int32()
+		value = ebrw_readstr.int_s32()
 		if VERBOSE: valprint(tabnum, 'INT32', value)
 	elif vtype == 3: 
-		value = byr_stream.uint64()
+		value = ebrw_readstr.int_u64()
 		if VERBOSE: valprint(tabnum, 'UINT64', value)
 	elif vtype == 4: 
-		value = byr_stream.float()
+		value = ebrw_readstr.float()
 		if VERBOSE: valprint(tabnum, 'FLOAT', value)
 	elif vtype == 5: 
-		value = byr_stream.double()
+		value = ebrw_readstr.double()
 		if VERBOSE: valprint(tabnum, 'DOUBLE', value)
 	elif vtype == 6: 
-		value = byr_stream.uint16()
+		value = ebrw_readstr.int_u16()
 		if VERBOSE: valprint(tabnum, 'UINT16', value)
 	elif vtype == 7: 
-		value = byr_stream.string(byr_stream.uint32())
+		value = ebrw_readstr.string(ebrw_readstr.int_u32())
 		if VERBOSE: valprint(tabnum, 'STRING', value)
 	elif vtype == 8: 
-		value = byr_stream.raw(byr_stream.uint32())
+		value = ebrw_readstr.raw(ebrw_readstr.int_u32())
 		if VERBOSE: valprint(tabnum, 'RAW', value)
 	elif vtype == 9: 
 		if VERBOSE: valprint(tabnum, '>>DICT>>', '')
-		numparts = byr_stream.uint32()
+		numparts = ebrw_readstr.int_u32()
 		value = dict([
 			[
-			decode_value(byr_stream, tabnum+1)[1], 
-			decode_value(byr_stream, tabnum+1)] for _ in range(numparts)
+			decode_value(ebrw_readstr, tabnum+1)[1], 
+			decode_value(ebrw_readstr, tabnum+1)] for _ in range(numparts)
 			])
 	elif vtype == 10: 
 		if VERBOSE: valprint(tabnum, '>>LIST>>', '')
-		numparts = byr_stream.uint32()
-		value = [decode_value(byr_stream, tabnum+1) for _ in range(numparts)]
+		numparts = ebrw_readstr.int_u32()
+		value = [decode_value(ebrw_readstr, tabnum+1) for _ in range(numparts)]
 	else: 
 		print('unknown type', vtype)
 		exit()
 	return vtype, value
 
-def decode_value_1way(byr_stream):
-	vtype = byr_stream.uint8()
-	if vtype == 2: return byr_stream.int32()
-	elif vtype == 3: return byr_stream.uint64()
-	elif vtype == 4: return byr_stream.float()
-	elif vtype == 5: return byr_stream.double()
-	elif vtype == 6: return byr_stream.uint16()
-	elif vtype == 7: return byr_stream.string(byr_stream.uint32())
-	elif vtype == 8: return byr_stream.raw(byr_stream.uint32())
-	elif vtype == 9: return dict([[decode_value_1way(byr_stream), decode_value_1way(byr_stream)] for _ in range(byr_stream.uint32())])
-	elif vtype == 10: return [decode_value_1way(byr_stream) for _ in range(byr_stream.uint32())]
+def decode_value_1way(ebrw_readstr):
+	vtype = ebrw_readstr.int_u8()
+	if vtype == 2: return ebrw_readstr.int_s32()
+	elif vtype == 3: return ebrw_readstr.int_u64()
+	elif vtype == 4: return ebrw_readstr.float()
+	elif vtype == 5: return ebrw_readstr.double()
+	elif vtype == 6: return ebrw_readstr.int_u16()
+	elif vtype == 7: return ebrw_readstr.string(ebrw_readstr.int_u32())
+	elif vtype == 8: return ebrw_readstr.raw(ebrw_readstr.int_u32())
+	elif vtype == 9: return dict([[decode_value_1way(ebrw_readstr), decode_value_1way(ebrw_readstr)] for _ in range(ebrw_readstr.int_u32())])
+	elif vtype == 10: return [decode_value_1way(ebrw_readstr) for _ in range(ebrw_readstr.int_u32())]
 	else: 
 		print('unknown type', vtype)
 		exit()
@@ -203,11 +203,11 @@ class soundop_proj:
 		self.Files = [soundop_file(x) for x in indata['Files']] if 'Files' in indata else None
 
 	def load_from_file(self, input_file):
-		byr_stream = bytereader.bytereader()
-		byr_stream.load_file(input_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
-		byr_stream.magic_check(b'$$mcrootv0000$$')
-		indata = decode_value_1way(byr_stream)
+		ebrw_readstr.magic_check(b'$$mcrootv0000$$')
+		indata = decode_value_1way(ebrw_readstr)
 
 		#from pprint import pprint
 		#pprint(indata)

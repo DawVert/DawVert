@@ -7,8 +7,8 @@ import logging
 from io import BytesIO
 from functions import data_bytes
 from functions.dawspecific import format_flp_tlv
-from objects.data_bytes import bytereader
-from objects.data_bytes import bytewriter
+from external.easybinrw import easybinrw
+from external.easybinrw import chunked
 
 from objects.file_proj._flp import fx
 from objects.file_proj._flp import channel
@@ -195,9 +195,10 @@ class flp_project:
 			self.internal_cur_timemarkers = self.current_pat_obj.timemarkers
 
 		elif event_id == 223:
-			event_bio = bytereader.bytereader(event_data)
-			while event_bio.remaining():
-				pos, autov, val = struct.unpack('IIi', event_bio.read(12))
+			ebrw_readstr = easybinrw.binread()
+			ebrw_readstr.load_data(event_data)
+			while ebrw_readstr.remaining():
+				pos, autov, val = struct.unpack('IIi', ebrw_readstr.read(12))
 				if autov not in self.current_pat_obj.automation: self.current_pat_obj.automation[autov] = []
 				self.current_pat_obj.automation[autov].append([pos, val])
 
@@ -211,14 +212,14 @@ class flp_project:
 			self.current_pat_obj.automation = keyreplace
 
 		elif event_id == 224: #PatternNotes
-			event_bio = BytesIO(event_data)
+			ebrw_readstr = BytesIO(event_data)
 			#if self.version_split[0] <= 8:
-			#	while event_bio.tell() < len(event_data):
-			##		n_pos,n_flags,n_rack,n_dur,n_key,n_finep,n_u1,n_midich,n_pan,n_velocity,n_mod_x,n_mod_y = struct.unpack('IHHIBBBBBBBB', event_bio.read(20))
+			#	while ebrw_readstr.tell() < len(event_data):
+			##		n_pos,n_flags,n_rack,n_dur,n_key,n_finep,n_u1,n_midich,n_pan,n_velocity,n_mod_x,n_mod_y = struct.unpack('IHHIBBBBBBBB', ebrw_readstr.read(20))
 			#		self.current_pat_obj.notes.append([n_pos,n_flags,n_rack,n_dur,n_key,0,n_finep,n_u1,0,n_midich,n_pan,n_velocity,n_mod_x,n_mod_y])
 			#else:
-			while event_bio.tell() < len(event_data):
-				n_pos,n_flags,n_rack,n_dur,n_key,n_group,n_finep,n_u1,n_rel,n_midich,n_pan,n_velocity,n_mod_x,n_mod_y = struct.unpack('IHHIHHBBBBBBBB', event_bio.read(24))
+			while ebrw_readstr.tell() < len(event_data):
+				n_pos,n_flags,n_rack,n_dur,n_key,n_group,n_finep,n_u1,n_rel,n_midich,n_pan,n_velocity,n_mod_x,n_mod_y = struct.unpack('IHHIHHBBBBBBBB', ebrw_readstr.read(24))
 				fl_note = flp_note()
 				fl_note.pos = n_pos
 				fl_note.flags = n_flags
@@ -248,18 +249,18 @@ class flp_project:
 		elif event_id == 241: self.current_arr_obj.name = decodetext(self.version_split, event_data)
 
 		elif event_id == 233:
-			event_bio = BytesIO(event_data)
-			while event_bio.tell() < len(event_data):
+			ebrw_readstr = BytesIO(event_data)
+			while ebrw_readstr.tell() < len(event_data):
 				fla = arrangement.flp_arrangement_clip()
-				fla.read(event_bio, self.version_split)
+				fla.read(ebrw_readstr, self.version_split)
 				self.current_arr_obj.items.append(fla)
 			self.internal_cur_timemarkers = self.current_arr_obj.timemarkers
 
 		#Tracks
 		elif event_id == 238:
-			event_bio = BytesIO(event_data)
+			ebrw_readstr = BytesIO(event_data)
 			flp_track_obj = arrangement.flp_track()
-			flp_track_obj.read(event_bio, len(event_data), self.version_split)
+			flp_track_obj.read(ebrw_readstr, len(event_data), self.version_split)
 			self.current_track = flp_track_obj.id
 			self.current_arr_obj.tracks[flp_track_obj.id] = flp_track_obj
 
@@ -350,17 +351,17 @@ class flp_project:
 				auto_obj.read(event_data)
 				self.current_ch_obj.autopoints = auto_obj
 
-			#	event_bio = BytesIO(event_data)
-			#	print( 'header', struct.unpack('biiii', event_bio.read(20) ))
-			#	num_points = int.from_bytes(event_bio.read(4), "little")
-				#print( event_bio.read(4).hex() )
+			#	ebrw_readstr = BytesIO(event_data)
+			#	print( 'header', struct.unpack('biiii', ebrw_readstr.read(20) ))
+			#	num_points = int.from_bytes(ebrw_readstr.read(4), "little")
+				#print( ebrw_readstr.read(4).hex() )
 
 			#	print(num_points)
 			#	for _ in range(num_points):
-			#		print( struct.unpack('ddfBBBB', event_bio.read(24)) )
-			#	print( event_bio.read(4) )
-			#	print( event_bio.read(16) )
-			#	print( event_bio.read().hex() )
+			#		print( struct.unpack('ddfBBBB', ebrw_readstr.read(24)) )
+			#	print( ebrw_readstr.read(4) )
+			#	print( ebrw_readstr.read(16) )
+			#	print( ebrw_readstr.read().hex() )
 
 
 
@@ -426,45 +427,47 @@ class flp_project:
 			elif event_id == 204: self.fx_name = decodetext(self.version_split, event_data)
 
 	def view_tlv(self, inputfile):
-		song_data = bytereader.bytereader()
-		song_data.load_file(inputfile)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(inputfile)
 
 		debugv = debug_eventview()
 		debugv.load()
 
-		main_iff_obj = song_data.chunk_objmake()
 		tlvfound = False
-		for chunk_obj in main_iff_obj.iter(0, song_data.end):
+		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
 			if chunk_obj.id == b'FLdt':
 				tlvfound = True
-				for event_id, event_data in format_flp_tlv.decode(song_data, chunk_obj.end): 
+				for event_id, event_data in format_flp_tlv.decode(ebrw_readstr, chunk_obj.end): 
 					debugv.view_event(event_id, event_data)
 
 	def read(self, inputfile):
-		song_data = bytereader.bytereader()
-		song_data.load_file(inputfile)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(inputfile)
 
-		if song_data.read(2) == b'PK':
+		if ebrw_readstr.read(2) == b'PK':
 			self.zipped = True
 			self.zipfile = zipfile.ZipFile(inputfile, 'r')
 			flpfound = False
 			for filename in self.zipfile.namelist():
 				if filename.endswith('.flp'):
-					song_data.load_raw(self.zipfile.read(filename))
+					flpdata = self.zipfile.read(filename)
+					ebrw_readstr = easybinrw.binread()
+					ebrw_readstr.load_raw(flpdata)
 					flpfound = True
 			if not flpfound:
 				raise ProjectFileParserException('FL: FLP file not found in zip')
 
-		main_iff_obj = song_data.chunk_objmake()
+		ebrw_readstr.seek(0)
+
 		tlvfound = False
-		for chunk_obj in main_iff_obj.iter(0, song_data.end):
+		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
 			if chunk_obj.id == b'FLhd':
-				song_data.skip(2)
-				self.num_channels = song_data.uint16()
-				self.ppq = song_data.uint16()
+				ebrw_readstr.skip(2)
+				self.num_channels = ebrw_readstr.int_u16()
+				self.ppq = ebrw_readstr.int_u16()
 			if chunk_obj.id == b'FLdt':
 				tlvfound = True
-				for event_id, event_data in format_flp_tlv.decode(song_data, chunk_obj.end): self.do_event(event_id, event_data)
+				for event_id, event_data in format_flp_tlv.decode(ebrw_readstr): self.do_event(event_id, event_data)
 		if not tlvfound:
 			raise ProjectFileParserException('FL: TLV data not found')
 
@@ -472,170 +475,179 @@ class flp_project:
 
 		flpout = open(outputfile, 'wb')
 
-		flpwriter = bytewriter.bytewriter()
-		with flpwriter.chunk(b'FLhd') as chunkdata:
-			chunkdata.raw(self.num_channels.to_bytes(3, 'big'))
-			chunkdata.raw(b'\x00')
-			chunkdata.raw(self.ppq.to_bytes(2, 'little'))
+		ebrw_writestr = easybinrw.binwrite()
 
-		with flpwriter.chunk(b'FLdt') as chunkdata:
-			format_flp_tlv.write_tlv(chunkdata, 199, '20.7.2.1852'.encode('utf8') + b'\x00')
-			format_flp_tlv.write_tlv(chunkdata, 159, 1852)
-			format_flp_tlv.write_tlv(chunkdata, 37, 1)
-			format_flp_tlv.write_tlv(chunkdata, 200, b'\x00\x00')
-			format_flp_tlv.write_tlv(chunkdata, 156, int(self.tempo)*1000)
-			format_flp_tlv.write_tlv(chunkdata, 67, self.nonsong_patnum)
-			format_flp_tlv.write_tlv(chunkdata, 9, self.loop_active)
-			format_flp_tlv.write_tlv(chunkdata, 11, self.shuffle)
-			format_flp_tlv.write_tlv(chunkdata, 80, self.mainpitch)
-			format_flp_tlv.write_tlv(chunkdata, 17, self.numerator)
-			format_flp_tlv.write_tlv(chunkdata, 18, self.denominator)
-			format_flp_tlv.write_tlv(chunkdata, 35, 1)
-			format_flp_tlv.write_tlv(chunkdata, 23, self.panning_law)
-			format_flp_tlv.write_tlv(chunkdata, 30, self.truncate_clip_notes)
-			format_flp_tlv.write_tlv(chunkdata, 10, self.showinfo)
-			format_flp_tlv.write_tlv(chunkdata, 194, utf16encode(self.title))
-			format_flp_tlv.write_tlv(chunkdata, 206, utf16encode(self.genre))
-			format_flp_tlv.write_tlv(chunkdata, 207, utf16encode(self.author))
-			format_flp_tlv.write_tlv(chunkdata, 202, utf16encode(self.projectdatapath))
-			format_flp_tlv.write_tlv(chunkdata, 195, utf16encode(self.comment))
-			if self.url: format_flp_tlv.write_tlv(chunkdata, 197, utf16encode(self.url))
-			format_flp_tlv.write_tlv(chunkdata, 146, 4294967295)
-			format_flp_tlv.write_tlv(chunkdata, 216, self.startvals.write())
+		FLhd__ebrw_writestr = easybinrw.binwrite()
+		FLhd__ebrw_writestr.raw(self.num_channels.to_bytes(3, 'big'))
+		FLhd__ebrw_writestr.raw(b'\x00')
+		FLhd__ebrw_writestr.raw(self.ppq.to_bytes(2, 'little'))
+		FLhd_value = FLhd__ebrw_writestr.getvalue()
+		ebrw_writestr.raw(b'FLhd')
+		ebrw_writestr.int_u32(len(FLhd_value))
+		ebrw_writestr.raw(FLhd_value)
 
-			for patnum, patdat in self.patterns.items():
-				if patdat.automation or patdat.notes or patdat.color or (patdat.name != None):
-					format_flp_tlv.write_tlv(chunkdata, 65, patnum)
-					if patdat.automation:
-						autobytes = b''
-						#for pos, autov, val in patdat.automation: autobytes += struct.pack('III', pos, autov, val)
-						#format_flp_tlv.write_tlv(chunkdata, 223, autobytes)
-					if patdat.notes:
-						flnotes = b''
-						for fln in patdat.notes: 
-							if fln.pos >= 0 and fln.key>=0:
-								flnotes += struct.pack('IHHIHHBBBBBBBB', fln.pos,fln.flags,fln.rack,fln.dur,fln.key,fln.group,fln.finep,fln.u1,fln.rel,fln.midich,fln.pan,fln.velocity,fln.mod_x,fln.mod_y)
-						format_flp_tlv.write_tlv(chunkdata, 224, flnotes)
-					if patdat.color != None: format_flp_tlv.write_tlv(chunkdata, 150, patdat.color)
-					if patdat.name != None: format_flp_tlv.write_tlv(chunkdata, 193, utf16encode(patdat.name))
+		FLdt__ebrw_writestr = easybinrw.binwrite()
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 199, '20.7.2.1852'.encode('utf8') + b'\x00')
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 159, 1852)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 37, 1)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 200, b'\x00\x00')
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 156, int(self.tempo)*1000)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 67, self.nonsong_patnum)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 9, self.loop_active)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 11, self.shuffle)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 80, self.mainpitch)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 17, self.numerator)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 18, self.denominator)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 35, 1)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 23, self.panning_law)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 30, self.truncate_clip_notes)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 10, self.showinfo)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 194, utf16encode(self.title))
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 206, utf16encode(self.genre))
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 207, utf16encode(self.author))
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 202, utf16encode(self.projectdatapath))
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 195, utf16encode(self.comment))
+		if self.url: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 197, utf16encode(self.url))
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 146, 4294967295)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 216, self.startvals.write())
 
-					for timem_obj in patdat.timemarkers:
-						format_flp_tlv.write_tlv(chunkdata, 148, (timem_obj.type << 24)+timem_obj.pos)
-						format_flp_tlv.write_tlv(chunkdata, 33, timem_obj.numerator)
-						format_flp_tlv.write_tlv(chunkdata, 34, timem_obj.denominator)
-						if timem_obj.name != None: format_flp_tlv.write_tlv(chunkdata, 205, utf16encode(timem_obj.name))
-						else: format_flp_tlv.write_tlv(chunkdata, 205, b'\x20\x00\x00\x00')
+		for patnum, patdat in self.patterns.items():
+			if patdat.automation or patdat.notes or patdat.color or (patdat.name != None):
+				format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 65, patnum)
+				if patdat.automation:
+					autobytes = b''
+					#for pos, autov, val in patdat.automation: autobytes += struct.pack('III', pos, autov, val)
+					#format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 223, autobytes)
+				if patdat.notes:
+					flnotes = b''
+					for fln in patdat.notes: 
+						if fln.pos >= 0 and fln.key>=0:
+							flnotes += struct.pack('IHHIHHBBBBBBBB', fln.pos,fln.flags,fln.rack,fln.dur,fln.key,fln.group,fln.finep,fln.u1,fln.rel,fln.midich,fln.pan,fln.velocity,fln.mod_x,fln.mod_y)
+					format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 224, flnotes)
+				if patdat.color != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 150, patdat.color)
+				if patdat.name != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 193, utf16encode(patdat.name))
 
-			format_flp_tlv.write_tlv(chunkdata, 226, b'\x01\x00\x00\x00\x00\x00\x00\x00\x01\x90\xff\x0f\x04\x00\x00\x00\xd5\x01\x00\x00')
-			format_flp_tlv.write_tlv(chunkdata, 226, b'\xfd\x00\x00\x00\x00\x00\x00\x00\x80\x90\xff\x0f\x04\x00\x00\x00\xd5\x01\x00\x00')
-			format_flp_tlv.write_tlv(chunkdata, 226, b'\xff\x00\x00\x00\xff\x00\x00\x00\x04\x00\xff\x0f\x04\x00\x00\x00\x00\xfe\xff\xff')
+				for timem_obj in patdat.timemarkers:
+					format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 148, (timem_obj.type << 24)+timem_obj.pos)
+					format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 33, timem_obj.numerator)
+					format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 34, timem_obj.denominator)
+					if timem_obj.name != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 205, utf16encode(timem_obj.name))
+					else: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 205, b'\x20\x00\x00\x00')
 
-			for _, m in self.remote_assoc.items():
-				for remotectrl in m:
-					bytes_remote, isvalid = remotectrl.write()
-					if isvalid: 
-						format_flp_tlv.write_tlv(chunkdata, 227, bytes_remote)
-						if remotectrl.formula:
-							format_flp_tlv.write_tlv(chunkdata, 230, utf16encode(remotectrl.formula))
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 226, b'\x01\x00\x00\x00\x00\x00\x00\x00\x01\x90\xff\x0f\x04\x00\x00\x00\xd5\x01\x00\x00')
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 226, b'\xfd\x00\x00\x00\x00\x00\x00\x00\x80\x90\xff\x0f\x04\x00\x00\x00\xd5\x01\x00\x00')
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 226, b'\xff\x00\x00\x00\xff\x00\x00\x00\x04\x00\xff\x0f\x04\x00\x00\x00\x00\xfe\xff\xff')
 
-			for chnum, chdat in self.channels.items():
-				format_flp_tlv.write_tlv(chunkdata, 64, chnum)
-				format_flp_tlv.write_tlv(chunkdata, 21, chdat.type)
-				if chdat.type == 2:
-					if chdat.plugin.name != None: format_flp_tlv.write_tlv(chunkdata, 201, utf16encode(chdat.plugin.name))
-					format_flp_tlv.write_tlv(chunkdata, 212, chdat.plugin.write())
-				if chdat.name != None: format_flp_tlv.write_tlv(chunkdata, 203, utf16encode(chdat.name))
-				if chdat.icon != None: format_flp_tlv.write_tlv(chunkdata, 155, chdat.icon)
-				if chdat.color != None: format_flp_tlv.write_tlv(chunkdata, 128, chdat.color)
-				if chdat.plugin.params != None: format_flp_tlv.write_tlv(chunkdata, 213, chdat.plugin.params)
+		for _, m in self.remote_assoc.items():
+			for remotectrl in m:
+				bytes_remote, isvalid = remotectrl.write()
+				if isvalid: 
+					format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 227, bytes_remote)
+					if remotectrl.formula:
+						format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 230, utf16encode(remotectrl.formula))
 
-				format_flp_tlv.write_tlv(chunkdata, 0, chdat.enabled)
-				format_flp_tlv.write_tlv(chunkdata, 209, chdat.delay.write())
-				format_flp_tlv.write_tlv(chunkdata, 138, chdat.delayreso)
-				format_flp_tlv.write_tlv(chunkdata, 139, chdat.reverb)
-				format_flp_tlv.write_tlv(chunkdata, 89, chdat.shiftdelay)
-				format_flp_tlv.write_tlv(chunkdata, 97, 128)
-				format_flp_tlv.write_tlv(chunkdata, 69, chdat.fx)
-				format_flp_tlv.write_tlv(chunkdata, 86, chdat.fx3)
-				format_flp_tlv.write_tlv(chunkdata, 71, chdat.cutoff)
-				format_flp_tlv.write_tlv(chunkdata, 83, chdat.resonance)
-				format_flp_tlv.write_tlv(chunkdata, 74, chdat.preamp)
-				format_flp_tlv.write_tlv(chunkdata, 75, chdat.decay)
-				format_flp_tlv.write_tlv(chunkdata, 76, chdat.attack)
-				format_flp_tlv.write_tlv(chunkdata, 85, chdat.stdel)
-				format_flp_tlv.write_tlv(chunkdata, 131, chdat.fxsine)
-				format_flp_tlv.write_tlv(chunkdata, 70, chdat.fxflags)
-				format_flp_tlv.write_tlv(chunkdata, 22, chdat.fxchannel)
-				for layer_chan in chdat.layer_chans: format_flp_tlv.write_tlv(chunkdata, 94, layer_chan)
-				format_flp_tlv.write_tlv(chunkdata, 219, chdat.basicparams.write())
-				format_flp_tlv.write_tlv(chunkdata, 229, chdat.ofslevels)
-				format_flp_tlv.write_tlv(chunkdata, 221, chdat.poly.write())
-				format_flp_tlv.write_tlv(chunkdata, 215, chdat.params.write())
-				format_flp_tlv.write_tlv(chunkdata, 132, chdat.cutcutby)
-				format_flp_tlv.write_tlv(chunkdata, 144, chdat.layerflags)
-				format_flp_tlv.write_tlv(chunkdata, 145, 0)
-				format_flp_tlv.write_tlv(chunkdata, 32, 0)
-				for trking_obj in chdat.tracking: format_flp_tlv.write_tlv(chunkdata, 228, trking_obj.write())
-				for env_lfo_obj in chdat.env_lfo: format_flp_tlv.write_tlv(chunkdata, 218, env_lfo_obj.write())
-				format_flp_tlv.write_tlv(chunkdata, 143, chdat.sampleflags)
-				format_flp_tlv.write_tlv(chunkdata, 20, chdat.looptype)
+		for chnum, chdat in self.channels.items():
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 64, chnum)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 21, chdat.type)
+			if chdat.type == 2:
+				if chdat.plugin.name != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 201, utf16encode(chdat.plugin.name))
+				format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 212, chdat.plugin.write())
+			if chdat.name != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 203, utf16encode(chdat.name))
+			if chdat.icon != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 155, chdat.icon)
+			if chdat.color != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 128, chdat.color)
+			if chdat.plugin.params != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 213, chdat.plugin.params)
 
-				if chdat.samplefilename: format_flp_tlv.write_tlv(chunkdata, 196, utf16encode(chdat.samplefilename))
-				if chdat.middlenote != 60: format_flp_tlv.write_tlv(chunkdata, 135, chdat.middlenote)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 0, chdat.enabled)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 209, chdat.delay.write())
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 138, chdat.delayreso)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 139, chdat.reverb)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 89, chdat.shiftdelay)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 97, 128)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 69, chdat.fx)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 86, chdat.fx3)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 71, chdat.cutoff)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 83, chdat.resonance)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 74, chdat.preamp)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 75, chdat.decay)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 76, chdat.attack)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 85, chdat.stdel)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 131, chdat.fxsine)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 70, chdat.fxflags)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 22, chdat.fxchannel)
+			for layer_chan in chdat.layer_chans: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 94, layer_chan)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 219, chdat.basicparams.write())
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 229, chdat.ofslevels)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 221, chdat.poly.write())
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 215, chdat.params.write())
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 132, chdat.cutcutby)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 144, chdat.layerflags)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 145, 0)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 32, 0)
+			for trking_obj in chdat.tracking: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 228, trking_obj.write())
+			for env_lfo_obj in chdat.env_lfo: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 218, env_lfo_obj.write())
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 143, chdat.sampleflags)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 20, chdat.looptype)
 
-			for arrnum, arrdat in self.arrangements.items():
-				format_flp_tlv.write_tlv(chunkdata, 99, arrnum)
-				if arrdat.name != None: format_flp_tlv.write_tlv(chunkdata, 241, utf16encode(arrdat.name))
-				arr_bytes = b''
-				for item in arrdat.items:
-					arr_bytes += item.write()
+			if chdat.samplefilename: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 196, utf16encode(chdat.samplefilename))
+			if chdat.middlenote != 60: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 135, chdat.middlenote)
 
-				format_flp_tlv.write_tlv(chunkdata, 36, 0)
-				format_flp_tlv.write_tlv(chunkdata, 233, arr_bytes) #PlayListItems
-				for track_num, track_obj in arrdat.tracks.items():
-					format_flp_tlv.write_tlv(chunkdata, 238, track_obj.write())
-					if track_obj.name: format_flp_tlv.write_tlv(chunkdata, 239, utf16encode(track_obj.name))
+		for arrnum, arrdat in self.arrangements.items():
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 99, arrnum)
+			if arrdat.name != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 241, utf16encode(arrdat.name))
+			arr_bytes = b''
+			for item in arrdat.items:
+				arr_bytes += item.write()
 
-				for timem_obj in arrdat.timemarkers:
-					format_flp_tlv.write_tlv(chunkdata, 148, (timem_obj.type << 24)+int(timem_obj.pos))
-					format_flp_tlv.write_tlv(chunkdata, 33, timem_obj.numerator)
-					format_flp_tlv.write_tlv(chunkdata, 34, timem_obj.denominator)
-					if timem_obj.name != None: format_flp_tlv.write_tlv(chunkdata, 205, utf16encode(timem_obj.name))
-					else: format_flp_tlv.write_tlv(chunkdata, 205, b'\x20\x00\x00\x00')
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 36, 0)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 233, arr_bytes) #PlayListItems
+			for track_num, track_obj in arrdat.tracks.items():
+				format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 238, track_obj.write())
+				if track_obj.name: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 239, utf16encode(track_obj.name))
 
-				#make_trackinfo(data_FLdt, arrangements[arrangement]['tracks'])
-			format_flp_tlv.write_tlv(chunkdata, 100, 0)
-			format_flp_tlv.write_tlv(chunkdata, 29, 1)
-			format_flp_tlv.write_tlv(chunkdata, 39, 1)
-			format_flp_tlv.write_tlv(chunkdata, 31, 0)
-			format_flp_tlv.write_tlv(chunkdata, 38, 1)
+			for timem_obj in arrdat.timemarkers:
+				format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 148, (timem_obj.type << 24)+int(timem_obj.pos))
+				format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 33, timem_obj.numerator)
+				format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 34, timem_obj.denominator)
+				if timem_obj.name != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 205, utf16encode(timem_obj.name))
+				else: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 205, b'\x20\x00\x00\x00')
 
-			for mixernum, mixerdat in self.mixer.items():
-				#print(mixernum, mixerdat)
-				format_flp_tlv.write_tlv(chunkdata, 236, mixerdat.write())
-				if mixerdat.color != None: format_flp_tlv.write_tlv(chunkdata, 149, mixerdat.color)
-				if mixerdat.name != None: format_flp_tlv.write_tlv(chunkdata, 204, utf16encode(mixerdat.name))
-				if mixerdat.icon != None: format_flp_tlv.write_tlv(chunkdata, 95, mixerdat.icon)
-				for slotnum, slotdata in enumerate(mixerdat.slots):
-					if slotdata:
-						if slotdata.used:
-							if slotdata.plugin.name != None: format_flp_tlv.write_tlv(chunkdata, 201, utf16encode(slotdata.plugin.name))
-							format_flp_tlv.write_tlv(chunkdata, 212, slotdata.plugin.write())
-							if slotdata.name != None: format_flp_tlv.write_tlv(chunkdata, 203, utf16encode(slotdata.name))
-							if slotdata.icon != None: format_flp_tlv.write_tlv(chunkdata, 155, slotdata.icon)
-							if slotdata.color != None: format_flp_tlv.write_tlv(chunkdata, 128, slotdata.color)
-							if slotdata.plugin.params != None: format_flp_tlv.write_tlv(chunkdata, 213, slotdata.plugin.params)
-					format_flp_tlv.write_tlv(chunkdata, 98, slotnum)
-				fxrouting_fl = [0 for _ in range(127)]
-				for route in mixerdat.routing: fxrouting_fl[route] = 1
-				format_flp_tlv.write_tlv(chunkdata, 235, bytearray(fxrouting_fl))
-				format_flp_tlv.write_tlv(chunkdata, 154, mixerdat.inchannum)
-				format_flp_tlv.write_tlv(chunkdata, 147, mixerdat.outchannum)
+			#make_trackinfo(data_FLdt, arrangements[arrangement]['tracks'])
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 100, 0)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 29, 1)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 39, 1)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 31, 0)
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 38, 1)
 
-			format_flp_tlv.write_tlv(chunkdata, 225, self.initfxvals.write())
-			format_flp_tlv.write_tlv(chunkdata, 133, 216)
+		for mixernum, mixerdat in self.mixer.items():
+			#print(mixernum, mixerdat)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 236, mixerdat.write())
+			if mixerdat.color != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 149, mixerdat.color)
+			if mixerdat.name != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 204, utf16encode(mixerdat.name))
+			if mixerdat.icon != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 95, mixerdat.icon)
+			for slotnum, slotdata in enumerate(mixerdat.slots):
+				if slotdata:
+					if slotdata.used:
+						if slotdata.plugin.name != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 201, utf16encode(slotdata.plugin.name))
+						format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 212, slotdata.plugin.write())
+						if slotdata.name != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 203, utf16encode(slotdata.name))
+						if slotdata.icon != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 155, slotdata.icon)
+						if slotdata.color != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 128, slotdata.color)
+						if slotdata.plugin.params != None: format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 213, slotdata.plugin.params)
+				format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 98, slotnum)
+			fxrouting_fl = [0 for _ in range(127)]
+			for route in mixerdat.routing: fxrouting_fl[route] = 1
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 235, bytearray(fxrouting_fl))
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 154, mixerdat.inchannum)
+			format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 147, mixerdat.outchannum)
 
-		flpout.write(flpwriter.getvalue())
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 225, self.initfxvals.write())
+		format_flp_tlv.write_tlv(FLdt__ebrw_writestr, 133, 216)
+		FLdt_value = FLdt__ebrw_writestr.getvalue()
+		ebrw_writestr.raw(b'FLdt')
+		ebrw_writestr.int_u32(len(FLdt_value))
+		ebrw_writestr.raw(FLdt_value)
+
+		flpout.write(ebrw_writestr.getvalue())
 
 
 

@@ -15,12 +15,12 @@ def make_chunk(intype):
 VIEW_T = False
 
 class cakewalk_wrk_chunk:
-	def __init__(self, byr_stream):
+	def __init__(self, ebrw_readstr):
 		self.id = -1
 		self.content = None
 		self.is_parsed = False
 		self.typeid = None
-		if byr_stream: self.read(byr_stream)
+		if ebrw_readstr: self.read(ebrw_readstr)
 
 	def __repr__(self):
 		name = chunkids[self.id] if self.id in chunkids else 'UNKNOWN'
@@ -32,21 +32,20 @@ class cakewalk_wrk_chunk:
 		self.is_parsed = intype in chunkobjects
 		self.typeid = chunkids[intype] if intype in chunkids else None
 
-	def read(self, byr_stream):
-		self.id = byr_stream.uint8()
+	def read(self, ebrw_readstr):
+		self.id = ebrw_readstr.int_u8()
 		self.typeid = chunkids[self.id] if self.id in chunkids else None
 		if self.id != 255: 
-			csize = byr_stream.uint32()
-			with byr_stream.isolate_size(csize, True) as bye_stream:
-				#print(self, self.id in chunkobjects)
-				if self.id in chunkobjects: 
-					self.content = chunkobjects[self.id](bye_stream)
-					self.is_parsed = True
-					if VIEW_T: print(self)
-				else: 
-					self.content = bye_stream.raw(csize)
-					if VIEW_T: print('unknown chunk ',self.id)
-
+			csize = ebrw_readstr.int_u32()
+			ebrw_readstr.isolate_size(csize)
+			if self.id in chunkobjects: 
+				self.content = chunkobjects[self.id](ebrw_readstr)
+				self.is_parsed = True
+				if VIEW_T: print(self)
+			else: 
+				self.content = ebrw_readstr.raw(csize)
+				if VIEW_T: print('unknown chunk ',self.id)
+			ebrw_readstr.isolate_end()
 	def write(self, byw_stream):
 		byw_instream = bytewriter.bytewriter()
 		if self.is_parsed: 

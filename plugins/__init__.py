@@ -3,7 +3,7 @@ import traceback
 import glob
 import logging
 from importlib import util
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 
 logger_plugins = logging.getLogger('plugins')
 
@@ -166,14 +166,14 @@ class dv_plugin_bindetect:
 
 	def detect_container__file(self, inpath):
 		if os.path.exists(inpath):
-			byw_reader = bytereader.bytereader()
-			byw_reader.load_file(inpath)
+			ebrw_readstr = easybinrw.binread()
+			ebrw_readstr.load_file(inpath)
 			for containerd in self.containers:
 
 				if containerd[0] == 'gzip':
 					bytepos = containerd[1] if len(containerd)>1 else 0
-					byw_reader.seek(bytepos)
-					if byw_reader.raw(3) == b'\x1f\x8b\x08':
+					ebrw_readstr.seek(bytepos)
+					if ebrw_readstr.raw(3) == b'\x1f\x8b\x08':
 						import gzip
 						if self.type == 'bytes':
 							try:
@@ -188,14 +188,14 @@ class dv_plugin_bindetect:
 
 				if containerd[0] == 'zlib':
 					bytepos = containerd[1] if len(containerd)>1 else 0
-					byw_reader.seek(bytepos)
-					if byw_reader.raw(2) in [b'\x78\x08', b'\x78\x5E', b'\x78\x9C', b'\x78\xDA']:
+					ebrw_readstr.seek(bytepos)
+					if ebrw_readstr.raw(2) in [b'\x78\x08', b'\x78\x5E', b'\x78\x9C', b'\x78\xDA']:
 						import zlib
-						byw_reader.seek(bytepos)
+						ebrw_readstr.seek(bytepos)
 						if self.type == 'bytes':
 							try:
 								decomp_obj = zlib.decompressobj(wbits=zlib.MAX_WBITS)
-								data = decomp_obj.decompress(byw_reader.raw(1024), max_length=512)
+								data = decomp_obj.decompress(ebrw_readstr.raw(1024), max_length=512)
 								return self.detect_headers__data(data)
 							except:
 								return False
@@ -203,8 +203,8 @@ class dv_plugin_bindetect:
 							return False
 
 				if containerd[0] == 'zip':
-					byw_reader.seek(0)
-					if byw_reader.raw(4) == b'PK\x03\x04':
+					ebrw_readstr.seek(0)
+					if ebrw_readstr.raw(4) == b'PK\x03\x04':
 						import zipfile
 						import fnmatch
 						try:
@@ -221,12 +221,12 @@ class dv_plugin_bindetect:
 
 	def detect_headers__data(self, indata):
 		if self.type == 'bytes':
-			byw_reader = bytereader.bytereader(indata)
+			ebrw_readstr = easybinrw.binread()
 			outseries = []
 			for x in self.headers:
-				if byw_reader.end>x[0]+len(x[1]):
-					byw_reader.seek(x[0])
-					outseries.append(byw_reader.raw(len(x[1]))==x[1])
+				if ebrw_readstr.end>x[0]+len(x[1]):
+					ebrw_readstr.seek(x[0])
+					outseries.append(ebrw_readstr.raw(len(x[1]))==x[1])
 				else: outseries.append(False)
 			return all(outseries) if outseries else False
 		if self.type == 'xml':
@@ -243,13 +243,13 @@ class dv_plugin_bindetect:
 	def detect_headers__file(self, inpath):
 		if os.path.exists(inpath):
 			if self.type == 'bytes':
-				byw_reader = bytereader.bytereader()
-				byw_reader.load_file(inpath)
+				ebrw_readstr = easybinrw.binread()
+				ebrw_readstr.load_file(inpath)
 				outseries = []
 				for x in self.headers:
-					if byw_reader.end>x[0]+len(x[1]):
-						byw_reader.seek(x[0])
-						outseries.append(byw_reader.raw(len(x[1]))==x[1])
+					if ebrw_readstr.end>x[0]+len(x[1]):
+						ebrw_readstr.seek(x[0])
+						outseries.append(ebrw_readstr.raw(len(x[1]))==x[1])
 					else: outseries.append(False)
 				return all(outseries) if outseries else False
 			if self.type == 'xml':

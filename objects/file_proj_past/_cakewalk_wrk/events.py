@@ -7,14 +7,14 @@ class cakewalk_event:
 		self.type = None
 		self.data = None
 
-	def read_old(self, byr_stream):
-		self.time = byr_stream.uint24()
-		self.type = byr_stream.uint8()
+	def read_old(self, ebrw_readstr):
+		self.time = ebrw_readstr.int_u24()
+		self.type = ebrw_readstr.int_u8()
 		self.type = self.type & 0xf0
 		channel = self.type & 0x0f
-		data1 = byr_stream.uint8()
-		data2 = byr_stream.uint8()
-		dur = byr_stream.uint16()
+		data1 = ebrw_readstr.int_u8()
+		data2 = ebrw_readstr.int_u8()
+		dur = ebrw_readstr.int_u16()
 		if self.type == 0x90: self.data = cakewalk_event_note(channel, data1, data2, dur)
 		elif self.type == 0xA0: self.data = cakewalk_event_key_press(channel, data1, data2)
 		elif self.type == 0xB0: self.data = cakewalk_event_control(channel, data1, data2)
@@ -23,18 +23,18 @@ class cakewalk_event:
 		elif self.type == 0xE0: self.data = cakewalk_event_pitch(channel, data1, data2)
 		elif self.type == 0xF0: self.data = cakewalk_event_sysex_id(data1)
 
-	def read_new(self, byr_stream):
-		self.time = byr_stream.uint24()
-		self.type = byr_stream.uint8()
+	def read_new(self, ebrw_readstr):
+		self.time = ebrw_readstr.int_u24()
+		self.type = ebrw_readstr.int_u8()
 
 		if (self.type >= 0x90):
 			self.type = self.type & 0xf0
 			channel = self.type & 0x0f
-			data1 = byr_stream.uint8()
+			data1 = ebrw_readstr.int_u8()
 			if (self.type == 0x90 or self.type == 0xA0  or self.type == 0xB0 or self.type == 0xE0):
-				data2 = byr_stream.uint8()
+				data2 = ebrw_readstr.int_u8()
 			if (self.type == 0x90):
-				dur = byr_stream.uint16()
+				dur = ebrw_readstr.int_u16()
 
 			if self.type == 0x90: self.data = cakewalk_event_note(channel, data1, data2, dur)
 			elif self.type == 0xA0: self.data = cakewalk_event_key_press(channel, data1, data2)
@@ -45,38 +45,38 @@ class cakewalk_event:
 			elif self.type == 0xF0: self.data = cakewalk_event_sysex_id(data1)
 
 		elif (self.type == 2):
-			data = byr_stream.c_raw__int32(False)
+			data = ebrw_readstr.raw_i32(False)
 			self.data = cakewalk_event_lyrics(data)
 
 		elif (self.type == 5):
-			code = byr_stream.uint16()
-			data = byr_stream.c_raw__int32(False)
+			code = ebrw_readstr.int_u16()
+			data = ebrw_readstr.raw_i32(False)
 			self.data = cakewalk_event_expression(code, data)
 
 		elif (self.type == 6):
-			code = byr_stream.uint16()
-			dur = byr_stream.uint16()
-			byr_stream.skip(4)
+			code = ebrw_readstr.int_u16()
+			dur = ebrw_readstr.int_u16()
+			ebrw_readstr.skip(4)
 			self.data = cakewalk_event_hairpin(code, dur)
 
 		elif (self.type == 7):
-			text = byr_stream.c_raw__int32()
-			data = byr_stream.l_uint8(12)
+			text = ebrw_readstr.raw_i32()
+			data = ebrw_readstr.list_int_u8(12)
 			self.data = cakewalk_event_chord(text, data)
 
 		elif (self.type == 8):
-			self.data = cakewalk_event_sysex(byr_stream.c_raw__int16(False))
+			self.data = cakewalk_event_sysex(ebrw_readstr.raw_i16(False))
 
 		elif (self.type == 4):
 			self.data = cakewalk_event_audioclip()
-			self.data.unk1 = byr_stream.uint32()
-			self.data.unk2 = byr_stream.uint32()
-			self.data.name = byr_stream.c_raw__int32(False)
-			self.data.unk3 = byr_stream.raw(4)
-			self.data.id = byr_stream.raw(4)
+			self.data.unk1 = ebrw_readstr.int_u32()
+			self.data.unk2 = ebrw_readstr.int_u32()
+			self.data.name = ebrw_readstr.raw_i32(False)
+			self.data.unk3 = ebrw_readstr.raw(4)
+			self.data.id = ebrw_readstr.raw(4)
 
 		else:
-			self.data = cakewalk_event_data(byr_stream.c_raw__int32(False))
+			self.data = cakewalk_event_data(ebrw_readstr.raw_i32(False))
 
 
 class cakewalk_event_note:

@@ -1,30 +1,30 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
-import numpy as np
+from external.easybinrw import easybinrw
 from objects.exceptions import ProjectFileParserException
+import numpy as np
 
 import logging
 logger_projparse = logging.getLogger('projparse')
 
 class mod_sample:
-	def __init__(self, song_file): 
+	def __init__(self, ebrw_readstr): 
 		self.errored = False
-		self.name = song_file.string(22, encoding="ascii", errors="ignore") if song_file else ''
-		self.length = song_file.uint16_b() if song_file else 0
-		self.finetune = song_file.uint8() if song_file else 0
-		self.default_vol = song_file.uint8() if song_file else 0
-		self.loop_start = song_file.uint16_b() if song_file else 0
-		self.loop_length = song_file.uint16_b() if song_file else 0
+		self.name = ebrw_readstr.string(22, encoding="ascii", errors="ignore") if ebrw_readstr else ''
+		self.length = ebrw_readstr.int_u16() if ebrw_readstr else 0
+		self.finetune = ebrw_readstr.int_u8() if ebrw_readstr else 0
+		self.default_vol = ebrw_readstr.int_u8() if ebrw_readstr else 0
+		self.loop_start = ebrw_readstr.int_u16() if ebrw_readstr else 0
+		self.loop_length = ebrw_readstr.int_u16() if ebrw_readstr else 0
 		self.data = None
 
 pattern_dt = np.dtype('>H')
 
 class mod_pattern:
-	def __init__(self, song_file, num_chans):
-		if song_file:
-			self.data = np.frombuffer(song_file.raw(64*num_chans*4), pattern_dt).reshape(64, num_chans, 2)
+	def __init__(self, ebrw_readstr, num_chans):
+		if ebrw_readstr:
+			self.data = np.frombuffer(ebrw_readstr.raw(64*num_chans*4), pattern_dt).reshape(64, num_chans, 2)
 		else:
 			self.data = np.empty((64, num_chans, 2), dtype=pattern_dt)
 
@@ -34,22 +34,24 @@ class mod_song:
 		self.samples = []
 
 	def load_from_raw(self, input_file, IGNORE_ERRORS):
-		song_file = bytereader.bytereader()
-		song_file.load_raw(input_file)
-		return self.load(song_file, IGNORE_ERRORS)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(input_file)
+		ebrw_readstr.state.endian = True
+		return self.load(ebrw_readstr, IGNORE_ERRORS)
 
 	def load_from_file(self, input_file, IGNORE_ERRORS):
-		song_file = bytereader.bytereader()
-		song_file.load_file(input_file)
-		return self.load(song_file, IGNORE_ERRORS)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
+		ebrw_readstr.state.endian = True
+		return self.load(ebrw_readstr, IGNORE_ERRORS)
 
-	def load(self, song_file, IGNORE_ERRORS):
+	def load(self, ebrw_readstr, IGNORE_ERRORS):
 		from objects.file_proj_tracker import tracker_mod as proj_mod
 
-		self.title = song_file.string(20, encoding="ascii", errors="ignore")
+		self.title = ebrw_readstr.string(20, encoding="ascii", errors="ignore")
 		logger_projparse.info('mod: Song Name: ' + str(self.title))
 		for _ in range(31):
-			sample_obj = mod_sample(song_file)
+			sample_obj = mod_sample(ebrw_readstr)
 			if sample_obj.finetune > 15: 
 				if not IGNORE_ERRORS:
 					raise ProjectFileParserException('mod: sample finetune over 15')
@@ -57,18 +59,18 @@ class mod_song:
 					logger_projparse.warning('mod: sample finetune over 15')
 
 			self.samples.append(sample_obj)
-		self.num_orders = song_file.uint8()
-		self.extravalue = song_file.uint8()
+		self.num_orders = ebrw_readstr.int_u8()
+		self.extravalue = ebrw_readstr.int_u8()
 		if not self.num_orders:
 			if IGNORE_ERRORS:
-				self.l_order = song_file.l_int8(128)
+				self.l_order = ebrw_readstr.list_int_s8(128)
 			else:
 				raise ProjectFileParserException('mod: Pattern Order is 0')
 		else:
-			self.l_order = song_file.l_int8(128)[0:self.num_orders]
+			self.l_order = ebrw_readstr.list_int_s8(128)[0:self.num_orders]
 		self.num_patterns = max(self.l_order)
 
-		self.tag = song_file.string(4, errors="ignore")
+		self.tag = ebrw_readstr.string(4, errors="ignore")
 		self.num_chans = 4
 
 		logger_projparse.info('mod: Sample Tag: ' + str(self.tag))
@@ -93,6 +95,6 @@ class mod_song:
 		if self.tag == 'FLT4': self.num_chans = 4
 		if self.tag == 'FLT8': self.num_chans = 8
 
-		self.patterns = [mod_pattern(song_file, self.num_chans) for _ in range(self.num_patterns+1)]
-		for sample_obj in self.samples: sample_obj.data = song_file.raw(sample_obj.length*2)
+		self.patterns = [mod_pattern(ebrw_readstr, self.num_chans) for _ in range(self.num_patterns+1)]
+		for sample_obj in self.samples: sample_obj.data = ebrw_readstr.raw(sample_obj.length*2)
 		return True

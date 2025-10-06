@@ -8,7 +8,7 @@ import math
 import base64
 from functions import data_bytes
 from functions import data_values
-from objects.data_bytes import bytewriter
+from external.easybinrw import easybinrw
 from objects.dawspecific import flp_plugins
 from objects.dawspecific import flp_plugins_directwave
 
@@ -35,7 +35,7 @@ def setparams(convproj_obj, plugin_obj):
 	fl_pluginparams = None
 	plug_type = plugin_obj.type_get()
 
-	bytesout = bytewriter.bytewriter()
+	ebrw_writestr = easybinrw.binwrite()
 
 	if plugin_obj.check_wildmatch('universal', 'sampler', 'single'):
 		sp_obj = plugin_obj.samplepart_get('sample')
@@ -133,22 +133,7 @@ def setparams(convproj_obj, plugin_obj):
 				filepath = filepath.replace('/', '\\')
 				dw_region.path = filepath.encode()
 
-
-		#import sys
-		#from objects.data_bytes import bytereader
-		#fl_plugstr_test = bytereader.bytereader()
-		#fl_plugstr_test.load_raw(fpc_plugin.dump())
-		#fpc_plugin_test = flp_plugins_directwave.directwave_plugin()
-		#orig_stdout = sys.stdout
-		#sys.stdout = open('dw_out.log', 'w')
-		#fpc_plugin_test.read(fl_plugstr_test)
-		#sys.stdout = orig_stdout
-
-		#with open('dw_out.bin', 'wb') as f:
-		#	f.write(fpc_plugin.dump())
-
 		fl_pluginparams = fpc_plugin.dump()
-		#print(fl_pluginparams)
 
 	if plugin_obj.check_wildmatch('universal', 'sampler', 'drums'):
 		fl_plugin = 'fpc'
@@ -213,25 +198,25 @@ def setparams(convproj_obj, plugin_obj):
 		else:
 			slicer_stretchtype = 0
 
-		bytesout.int32(15)
-		bytesout.float(slicer_beats)
-		bytesout.float(slicer_bpm)
-		bytesout.int32(slicer_pitch)
-		bytesout.int32(slicer_fitlen)
-		bytesout.int32(slicer_stretchtype)
-		bytesout.int32(slicer_att)
-		bytesout.int32(slicer_dec)
-		bytesout.c_string__int8__nonull(sre_obj.get_filepath(convproj_obj, 'win'))
+		ebrw_writestr.int_s32(15)
+		ebrw_writestr.float(slicer_beats)
+		ebrw_writestr.float(slicer_bpm)
+		ebrw_writestr.int_s32(slicer_pitch)
+		ebrw_writestr.int_s32(slicer_fitlen)
+		ebrw_writestr.int_s32(slicer_stretchtype)
+		ebrw_writestr.int_s32(slicer_att)
+		ebrw_writestr.int_s32(slicer_dec)
+		ebrw_writestr.string_i8(sre_obj.get_filepath(convproj_obj, 'win'))
 
-		bytesout.uint32(len(sre_obj.slicer_slices))
+		ebrw_writestr.int_u32(len(sre_obj.slicer_slices))
 		for slice_obj in sre_obj.slicer_slices:
-			bytesout.c_string__int8__nonull(slice_obj.name)
-			bytesout.uint32(int(slice_obj.start))
-			bytesout.int32(slice_obj.custom_key+60 if slice_obj.is_custom_key else -1)
-			bytesout.uint16(0)
-			bytesout.uint8(128)
-			bytesout.uint8(191)
-			bytesout.bool8(slice_obj.reverse)
+			ebrw_writestr.string_i8(slice_obj.name)
+			ebrw_writestr.int_u32(int(slice_obj.start))
+			ebrw_writestr.int_s32(slice_obj.custom_key+60 if slice_obj.is_custom_key else -1)
+			ebrw_writestr.int_u16(0)
+			ebrw_writestr.int_u8(128)
+			ebrw_writestr.int_u8(191)
+			ebrw_writestr.int_u8(slice_obj.reverse)
 
 		slicer_animate = plugin_obj.viscustom_get('animate', False)
 		slicer_starting_key = sre_obj.slicer_start_key+60
@@ -242,47 +227,47 @@ def setparams(convproj_obj, plugin_obj):
 		slicer_auto_fit = plugin_obj.datavals.get('auto_fit', 0)
 		slicer_view_spectrum = plugin_obj.viscustom_get('spectrum', False)
 
-		bytesout.bool8(slicer_animate)
-		bytesout.uint32(slicer_starting_key)
-		bytesout.bool8(slicer_play_to_end)
-		bytesout.uint32(slicer_bitrate)
-		bytesout.bool8(slicer_auto_dump)
-		bytesout.bool8(slicer_declick)
-		bytesout.bool8(slicer_auto_fit)
-		bytesout.bool32(slicer_view_spectrum)
+		ebrw_writestr.int_u8(slicer_animate)
+		ebrw_writestr.int_u32(slicer_starting_key)
+		ebrw_writestr.int_u8(slicer_play_to_end)
+		ebrw_writestr.int_u32(slicer_bitrate)
+		ebrw_writestr.int_u8(slicer_auto_dump)
+		ebrw_writestr.int_u8(slicer_declick)
+		ebrw_writestr.int_u8(slicer_auto_fit)
+		ebrw_writestr.int_u32(slicer_view_spectrum)
 
-		fl_pluginparams = bytesout.getvalue()
+		fl_pluginparams = ebrw_writestr.getvalue()
 
 	if plugin_obj.check_wildmatch('native', 'flstudio', 'fruity html notebook'):
 		fl_plugin = 'fruity html notebook'
-		bytesout.uint32(1)
-		bytesout.c_string__int8__nonull(plugin_obj.datavals.get('url', ''))
-		fl_pluginparams = bytesout.getvalue()
+		ebrw_writestr.int_u32(1)
+		ebrw_writestr.string_i8(plugin_obj.datavals.get('url', ''))
+		fl_pluginparams = ebrw_writestr.getvalue()
 
 	if plugin_obj.check_wildmatch('native', 'flstudio', 'fruity notebook'):
 		fl_plugin = 'fruity notebook'
-		bytesout.uint32(1000)
-		bytesout.uint32(plugin_obj.datavals.get('currentpage', 0))
+		ebrw_writestr.int_u32(1000)
+		ebrw_writestr.int_u32(plugin_obj.datavals.get('currentpage', 0))
 		pagedata = plugin_obj.datavals.get('pages', {})
 		for pagenum, pagebin in pagedata.items():
-			bytesout.int32(pagenum)
-			bytesout.c_string__int32__nonull(pagebin)
-		bytesout.int32(-1)
-		bytesout.int8(plugin_obj.datavals.get('editing_enabled', 0))
-		fl_pluginparams = bytesout.getvalue()
+			ebrw_writestr.int_s32(pagenum)
+			ebrw_writestr.string_i32(pagebin)
+		ebrw_writestr.int_s32(-1)
+		ebrw_writestr.int_s8(plugin_obj.datavals.get('editing_enabled', 0))
+		fl_pluginparams = ebrw_writestr.getvalue()
 
 	if plugin_obj.check_wildmatch('native', 'flstudio', 'fruity notebook 2'):
 		fl_plugin = 'fruity notebook 2'
-		bytesout.uint32(0)
-		bytesout.uint32(plugin_obj.datavals.get('currentpage', 0))
+		ebrw_writestr.int_u32(0)
+		ebrw_writestr.int_u32(plugin_obj.datavals.get('currentpage', 0))
 		pagedata = plugin_obj.datavals.get('pages', {})
 		for pagenum, pagebin in pagedata.items():
-			bytesout.int32(pagenum)
-			bytesout.varint(len(pagebin*2))
-			bytesout.c_string__varint__nonull(pagebin, encoding='utf-16le')
-		bytesout.int32(-1)
-		bytesout.int8(plugin_obj.datavals.get('editing_enabled', 0))
-		fl_pluginparams = bytesout.getvalue()
+			ebrw_writestr.int_s32(pagenum)
+			ebrw_writestr.varint(len(pagebin*2))
+			ebrw_writestr.string_varint(pagebin, encoding='utf-16le')
+		ebrw_writestr.int_s32(-1)
+		ebrw_writestr.int_s8(plugin_obj.datavals.get('editing_enabled', 0))
+		fl_pluginparams = ebrw_writestr.getvalue()
 
 	if plugin_obj.check_wildmatch('native', 'flstudio', 'fruity vocoder'):
 		fl_plugin = 'fruity vocoder'
@@ -302,29 +287,29 @@ def setparams(convproj_obj, plugin_obj):
 		p_mix_car = plugin_obj.params.get('mix_car', 0).value
 		p_mix_wet = plugin_obj.params.get('mix_wet', 128).value
 
-		bytesout.uint32(2)
-		bytesout.uint32(len(p_bands))
-		bytesout.uint32(p_filter)
-		bytesout.uint32(2)
-		bytesout.uint8(p_left_right)
+		ebrw_writestr.int_u32(2)
+		ebrw_writestr.int_u32(len(p_bands))
+		ebrw_writestr.int_u32(p_filter)
+		ebrw_writestr.int_u32(2)
+		ebrw_writestr.int_u8(p_left_right)
 
-		bytesout.l_float(p_bands, len(p_bands))
+		ebrw_writestr.list_float(p_bands, len(p_bands))
 		
-		bytesout.uint32(p_freq_min)
-		bytesout.uint32(p_freq_max)
-		bytesout.uint32(p_freq_scale)
-		bytesout.uint32(p_freq_invert)
-		bytesout.uint32(p_freq_formant)
-		bytesout.uint32(p_freq_bandwidth)
+		ebrw_writestr.int_u32(p_freq_min)
+		ebrw_writestr.int_u32(p_freq_max)
+		ebrw_writestr.int_u32(p_freq_scale)
+		ebrw_writestr.int_u32(p_freq_invert)
+		ebrw_writestr.int_u32(p_freq_formant)
+		ebrw_writestr.int_u32(p_freq_bandwidth)
 
-		bytesout.uint32(p_env_att)
-		bytesout.uint32(p_env_rel)
-		bytesout.uint32(0)
-		bytesout.uint32(p_mix_mod)
-		bytesout.uint32(p_mix_car)
-		bytesout.uint32(p_mix_wet)
+		ebrw_writestr.int_u32(p_env_att)
+		ebrw_writestr.int_u32(p_env_rel)
+		ebrw_writestr.int_u32(0)
+		ebrw_writestr.int_u32(p_mix_mod)
+		ebrw_writestr.int_u32(p_mix_car)
+		ebrw_writestr.int_u32(p_mix_wet)
 
-		fl_pluginparams = bytesout.getvalue()
+		fl_pluginparams = ebrw_writestr.getvalue()
 
 	if plugin_obj.check_wildmatch('native', 'flstudio', None):
 		outbytes = plugin_obj.to_bytes('fl_studio', 'fl_studio', 'plugin', plug_type[2], None)
@@ -385,7 +370,7 @@ def setparams(convproj_obj, plugin_obj):
 		if isvalid:
 			vstdata_bytes = plugin_obj.rawdata_get('chunk')
 
-			wrapper_state = bytewriter.bytewriter()
+			wrapper_state = easybinrw.binwrite()
 
 			if vst_datatype == 'chunk':
 				if vst_current_program != -1:
@@ -411,8 +396,8 @@ def setparams(convproj_obj, plugin_obj):
 	
 				vst_total_params = 0
 				vst_num_names = len(plugin_obj.programs)
-				vst_params_data = bytewriter.bytewriter()
-				vst_names = bytewriter.bytewriter()
+				vst_params_data = easybinrw.binwrite()
+				vst_names = easybinrw.binwrite()
 
 				for _, progstate in plugin_obj.programs.items():
 					vst_total_params += vst_numparams
@@ -427,17 +412,17 @@ def setparams(convproj_obj, plugin_obj):
 				wrapper_state.uint32(vst_num_names)
 				wrapper_state.raw(vst_names.getvalue())
 	
-			wrapper_data = bytewriter.bytewriter()
-			wrapper_data.raw(b'\n\x00\x00\x00')
-			wrapper_addchunk_plugtype(wrapper_data, 50, 4 if plugin_obj.role == 'synth' else 0, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
-			if vst_fourid != None: wrapper_addchunk(wrapper_data, 51, vst_fourid.to_bytes(4, "little") )
-			wrapper_addchunk(wrapper_data, 57, b'`\t\x00\x00' )
-			if vst_name != None: wrapper_addchunk(wrapper_data, 54, vst_name.encode() )
-			if vst_path != None: wrapper_addchunk(wrapper_data, 55, vst_path.encode() )
+			wrapper_plugin = flp_plugins.fruity_wrapper()
+			wrapper_plugin.plugin_type = 4 if plugin_obj.role == 'synth' else 0
+			wrapper_plugin.plugin_other = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+			if vst_fourid != None: wrapper_plugin.fourid = vst_fourid
+			wrapper_plugin.unk_57 = b'`\t\x00\x00'
+			if vst_name != None: wrapper_plugin.name = vst_name
+			if vst_path != None: wrapper_plugin.file = vst_path
+			wrapper_plugin.state = wrapper_state.getvalue()
 
-			wrapper_addchunk(wrapper_data, 53, wrapper_state.getvalue())
 			fl_plugin = 'fruity wrapper'
-			fl_pluginparams = wrapper_data.getvalue()
+			fl_pluginparams = wrapper_plugin.dump()
 
 	#if plug_type[0] == 'vst3':
 	#	vst_chunk = plugin_obj.rawdata_get('chunk')

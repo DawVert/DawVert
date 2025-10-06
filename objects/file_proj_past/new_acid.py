@@ -1,10 +1,9 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
-from objects.data_bytes import bytewriter
 import logging
 import zipfile
+from external.easybinrw import easybinrw
 from objects.exceptions import ProjectFileParserException
 
 VERBOSE = False
@@ -13,247 +12,247 @@ SHOWALL = False
 # ---------------------- CHUNKS ----------------------
 
 class chunk__unknown_data:
-	def __init__(self, byr_stream):
-		size = byr_stream.int32()
+	def __init__(self, ebrw_readstr):
+		size = ebrw_readstr.int_s32()
 		self.unknowndata = []
-		self.data_a = byr_stream.int32()
-		self.data_b = byr_stream.float()
-		self.data_c = byr_stream.int32()
+		self.data_a = ebrw_readstr.int_s32()
+		self.data_b = ebrw_readstr.float()
+		self.data_c = ebrw_readstr.int_s32()
 
 class chunk__regiondata:
-	def __init__(self, byr_stream):
+	def __init__(self, ebrw_readstr):
 		self.unknowndata = []
-		self.unknowndata.append( byr_stream.uint32() )
-		numchars1 = byr_stream.uint32()
-		self.unknowndata.append( byr_stream.uint32() )
-		self.unknowndata.append( byr_stream.uint32() )
-		numchars2 = byr_stream.uint32()
-		self.filename = byr_stream.string16(numchars1//2)
-		self.filename2 = byr_stream.string16(numchars2//2)
-		self.unknowndata.append( byr_stream.uint32() )
-		self.unknowndata.append( byr_stream.uint32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		numchars1 = ebrw_readstr.int_u32()
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		numchars2 = ebrw_readstr.int_u32()
+		self.filename = ebrw_readstr.string16(numchars1//2)
+		self.filename2 = ebrw_readstr.string16(numchars2//2)
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
 
 class chunk__peak:
-	def __init__(self, byr_stream):
+	def __init__(self, ebrw_readstr):
 		self.unknowndata = []
-		self.unknowndata.append( byr_stream.int32() )
-		self.unknowndata.append( byr_stream.int32() )
-		self.unknowndata.append( byr_stream.int64() )
-		self.unknowndata.append( byr_stream.float() )
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		self.unknowndata.append( ebrw_readstr.int_s64() )
+		self.unknowndata.append( ebrw_readstr.float() )
 
 class chunk__region:
-	def __init__(self, byr_stream):
-		size = byr_stream.int32()
+	def __init__(self, ebrw_readstr):
+		size = ebrw_readstr.int_s32()
 		self.unknowndata = []
-		self.unknowndata.append( byr_stream.int32() )
-		self.flags = byr_stream.flags64()
-		self.pos = byr_stream.int64()
-		self.size = byr_stream.int64()
-		self.offset = byr_stream.int64()
-		self.pitch = byr_stream.double()
-		self.unknowndata.append( byr_stream.double() )
-		self.unknowndata.append( byr_stream.int32() )
-		self.unknowndata.append( byr_stream.int32() )
-		self.id = byr_stream.int32()
-		self.unknowndata.append( byr_stream.int32() )
-		self.index = byr_stream.int32()
-		self.unknowndata.append( byr_stream.int32() )
-		self.unknowndata.append( byr_stream.int32() )
-		self.unknowndata.append( byr_stream.int32() )
-		self.fade_in = byr_stream.int64()
-		self.fade_out = byr_stream.int64()
-		self.vol = byr_stream.float()
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		self.flags = ebrw_readstr.flags_i64()
+		self.pos = ebrw_readstr.int_s64()
+		self.size = ebrw_readstr.int_s64()
+		self.offset = ebrw_readstr.int_s64()
+		self.pitch = ebrw_readstr.double()
+		self.unknowndata.append( ebrw_readstr.double() )
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		self.id = ebrw_readstr.int_s32()
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		self.index = ebrw_readstr.int_s32()
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		self.fade_in = ebrw_readstr.int_s64()
+		self.fade_out = ebrw_readstr.int_s64()
+		self.vol = ebrw_readstr.float()
 
 class chunk__maindata:
-	def __init__(self, byr_stream):
+	def __init__(self, ebrw_readstr):
 		self.unknowndata = []
-		size = byr_stream.int32()
-		self.version = byr_stream.uint16()
+		size = ebrw_readstr.int_s32()
+		self.version = ebrw_readstr.int_u16()
 		#if self.version>5:
 		#	raise ProjectFileParserException('new_acid: Version '+str(self.version)+' is not supported.') 
-		self.unknowndata.append( byr_stream.uint16() )
-		self.unknowndata.append( byr_stream.uint32() )
-		self.freq = byr_stream.uint32()
-		self.unknowndata.append( byr_stream.double() )
-		self.tempo = byr_stream.double()
-		self.unknowndata.append( byr_stream.uint64() )
-		self.timesig_num = byr_stream.uint16()
-		self.timesig_denom = byr_stream.uint16()
-		self.ppq = byr_stream.uint32()
-		self.unknowndata.append( byr_stream.uint32() )
-		self.unknowndata.append( byr_stream.uint32() )
-		numchars1 = byr_stream.uint32()//2
-		numchars2 = byr_stream.uint32()//2
-		self.unknowndata.append( byr_stream.uint32() )
-		self.unknowndata.append( byr_stream.uint32() )
-		self.unknowndata.append( byr_stream.uint32() )
-		self.unknowndata.append( byr_stream.uint32() )
-		self.unknowndata.append( byr_stream.uint32() )
-		self.unknowndata.append( byr_stream.uint32() )
-		self.unknowndata.append( byr_stream.uint8() )
-		self.unknowndata.append( byr_stream.uint8() )
-		self.unknowndata.append( byr_stream.uint8() )
-		self.unknowndata.append( byr_stream.uint8() )
-		self.unknowndata.append( byr_stream.uint32() )
-		self.file_project = byr_stream.string16(numchars1)
-		self.file_prog = byr_stream.string16(numchars2)
+		self.unknowndata.append( ebrw_readstr.int_u16() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.freq = ebrw_readstr.int_u32()
+		self.unknowndata.append( ebrw_readstr.double() )
+		self.tempo = ebrw_readstr.double()
+		self.unknowndata.append( ebrw_readstr.int_u64() )
+		self.timesig_num = ebrw_readstr.int_u16()
+		self.timesig_denom = ebrw_readstr.int_u16()
+		self.ppq = ebrw_readstr.int_u32()
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		numchars1 = ebrw_readstr.int_u32()//2
+		numchars2 = ebrw_readstr.int_u32()//2
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.unknowndata.append( ebrw_readstr.int_u8() )
+		self.unknowndata.append( ebrw_readstr.int_u8() )
+		self.unknowndata.append( ebrw_readstr.int_u8() )
+		self.unknowndata.append( ebrw_readstr.int_u8() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.file_project = ebrw_readstr.string16(numchars1)
+		self.file_prog = ebrw_readstr.string16(numchars2)
 
 class chunk__track_data:
-	def __init__(self, byr_stream):
+	def __init__(self, ebrw_readstr):
 		self.unknowndata = []
-		self.unknowndata.append( byr_stream.uint32() )
-		self.unknowndata.append( byr_stream.uint32() )
-		self.flags = byr_stream.flags32()
-		self.size = byr_stream.uint32()
-		self.type = byr_stream.uint32()
-		self.color = byr_stream.uint32()
-		self.stretchtype = byr_stream.uint32()
-		self.id = byr_stream.uint32()
-		stringsize1 = byr_stream.uint32()//2
-		stringsize2 = byr_stream.uint32()//2
-		self.numaudio = byr_stream.uint32()
-		self.unknowndata.append( byr_stream.uint32() )
-		self.seconds = byr_stream.uint32()/10000000
-		self.unknowndata.append( byr_stream.uint32() )
-		stringsize3 = byr_stream.uint32()//2
-		self.unknowndata.append( byr_stream.uint32() )
-		self.filename = byr_stream.string16(stringsize1)
-		self.name = byr_stream.string16(stringsize2)
-		#self.name2 = byr_stream.string16(stringsize3)
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.flags = ebrw_readstr.flags_i32()
+		self.size = ebrw_readstr.int_u32()
+		self.type = ebrw_readstr.int_u32()
+		self.color = ebrw_readstr.int_u32()
+		self.stretchtype = ebrw_readstr.int_u32()
+		self.id = ebrw_readstr.int_u32()
+		stringsize1 = ebrw_readstr.int_u32()//2
+		stringsize2 = ebrw_readstr.int_u32()//2
+		self.numaudio = ebrw_readstr.int_u32()
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.seconds = ebrw_readstr.int_u32()/10000000
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		stringsize3 = ebrw_readstr.int_u32()//2
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.filename = ebrw_readstr.string16(stringsize1)
+		self.name = ebrw_readstr.string16(stringsize2)
+		#self.name2 = ebrw_readstr.string16(stringsize3)
 
 class chunk__audioinfo:
-	def __init__(self, byr_stream):
+	def __init__(self, ebrw_readstr):
 		self.unknowndata = []
-		self.unknowndata.append( byr_stream.int32() )
-		self.unknowndata.append( byr_stream.int32() )
-		self.unknowndata.append( byr_stream.int32() )
-		self.vol = byr_stream.float()
-		self.pan = byr_stream.float()
-		self.unknowndata.append( byr_stream.int32() )
-		self.unknowndata.append( byr_stream.float() )
-		self.unknowndata.append( byr_stream.int32() )
-		#self.unknowndata.append( byr_stream.rest() )
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		self.vol = ebrw_readstr.float()
+		self.pan = ebrw_readstr.float()
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		self.unknowndata.append( ebrw_readstr.float() )
+		self.unknowndata.append( ebrw_readstr.int_s32() )
+		#self.unknowndata.append( ebrw_readstr.rest() )
 
 class chunk__marker:
-	def __init__(self, byr_stream):
-		size = byr_stream.uint32()
-		byr_stream.skip(4)
-		self.pos = byr_stream.int64()
-		self.end = byr_stream.int64()
-		self.id = byr_stream.int32()
-		self.type = byr_stream.int32()
-		numchars = byr_stream.int32()//2
-		byr_stream.skip(4)
-		self.name = byr_stream.string16(numchars)
+	def __init__(self, ebrw_readstr):
+		size = ebrw_readstr.int_u32()
+		ebrw_readstr.skip(4)
+		self.pos = ebrw_readstr.int_s64()
+		self.end = ebrw_readstr.int_s64()
+		self.id = ebrw_readstr.int_s32()
+		self.type = ebrw_readstr.int_s32()
+		numchars = ebrw_readstr.int_s32()//2
+		ebrw_readstr.skip(4)
+		self.name = ebrw_readstr.string16(numchars)
 
 class chunk__tempokeypoint:
-	def __init__(self, byr_stream):
-		size = byr_stream.uint32()
+	def __init__(self, ebrw_readstr):
+		size = ebrw_readstr.int_u32()
 		self.unknowndata = []
-		byr_stream.skip(4)
-		self.pos_synctime = byr_stream.int64()
-		self.pos_samples = byr_stream.int64()
-		self.tempo = byr_stream.int32()
-		self.base_note = byr_stream.int32()
+		ebrw_readstr.skip(4)
+		self.pos_synctime = ebrw_readstr.int_s64()
+		self.pos_samples = ebrw_readstr.int_s64()
+		self.tempo = ebrw_readstr.int_s32()
+		self.base_note = ebrw_readstr.int_s32()
 
 class chunk__audiostretch:
-	def __init__(self, byr_stream):
-		size = byr_stream.uint32()
+	def __init__(self, ebrw_readstr):
+		size = ebrw_readstr.int_u32()
 		self.unknowndata = []
-		self.unknowndata.append( byr_stream.uint32() )
-		self.flags = byr_stream.flags32()
-		self.root_note = byr_stream.uint8()
-		self.unknowndata.append( byr_stream.uint8() )
-		self.unknowndata.append( byr_stream.uint8() )
-		self.unknowndata.append( byr_stream.uint8() )
-		self.unknowndata.append( byr_stream.uint8() )
-		self.unknowndata.append( byr_stream.uint8() )
-		self.unknowndata.append( byr_stream.uint8() )
-		self.unknowndata.append( byr_stream.uint8() )
-		self.downbeat_offset = byr_stream.uint32()
-		self.timesig_num = byr_stream.uint16()
-		self.timesig_denom = byr_stream.uint16()
-		self.tempo = byr_stream.float()
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.flags = ebrw_readstr.flags_i32()
+		self.root_note = ebrw_readstr.int_u8()
+		self.unknowndata.append( ebrw_readstr.int_u8() )
+		self.unknowndata.append( ebrw_readstr.int_u8() )
+		self.unknowndata.append( ebrw_readstr.int_u8() )
+		self.unknowndata.append( ebrw_readstr.int_u8() )
+		self.unknowndata.append( ebrw_readstr.int_u8() )
+		self.unknowndata.append( ebrw_readstr.int_u8() )
+		self.unknowndata.append( ebrw_readstr.int_u8() )
+		self.downbeat_offset = ebrw_readstr.int_u32()
+		self.timesig_num = ebrw_readstr.int_u16()
+		self.timesig_denom = ebrw_readstr.int_u16()
+		self.tempo = ebrw_readstr.float()
 
 class chunk__startingparam:
-	def __init__(self, byr_stream):
-		size = byr_stream.uint32()
+	def __init__(self, ebrw_readstr):
+		size = ebrw_readstr.int_u32()
 		self.unknowndata = []
-		self.unknowndata.append( byr_stream.uint32() )
-		self.tempo = byr_stream.uint32()
-		self.root_note = byr_stream.uint32()
-		self.unknowndata.append( byr_stream.uint32() )
-		self.unknowndata.append( byr_stream.uint32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.tempo = ebrw_readstr.int_u32()
+		self.root_note = ebrw_readstr.int_u32()
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
 
 class chunk__track_automation:
-	def __init__(self, byr_stream):
-		version = byr_stream.uint32()
+	def __init__(self, ebrw_readstr):
+		version = ebrw_readstr.int_u32()
 
 		self.points = []
 		self.unknowndata = []
-		self.group = byr_stream.uint32()
-		self.param = byr_stream.uint32()
-		self.min = byr_stream.float()
-		self.max = byr_stream.float()
-		self.defv = byr_stream.float()
-		self.numpoints = byr_stream.uint32()
-		self.unknowndata.append( byr_stream.uint32() )
+		self.group = ebrw_readstr.int_u32()
+		self.param = ebrw_readstr.int_u32()
+		self.min = ebrw_readstr.float()
+		self.max = ebrw_readstr.float()
+		self.defv = ebrw_readstr.float()
+		self.numpoints = ebrw_readstr.int_u32()
+		self.unknowndata.append( ebrw_readstr.int_u32() )
 
 		if version == 80:
 			for _ in range(self.numpoints):
 				pointdata = []
-				pointdata.append( byr_stream.uint32() )
-				pointdata.append( byr_stream.int32() )
-				pointdata.append( byr_stream.float() )
-				pointdata.append( byr_stream.uint32() )
-				pointdata.append( byr_stream.uint32() )
-				pointdata.append( byr_stream.uint32() )
+				pointdata.append( ebrw_readstr.int_u32() )
+				pointdata.append( ebrw_readstr.int_s32() )
+				pointdata.append( ebrw_readstr.float() )
+				pointdata.append( ebrw_readstr.int_u32() )
+				pointdata.append( ebrw_readstr.int_u32() )
+				pointdata.append( ebrw_readstr.int_u32() )
 				#print(pointdata)
 				self.points.append(pointdata)
 		else:
 			for _ in range(self.numpoints):
 				pointdata = []
-				pointdata.append( byr_stream.uint32() )
-				pointdata.append( byr_stream.int32() )
-				pointdata.append( byr_stream.float() )
-				pointdata.append( byr_stream.uint32() )
+				pointdata.append( ebrw_readstr.int_u32() )
+				pointdata.append( ebrw_readstr.int_s32() )
+				pointdata.append( ebrw_readstr.float() )
+				pointdata.append( ebrw_readstr.int_u32() )
 				self.points.append(pointdata)
 
 class chunk__audiodefinfo:
-	def __init__(self, byr_stream):
-		size = byr_stream.uint32()
+	def __init__(self, ebrw_readstr):
+		size = ebrw_readstr.int_u32()
 		self.unknowndata = []
-		self.unknowndata.append( byr_stream.uint32() )
-		self.unknowndata.append( byr_stream.uint32() )
-		self.color = byr_stream.uint32()
-		self.unknowndata.append( byr_stream.uint32() )
-		numchars1 = byr_stream.uint32()//2
-		numchars2 = byr_stream.uint32()//2
-		numchars3 = byr_stream.uint32()//2
-		self.pitch = byr_stream.float()
-		self.filename = byr_stream.string16(numchars1)
-		self.filename2 = byr_stream.string16(numchars2)
-		self.name = byr_stream.string16(numchars3)
-		self.unknowndata.append( byr_stream.uint32() )
-		self.unknowndata.append( byr_stream.uint32() )
-		self.stretchtype = byr_stream.uint32()
-		self.preserve_pitch = byr_stream.uint32()
-		self.seconds = byr_stream.uint32()/10000000
-		self.unknowndata.append( byr_stream.uint32() )
-		self.stretch_algo = byr_stream.uint32()
-		self.stretch_algo_mode = byr_stream.uint32()
-		self.unknowndata.append( byr_stream.uint32() )
-		self.formant_shift = byr_stream.float()
-		self.unknowndata.append( byr_stream.float() )
-		self.unknowndata.append( byr_stream.uint32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.color = ebrw_readstr.int_u32()
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		numchars1 = ebrw_readstr.int_u32()//2
+		numchars2 = ebrw_readstr.int_u32()//2
+		numchars3 = ebrw_readstr.int_u32()//2
+		self.pitch = ebrw_readstr.float()
+		self.filename = ebrw_readstr.string16(numchars1)
+		self.filename2 = ebrw_readstr.string16(numchars2)
+		self.name = ebrw_readstr.string16(numchars3)
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.stretchtype = ebrw_readstr.int_u32()
+		self.preserve_pitch = ebrw_readstr.int_u32()
+		self.seconds = ebrw_readstr.int_u32()/10000000
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.stretch_algo = ebrw_readstr.int_u32()
+		self.stretch_algo_mode = ebrw_readstr.int_u32()
+		self.unknowndata.append( ebrw_readstr.int_u32() )
+		self.formant_shift = ebrw_readstr.float()
+		self.unknowndata.append( ebrw_readstr.float() )
+		self.unknowndata.append( ebrw_readstr.int_u32() )
 
 class chunk__metadata:
-	def __init__(self, byr_stream):
-		self.unk1 = byr_stream.uint32()
+	def __init__(self, ebrw_readstr):
+		self.unk1 = ebrw_readstr.int_u32()
 		self.metadata = {}
-		for _ in range(byr_stream.uint32()):
-			chunk_name = byr_stream.raw(4)
-			chunk_data = byr_stream.string16(byr_stream.uint32()//2)
+		for _ in range(ebrw_readstr.int_u32()):
+			chunk_name = ebrw_readstr.raw(4)
+			chunk_data = ebrw_readstr.string16(ebrw_readstr.int_u32()//2)
 			self.metadata[chunk_name] = chunk_data
 
 chunksdef = {}
@@ -341,22 +340,23 @@ class sony_acid_chunk:
 			idname = x.id.hex()
 			yield x, verboseid[idname] if idname in verboseid else None
 
-	def read(self, byr_stream, tnum):
-		self.id = byr_stream.raw(16)
-		self.size = byr_stream.uint64()-24
-		self.start = byr_stream.tell_real()
+	def read(self, ebrw_readstr, tnum):
+		self.id = ebrw_readstr.raw(16)
+		self.size = ebrw_readstr.int_u64()-24
+		self.start = ebrw_readstr.tell_real()
 		self.is_list = self.id[0:4] in [b'riff', b'list']
 
 		if self.is_list:
-			self.id = byr_stream.raw(16)
+			self.id = ebrw_readstr.raw(16)
 			gidname = self.id.hex()
 			if gidname in verboseid: gidname = verboseid[gidname]
 			if VERBOSE: print('\t'*tnum, '$Group %s \\' % gidname)
-			with byr_stream.isolate_size(self.size-16, True) as bye_stream: 
-				while bye_stream.remaining():
-					inchunk = sony_acid_chunk()
-					inchunk.read(bye_stream, tnum+1)
-					self.in_data.append(inchunk)
+			ebrw_readstr.isolate_size(self.size-16)
+			while ebrw_readstr.remaining():
+				inchunk = sony_acid_chunk()
+				inchunk.read(ebrw_readstr, tnum+1)
+				self.in_data.append(inchunk)
+			ebrw_readstr.isolate_end()
 			if VERBOSE: print('\t'*tnum, '       /')
 
 		else:
@@ -368,12 +368,13 @@ class sony_acid_chunk:
 				print('\t'*tnum,  visname)
 
 			if idname in chunksdef and not SHOWALL: 
-				with byr_stream.isolate_size(self.size, True) as bye_stream:
-					self.content = chunksdef[idname](bye_stream)
-				#print(byr_stream.raw(self.size).hex())
+				ebrw_readstr.isolate_size(self.size)
+				self.content = chunksdef[idname](ebrw_readstr)
+				ebrw_readstr.isolate_end()
+				#print(ebrw_readstr.raw(self.size).hex())
 			else:
-				if VERBOSE: print('\t'*tnum,  byr_stream.raw(self.size).hex())
-				else: byr_stream.skip(self.size)
+				if VERBOSE: print('\t'*tnum,  ebrw_readstr.raw(self.size).hex())
+				else: ebrw_readstr.skip(self.size)
 
 class sony_acid_song:
 	def __init__(self):
@@ -385,23 +386,23 @@ class sony_acid_song:
 		self.zipped = False
 		self.zipfile = None
 
-		byr_stream = bytereader.bytereader()
-		byr_stream.load_file(input_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
-		if byr_stream.read(2) == b'PK':
+		if ebrw_readstr.read(2) == b'PK':
 			self.zipped = True
 			self.zipfile = zipfile.ZipFile(input_file, 'r')
 			acdfound = False
 			for filename in self.zipfile.namelist():
 				if filename.endswith('.acd'):
-					byr_stream.load_raw(self.zipfile.read(filename))
+					ebrw_readstr.load_data(self.zipfile.read(filename))
 					acdfound = True
 			if not acdfound:
 				raise ProjectFileParserException('new_acid: ACID file not found in zip')
-		byr_stream.seek(0)
+		ebrw_readstr.seek(0)
 
 		self.root = sony_acid_chunk()
-		self.root.read(byr_stream, 0)
+		self.root.read(ebrw_readstr, 0)
 		return True
 
 #apeinst_obj = sony_acid_song()

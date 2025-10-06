@@ -3,8 +3,7 @@
 
 import plugins
 
-from objects.data_bytes import bytereader
-from objects.data_bytes import riff_chunks
+from external.easybinrw import easybinrw
 from functions import data_values
 import logging
 import numpy as np
@@ -34,13 +33,13 @@ instpart = np.dtype([
 	]) 
 
 class apeescape_patch:
-	def parse(self, byr_stream):
-		self.unk1 = byr_stream.uint8()
-		self.vol = byr_stream.uint8()
-		self.header = byr_stream.l_uint8(4)
-		self.startkey = byr_stream.uint8()
-		self.unk2 = byr_stream.uint8()
-		self.data = np.frombuffer(byr_stream.l_uint8(16*((self.unk1%128)+1)), dtype=instpart)
+	def parse(self, ebrw_readstr):
+		self.unk1 = ebrw_readstr.int_u8()
+		self.vol = ebrw_readstr.int_u8()
+		self.header = ebrw_readstr.list_int_u8(4)
+		self.startkey = ebrw_readstr.int_u8()
+		self.unk2 = ebrw_readstr.int_u8()
+		self.data = np.frombuffer(ebrw_readstr.list_int_u8(16*((self.unk1%128)+1)), dtype=instpart)
 
 	def __getitem__(self, v):
 		return self.data[v]
@@ -56,57 +55,56 @@ class apeescape:
 		self.insts = []
 
 	def load_from_file(self, input_file):
-		byr_stream = bytereader.bytereader()
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
-		byr_stream.load_file(input_file)
+		hd_size = ebrw_readstr.int_u32()
+		bd_size = ebrw_readstr.int_u32()
 
-		hd_size = byr_stream.uint32()
-		bd_size = byr_stream.uint32()
+		ebrw_readstr.skip(4)
 
-		byr_stream.skip(4)
+		ebrw_readstr.magic_check(b'SShd')
+		ptr_inst = ebrw_readstr.int_u32()
+		data_size = ebrw_readstr.int_u32()
 
-		byr_stream.magic_check(b'SShd')
-		ptr_inst = byr_stream.uint32()
-		data_size = byr_stream.uint32()
+		ebrw_readstr.seek(ptr_inst)
 
-		byr_stream.seek(ptr_inst)
+		numpatches = ebrw_readstr.int_u16()
+		num_unk2 = ebrw_readstr.int_u16()
 
-		numpatches = byr_stream.uint16()
-		num_unk2 = byr_stream.uint16()
-
-		ptrlist = byr_stream.l_uint16(numpatches)
+		ptrlist = ebrw_readstr.list_int_u16(numpatches)
 
 		iparts_obj = apeescape_patch()
-		iparts_obj.parse(byr_stream)
+		iparts_obj.parse(ebrw_readstr)
 		#iparts_obj.debugtxt()
 		self.insts.append(iparts_obj)
 
 		for x in range(numpatches):
-			byr_stream.seek(ptrlist[x]+ptr_inst)
+			ebrw_readstr.seek(ptrlist[x]+ptr_inst)
 			iparts_obj = apeescape_patch()
-			iparts_obj.parse(byr_stream)
+			iparts_obj.parse(ebrw_readstr)
 			self.insts.append(iparts_obj)
 			#iparts_obj.debugtxt()
 
 class apeescape_bd:
 	def load_from_file(self, input_file):
-		self.byr_stream = bytereader.bytereader()
-		self.byr_stream.load_file(input_file)
+		self.ebrw_readstr = easybinrw.binread()
+		self.ebrw_readstr.load_file(input_file)
 		self.samples = []
 
 	def all_samples(self):
-		self.byr_stream.seek(0)
-		while self.byr_stream.remaining():
-			rawdata = self.byr_stream.raw(16)
+		self.ebrw_readstr.seek(0)
+		while self.ebrw_readstr.remaining():
+			rawdata = self.ebrw_readstr.raw(16)
 			if rawdata == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00': 
 				self.samples.append(b'')
 			else: self.samples[-1] += rawdata
 
 	def rip_sample(self, loc):
 		outdata = b''
-		self.byr_stream.seek(loc)
-		while self.byr_stream.remaining():
-			rawdata = self.byr_stream.raw(16)
+		self.ebrw_readstr.seek(loc)
+		while self.ebrw_readstr.remaining():
+			rawdata = self.ebrw_readstr.raw(16)
 			if rawdata == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00': 
 				break
 			else: outdata += rawdata

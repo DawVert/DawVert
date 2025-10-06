@@ -54,6 +54,7 @@ class input_deflemask(plugins.base):
 
 				for r_row, r_dat in enumerate(patdata):
 					r_note, r_oct, r_vol, r_inst, r_fx = r_dat
+					r_fx = [list(x) for x in r_fx]
 
 					output_note = None
 					output_inst = None
@@ -74,7 +75,7 @@ class input_deflemask(plugins.base):
 						vol_data = r_vol/16 if chantype != 'opn2' else (r_vol/127)**2
 						pat_obj.cell_param(r_row, 'vol', vol_data)
 
-					if not all([x == [-1, -1] for x in r_fx]):
+					if not all([x == [-1, -1] for x in list(r_fx)]):
 						for fx_type, fx_param in r_fx:
 							if fx_type != -1 and fx_param != -1:
 								#print(channum, patnum, fx_type, fx_param)

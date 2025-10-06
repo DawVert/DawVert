@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from objects.exceptions import ProjectFileParserException
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 from functions import data_bytes
 
 class track_tempo:
@@ -11,23 +11,23 @@ class track_tempo:
 		self.tempo = 120
 		self.events = []
 
-	def load(self, song_file): 
-		self.name = song_file.string(15)
-		self.tempo = song_file.float()
-		self.events = [[song_file.uint16(), song_file.float()] for _ in range(song_file.uint16())]
+	def load(self, ebrw_readstr): 
+		self.name = ebrw_readstr.string(15)
+		self.tempo = ebrw_readstr.float()
+		self.events = [[ebrw_readstr.int_u16(), ebrw_readstr.float()] for _ in range(ebrw_readstr.int_u16())]
 
 class track_voice:
 	def __init__(self): 
 		self.name = ''
 		self.events = []
 
-	def load(self, song_file): 
-		self.name = song_file.string(15)
-		nTicks = song_file.uint16()
+	def load(self, ebrw_readstr): 
+		self.name = ebrw_readstr.string(15)
+		nTicks = ebrw_readstr.int_u16()
 		curtickpos = 0
 		while curtickpos < nTicks: 
-			value = song_file.uint16()
-			deltatime = song_file.uint16()
+			value = ebrw_readstr.int_u16()
+			deltatime = ebrw_readstr.int_u16()
 			curtickpos += deltatime
 			self.events.append([value, deltatime])
 
@@ -36,13 +36,13 @@ class track_timbre:
 		self.name = ''
 		self.events = []
 
-	def load(self, song_file): 
-		self.name = song_file.string(15)
-		numevents = song_file.uint16()
+	def load(self, ebrw_readstr): 
+		self.name = ebrw_readstr.string(15)
+		numevents = ebrw_readstr.int_u16()
 		for _ in range(numevents):
-			timbre_pos = song_file.uint16()
-			timbre_name = song_file.string(9)
-			song_file.skip(3)
+			timbre_pos = ebrw_readstr.int_u16()
+			timbre_name = ebrw_readstr.string(9)
+			ebrw_readstr.skip(3)
 			self.events.append([timbre_pos, timbre_name])
 
 class track_float:
@@ -50,10 +50,10 @@ class track_float:
 		self.name = ''
 		self.events = []
 
-	def load(self, song_file): 
-		self.name = song_file.string(15)
-		numevents = song_file.uint16()
-		self.events = [[song_file.uint16(), song_file.float()] for _ in range(numevents)]
+	def load(self, ebrw_readstr): 
+		self.name = ebrw_readstr.string(15)
+		numevents = ebrw_readstr.int_u16()
+		self.events = [[ebrw_readstr.int_u16(), ebrw_readstr.float()] for _ in range(numevents)]
 
 class adlib_rol_track:
 	def __init__(self): 
@@ -62,11 +62,11 @@ class adlib_rol_track:
 		self.volume = track_float()
 		self.pitch = track_float()
 
-	def load(self, song_file): 
-		self.voice.load(song_file)
-		self.timbre.load(song_file)
-		self.volume.load(song_file)
-		self.pitch.load(song_file)
+	def load(self, ebrw_readstr): 
+		self.voice.load(ebrw_readstr)
+		self.timbre.load(ebrw_readstr)
+		self.volume.load(ebrw_readstr)
+		self.pitch.load(ebrw_readstr)
 
 class adlib_rol_project:
 	def __init__(self): 
@@ -87,34 +87,34 @@ class adlib_rol_project:
 		self.tracks = [adlib_rol_track() for _ in range(10)]
 
 	def load_from_file(self, input_file):
-		song_file = bytereader.bytereader()
-		song_file.load_file(input_file)
-		self.majorVersion = song_file.uint16()
-		self.minorVersion = song_file.uint16()
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
+		self.majorVersion = ebrw_readstr.int_u16()
+		self.minorVersion = ebrw_readstr.int_u16()
 		
 		try: 
-			song_file.magic_check(b'\\roll\\default\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+			ebrw_readstr.magic_check(b'\\roll\\default\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
 		except ValueError as t:
 			raise ProjectFileParserException('adlib_rol: '+str(t))
 
-		self.tickBeat = song_file.uint16()
-		self.beatMeasure = song_file.uint16()
-		self.scaleY = song_file.uint16()
-		self.scaleX = song_file.uint16()
+		self.tickBeat = ebrw_readstr.int_u16()
+		self.beatMeasure = ebrw_readstr.int_u16()
+		self.scaleY = ebrw_readstr.int_u16()
+		self.scaleX = ebrw_readstr.int_u16()
 
-		song_file.skip(1)
-		self.isMelodic = song_file.uint8()
+		ebrw_readstr.skip(1)
+		self.isMelodic = ebrw_readstr.int_u8()
 
-		self.cTicks = song_file.l_uint16(11)
-		self.cTimbreEvents = song_file.l_uint16(11)
-		self.cVolumeEvents = song_file.l_uint16(11)
-		self.cPitchEvents = song_file.l_uint16(11)
+		self.cTicks = ebrw_readstr.list_int_u16(11)
+		self.cTimbreEvents = ebrw_readstr.list_int_u16(11)
+		self.cVolumeEvents = ebrw_readstr.list_int_u16(11)
+		self.cPitchEvents = ebrw_readstr.list_int_u16(11)
 
-		self.cTempoEvents = song_file.uint16()
+		self.cTempoEvents = ebrw_readstr.int_u16()
 
-		song_file.skip(38)
-		self.track_tempo.load(song_file)
+		ebrw_readstr.skip(38)
+		self.track_tempo.load(ebrw_readstr)
 
 		for tracknum in range(10): 
-			self.tracks[tracknum].load(song_file)
+			self.tracks[tracknum].load(ebrw_readstr)
 		return True

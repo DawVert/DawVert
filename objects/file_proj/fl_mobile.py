@@ -1,7 +1,8 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
+from external.easybinrw import chunked
 import struct
 import zipfile
 
@@ -9,48 +10,43 @@ VERBOSE = False
 VERBOSE_CHANNEL = False
 VERBOSE_RACK = False
 
-def chunkview(byr_stream, chunk_obj, supported, numl, viewbytes):
+def chunkview(ebrw_readstr, chunk_obj, supported, numl, viewbytes):
 	if supported == 0: supportedtxt = '#'
 	if supported == 0.5: supportedtxt = '='
 	if supported == 1: supportedtxt = ' '
 	print(supportedtxt, '      '*numl, chunk_obj.id, str(chunk_obj.size).ljust(7), end='')
-	if viewbytes: print(byr_stream.raw(min(chunk_obj.size, 32)))
+	if viewbytes: print(ebrw_readstr.raw(min(chunk_obj.size, 32)))
 	else: print()
 
-def verify(byr_stream, magicnum, name):
-	try: byr_stream.magic_check(magicnum)
+def verify(ebrw_readstr, magicnum, name):
+	try: ebrw_readstr.magic_check(magicnum)
 	except ValueError as t: raise ProjectFileParserException('flm: '+name+' '+str(t))
 
-def parse_chunks(byr_stream, size):
-	startpos = byr_stream.tell()
-	main_iff_obj = byr_stream.chunk_objmake()
-	return main_iff_obj.iter(startpos, startpos+size)
-
 class flm_rack_device_sampler_zone:
-	def __init__(self, byr_stream):
-		self.name = byr_stream.raw(1020)
+	def __init__(self, ebrw_readstr):
+		self.name = ebrw_readstr.raw(1020)
 
 class flm_rack_device_sampler:
-	def __init__(self, byr_stream, size, intype):
+	def __init__(self, ebrw_readstr, size, intype):
 		self.zones = []
 		self.path = None
 
 		if intype == 1:
-			verify(byr_stream, b'10WD', 'device_sampler')
+			verify(ebrw_readstr, b'10WD', 'device_sampler')
 	
-			for chunk_obj in parse_chunks(byr_stream, size):
+			for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
 				if chunk_obj.id == b'ZONE':
-					if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 1, 3, False)
-					self.zones.append(flm_rack_device_sampler_zone(byr_stream))
+					if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 1, 3, False)
+					self.zones.append(flm_rack_device_sampler_zone(ebrw_readstr))
 				elif chunk_obj.id == b'PATh':
-					if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 1, 3, False)
-					pathsize = byr_stream.uint32()
-					self.path = byr_stream.raw(pathsize)
+					if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 1, 3, False)
+					pathsize = ebrw_readstr.int_u32()
+					self.path = ebrw_readstr.raw(pathsize)
 				else:
-					if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 0, 3, False)
+					if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 0, 3, False)
 
 class flm_rack_device:
-	def __init__(self, byr_stream, size):
+	def __init__(self, ebrw_readstr, size):
 
 		self.type = None
 		self.head_val_1 = None
@@ -71,59 +67,59 @@ class flm_rack_device:
 
 		self.drumsamples = []
 		
-		self.type = byr_stream.uint32()
-		self.order = byr_stream.uint32()
+		self.type = ebrw_readstr.int_u32()
+		self.order = ebrw_readstr.int_u32()
 
-		for chunk_obj in parse_chunks(byr_stream, size):
+		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
 			if chunk_obj.id == b'HEAD':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 0.5, 2, False)
-				self.type = byr_stream.int32()
-				self.head_val_1 = byr_stream.int32()
-				self.head_val_2 = byr_stream.int8()
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 0.5, 2, False)
+				self.type = ebrw_readstr.int_s32()
+				self.head_val_1 = ebrw_readstr.int_s32()
+				self.head_val_2 = ebrw_readstr.int_s8()
 
 			elif chunk_obj.id == b'DESC':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 1, 2, False)
-				self.desc_name = byr_stream.string(256)
-				self.desc_name_2 = byr_stream.string(256)
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 1, 2, False)
+				self.desc_name = ebrw_readstr.string(256)
+				self.desc_name_2 = ebrw_readstr.string(256)
 
 			elif chunk_obj.id == b'PRST':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 1, 2, False)
-				self.preset_name = byr_stream.raw(byr_stream.uint32())
-				self.preset_path = byr_stream.raw(byr_stream.uint32())
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 1, 2, False)
+				self.preset_name = ebrw_readstr.raw(ebrw_readstr.int_u32())
+				self.preset_path = ebrw_readstr.raw(ebrw_readstr.int_u32())
 
 			elif chunk_obj.id == b'ADD1':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 0.5, 2, False)
-				self.minimized = byr_stream.int8()
-				#self.add1 = byr_stream.raw(chunk_obj.size)
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 0.5, 2, False)
+				self.minimized = ebrw_readstr.int_s8()
+				#self.add1 = ebrw_readstr.raw(chunk_obj.size)
 
 			elif chunk_obj.id == b'PRMS':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 1, 2, False)
-				self.prms = byr_stream.l_float(chunk_obj.size//4)
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 1, 2, False)
+				self.prms = ebrw_readstr.list_float(chunk_obj.size//4)
 
 			elif chunk_obj.id == b'PADS':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 0.5, 2, False)
-				self.pads = byr_stream.raw(chunk_obj.size)
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 0.5, 2, False)
+				self.pads = ebrw_readstr.raw(chunk_obj.size)
 
 			elif chunk_obj.id == b'CSTM':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 0, 2, False)
-				self.cstm = flm_rack_device_sampler(byr_stream, chunk_obj.size, self.type)
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 0, 2, False)
+				self.cstm = flm_rack_device_sampler(ebrw_readstr, chunk_obj.size, self.type)
 
 			elif chunk_obj.id == b'SMPl':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 0, 2, False)
-				self.drumsamples.append( flm_channel_clip_sample(byr_stream, chunk_obj.size, 3) )
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 0, 2, False)
+				self.drumsamples.append( flm_channel_clip_sample(ebrw_readstr, chunk_obj.size, 3) )
 
 			elif chunk_obj.id == b'SMPR':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 1, 2, False)
-				self.wet_pan = byr_stream.float()
-				self.mix = byr_stream.float()
-				self.post_gain = byr_stream.float()
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 1, 2, False)
+				self.wet_pan = ebrw_readstr.float()
+				self.mix = ebrw_readstr.float()
+				self.post_gain = ebrw_readstr.float()
 
 			else:
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 0, 2, True)
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 0, 2, True)
 
 
 class flm_rack:
-	def __init__(self, byr_stream, size):
+	def __init__(self, ebrw_readstr, size):
 		self.header_val_0 = 0
 		self.tracktype = 0
 		self.fx_id = 0
@@ -137,66 +133,66 @@ class flm_rack:
 		self.param_val_4 = 0
 		self.param_val_5 = 0
 
-		byr_stream.skip(4)
-		verify(byr_stream, b'10KR', 'rack')
+		ebrw_readstr.skip(4)
+		verify(ebrw_readstr, b'10KR', 'rack')
 
 		self.devices_sampler = None
 		self.devices = []
 
-		for chunk_obj in parse_chunks(byr_stream, size):
+		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
 
 			if chunk_obj.id == b'RHED':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 0.5, 1, False)
-				self.header_val_0 = byr_stream.int32()
-				self.tracktype = byr_stream.int32()
-				self.fx_id = byr_stream.int32()
-				self.target = byr_stream.int32()
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 0.5, 1, False)
+				self.header_val_0 = ebrw_readstr.int_s32()
+				self.tracktype = ebrw_readstr.int_s32()
+				self.fx_id = ebrw_readstr.int_s32()
+				self.target = ebrw_readstr.int_s32()
 
 			elif chunk_obj.id == b'RPRM':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 1, 1, False)
-				self.volume = byr_stream.float()
-				self.pan = byr_stream.float()
-				self.mute = byr_stream.float()
-				self.solo = byr_stream.float()
-				self.param_val_4 = byr_stream.float()
-				self.param_val_5 = byr_stream.float()
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 1, 1, False)
+				self.volume = ebrw_readstr.float()
+				self.pan = ebrw_readstr.float()
+				self.mute = ebrw_readstr.float()
+				self.solo = ebrw_readstr.float()
+				self.param_val_4 = ebrw_readstr.float()
+				self.param_val_5 = ebrw_readstr.float()
 
 			elif chunk_obj.id == b'RSMP':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 1, 1, False)
-				self.devices_sampler = flm_rack_device(byr_stream, chunk_obj.size)
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 1, 1, False)
+				self.devices_sampler = flm_rack_device(ebrw_readstr, chunk_obj.size)
 			elif chunk_obj.id == b'RMOd':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 1, 1, False)
-				self.devices.append( flm_rack_device(byr_stream, chunk_obj.size) )
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 1, 1, False)
+				self.devices.append( flm_rack_device(ebrw_readstr, chunk_obj.size) )
 			else:
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 0, 1, True)
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 0, 1, True)
 
 class flm_channel_evnt:
-	def __init__(self, byr_stream, size, version):
+	def __init__(self, ebrw_readstr, size, version):
 
 		self.events = []
 
 		if version == 1:
 			for x in range(size//18):
-				event = byr_stream.raw(18)
+				event = ebrw_readstr.raw(18)
 				unpstruct = struct.unpack('<Idhbbh', event)
 				self.events.append(unpstruct)
 
 		if version == 2:
 			eventstruct = None
-			self.chunksize = byr_stream.uint16()
+			self.chunksize = ebrw_readstr.int_u16()
 
 			if self.chunksize == 19: eventstruct = '<IdhbbHb'
 			if self.chunksize == 20: eventstruct = '<IdhbbHbb'
 			numnotes = (size-2)//self.chunksize
 
 			for x in range(numnotes):
-				event = byr_stream.raw(self.chunksize)
+				event = ebrw_readstr.raw(self.chunksize)
 				unpstruct = struct.unpack(eventstruct, event)
 				self.events.append(unpstruct)
 
 class flm_channel_clip_sample:
-	def __init__(self, byr_stream, size, debugn):
-		verify(byr_stream, b'20LS', 'clip sample')
+	def __init__(self, ebrw_readstr, size, debugn):
+		verify(ebrw_readstr, b'20LS', 'clip sample')
 
 		self.prms = []
 		self.evn2 = None
@@ -219,52 +215,52 @@ class flm_channel_clip_sample:
 		self.preset_name = ''
 		self.preset_path = ''
 
-		for chunk_obj in parse_chunks(byr_stream, size):
+		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
 
 			if chunk_obj.id == b'EVN2':
-				if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 0.5, debugn, False)
-				self.evn2 = flm_channel_evnt(byr_stream, chunk_obj.size, 2)
+				if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 0.5, debugn, False)
+				self.evn2 = flm_channel_evnt(ebrw_readstr, chunk_obj.size, 2)
 
 			elif chunk_obj.id == b'STRC':
-				if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 0.5, debugn, False)
-				self.stretch_on = byr_stream.uint8()
-				self.stretch_size = byr_stream.double()
-				self.pitch = byr_stream.double()
-				self.stretch_unk_1 = byr_stream.float()
-				self.stretch_unk_2 = byr_stream.float()
+				if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 0.5, debugn, False)
+				self.stretch_on = ebrw_readstr.int_u8()
+				self.stretch_size = ebrw_readstr.double()
+				self.pitch = ebrw_readstr.double()
+				self.stretch_unk_1 = ebrw_readstr.float()
+				self.stretch_unk_2 = ebrw_readstr.float()
 
 			elif chunk_obj.id == b'PRMS':
-				if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, debugn, False)
-				self.prms = byr_stream.l_float(chunk_obj.size//4)
+				if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, debugn, False)
+				self.prms = ebrw_readstr.list_float(chunk_obj.size//4)
 
 			elif chunk_obj.id == b'PRST':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 1, debugn, False)
-				self.preset_name = byr_stream.raw(byr_stream.uint32())
-				self.preset_path = byr_stream.raw(byr_stream.uint32())
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 1, debugn, False)
+				self.preset_name = ebrw_readstr.raw(ebrw_readstr.int_u32())
+				self.preset_path = ebrw_readstr.raw(ebrw_readstr.int_u32())
 
 			elif chunk_obj.id == b'MAIN':
-				if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 0.5, debugn, False)
-				self.main_unk_1 = byr_stream.int32()
-				self.drumsamplenum = int(byr_stream.double())
-				self.sample_name = byr_stream.string(512)
-				self.sample_folder = byr_stream.string(512)
-				self.main_unk_4 = byr_stream.int8()
-				self.shift = byr_stream.double()
-				self.shift_one = byr_stream.float()
-				self.cut_group = byr_stream.int8()
-				self.poly = byr_stream.int8()
+				if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 0.5, debugn, False)
+				self.main_unk_1 = ebrw_readstr.int_s32()
+				self.drumsamplenum = int(ebrw_readstr.double())
+				self.sample_name = ebrw_readstr.string(512)
+				self.sample_folder = ebrw_readstr.string(512)
+				self.main_unk_4 = ebrw_readstr.int_s8()
+				self.shift = ebrw_readstr.double()
+				self.shift_one = ebrw_readstr.float()
+				self.cut_group = ebrw_readstr.int_s8()
+				self.poly = ebrw_readstr.int_s8()
 
 			elif chunk_obj.id == b'PTH1':
-				if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, debugn, False)
-				pathsize = byr_stream.uint16()
-				self.sample_path = byr_stream.raw(pathsize)
+				if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, debugn, False)
+				pathsize = ebrw_readstr.int_u16()
+				self.sample_path = ebrw_readstr.raw(pathsize)
 
 			else:
-				if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 0, debugn, True)
+				if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 0, debugn, True)
 
 class flm_channel_clip:
-	def __init__(self, byr_stream, size, auto_on):
-		self.position = byr_stream.uint32()
+	def __init__(self, ebrw_readstr, size, auto_on):
+		self.position = ebrw_readstr.int_u32()
 		self.evn2 = None
 		self.evnt = None
 		self.sample = None
@@ -281,44 +277,44 @@ class flm_channel_clip:
 		self.unk_1 = 0
 		self.mute = 0
 
-		header = byr_stream.raw(4)
+		header = ebrw_readstr.raw(4)
 		if header in [b'20LC', b'10LC']:
-			for chunk_obj in parse_chunks(byr_stream, size):
+			for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
 
 				if chunk_obj.id == b'EVN2':
-					if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, 3, False)
-					self.evn2 = flm_channel_evnt(byr_stream, chunk_obj.size, 2)
+					if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, 3, False)
+					self.evn2 = flm_channel_evnt(ebrw_readstr, chunk_obj.size, 2)
 				elif chunk_obj.id == b'EVNT':
-					if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, 3, False)
-					self.evn2 = flm_channel_evnt(byr_stream, chunk_obj.size, 1)
+					if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, 3, False)
+					self.evn2 = flm_channel_evnt(ebrw_readstr, chunk_obj.size, 1)
 				elif chunk_obj.id == b'ZOOM':
-					if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, 3, False)
-					self.zoom_start = byr_stream.double()
-					self.zoom_2 = byr_stream.double()
-					self.zoom_3 = byr_stream.double()
+					if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, 3, False)
+					self.zoom_start = ebrw_readstr.double()
+					self.zoom_2 = ebrw_readstr.double()
+					self.zoom_3 = ebrw_readstr.double()
 				elif chunk_obj.id == b'CLSm':
-					if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, 3, False)
-					self.sample = flm_channel_clip_sample(byr_stream, chunk_obj.size, 4)
+					if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, 3, False)
+					self.sample = flm_channel_clip_sample(ebrw_readstr, chunk_obj.size, 4)
 				elif chunk_obj.id == b'CLHd':
-					if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, 3, False)
-					self.duration = byr_stream.double()
-					self.loop_end = byr_stream.double()
-					self.cut_start = byr_stream.double()
-					self.id = byr_stream.uint32()
-					self.unk_1 = byr_stream.double()
-					self.mute = byr_stream.uint8()
+					if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, 3, False)
+					self.duration = ebrw_readstr.double()
+					self.loop_end = ebrw_readstr.double()
+					self.cut_start = ebrw_readstr.double()
+					self.id = ebrw_readstr.int_u32()
+					self.unk_1 = ebrw_readstr.double()
+					self.mute = ebrw_readstr.int_u8()
 				elif chunk_obj.id == b'CLHD':
-					if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, 3, False)
-					self.duration = byr_stream.double()
-					self.loop_end = byr_stream.double()
-					self.cut_start = byr_stream.double()
+					if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, 3, False)
+					self.duration = ebrw_readstr.double()
+					self.loop_end = ebrw_readstr.double()
+					self.cut_start = ebrw_readstr.double()
 				else:
-					if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 0, 3, True)
+					if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 0, 3, True)
 		else:
 			raise ProjectFileParserException("flm: Magic Check Failed: b'20LC' or b'10LC'")
 
 class flm_channel_track:
-	def __init__(self, byr_stream, size):
+	def __init__(self, ebrw_readstr, size):
 
 		self.clips = []
 		self.auto_on = 0
@@ -331,34 +327,34 @@ class flm_channel_track:
 		self.hide_value = 0
 		self.name = ''
 
-		for chunk_obj in parse_chunks(byr_stream, size):
+		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
 			if chunk_obj.id == b'CLIP':
-				if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, 2, False)
-				self.clips.append( flm_channel_clip(byr_stream, chunk_obj.size, self.auto_on) )
+				if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, 2, False)
+				self.clips.append( flm_channel_clip(ebrw_readstr, chunk_obj.size, self.auto_on) )
 			elif chunk_obj.id == b'DESc':
-				if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, 2, False)
-				self.auto_on = byr_stream.uint16()
-				self.unk4 = byr_stream.uint16()
-				self.auto_device = byr_stream.int32()
-				self.auto_param = byr_stream.int32()
-				self.unk1 = byr_stream.int32()
-				self.unk2 = byr_stream.int32()
-				self.unk3 = byr_stream.int32()
-				self.hide_value = byr_stream.int32()
-				self.name = byr_stream.string(1024)
+				if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, 2, False)
+				self.auto_on = ebrw_readstr.int_u16()
+				self.unk4 = ebrw_readstr.int_u16()
+				self.auto_device = ebrw_readstr.int_s32()
+				self.auto_param = ebrw_readstr.int_s32()
+				self.unk1 = ebrw_readstr.int_s32()
+				self.unk2 = ebrw_readstr.int_s32()
+				self.unk3 = ebrw_readstr.int_s32()
+				self.hide_value = ebrw_readstr.int_s32()
+				self.name = ebrw_readstr.string(1024)
 			else:
-				if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 0, 2, True)
+				if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 0, 2, True)
 
 class flm_channel_send:
-	def __init__(self, byr_stream, size):
-		self.target = byr_stream.uint32()
-		self.enabled = byr_stream.float()
-		self.param2 = byr_stream.float()
-		self.enabled2 = byr_stream.float()
-		self.amount = byr_stream.float()
+	def __init__(self, ebrw_readstr, size):
+		self.target = ebrw_readstr.int_u32()
+		self.enabled = ebrw_readstr.float()
+		self.param2 = ebrw_readstr.float()
+		self.enabled2 = ebrw_readstr.float()
+		self.amount = ebrw_readstr.float()
 
 class flm_channel:
-	def __init__(self, byr_stream, size):
+	def __init__(self, ebrw_readstr, size):
 
 		self.name = ''
 		self.tracknum = 0
@@ -368,31 +364,31 @@ class flm_channel:
 		self.unk3 = 0
 		self.unk4 = 0
 
-		self.unk1 = byr_stream.uint16()
-		self.unk2 = byr_stream.uint16()
+		self.unk1 = ebrw_readstr.int_u16()
+		self.unk2 = ebrw_readstr.int_u16()
 
 		self.sends = []
 		self.tracks = []
 
-		header = byr_stream.raw(4)
+		header = ebrw_readstr.raw(4)
 		if header in [b'20HC', b'10HC']:
-			for chunk_obj in parse_chunks(byr_stream, size):
+			for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
 				if chunk_obj.id == b'CHHD':
-					if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 0.5, 1, False)
-					self.name = byr_stream.string(1024)
-					self.tracknum = byr_stream.double()
-					self.order = byr_stream.float()
-					self.color = byr_stream.float()
-					self.unk3 = byr_stream.double()
-					self.unk4 = byr_stream.double()
+					if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 0.5, 1, False)
+					self.name = ebrw_readstr.string(1024)
+					self.tracknum = ebrw_readstr.double()
+					self.order = ebrw_readstr.float()
+					self.color = ebrw_readstr.float()
+					self.unk3 = ebrw_readstr.double()
+					self.unk4 = ebrw_readstr.double()
 				elif chunk_obj.id == b'TRKH':
-					if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, 1, False)
-					self.tracks.append( flm_channel_track(byr_stream, chunk_obj.size) ) 
+					if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, 1, False)
+					self.tracks.append( flm_channel_track(ebrw_readstr, chunk_obj.size) ) 
 				elif chunk_obj.id == b'SEND':
-					if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, 1, False)
-					self.sends.append( flm_channel_send(byr_stream, chunk_obj.size) )
+					if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, 1, False)
+					self.sends.append( flm_channel_send(ebrw_readstr, chunk_obj.size) )
 				else:
-					if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 0, 1, True)
+					if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 0, 1, True)
 		else:
 			raise ProjectFileParserException("flm: Magic Check Failed: b'20HC' or b'10HC'")
 
@@ -425,60 +421,62 @@ class flm_project:
 		self.zipfile = None
 
 	def load_from_file(self, input_file):
-		byr_stream = bytereader.bytereader()
-		byr_stream.load_file(input_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
-		if byr_stream.read(2) == b'PK':
+		if ebrw_readstr.read(2) == b'PK':
 			self.zipped = True
 			self.zipfile = zipfile.ZipFile(input_file, 'r')
 			flpfound = False
 			for filename in self.zipfile.namelist():
 				if filename.endswith('.flm'):
-					byr_stream.load_raw(self.zipfile.read(filename))
-					return self.load(byr_stream)
+					flmdata = self.zipfile.read(filename)
+					ebrw_readstr = easybinrw.binread()
+					ebrw_readstr.load_data(flmdata)
+					return self.load(ebrw_readstr)
 			if not flpfound:
 				raise ProjectFileParserException('FLM: FLM file not found in zip')
 		else:
-			byr_stream.seek(0)
-			return self.load(byr_stream)
+			ebrw_readstr.seek(0)
+			return self.load(ebrw_readstr)
 
-	def load(self, byr_stream):
-		verify(byr_stream, b'10LF', 'main')
+	def load(self, ebrw_readstr):
+		verify(ebrw_readstr, b'10LF', 'main')
 
-		for chunk_obj in parse_chunks(byr_stream, byr_stream.end):
+		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
 			if chunk_obj.id == b'RACK':
-				if VERBOSE_RACK: chunkview(byr_stream, chunk_obj, 1, 0, False)
-				self.racks.append(flm_rack(byr_stream, chunk_obj.size))
+				if VERBOSE_RACK: chunkview(ebrw_readstr, chunk_obj, 1, 0, False)
+				self.racks.append(flm_rack(ebrw_readstr, chunk_obj.size))
 			elif chunk_obj.id == b'CHNL':
-				if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, 0, False)
-				self.channels.append(flm_channel(byr_stream, chunk_obj.size))
+				if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, 0, False)
+				self.channels.append(flm_channel(ebrw_readstr, chunk_obj.size))
 			elif chunk_obj.id == b'TDIV':
-				if VERBOSE: chunkview(byr_stream, chunk_obj, 1, 0, False)
-				self.timediv_num = byr_stream.int8()
-				self.timediv_denum = byr_stream.int8()
+				if VERBOSE: chunkview(ebrw_readstr, chunk_obj, 1, 0, False)
+				self.timediv_num = ebrw_readstr.int_s8()
+				self.timediv_denum = ebrw_readstr.int_s8()
 			elif chunk_obj.id == b'HEAD':
-				if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 0.5, 0, False)
-				self.version_1 = byr_stream.uint32()
-				self.version_2 = byr_stream.uint32()
-				self.name = byr_stream.string(256)
-				self.tempo = byr_stream.double()
-				self.space_start = byr_stream.double()
-				self.space_end = byr_stream.double()
-				self.zoom_size = byr_stream.double()
-				self.zoom_pos = byr_stream.double()
+				if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 0.5, 0, False)
+				self.version_1 = ebrw_readstr.int_u32()
+				self.version_2 = ebrw_readstr.int_u32()
+				self.name = ebrw_readstr.string(256)
+				self.tempo = ebrw_readstr.double()
+				self.space_start = ebrw_readstr.double()
+				self.space_end = ebrw_readstr.double()
+				self.zoom_size = ebrw_readstr.double()
+				self.zoom_pos = ebrw_readstr.double()
 			elif chunk_obj.id == b'META':
-				if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, 0, False)
-				self.meta_artist = byr_stream.string(256)
-				self.meta_unk1 = byr_stream.float()
-				self.meta_unk2 = byr_stream.float()
-				self.meta_title = byr_stream.string(256)
-				self.meta_locked = byr_stream.string(256)
-				self.meta_url = byr_stream.uint8()
+				if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, 0, False)
+				self.meta_artist = ebrw_readstr.string(256)
+				self.meta_unk1 = ebrw_readstr.float()
+				self.meta_unk2 = ebrw_readstr.float()
+				self.meta_title = ebrw_readstr.string(256)
+				self.meta_locked = ebrw_readstr.string(256)
+				self.meta_url = ebrw_readstr.int_u8()
 			elif chunk_obj.id == b'KEYB':
-				if VERBOSE_CHANNEL: chunkview(byr_stream, chunk_obj, 1, 0, False)
-				self.keyb = byr_stream.raw(byr_stream.uint32())
+				if VERBOSE_CHANNEL: chunkview(ebrw_readstr, chunk_obj, 1, 0, False)
+				self.keyb = ebrw_readstr.raw(ebrw_readstr.int_u32())
 			else:
-				if VERBOSE: chunkview(byr_stream, chunk_obj, 0, 0, True)
+				if VERBOSE: chunkview(ebrw_readstr, chunk_obj, 0, 0, True)
 		return True
 
 	def itertracks(self):

@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from objects.exceptions import ProjectFileParserException
-from objects.data_bytes import bytereader
 import xml.etree.ElementTree as ET
 import zipfile
 

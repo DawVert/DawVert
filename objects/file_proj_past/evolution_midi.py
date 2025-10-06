@@ -1,36 +1,36 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 import zlib
 import logging
 
 class evo_midi_event:
-	def __init__(self, byr_stream):
-		if byr_stream: self.read(byr_stream)
+	def __init__(self, ebrw_readstr):
+		if ebrw_readstr: self.read(ebrw_readstr)
 
-	def read(self, byr_stream):
-		self.unk1 = byr_stream.uint8()
-		self.pos = byr_stream.uint16_b()
-		self.type, self.chan = byr_stream.bytesplit()
+	def read(self, ebrw_readstr):
+		self.unk1 = ebrw_readstr.int_u8()
+		self.pos = ebrw_readstr.int_u16_b()
+		self.type, self.chan = ebrw_readstr.int_u4_2()
 		self.data = []
 		if self.type == 9: #note
-			self.data.append(byr_stream.uint8())
-			self.data.append(byr_stream.uint8())
-			self.data.append(byr_stream.uint16_b())
+			self.data.append(ebrw_readstr.int_u8())
+			self.data.append(ebrw_readstr.int_u8())
+			self.data.append(ebrw_readstr.int_u16_b())
 		elif self.type == 10: #aftertouch
-			self.data.append(byr_stream.uint8())
-			self.data.append(byr_stream.uint8())
+			self.data.append(ebrw_readstr.int_u8())
+			self.data.append(ebrw_readstr.int_u8())
 		elif self.type == 11: #control
-			self.data.append(byr_stream.uint8())
-			self.data.append(byr_stream.uint8())
+			self.data.append(ebrw_readstr.int_u8())
+			self.data.append(ebrw_readstr.int_u8())
 		elif self.type == 12: #unknown
-			self.data.append(byr_stream.uint8())
+			self.data.append(ebrw_readstr.int_u8())
 		elif self.type == 13: #pressure
-			self.data.append(byr_stream.uint8())
+			self.data.append(ebrw_readstr.int_u8())
 		elif self.type == 14: #pitch
-			self.data.append(byr_stream.uint8())
-			self.data.append(byr_stream.uint8())
+			self.data.append(ebrw_readstr.int_u8())
+			self.data.append(ebrw_readstr.int_u8())
 		elif self.type == 15: #end
 			pass
 		else:
@@ -38,33 +38,33 @@ class evo_midi_event:
 			exit()
 
 class evo_midi_track:
-	def __init__(self, byr_stream):
-		if byr_stream: self.read(byr_stream)
+	def __init__(self, ebrw_readstr):
+		if ebrw_readstr: self.read(ebrw_readstr)
 
-	def read(self, byr_stream):
-		self.name = byr_stream.string(21, encoding='windows-1252')
-		self.patch = byr_stream.int16()
-		self.bank = byr_stream.int8()
-		self.bank_type = byr_stream.int8()
-		self.channel = byr_stream.int16()
-		byr_stream.skip(2)
-		self.volume = byr_stream.int16()
-		self.pan = byr_stream.int16()
-		self.reverb = byr_stream.int16()
-		self.chorus = byr_stream.int16()
-		self.velocity = byr_stream.int16()
-		self.transpose = byr_stream.int16()
-		self.time = byr_stream.int16()
-		self.mute = byr_stream.int16()
-		self.solo = byr_stream.int16()
-		self.armed = byr_stream.int16()
+	def read(self, ebrw_readstr):
+		self.name = ebrw_readstr.string(21, encoding='windows-1252')
+		self.patch = ebrw_readstr.int_s16()
+		self.bank = ebrw_readstr.int_s8()
+		self.bank_type = ebrw_readstr.int_s8()
+		self.channel = ebrw_readstr.int_s16()
+		ebrw_readstr.skip(2)
+		self.volume = ebrw_readstr.int_s16()
+		self.pan = ebrw_readstr.int_s16()
+		self.reverb = ebrw_readstr.int_s16()
+		self.chorus = ebrw_readstr.int_s16()
+		self.velocity = ebrw_readstr.int_s16()
+		self.transpose = ebrw_readstr.int_s16()
+		self.time = ebrw_readstr.int_s16()
+		self.mute = ebrw_readstr.int_s16()
+		self.solo = ebrw_readstr.int_s16()
+		self.armed = ebrw_readstr.int_s16()
 
-		self.unkdata = byr_stream.raw(6)
-		byr_stream.skip(500)
-		self.unkdata2 = byr_stream.raw(10)
+		self.unkdata = ebrw_readstr.raw(6)
+		ebrw_readstr.skip(500)
+		self.unkdata2 = ebrw_readstr.raw(10)
 
 class evo_midi_clip:
-	def __init__(self, byr_stream):
+	def __init__(self, ebrw_readstr):
 		self.name = ''
 		self.linked = -1
 		self.patch = -1
@@ -83,32 +83,32 @@ class evo_midi_clip:
 		self.events_size = 0
 		self.tracknum = 0
 		self.events = []
-		if byr_stream: self.read(byr_stream)
+		if ebrw_readstr: self.read(ebrw_readstr)
 
-	def read(self, byr_stream):
-		self.name = byr_stream.string(21, encoding='windows-1252')
+	def read(self, ebrw_readstr):
+		self.name = ebrw_readstr.string(21, encoding='windows-1252')
 		unknowns = []
-		self.linked = byr_stream.int16()
-		self.patch = byr_stream.int16()
-		self.bank = byr_stream.int8()
-		self.bank_type = byr_stream.int8()
-		self.channel = byr_stream.int16()
-		byr_stream.skip(2)
-		self.volume = byr_stream.int16()
-		self.pan = byr_stream.int16()
-		self.reverb = byr_stream.int16()
-		self.chorus = byr_stream.int16()
-		self.velocity = byr_stream.int16()
-		self.transpose = byr_stream.int16()
-		self.time = byr_stream.int16()
-		unknowns.append(byr_stream.int16())
-		unknowns.append(byr_stream.uint32())
-		unknowns.append(byr_stream.int16())
-		self.position = byr_stream.uint32()
-		self.duration = byr_stream.uint32()
-		self.events_size = byr_stream.int32()
-		self.tracknum = byr_stream.int16()
-		unknowns.append(byr_stream.raw(10).hex())
+		self.linked = ebrw_readstr.int_s16()
+		self.patch = ebrw_readstr.int_s16()
+		self.bank = ebrw_readstr.int_s8()
+		self.bank_type = ebrw_readstr.int_s8()
+		self.channel = ebrw_readstr.int_s16()
+		ebrw_readstr.skip(2)
+		self.volume = ebrw_readstr.int_s16()
+		self.pan = ebrw_readstr.int_s16()
+		self.reverb = ebrw_readstr.int_s16()
+		self.chorus = ebrw_readstr.int_s16()
+		self.velocity = ebrw_readstr.int_s16()
+		self.transpose = ebrw_readstr.int_s16()
+		self.time = ebrw_readstr.int_s16()
+		unknowns.append(ebrw_readstr.int_s16())
+		unknowns.append(ebrw_readstr.int_u32())
+		unknowns.append(ebrw_readstr.int_s16())
+		self.position = ebrw_readstr.int_u32()
+		self.duration = ebrw_readstr.int_u32()
+		self.events_size = ebrw_readstr.int_s32()
+		self.tracknum = ebrw_readstr.int_s16()
+		unknowns.append(ebrw_readstr.raw(10).hex())
 
 class evo_midi_song:
 	def __init__(self):
@@ -116,38 +116,38 @@ class evo_midi_song:
 		self.clips = []
 
 	def load_from_file(self, input_file):
-		byr_stream = bytereader.bytereader()
-		byr_stream.load_file(input_file)
-		byr_stream.magic_check(b'sng2')
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
+		ebrw_readstr.magic_check(b'sng2')
 
-		byr_stream.skip(3)
+		ebrw_readstr.skip(3)
 
-		num_tracks = byr_stream.uint16()
-		num_clips = byr_stream.uint16()
-		num_unk = byr_stream.uint8()
+		num_tracks = ebrw_readstr.int_u16()
+		num_clips = ebrw_readstr.int_u16()
+		num_unk = ebrw_readstr.int_u8()
 
-		byr_stream.seek(0x400)
-		self.songinfo = byr_stream.string_t(encoding='windows-1252')
+		ebrw_readstr.seek(0x400)
+		self.songinfo = ebrw_readstr.string_t(encoding='windows-1252')
 
 		assert num_unk>1
-		byr_stream.skip((num_unk*6)-3)
+		ebrw_readstr.skip((num_unk*6)-3)
 
-		self.unk1 = byr_stream.uint16()
+		self.unk1 = ebrw_readstr.int_u16()
 
-		self.unklist2 = byr_stream.l_uint16(num_tracks)
-		self.unklist3 = byr_stream.l_uint16(num_clips)
+		self.unklist2 = ebrw_readstr.list_int_u16(num_tracks)
+		self.unklist3 = ebrw_readstr.list_int_u16(num_clips)
 
 
 		for x in range(num_tracks):
-			self.tracks.append( evo_midi_track(byr_stream) )
+			self.tracks.append( evo_midi_track(ebrw_readstr) )
 
 		for x in range(num_clips):
-			self.clips.append( evo_midi_clip(byr_stream) )
+			self.clips.append( evo_midi_clip(ebrw_readstr) )
 
 		for clip in self.clips:
 			if clip.linked == -1:
-				with byr_stream.isolate_size(clip.events_size, True) as bye_stream:
-					while bye_stream.remaining():
-						clip.events.append(evo_midi_event(bye_stream))
+				ebrw_readstr.isolate_size(clip.events_size)
+				while ebrw_readstr.remaining(): clip.events.append(evo_midi_event(ebrw_readstr))
+				ebrw_readstr.isolate_end()
 
 		return True

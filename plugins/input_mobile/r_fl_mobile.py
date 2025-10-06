@@ -255,7 +255,7 @@ class input_fl_mobile(plugins.base):
 										sp_obj.pitch = math.log2(1/flm_sample.pitch)*-12
 	
 									sp_obj.reverse = bool(flm_sample.main_unk_4)
-									if flm_sample.prms:
+									if len(flm_sample.prms):
 										sp_obj.vol = flm_sample.prms[0]
 										sp_obj.pan = (flm_sample.prms[1]-0.5)*2
 										
@@ -363,7 +363,7 @@ def do_device(convproj_obj, device_obj, projfilepath, zipfile, pluginid, numberi
 				drumpad_obj.key = keynum
 				if flm_sample.sample_name: 
 					drumpad_obj.visual.name = flm_sample.sample_name
-				if flm_sample.prms:
+				if len(flm_sample.prms):
 					drumpad_obj.vol = flm_sample.prms[0]
 					drumpad_obj.pan = (flm_sample.prms[1]-0.5)*2
 
@@ -384,7 +384,7 @@ def do_device(convproj_obj, device_obj, projfilepath, zipfile, pluginid, numberi
 					sample_prefix, sample_path = get_path(x.name)
 					sampleref_obj = do_sample(convproj_obj, sample_prefix, sample_path, zipfile, projfilepath)
 	
-					middlenote = int((device_obj.prms[3]-0.5)*48) if device_obj.prms else 0
+					middlenote = int((device_obj.prms[3]-0.5)*48) if len(device_obj.prms) else 0
 
 					if sampleref_obj.fileref.file.extension == 'wav':
 						filepath = sampleref_obj.fileref.get_path(None, False)
@@ -408,7 +408,7 @@ def do_device(convproj_obj, device_obj, projfilepath, zipfile, pluginid, numberi
 		if fldso:
 			plugin_obj.visual.name = fldso.visual.name
 
-		if device_obj.prms:
+		if len(device_obj.prms):
 			if fldso:
 				for n, v in enumerate(device_obj.prms):
 					dset_param = fldso.params.get('param_'+str(n))

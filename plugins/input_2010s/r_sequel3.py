@@ -6,7 +6,7 @@ import numpy as np
 from functions import xtramath
 from objects import globalstore
 from objects import colors
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 import os
 
 def conv_color(b_color):
@@ -30,9 +30,9 @@ def do_params(track_obj, track_device):
 	if 'Panner' in track_device.deviceattributes:
 		pandata = track_device.deviceattributes['Panner']
 		if 'audioComponent' in pandata:
-			pannerdata = bytereader.bytereader()
-			pannerdata.load_raw(pandata['audioComponent'])
-			pandata = pannerdata.float()
+			ebrw_readstr = easybinrw.binread()
+			ebrw_readstr.load_data(pandata['audioComponent'])
+			pandata = ebrw_readstr.float()
 			track_obj.params.add('pan', (pandata-0.5)*2, 'float')
 
 def do_autopoints(convproj_obj, autoloc, auto_node, v_min, v_max, instant):
@@ -70,10 +70,10 @@ def do_auto(track_obj, convproj_obj, seq_automation, autoloc_start, proj_sequel)
 				do_autopoints(convproj_obj, autoloc_start+['pan'], auto_node, 1, -1, False)
 			#print(con_type, trackflags)
 
-def do_effect_param(plugindata):
-	name = plugindata.string(128)
-	unkv = plugindata.uint32()
-	value = plugindata.double()
+def do_effect_param(ebrw_readstr):
+	name = ebrw_readstr.string(128)
+	unkv = ebrw_readstr.int_u32()
+	value = ebrw_readstr.double()
 	return name, value
 
 native_names = {}
@@ -114,14 +114,14 @@ def do_plugin(plugslots, slot, convproj_obj, issynth):
 
 							plugin_obj = convproj_obj.plugin__add(IDString, 'native', 'sequel', plugname)
 
-							plugindata = bytereader.bytereader()
-							plugindata.load_raw(plugin['audioComponent'])
+							ebrw_readstr = easybinrw.binread()
+							ebrw_readstr.load_data(plugin['audioComponent'])
 		
-							sizemaybe = plugindata.uint32()
+							sizemaybe = ebrw_readstr.int_u32()
 
 							params = {}
-							while plugindata.remaining():
-								name, value = do_effect_param(plugindata)
+							while ebrw_readstr.remaining():
+								name, value = do_effect_param(ebrw_readstr)
 								params[name] = value
 
 							if 'bypass' in params:

@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 from objects.exceptions import ProjectFileParserException
 
 import logging
@@ -16,15 +16,15 @@ class nbs_key:
 		self.pan = 100
 		self.pitch = 0
 
-def nbs_parsekey(song_file, nbs_newformat, note_tick):
+def nbs_parsekey(ebrw_readstr, nbs_newformat, note_tick):
 	note_obj = nbs_key()
 	note_obj.pos = note_tick
-	note_obj.inst = song_file.uint8()
-	note_obj.key = song_file.uint8()
+	note_obj.inst = ebrw_readstr.int_u8()
+	note_obj.key = ebrw_readstr.int_u8()
 	if nbs_newformat == 1:
-		note_obj.vel = song_file.uint8()
-		note_obj.pan = song_file.uint8()
-		note_obj.pitch = song_file.int16()
+		note_obj.vel = ebrw_readstr.int_u8()
+		note_obj.pan = ebrw_readstr.int_u8()
+		note_obj.pitch = ebrw_readstr.int_s16()
 	return note_obj
 
 class nbs_layer:
@@ -47,48 +47,48 @@ class nbs_song:
 		pass
 
 	def load_from_file(self, input_file):
-		song_file = bytereader.bytereader()
-		song_file.load_file(input_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
-		startbyte = song_file.uint16()
+		startbyte = ebrw_readstr.int_u16()
 		if startbyte == 0: 
 			self.newformat = 1
-			version = song_file.uint8()
+			version = ebrw_readstr.int_u8()
 			if version != 5:
 				raise ProjectFileParserException('mnbs: only version 5 new-NBS or old format is supported.')
-			self.inst_count = song_file.uint8()
-			self.song_length = song_file.uint16()
-			self.layers_count = song_file.uint16()
+			self.inst_count = ebrw_readstr.int_u8()
+			self.song_length = ebrw_readstr.int_u16()
+			self.layers_count = ebrw_readstr.int_u16()
 		else: 
 			version = 0
 			self.newformat = 0
 			self.song_length = startbyte
-			self.layers_count = song_file.uint16()
+			self.layers_count = ebrw_readstr.int_u16()
 
 		self.custom = []
 
 		self.layers = [nbs_layer() for _ in range(self.layers_count)]
-		self.name = song_file.c_string__int32(False)
-		self.author = song_file.c_string__int32(False)
-		self.orgauthor = song_file.c_string__int32(False)
-		self.description = song_file.c_string__int32(False)
+		self.name = ebrw_readstr.string_i32()
+		self.author = ebrw_readstr.string_i32()
+		self.orgauthor = ebrw_readstr.string_i32()
+		self.description = ebrw_readstr.string_i32()
 
-		self.tempo = song_file.uint16()
-		self.autosave_on = song_file.uint8()
-		self.autosave_duration = song_file.uint8()
-		self.numerator = song_file.uint8()
+		self.tempo = ebrw_readstr.int_u16()
+		self.autosave_on = ebrw_readstr.int_u8()
+		self.autosave_duration = ebrw_readstr.int_u8()
+		self.numerator = ebrw_readstr.int_u8()
 
-		self.stat_minutes_spent = song_file.uint32()
-		self.stat_clicks_left = song_file.uint32()
-		self.stat_clicks_right = song_file.uint32()
-		self.stat_notes_added = song_file.uint32()
-		self.stat_notes_removed = song_file.uint32()
+		self.stat_minutes_spent = ebrw_readstr.int_u32()
+		self.stat_clicks_left = ebrw_readstr.int_u32()
+		self.stat_clicks_right = ebrw_readstr.int_u32()
+		self.stat_notes_added = ebrw_readstr.int_u32()
+		self.stat_notes_removed = ebrw_readstr.int_u32()
 
-		self.source_filename = song_file.c_string__int32(False)
+		self.source_filename = ebrw_readstr.string_i32()
 		if self.newformat == 1:
-			nbs_loopon = song_file.uint8()
-			nbs_maxloopcount = song_file.uint8()
-			nbs_loopstarttick = song_file.uint16()
+			nbs_loopon = ebrw_readstr.int_u8()
+			nbs_maxloopcount = ebrw_readstr.int_u8()
+			nbs_loopstarttick = ebrw_readstr.int_u16()
 		else:
 			nbs_loopon = 1
 			nbs_maxloopcount = 1
@@ -98,42 +98,42 @@ class nbs_song:
 		note_tick = -1
 
 		while notes_done == 0:
-			jump_tick = song_file.uint16()
+			jump_tick = ebrw_readstr.int_u16()
 			if jump_tick != 0:
-				jump_layer = song_file.uint16()
+				jump_layer = ebrw_readstr.int_u16()
 				note_tick += jump_tick
 				if jump_layer != 0:
 					note_layer = jump_layer
 					layer_done = 0
 					while layer_done == 0:
-						note_obj = nbs_parsekey(song_file, self.newformat, note_tick)
+						note_obj = nbs_parsekey(ebrw_readstr, self.newformat, note_tick)
 						outlayer = note_layer-1
 						if outlayer < len(self.layers):
 							self.layers[outlayer].notes.append(note_obj)
-						jump_layer = song_file.uint16()
+						jump_layer = ebrw_readstr.int_u16()
 						if jump_layer == 0: layer_done = 1
 						note_layer += jump_layer
 			if jump_tick == 0:
 				notes_done = 1
 
-		if song_file.remaining():
+		if ebrw_readstr.remaining():
 			for layernum in range(self.layers_count): 
 				layer_obj = self.layers[layernum]
-				layer_obj.name = song_file.c_string__int32(False)
+				layer_obj.name = ebrw_readstr.string_i32()
 				if self.newformat == 1: 
-					layer_obj.lock = song_file.uint8()
-					layer_obj.vol = song_file.uint8()
-					layer_obj.stereo = song_file.uint8()
+					layer_obj.lock = ebrw_readstr.int_u8()
+					layer_obj.vol = ebrw_readstr.int_u8()
+					layer_obj.stereo = ebrw_readstr.int_u8()
 				else:
-					layer_obj.vol = song_file.uint8()
+					layer_obj.vol = ebrw_readstr.int_u8()
 
-		if song_file.remaining():
-			for _ in range(song_file.uint8()):
+		if ebrw_readstr.remaining():
+			for _ in range(ebrw_readstr.int_u8()):
 				custom_obj = nbs_custom_inst()
-				custom_obj.name = song_file.c_string__int32(False)
-				custom_obj.file = song_file.c_string__int32(False)
-				custom_obj.key = song_file.uint8()
-				custom_obj.presskey = song_file.uint8()
+				custom_obj.name = ebrw_readstr.string_i32()
+				custom_obj.file = ebrw_readstr.string_i32()
+				custom_obj.key = ebrw_readstr.int_u8()
+				custom_obj.presskey = ebrw_readstr.int_u8()
 				self.custom.append(custom_obj)
 
 		return True

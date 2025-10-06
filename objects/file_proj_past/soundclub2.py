@@ -1,32 +1,36 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
 from objects.exceptions import ProjectFileParserException
+from external.easybinrw import easybinrw
+from external.easybinrw import chunked
 
 import logging
 logger_projparse = logging.getLogger('projparse')
 
+chunk_size_data = chunked.chunk_part_size()
+chunk_size_data.name_size = 3
+
 class sn2_instrument:
-	def __init__(self, song_file, chunkend):
-		self.type = song_file.uint8()
+	def __init__(self, ebrw_readstr, chunkend):
+		self.type = ebrw_readstr.int_u8()
 		self.name = ''
 		if self.type == 1: 
-			self.name = song_file.string(chunkend-song_file.tell())
+			self.name = ebrw_readstr.string(chunkend-ebrw_readstr.tell())
 		if self.type == 0: 
-			insttype = song_file.raw(3)
+			insttype = ebrw_readstr.raw(3)
 			if insttype == b'SMP':
-				self.name = song_file.string_t()
+				self.name = ebrw_readstr.string_t()
 
-				self.unk0 = song_file.uint16()
+				self.unk0 = ebrw_readstr.int_u16()
 
-				self.samplesize = song_file.int32()
-				self.loopstart = song_file.int32()
-				self.unk3 = song_file.int32()
-				self.unk4 = song_file.uint16()
-				self.freq = song_file.uint16()
+				self.samplesize = ebrw_readstr.int_s32()
+				self.loopstart = ebrw_readstr.int_s32()
+				self.unk3 = ebrw_readstr.int_s32()
+				self.unk4 = ebrw_readstr.int_u16()
+				self.freq = ebrw_readstr.int_u16()
 
-				self.data = song_file.raw(self.samplesize)
+				self.data = ebrw_readstr.raw(self.samplesize)
 			else:
 				self.name = ''
 				self.samplesize = 0
@@ -45,42 +49,41 @@ class sn2_event:
 		self.p_key = 0
 
 class sn2_voice:
-	def __init__(self, song_file, end):
-		self.instid = song_file.uint8()
-		song_file.skip(3)
+	def __init__(self, ebrw_readstr, end):
+		self.instid = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(3)
 		self.events = []
-		while song_file.tell() < end:
+		while ebrw_readstr.tell() < end:
 			event = sn2_event()
-			event.len = song_file.uint8()
+			event.len = ebrw_readstr.int_u8()
 			if event.len == 255: 
-				event.len = song_file.int32()
-				song_file.skip(4)
-			event.type = song_file.uint8()
-			event.value = song_file.uint8()
+				event.len = ebrw_readstr.int_s32()
+				ebrw_readstr.skip(4)
+			event.type = ebrw_readstr.int_u8()
+			event.value = ebrw_readstr.int_u8()
 			if event.type == 54: 
-				event.p_key = song_file.uint8()
-				event.p_len = song_file.uint8()
+				event.p_key = ebrw_readstr.int_u8()
+				event.p_len = ebrw_readstr.int_u8()
 			self.events.append(event)
 
-
 class sn2_pattern:
-	def __init__(self, song_file, chunk_obj):
+	def __init__(self, ebrw_readstr, chunk_obj):
 		self.voices = []
 		self.name = []
 		self.tempos = []
+		ebrw_readstr.skip(4)
 		#print('[soundclub2] Pattern')
-		for subchunk_obj in chunk_obj.iter(4):
-			if subchunk_obj.id == b'pna': 
-				self.name = song_file.string(subchunk_obj.size)
+		for part_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, chunk_size_data):
+			if part_obj.id == b'pna': 
+				self.name = ebrw_readstr.string(part_obj.size)
 				#print('[soundclub2]	  Name:',self.name)
-			if subchunk_obj.id == b'tem': 
-				pointssize = subchunk_obj.size//8
+			if part_obj.id == b'tem': 
+				pointssize = part_obj.size//8
 				#print('[soundclub2]	  Tempo Points:',pointssize)
 				for x  in range(pointssize):
-					self.tempos.append([song_file.uint32(), song_file.uint8(), song_file.uint8(), song_file.uint8(), song_file.uint8()])
-
-			if subchunk_obj.id == b'voi': 
-				voice_obj = sn2_voice(song_file, subchunk_obj.end)
+					self.tempos.append([ebrw_readstr.int_u32(), ebrw_readstr.int_u8(), ebrw_readstr.int_u8(), ebrw_readstr.int_u8(), ebrw_readstr.int_u8()])
+			if part_obj.id == b'voi': 
+				voice_obj = sn2_voice(ebrw_readstr, part_obj.size)
 				self.voices.append(voice_obj)
 				#print('[soundclub2]	  Events for Inst '+str(voice_obj.instid)+':', len(voice_obj.notes))
 
@@ -90,32 +93,30 @@ class sn2_song:
 		pass
 
 	def load_from_file(self, input_file):
-		song_file = bytereader.bytereader()
-		song_file.load_file(input_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
-		try: song_file.magic_check(b'SN2')
+		try: ebrw_readstr.magic_check(b'SN2')
 		except ValueError as t: raise ProjectFileParserException('soundclub2: '+str(t))
 		
-		end_data = song_file.uint32()
+		end_data = ebrw_readstr.int_u32()
 
-		self.unk1 = song_file.uint32()
-		self.unk2 = song_file.uint32()
-		self.unk3 = song_file.uint32()
-		self.tempo = song_file.uint32()
-		self.ts_num = song_file.uint32()
-		self.ts_denum = song_file.uint32()
+		self.unk1 = ebrw_readstr.int_u32()
+		self.unk2 = ebrw_readstr.int_u32()
+		self.unk3 = ebrw_readstr.int_u32()
+		self.tempo = ebrw_readstr.int_u32()
+		self.ts_num = ebrw_readstr.int_u32()
+		self.ts_denum = ebrw_readstr.int_u32()
 
 		self.comment = ''
 		self.sequence = []
 		self.instruments = []
 		self.patterns = []
 
-		main_iff_obj = song_file.chunk_objmake()
-		main_iff_obj.set_sizes(3, 4, False)
-		for chunk_obj in main_iff_obj.iter(song_file.tell(), song_file.end):
-			if chunk_obj.id == b'NAM': self.comment = song_file.string(chunk_obj.size)
-			if chunk_obj.id == b'SEQ': self.sequence = song_file.l_int32(chunk_obj.size//4)
-			if chunk_obj.id == b'INS': self.instruments.append(sn2_instrument(song_file, chunk_obj.end))
-			if chunk_obj.id == b'PAT': self.patterns.append(sn2_pattern(song_file, chunk_obj))
+		for part_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, chunk_size_data):
+			if part_obj.id == b'NAM': self.comment = ebrw_readstr.string(part_obj.size)
+			if part_obj.id == b'SEQ': self.sequence = ebrw_readstr.list_int_s32(part_obj.size//4)
+			if part_obj.id == b'INS': self.instruments.append(sn2_instrument(ebrw_readstr, part_obj.end))
+			if part_obj.id == b'PAT': self.patterns.append(sn2_pattern(ebrw_readstr, part_obj))
 
 		return True

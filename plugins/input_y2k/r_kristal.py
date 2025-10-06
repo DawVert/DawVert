@@ -5,42 +5,42 @@ import xml.etree.ElementTree as ET
 import plugins
 from objects import globalstore
 from objects import colors
-from objects.data_bytes import bytewriter
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 
 def do_plugchunk(fx_slot, fxid, chunkdata, convproj_obj, plugslots):
 	try:
 		if chunkdata:
 			if len(chunkdata)>12:
 				datasize = len(fx_slot.bindata)-8
-				instate = bytereader.bytereader(fx_slot.bindata)
-				outstate = bytewriter.bytewriter()
-				unknown = instate.uint32()
-				outstate.uint32_b(instate.uint32())
-				outstate.uint32_b(instate.uint32())
-				maintype = instate.uint32()
+				ebrw_readstr = easybinrw.binread()
+				ebrw_readstr.load_data(fx_slot.bindata)
+				ebrw_writestr = easybinrw.binwrite()
+				unknown = ebrw_readstr.int_u32()
+				ebrw_writestr.int_u32_b(ebrw_readstr.int_u32())
+				ebrw_writestr.int_u32_b(ebrw_readstr.int_u32())
+				maintype = ebrw_readstr.int_u32()
 				if maintype == 1182286443: #kBxF
-					outstate.uint32_b(maintype)
-					for _ in range(4): outstate.uint32_b(instate.uint32())
-					outstate.raw(instate.raw(128))
-					while instate.remaining():
-						outstate.uint32_b(instate.uint32())
-						outstate.uint32_b(instate.uint32())
-						cctype = instate.uint32()
+					ebrw_writestr.int_u32_b(maintype)
+					for _ in range(4): ebrw_writestr.int_u32_b(ebrw_readstr.int_u32())
+					ebrw_writestr.raw(ebrw_readstr.raw(128))
+					while ebrw_readstr.remaining():
+						ebrw_writestr.int_u32_b(ebrw_readstr.int_u32())
+						ebrw_writestr.int_u32_b(ebrw_readstr.int_u32())
+						cctype = ebrw_readstr.int_u32()
 						if cctype == 1182286699: # kCxF
-							outstate.uint32_b(cctype)
-							outstate.uint32_b(instate.uint32())
-							outstate.uint32_b(instate.uint32())
-							outstate.uint32_b(instate.uint32())
-							numparams = instate.uint32()
-							outstate.uint32_b(numparams)
-							outstate.raw(instate.raw(28))
-							for _ in range(numparams): outstate.float_b(instate.float())
+							ebrw_writestr.int_u32_b(cctype)
+							ebrw_writestr.int_u32_b(ebrw_readstr.int_u32())
+							ebrw_writestr.int_u32_b(ebrw_readstr.int_u32())
+							ebrw_writestr.int_u32_b(ebrw_readstr.int_u32())
+							numparams = ebrw_readstr.int_u32()
+							ebrw_writestr.int_u32_b(numparams)
+							ebrw_writestr.raw(ebrw_readstr.raw(28))
+							for _ in range(numparams): ebrw_writestr.float_b(ebrw_readstr.float())
 						else:
 							break
 				plugin_obj = convproj_obj.plugin__add(fxid, 'external', 'vst2', None)
 				extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, fxid)
-				extmanu_obj.vst2__import_presetdata('raw', outstate.getvalue(), None)
+				extmanu_obj.vst2__import_presetdata('raw', ebrw_writestr.getvalue(), None)
 				plugin_obj.role = 'fx'
 				plugslots.slots_audio.append(fxid)
 	except:

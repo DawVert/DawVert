@@ -1,7 +1,8 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
+from external.easybinrw import chunked
 #from objects import openmpt_plugin
 import logging
 from objects.exceptions import ProjectFileParserException
@@ -29,17 +30,17 @@ class xm_env:
 		self.loop_on = bool(i_type&4)
 
 class xm_sample_header:
-	def __init__(self, song_file): 
-		self.length = song_file.uint32()
-		self.loop_start = song_file.uint32()
-		self.loop_end = song_file.uint32()
-		self.vol = song_file.uint8()
-		self.fine = song_file.uint8()
-		self.type = song_file.uint8()
-		self.pan = song_file.uint8()
-		self.note = song_file.uint8()
-		self.reserved = song_file.uint8()
-		self.name = song_file.string(22, encoding="windows-1252")
+	def __init__(self, ebrw_readstr): 
+		self.length = ebrw_readstr.int_u32()
+		self.loop_start = ebrw_readstr.int_u32()
+		self.loop_end = ebrw_readstr.int_u32()
+		self.vol = ebrw_readstr.int_u8()
+		self.fine = ebrw_readstr.int_u8()
+		self.type = ebrw_readstr.int_u8()
+		self.pan = ebrw_readstr.int_u8()
+		self.note = ebrw_readstr.int_u8()
+		self.reserved = ebrw_readstr.int_u8()
+		self.name = ebrw_readstr.string(22, encoding="windows-1252")
 		self.vol /= 64
 		if self.type&1: self.loop = 1
 		elif self.type&2: self.loop = 2
@@ -66,12 +67,12 @@ class xm_sample_header:
 		return self.loop!=0, looptype, loop_start, loop_end if self.loop_end else self.length
 
 class xm_instrument:
-	def __init__(self, song_file, num):
-		basepos = song_file.tell()
-		header_length = song_file.uint32()
-		self.name = song_file.string(22, encoding="latin1")
-		self.type = song_file.uint8()
-		self.num_samples = song_file.uint8()
+	def __init__(self, ebrw_readstr, num):
+		basepos = ebrw_readstr.tell()
+		header_length = ebrw_readstr.int_u32()
+		self.name = ebrw_readstr.string(22, encoding="latin1")
+		self.type = ebrw_readstr.int_u8()
+		self.num_samples = ebrw_readstr.int_u8()
 
 		logger_projparse.info("xm: Instrument "+str(num+1)+" | Type: "+str(self.type)+
 			" | "+str(self.num_samples)+' Samples'+
@@ -88,36 +89,36 @@ class xm_instrument:
 		self.notesampletable = []
 
 		if self.num_samples != 0:
-			xm_inst_e_head_size = song_file.uint32()
-			self.notesampletable = song_file.l_uint8(96)
-			self.env_vol.points = [song_file.l_uint16_b(2) for x in range(12)]
-			self.env_pan.points = [song_file.l_uint16_b(2) for x in range(12)]
+			xm_inst_e_head_size = ebrw_readstr.int_u32()
+			self.notesampletable = ebrw_readstr.list_int_u8(96)
+			self.env_vol.points = [list(ebrw_readstr.list_int_u16_b(2).tolist()) for x in range(12)]
+			self.env_pan.points = [list(ebrw_readstr.list_int_u16_b(2).tolist()) for x in range(12)]
 
-			song_file.skip(1)
-			self.env_vol.numpoints = song_file.uint8()
-			self.env_pan.numpoints = song_file.uint8()
-			self.env_vol.sustain = song_file.uint8()
-			self.env_vol.loop_start = song_file.uint8()
-			self.env_vol.loop_end = song_file.uint8()
-			self.env_pan.sustain = song_file.uint8()
-			self.env_pan.loop_start = song_file.uint8()
-			self.env_pan.loop_end = song_file.uint8()
-			self.env_vol.set_type(song_file.uint8())
-			self.env_pan.set_type(song_file.uint8())
-			self.vibrato_type = song_file.uint8()
-			self.vibrato_sweep = song_file.uint8()
-			self.vibrato_depth = song_file.uint8()
-			self.vibrato_rate = song_file.uint8()
-			self.fadeout = song_file.uint16()
-			self.reserved = song_file.uint16()
+			ebrw_readstr.skip(1)
+			self.env_vol.numpoints = ebrw_readstr.int_u8()
+			self.env_pan.numpoints = ebrw_readstr.int_u8()
+			self.env_vol.sustain = ebrw_readstr.int_u8()
+			self.env_vol.loop_start = ebrw_readstr.int_u8()
+			self.env_vol.loop_end = ebrw_readstr.int_u8()
+			self.env_pan.sustain = ebrw_readstr.int_u8()
+			self.env_pan.loop_start = ebrw_readstr.int_u8()
+			self.env_pan.loop_end = ebrw_readstr.int_u8()
+			self.env_vol.set_type(ebrw_readstr.int_u8())
+			self.env_pan.set_type(ebrw_readstr.int_u8())
+			self.vibrato_type = ebrw_readstr.int_u8()
+			self.vibrato_sweep = ebrw_readstr.int_u8()
+			self.vibrato_depth = ebrw_readstr.int_u8()
+			self.vibrato_rate = ebrw_readstr.int_u8()
+			self.fadeout = ebrw_readstr.int_u16()
+			self.reserved = ebrw_readstr.int_u16()
 
-		basepos_end = song_file.tell()
-		xm_pat_extra_data = song_file.read(header_length - (basepos_end-basepos))
+		basepos_end = ebrw_readstr.tell()
+		xm_pat_extra_data = ebrw_readstr.raw(header_length - (basepos_end-basepos))
 
 		self.pluginnum = 0
 
-		self.samp_head = [xm_sample_header(song_file) for _ in range(self.num_samples)]
-		self.samp_data = [song_file.read(x.length) for x in self.samp_head]
+		self.samp_head = [xm_sample_header(ebrw_readstr) for _ in range(self.num_samples)]
+		self.samp_data = [ebrw_readstr.raw(x.length) for x in self.samp_head]
 
 	def vibrato_lfo(self): 
 		return self.vibrato_rate, (self.vibrato_depth/15)*0.23, ['sine','square','ramp_up','ramp_down'][self.vibrato_type&3], self.vibrato_sweep/50
@@ -125,19 +126,19 @@ class xm_instrument:
 # ============================================= song ============================================= 
 
 class xm_pattern:
-	def __init__(self, song_file, num, num_channels):
+	def __init__(self, ebrw_readstr, num, num_channels):
 		#logger_projparse.info("xm: Pattern " + str(num))
 		self.data = []
 		self.used = False
 
-		basepos = song_file.tell()
-		header_length = song_file.uint32()
-		self.pak_type = song_file.uint8()
-		self.rows = song_file.uint16()
-		patterndata_size = song_file.uint16()
-		basepos_end = song_file.tell()
-		self.extra_data = song_file.raw(header_length - (basepos_end-basepos))
-		end_pos = patterndata_size+song_file.tell()
+		basepos = ebrw_readstr.tell()
+		header_length = ebrw_readstr.int_u32()
+		self.pak_type = ebrw_readstr.int_u8()
+		self.rows = ebrw_readstr.int_u16()
+		patterndata_size = ebrw_readstr.int_u16()
+		basepos_end = ebrw_readstr.tell()
+		self.extra_data = ebrw_readstr.raw(header_length - (basepos_end-basepos))
+		end_pos = patterndata_size+ebrw_readstr.tell()
 
 		if patterndata_size != 0:
 			self.used = True
@@ -150,7 +151,7 @@ class xm_pattern:
 					cell_effect = None
 					cell_param = None
 
-					packed_first = song_file.uint8()
+					packed_first = ebrw_readstr.int_u8()
 
 					packed_note = bool(packed_first&1)
 					packed_inst = bool(packed_first&2)
@@ -160,17 +161,17 @@ class xm_pattern:
 					packed_msb = bool(packed_first&128)
 
 					if packed_msb == 1:
-						if packed_note == 1: cell_note = song_file.uint8()
-						if packed_inst == 1: cell_inst = song_file.uint8()
-						if packed_vol == 1: cell_vol = song_file.uint8()
-						if packed_effect == 1: cell_effect = song_file.uint8()
-						if packed_param == 1: cell_param = song_file.uint8()
+						if packed_note == 1: cell_note = ebrw_readstr.int_u8()
+						if packed_inst == 1: cell_inst = ebrw_readstr.int_u8()
+						if packed_vol == 1: cell_vol = ebrw_readstr.int_u8()
+						if packed_effect == 1: cell_effect = ebrw_readstr.int_u8()
+						if packed_param == 1: cell_param = ebrw_readstr.int_u8()
 					else:
 						cell_note = packed_first
-						cell_inst = song_file.uint8()
-						cell_vol = song_file.uint8()
-						cell_effect = song_file.uint8()
-						cell_param = song_file.uint8()
+						cell_inst = ebrw_readstr.int_u8()
+						cell_vol = ebrw_readstr.int_u8()
+						cell_effect = ebrw_readstr.int_u8()
+						cell_param = ebrw_readstr.int_u8()
 
 					if not (cell_note == cell_inst == cell_vol == cell_effect == cell_param == None):
 						rowdata.append([channel, cell_note, cell_inst, cell_vol, cell_effect, cell_param])
@@ -182,38 +183,38 @@ class xm_song:
 		pass
 
 	def load_from_raw(self, input_file):
-		song_file = bytereader.bytereader()
-		song_file.load_raw(input_file)
-		return self.load(song_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(input_file)
+		return self.load(ebrw_readstr)
 
 	def load_from_file(self, input_file):
-		song_file = bytereader.bytereader()
-		song_file.load_file(input_file)
-		return self.load(song_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
+		return self.load(ebrw_readstr)
 
-	def load(self, song_file):
-		try: song_file.magic_check(b'Extended Module: ')
+	def load(self, ebrw_readstr):
+		try: ebrw_readstr.magic_check(b'Extended Module: ')
 		except ValueError as t: raise ProjectFileParserException('xm: '+str(t))
 
-		self.title = song_file.string(20, encoding="windows-1252")
+		self.title = ebrw_readstr.string(20, encoding="windows-1252")
 		logger_projparse.info("xm: Song Name: " + self.title)
-		song_file.skip(1)
-		self.tracker_name = song_file.string(20, encoding="windows-1252")
+		ebrw_readstr.skip(1)
+		self.tracker_name = ebrw_readstr.string(20, encoding="windows-1252")
 		logger_projparse.info("xm: Tracker Name: " + self.tracker_name)
-		self.version = song_file.l_uint8(2)
+		self.version = ebrw_readstr.list_int_u8(2)
 		logger_projparse.info("xm: Version: " + str(self.version[1])+','+str(self.version[0]))
 
-		xm_headersize = song_file.uint32()
-		xm_headersize_pos = song_file.tell()
+		xm_headersize = ebrw_readstr.int_u32()
+		xm_headersize_pos = ebrw_readstr.tell()
 
-		self.length = song_file.uint16()
-		self.restart_pos = song_file.uint16()
-		self.num_channels = song_file.uint16()
-		self.num_patterns = song_file.uint16()
-		self.num_instruments = song_file.uint16()
-		self.flags = song_file.flags16()
-		self.speed = song_file.uint16()
-		self.bpm = song_file.uint16()
+		self.length = ebrw_readstr.int_u16()
+		self.restart_pos = ebrw_readstr.int_u16()
+		self.num_channels = ebrw_readstr.int_u16()
+		self.num_patterns = ebrw_readstr.int_u16()
+		self.num_instruments = ebrw_readstr.int_u16()
+		self.flags = ebrw_readstr.flags_i16()
+		self.speed = ebrw_readstr.int_u16()
+		self.bpm = ebrw_readstr.int_u16()
 		
 		logger_projparse.info("xm: Song Length: " + str(self.length))
 		logger_projparse.info("xm: Song Restart Position: " + str(self.restart_pos))
@@ -224,16 +225,16 @@ class xm_song:
 		logger_projparse.info("xm: Speed: " + str(self.speed))
 		logger_projparse.info("xm: BPM: " + str(self.bpm))
 
-		self.l_order = song_file.l_uint8(self.length)
+		self.l_order = ebrw_readstr.list_int_u8(self.length)
 		logger_projparse.info("xm: Order: " + str(self.l_order))
 
-		findpat = song_file.tell()
+		findpat = ebrw_readstr.tell()
 		calc_pos = xm_headersize+xm_headersize_pos-4
 
-		self.extra_data = song_file.raw(calc_pos-findpat)
+		self.extra_data = ebrw_readstr.raw(calc_pos-findpat)
 
-		self.patterns = [xm_pattern(song_file, n, self.num_channels) for n in range(self.num_patterns)]
-		self.instruments = [xm_instrument(song_file, n) for n in range(self.num_instruments)]
+		self.patterns = [xm_pattern(ebrw_readstr, n, self.num_channels) for n in range(self.num_patterns)]
+		self.instruments = [xm_instrument(ebrw_readstr, n) for n in range(self.num_instruments)]
 
 		self.ompt_artist = None
 		self.ompt_cnam = None
@@ -243,39 +244,37 @@ class xm_song:
 		self.plugins = {}
 
 		endd = 0
-		if song_file.tell()<song_file.end:
-			main_iff_obj = song_file.chunk_objmake()
-			for chunk_obj in main_iff_obj.iter(song_file.tell(), song_file.end):
-				if chunk_obj.id == b'CNAM': 
-					self.ompt_cnam = song_file.l_string(chunk_obj.size//20, 20)
-					print('[xm] Channel Names:',self.ompt_cnam)
-				elif chunk_obj.id == b'PNAM': 
-					self.ompt_pnam = song_file.l_string(chunk_obj.size//32, 32)
-					print('[xm] Pattern Names:',self.ompt_pnam)
-				elif chunk_obj.id == b'CHFX': 
-					self.ompt_chfx = song_file.l_int32(chunk_obj.size//4)
-					print('[xm] Channel FX:',self.ompt_chfx)
-				#elif chunk_obj.id[0:2] == b'FX':
-				#	plugnum = int(chunk_obj.id[2:4].decode())+1
-				#	plug_obj = openmpt_plugin.openmpt_plugin()
-				#	plug_obj.read(song_file)
-				#	print('[xm] '+chunk_obj.id.decode()+':',plug_obj.type.decode())
-				#	self.plugins[plugnum] = plug_obj
-				else: 
-					break
-				endd = song_file.tell()
+		for part_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
+			if chunk_obj.id == b'CNAM': 
+				self.ompt_cnam = ebrw_readstr.l_string(chunk_obj.size//20, 20)
+				print('[xm] Channel Names:',self.ompt_cnam)
+			elif chunk_obj.id == b'PNAM': 
+				self.ompt_pnam = ebrw_readstr.l_string(chunk_obj.size//32, 32)
+				print('[xm] Pattern Names:',self.ompt_pnam)
+			elif chunk_obj.id == b'CHFX': 
+				self.ompt_chfx = ebrw_readstr.list_int_s32(chunk_obj.size//4)
+				print('[xm] Channel FX:',self.ompt_chfx)
+			#elif chunk_obj.id[0:2] == b'FX':
+			#	plugnum = int(chunk_obj.id[2:4].decode())+1
+			#	plug_obj = openmpt_plugin.openmpt_plugin()
+			#	plug_obj.read(ebrw_readstr)
+			#	print('[xm] '+chunk_obj.id.decode()+':',plug_obj.type.decode())
+			#	self.plugins[plugnum] = plug_obj
+			else: 
+				break
+			endd = ebrw_readstr.tell()
 
-		song_file.seek(endd)
+		ebrw_readstr.seek(endd)
 
 		return True
 
-		#if song_file.raw(4) == b'STPM':
-		#	if song_file.tell()<song_file.end:
-		#		main_iff_obj = song_file.chunk_objmake()
+		#if ebrw_readstr.raw(4) == b'STPM':
+		#	if ebrw_readstr.tell()<ebrw_readstr.end:
+		#		main_iff_obj = ebrw_readstr.chunk_objmake()
 		#		main_iff_obj.set_sizes(4, 2, False)
-		#		for chunk_obj in main_iff_obj.iter(song_file.tell(), song_file.end):
+		#		for chunk_obj in main_iff_obj.iter(ebrw_readstr.tell(), ebrw_readstr.end):
 
 		#			print(chunk_obj.id)
 
-		#			if chunk_obj.id == b'CCOL': self.ompt_ccol = song_file.table8([chunk_obj.size//4, 4])
-		#			if chunk_obj.id == b'AUTH': self.ompt_artist = song_file.string(chunk_obj.size)
+		#			if chunk_obj.id == b'CCOL': self.ompt_ccol = ebrw_readstr.table8([chunk_obj.size//4, 4])
+		#			if chunk_obj.id == b'AUTH': self.ompt_artist = ebrw_readstr.string(chunk_obj.size)

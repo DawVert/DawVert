@@ -1,8 +1,7 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later 
 
-from objects.data_bytes import bytereader
-from objects.data_bytes import bytewriter
+from external.easybinrw import easybinrw
 
 class dx_preset:
 	def __init__(self):
@@ -10,32 +9,31 @@ class dx_preset:
 		self.data = b''
 
 	def read_file(self, fxfile):
-		byr_stream = self.byr_stream = bytereader.bytereader()
-		byr_stream.load_file(fxfile)
-		self.parse(byr_stream)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(fxfile)
+		self.parse(ebrw_readstr)
 
 	def read_raw(self, bytesd):
-		byr_stream = self.byr_stream = bytereader.bytereader()
-		byr_stream.load_raw(bytesd)
-		self.parse(byr_stream)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(bytesd)
+		self.parse(ebrw_readstr)
 
-	def parse(self, byr_stream):
-		self.id = byr_stream.raw(16).hex()
-		dsize = byr_stream.uint32()
-		self.data = byr_stream.raw(dsize)
+	def parse(self, ebrw_readstr):
+		self.id = ebrw_readstr.raw(16).hex()
+		dsize = ebrw_readstr.int_u32()
+		self.data = ebrw_readstr.raw(dsize)
 
-	def write(self, byw_stream):
-		byw_stream.raw(bytes.fromhex(self.id))
-		byw_stream.uint32(len(self.data))
-		byw_stream.raw(self.data)
+	def write(self, ebrw_writestr):
+		ebrw_writestr.raw(bytes.fromhex(self.id))
+		ebrw_writestr.int_u32(len(self.data))
+		ebrw_writestr.raw(self.data)
 
 	def write_to_file(self, output_file):
-		byw_stream = bytewriter.bytewriter()
-		self.write(byw_stream)
-		f = open(output_file, 'wb')
-		f.write(byw_stream.getvalue())
+		ebrw_writestr = easybinrw.binwrite()
+		self.write(ebrw_writestr)
+		ebrw_writestr.to_file(output_file)
 
 	def write_to_raw(self):
-		byw_stream = bytewriter.bytewriter()
-		self.write(byw_stream)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		self.write(ebrw_writestr)
+		return ebrw_writestr.getvalue()

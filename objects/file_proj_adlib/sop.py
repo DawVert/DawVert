@@ -2,27 +2,27 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from objects.exceptions import ProjectFileParserException
-from objects.data_bytes import bytereader
 from objects.inst_params import fm_opl
+from external.easybinrw import easybinrw
 
-def decode_events(song_file):
+def decode_events(ebrw_readstr):
 	sop_eventdata = []
-	track_numEvents = song_file.uint16()
-	track_dataSize = song_file.uint32()
+	track_numEvents = ebrw_readstr.int_u16()
+	track_dataSize = ebrw_readstr.int_u32()
 	for _ in range(track_numEvents):
-		sop_event_pos = song_file.uint16()
-		sop_event_code = song_file.uint8()
-		if sop_event_code == 1: sop_eventdata.append([sop_event_pos, 'SPECIAL', song_file.uint8()])
+		sop_event_pos = ebrw_readstr.int_u16()
+		sop_event_code = ebrw_readstr.int_u8()
+		if sop_event_code == 1: sop_eventdata.append([sop_event_pos, 'SPECIAL', ebrw_readstr.int_u8()])
 		elif sop_event_code == 2: 
-			note_pitch = song_file.uint8()
-			note_length = song_file.uint16()
+			note_pitch = ebrw_readstr.int_u8()
+			note_length = ebrw_readstr.int_u16()
 			sop_eventdata.append([sop_event_pos, 'NOTE', note_pitch, note_length])
-		elif sop_event_code == 3: sop_eventdata.append([sop_event_pos, 'TEMPO', song_file.uint8()])
-		elif sop_event_code == 4: sop_eventdata.append([sop_event_pos, 'VOL', song_file.uint8()])
-		elif sop_event_code == 5: sop_eventdata.append([sop_event_pos, 'PITCH', song_file.uint8()])
-		elif sop_event_code == 6: sop_eventdata.append([sop_event_pos, 'INST', song_file.uint8()])
-		elif sop_event_code == 7: sop_eventdata.append([sop_event_pos, 'PAN', song_file.uint8()])
-		elif sop_event_code == 8: sop_eventdata.append([sop_event_pos, 'GVOL', song_file.uint8()])
+		elif sop_event_code == 3: sop_eventdata.append([sop_event_pos, 'TEMPO', ebrw_readstr.int_u8()])
+		elif sop_event_code == 4: sop_eventdata.append([sop_event_pos, 'VOL', ebrw_readstr.int_u8()])
+		elif sop_event_code == 5: sop_eventdata.append([sop_event_pos, 'PITCH', ebrw_readstr.int_u8()])
+		elif sop_event_code == 6: sop_eventdata.append([sop_event_pos, 'INST', ebrw_readstr.int_u8()])
+		elif sop_event_code == 7: sop_eventdata.append([sop_event_pos, 'PAN', ebrw_readstr.int_u8()])
+		elif sop_event_code == 8: sop_eventdata.append([sop_event_pos, 'GVOL', ebrw_readstr.int_u8()])
 		else:
 			print('[error] unknown event code:', sop_event_code)
 			exit()
@@ -49,66 +49,66 @@ class adlib_sop_project:
 		self.controltrack = []
 
 	def load_from_file(self, input_file):
-		song_file = bytereader.bytereader()
-		song_file.load_file(input_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
 		try: 
-			song_file.magic_check(b'sopepos')
+			ebrw_readstr.magic_check(b'sopepos')
 		except ValueError as t:
 			raise ProjectFileParserException('adlib_sop: '+str(t))
 
-		self.majorVersion = song_file.uint8()
-		self.minorVersion = song_file.uint8()
-		song_file.skip(1)
-		self.fileName = song_file.string(13)
-		self.title = song_file.string(31)
+		self.majorVersion = ebrw_readstr.int_u8()
+		self.minorVersion = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(1)
+		self.fileName = ebrw_readstr.string(13)
+		self.title = ebrw_readstr.string(31)
 
-		self.opl_rhythm = song_file.uint8()
-		song_file.skip(1)
-		self.tickBeat = song_file.uint8()
-		song_file.skip(1)
-		self.beatMeasure = song_file.uint8()
-		self.basicTempo = song_file.uint8()
+		self.opl_rhythm = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(1)
+		self.tickBeat = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(1)
+		self.beatMeasure = ebrw_readstr.int_u8()
+		self.basicTempo = ebrw_readstr.int_u8()
 
-		self.comment = song_file.string(13)
-		num_tracks = song_file.uint8()
-		num_insts = song_file.uint8()
-		song_file.skip(1)
+		self.comment = ebrw_readstr.string(13)
+		num_tracks = ebrw_readstr.int_u8()
+		num_insts = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(1)
 		self.tracks = [adlib_sop_track() for x in range(num_tracks)]
 
-		for n in range(num_tracks): self.tracks[n].chanmode = song_file.uint8()
+		for n in range(num_tracks): self.tracks[n].chanmode = ebrw_readstr.int_u8()
 
 		for _ in range(num_insts):
-			insttype = song_file.uint8()
+			insttype = ebrw_readstr.int_u8()
 			opli = fm_opl.opl_inst()
-			opli.name = song_file.string(8, encoding="latin-1")
-			opli.name_long = song_file.string(19, encoding="latin-1")
+			opli.name = ebrw_readstr.string(8, encoding="latin-1")
+			opli.name_long = ebrw_readstr.string(19, encoding="latin-1")
 			if insttype in [0]: 
-				opli.ops[0].avekf(song_file.uint8())
-				opli.ops[0].ksl_lvl(song_file.uint8())
-				opli.ops[0].att_dec(song_file.uint8())
-				opli.ops[0].sus_rel(song_file.uint8())
-				opli.ops[0].waveform = song_file.uint8()
-				opli.fmfb1(song_file.uint8())
+				opli.ops[0].avekf(ebrw_readstr.int_u8())
+				opli.ops[0].ksl_lvl(ebrw_readstr.int_u8())
+				opli.ops[0].att_dec(ebrw_readstr.int_u8())
+				opli.ops[0].sus_rel(ebrw_readstr.int_u8())
+				opli.ops[0].waveform = ebrw_readstr.int_u8()
+				opli.fmfb1(ebrw_readstr.int_u8())
 
-				opli.ops[1].avekf(song_file.uint8())
-				opli.ops[1].ksl_lvl(song_file.uint8())
-				opli.ops[1].att_dec(song_file.uint8())
-				opli.ops[1].sus_rel(song_file.uint8())
-				opli.ops[1].waveform = song_file.uint8()
+				opli.ops[1].avekf(ebrw_readstr.int_u8())
+				opli.ops[1].ksl_lvl(ebrw_readstr.int_u8())
+				opli.ops[1].att_dec(ebrw_readstr.int_u8())
+				opli.ops[1].sus_rel(ebrw_readstr.int_u8())
+				opli.ops[1].waveform = ebrw_readstr.int_u8()
 
-				opli.ops[2].avekf(song_file.uint8())
-				opli.ops[2].ksl_lvl(song_file.uint8())
-				opli.ops[2].att_dec(song_file.uint8())
-				opli.ops[2].sus_rel(song_file.uint8())
-				opli.ops[2].waveform = song_file.uint8()
-				opli.fmfb2(song_file.uint8())
+				opli.ops[2].avekf(ebrw_readstr.int_u8())
+				opli.ops[2].ksl_lvl(ebrw_readstr.int_u8())
+				opli.ops[2].att_dec(ebrw_readstr.int_u8())
+				opli.ops[2].sus_rel(ebrw_readstr.int_u8())
+				opli.ops[2].waveform = ebrw_readstr.int_u8()
+				opli.fmfb2(ebrw_readstr.int_u8())
 
-				opli.ops[3].avekf(song_file.uint8())
-				opli.ops[3].ksl_lvl(song_file.uint8())
-				opli.ops[3].att_dec(song_file.uint8())
-				opli.ops[3].sus_rel(song_file.uint8())
-				opli.ops[3].waveform = song_file.uint8()
+				opli.ops[3].avekf(ebrw_readstr.int_u8())
+				opli.ops[3].ksl_lvl(ebrw_readstr.int_u8())
+				opli.ops[3].att_dec(ebrw_readstr.int_u8())
+				opli.ops[3].sus_rel(ebrw_readstr.int_u8())
+				opli.ops[3].waveform = ebrw_readstr.int_u8()
 
 			elif insttype in [1,6,7,8,9,10]:
 				opli.set_opl2()
@@ -116,21 +116,21 @@ class adlib_sop_project:
 					opli.perc_on = True
 					opli.perc_type = insttype-5
 
-				opli.ops[0].avekf(song_file.uint8())
-				opli.ops[0].ksl_lvl(song_file.uint8())
-				opli.ops[0].att_dec(song_file.uint8())
-				opli.ops[0].sus_rel(song_file.uint8())
-				opli.ops[0].waveform = song_file.uint8()
-				opli.fmfb1(song_file.uint8())
+				opli.ops[0].avekf(ebrw_readstr.int_u8())
+				opli.ops[0].ksl_lvl(ebrw_readstr.int_u8())
+				opli.ops[0].att_dec(ebrw_readstr.int_u8())
+				opli.ops[0].sus_rel(ebrw_readstr.int_u8())
+				opli.ops[0].waveform = ebrw_readstr.int_u8()
+				opli.fmfb1(ebrw_readstr.int_u8())
 				
-				opli.ops[1].avekf(song_file.uint8())
-				opli.ops[1].ksl_lvl(song_file.uint8())
-				opli.ops[1].att_dec(song_file.uint8())
-				opli.ops[1].sus_rel(song_file.uint8())
-				opli.ops[1].waveform = song_file.uint8()
+				opli.ops[1].avekf(ebrw_readstr.int_u8())
+				opli.ops[1].ksl_lvl(ebrw_readstr.int_u8())
+				opli.ops[1].att_dec(ebrw_readstr.int_u8())
+				opli.ops[1].sus_rel(ebrw_readstr.int_u8())
+				opli.ops[1].waveform = ebrw_readstr.int_u8()
 			self.insts.append(opli)
 
-		for n in range(num_tracks): self.tracks[n].events = decode_events(song_file)
-		self.controltrack = decode_events(song_file)
+		for n in range(num_tracks): self.tracks[n].events = decode_events(ebrw_readstr)
+		self.controltrack = decode_events(ebrw_readstr)
 
 		return True

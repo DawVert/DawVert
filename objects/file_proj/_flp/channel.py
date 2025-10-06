@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later 
 
 from functions import xtramath
-from objects.data_bytes import bytereader
-from objects.data_bytes import bytewriter
+from external.easybinrw import easybinrw
 from objects.file_proj._flp import plugin
 import struct
 
@@ -28,49 +27,50 @@ class flp_env_lfo:
 		self.el_env_release_tension = 0.0
 
 	def read(self, event_data):
-		event_bio = bytereader.bytereader(event_data)
-		self.envlfo_flags = event_bio.uint32()
-		self.el_env_enabled = event_bio.uint32()
-		self.el_env_predelay = event_bio.uint32()
-		self.el_env_attack = event_bio.uint32()
-		self.el_env_hold =event_bio.uint32()
-		self.el_env_decay = event_bio.uint32()
-		self.el_env_sustain = event_bio.uint32()
-		self.el_env_release = event_bio.uint32()
-		self.el_env_aomunt = event_bio.int32()
-		self.envlfo_lfo_predelay = event_bio.uint32()
-		self.envlfo_lfo_attack = event_bio.uint32()
-		self.envlfo_lfo_amount = event_bio.uint32()
-		self.envlfo_lfo_speed = event_bio.uint32()
-		self.envlfo_lfo_shape = event_bio.uint32()
-		self.el_env_attack_tension = event_bio.int32()/128
-		self.el_env_decay_tension = event_bio.int32()/128
-		self.el_env_release_tension = event_bio.int32()/128
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(event_data)
+		self.envlfo_flags = ebrw_readstr.int_u32()
+		self.el_env_enabled = ebrw_readstr.int_u32()
+		self.el_env_predelay = ebrw_readstr.int_u32()
+		self.el_env_attack = ebrw_readstr.int_u32()
+		self.el_env_hold = ebrw_readstr.int_u32()
+		self.el_env_decay = ebrw_readstr.int_u32()
+		self.el_env_sustain = ebrw_readstr.int_u32()
+		self.el_env_release = ebrw_readstr.int_u32()
+		self.el_env_aomunt = ebrw_readstr.int_s32()
+		self.envlfo_lfo_predelay = ebrw_readstr.int_u32()
+		self.envlfo_lfo_attack = ebrw_readstr.int_u32()
+		self.envlfo_lfo_amount = ebrw_readstr.int_u32()
+		self.envlfo_lfo_speed = ebrw_readstr.int_u32()
+		self.envlfo_lfo_shape = ebrw_readstr.int_u32()
+		self.el_env_attack_tension = ebrw_readstr.int_s32()/128
+		self.el_env_decay_tension = ebrw_readstr.int_s32()/128
+		self.el_env_release_tension = ebrw_readstr.int_s32()/128
 
 	def write(self):
 		el_env_attack_tension = int(self.el_env_attack_tension*128)
 		el_env_decay_tension = int(self.el_env_decay_tension*128)
 		el_env_release_tension = int(self.el_env_release_tension*128)
 
-		env_lfo = bytewriter.bytewriter()
-		env_lfo.uint32(self.envlfo_flags)
-		env_lfo.uint32(self.el_env_enabled)
-		env_lfo.uint32(self.el_env_predelay)
-		env_lfo.uint32(self.el_env_attack)
-		env_lfo.uint32(self.el_env_hold)
-		env_lfo.uint32(self.el_env_decay)
-		env_lfo.uint32(self.el_env_sustain)
-		env_lfo.uint32(self.el_env_release)
-		env_lfo.int32(self.el_env_aomunt)
-		env_lfo.uint32(self.envlfo_lfo_predelay)
-		env_lfo.uint32(self.envlfo_lfo_attack)
-		env_lfo.uint32(self.envlfo_lfo_amount)
-		env_lfo.uint32(self.envlfo_lfo_speed)
-		env_lfo.uint32(self.envlfo_lfo_shape)
-		env_lfo.int32(el_env_attack_tension)
-		env_lfo.int32(el_env_decay_tension)
-		env_lfo.int32(el_env_release_tension)
-		return env_lfo.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u32(self.envlfo_flags)
+		ebrw_writestr.int_u32(self.el_env_enabled)
+		ebrw_writestr.int_u32(self.el_env_predelay)
+		ebrw_writestr.int_u32(self.el_env_attack)
+		ebrw_writestr.int_u32(self.el_env_hold)
+		ebrw_writestr.int_u32(self.el_env_decay)
+		ebrw_writestr.int_u32(self.el_env_sustain)
+		ebrw_writestr.int_u32(self.el_env_release)
+		ebrw_writestr.int_s32(self.el_env_aomunt)
+		ebrw_writestr.int_u32(self.envlfo_lfo_predelay)
+		ebrw_writestr.int_u32(self.envlfo_lfo_attack)
+		ebrw_writestr.int_u32(self.envlfo_lfo_amount)
+		ebrw_writestr.int_u32(self.envlfo_lfo_speed)
+		ebrw_writestr.int_u32(self.envlfo_lfo_shape)
+		ebrw_writestr.int_s32(el_env_attack_tension)
+		ebrw_writestr.int_s32(el_env_decay_tension)
+		ebrw_writestr.int_s32(el_env_release_tension)
+		return ebrw_writestr.getvalue()
 
 class flp_channel_params:
 	def __init__(self):
@@ -113,106 +113,107 @@ class flp_channel_params:
 		self.ds_time = 1.0
 
 	def read(self, event_data):
-		event_bio = bytereader.bytereader(event_data)
-		event_bio.skip(8) # ffffffff 00000000
-		self.unkflag1 = event_bio.uint8()
-		self.remove_dc = event_bio.uint8()
-		self.delayflags = event_bio.uint8()
-		self.main_pitch = event_bio.uint8()
-		event_bio.skip(8) # ffffffff3c000000
-		self.ds_tone = event_bio.float()
-		self.ds_over = event_bio.float()
-		self.ds_noise = event_bio.float()
-		self.ds_band = event_bio.float()
-		self.ds_time = event_bio.float()
-		self.arpdirection = event_bio.uint32()
-		self.arprange = event_bio.uint32()
-		self.arpchord = event_bio.uint32()
-		self.arptime = event_bio.uint32()
-		self.arpgate = event_bio.uint32()
-		self.arpslide = event_bio.uint8()
-		event_bio.skip(1) # 00
-		self.timefull_porta = event_bio.uint8()
-		self.addtokey = event_bio.uint8()
-		self.timegate = event_bio.uint16()
-		event_bio.skip(2) # 05 00
-		self.keyrange_min = event_bio.uint32()
-		self.keyrange_max = event_bio.uint32()
-		event_bio.skip(4) # 00 00 00 00
-		self.normalize = event_bio.uint8()
-		self.reversepolarity = event_bio.uint8()
-		event_bio.skip(1) # 00
-		self.declickmode = event_bio.uint8()
-		self.crossfade = event_bio.uint32()
-		self.trim = event_bio.uint32()
-		self.arprepeat = event_bio.uint32()
-		self.stretchingtime = event_bio.uint32()
-		self.stretchingpitch = event_bio.int32()
-		self.stretchingmultiplier = event_bio.int32()
-		self.stretchingmode = event_bio.int32()
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(event_data)
+		ebrw_readstr.skip(8) # ffffffff 00000000
+		self.unkflag1 = ebrw_readstr.int_u8()
+		self.remove_dc = ebrw_readstr.int_u8()
+		self.delayflags = ebrw_readstr.int_u8()
+		self.main_pitch = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(8) # ffffffff3c000000
+		self.ds_tone = ebrw_readstr.float()
+		self.ds_over = ebrw_readstr.float()
+		self.ds_noise = ebrw_readstr.float()
+		self.ds_band = ebrw_readstr.float()
+		self.ds_time = ebrw_readstr.float()
+		self.arpdirection = ebrw_readstr.int_u32()
+		self.arprange = ebrw_readstr.int_u32()
+		self.arpchord = ebrw_readstr.int_u32()
+		self.arptime = ebrw_readstr.int_u32()
+		self.arpgate = ebrw_readstr.int_u32()
+		self.arpslide = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(1) # 00
+		self.timefull_porta = ebrw_readstr.int_u8()
+		self.addtokey = ebrw_readstr.int_u8()
+		self.timegate = ebrw_readstr.int_u16()
+		ebrw_readstr.skip(2) # 05 00
+		self.keyrange_min = ebrw_readstr.int_u32()
+		self.keyrange_max = ebrw_readstr.int_u32()
+		ebrw_readstr.skip(4) # 00 00 00 00
+		self.normalize = ebrw_readstr.int_u8()
+		self.reversepolarity = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(1) # 00
+		self.declickmode = ebrw_readstr.int_u8()
+		self.crossfade = ebrw_readstr.int_u32()
+		self.trim = ebrw_readstr.int_u32()
+		self.arprepeat = ebrw_readstr.int_u32()
+		self.stretchingtime = ebrw_readstr.int_u32()
+		self.stretchingpitch = ebrw_readstr.int_s32()
+		self.stretchingmultiplier = ebrw_readstr.int_s32()
+		self.stretchingmode = ebrw_readstr.int_s32()
 
-		if event_bio.remaining(): self.midi_chan_thru = event_bio.uint32()
-		if event_bio.remaining(): event_bio.skip(4)
-		if event_bio.remaining(): event_bio.skip(4)
-		if event_bio.remaining(): event_bio.skip(4)
-		if event_bio.remaining(): self.start = event_bio.double()
-		if event_bio.remaining(): self.length = event_bio.double()
-		if event_bio.remaining(): self.start_offset = event_bio.double()
-		if event_bio.remaining(): event_bio.skip(4)
-		if event_bio.remaining(): event_bio.skip(4)
-		if event_bio.remaining(): self.stretchingformant = (event_bio.double()-0.5)*24
+		if ebrw_readstr.remaining(): self.midi_chan_thru = ebrw_readstr.int_u32()
+		if ebrw_readstr.remaining(): ebrw_readstr.skip(4)
+		if ebrw_readstr.remaining(): ebrw_readstr.skip(4)
+		if ebrw_readstr.remaining(): ebrw_readstr.skip(4)
+		if ebrw_readstr.remaining(): self.start = ebrw_readstr.double()
+		if ebrw_readstr.remaining(): self.length = ebrw_readstr.double()
+		if ebrw_readstr.remaining(): self.start_offset = ebrw_readstr.double()
+		if ebrw_readstr.remaining(): ebrw_readstr.skip(4)
+		if ebrw_readstr.remaining(): ebrw_readstr.skip(4)
+		if ebrw_readstr.remaining(): self.stretchingformant = (ebrw_readstr.double()-0.5)*24
 
 	def write(self):
-		bytes_params = bytewriter.bytewriter()
-		bytes_params.int32(-1)
-		bytes_params.int32(0)
-		bytes_params.int8(self.unkflag1)
-		bytes_params.int8(self.remove_dc)
-		bytes_params.int8(self.delayflags)
-		bytes_params.int8(self.main_pitch)
-		bytes_params.int32(-1)
-		bytes_params.int32(60)
-		bytes_params.float(self.ds_tone)
-		bytes_params.float(self.ds_over)
-		bytes_params.float(self.ds_noise)
-		bytes_params.float(self.ds_band)
-		bytes_params.float(self.ds_time)
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_s32(-1)
+		ebrw_writestr.int_s32(0)
+		ebrw_writestr.int_s8(self.unkflag1)
+		ebrw_writestr.int_s8(self.remove_dc)
+		ebrw_writestr.int_s8(self.delayflags)
+		ebrw_writestr.int_s8(self.main_pitch)
+		ebrw_writestr.int_s32(-1)
+		ebrw_writestr.int_s32(60)
+		ebrw_writestr.float(self.ds_tone)
+		ebrw_writestr.float(self.ds_over)
+		ebrw_writestr.float(self.ds_noise)
+		ebrw_writestr.float(self.ds_band)
+		ebrw_writestr.float(self.ds_time)
 
-		bytes_params.uint32(self.arpdirection)
-		bytes_params.uint32(self.arprange)
-		bytes_params.uint32(self.arpchord)
-		bytes_params.uint32(self.arptime)
-		bytes_params.uint32(self.arpgate)
-		bytes_params.int8(self.arpslide)
-		bytes_params.raw(b'\x00')
-		bytes_params.int8(self.timefull_porta)
-		bytes_params.int8(self.addtokey)
-		bytes_params.int16(self.timegate)
-		bytes_params.raw(b'\x00\x00')
-		bytes_params.uint32(self.keyrange_min)
-		bytes_params.uint32(self.keyrange_max)
-		bytes_params.raw(b'\x00\x00\x00\x00')
-		bytes_params.int8(self.normalize)
-		bytes_params.int8(self.reversepolarity)
-		bytes_params.raw(b'\x00')
-		bytes_params.int8(self.declickmode)
-		bytes_params.uint32(self.crossfade)
-		bytes_params.uint32(self.trim)
-		bytes_params.uint32(self.arprepeat)
-		bytes_params.uint32(self.stretchingtime)
-		bytes_params.int32(self.stretchingpitch)
-		bytes_params.int32(self.stretchingmultiplier)
-		bytes_params.int32(self.stretchingmode)
-		bytes_params.uint32(self.midi_chan_thru)
-		bytes_params.int32(-2)
-		bytes_params.int32(-1)
-		bytes_params.int32(0)
-		bytes_params.double(self.start)
-		bytes_params.double(self.length)
-		bytes_params.double(self.start_offset)
-		bytes_params.raw(b'\xff\xff\xff\xff\x00\x01\x00\x00')
-		bytes_params.double((self.stretchingformant/24)+0.5)
-		return bytes_params.getvalue()
+		ebrw_writestr.int_u32(self.arpdirection)
+		ebrw_writestr.int_u32(self.arprange)
+		ebrw_writestr.int_u32(self.arpchord)
+		ebrw_writestr.int_u32(self.arptime)
+		ebrw_writestr.int_u32(self.arpgate)
+		ebrw_writestr.int_s8(self.arpslide)
+		ebrw_writestr.raw(b'\x00')
+		ebrw_writestr.int_s8(self.timefull_porta)
+		ebrw_writestr.int_s8(self.addtokey)
+		ebrw_writestr.int_s16(self.timegate)
+		ebrw_writestr.raw(b'\x00\x00')
+		ebrw_writestr.int_u32(self.keyrange_min)
+		ebrw_writestr.int_u32(self.keyrange_max)
+		ebrw_writestr.raw(b'\x00\x00\x00\x00')
+		ebrw_writestr.int_s8(self.normalize)
+		ebrw_writestr.int_s8(self.reversepolarity)
+		ebrw_writestr.raw(b'\x00')
+		ebrw_writestr.int_s8(self.declickmode)
+		ebrw_writestr.int_u32(self.crossfade)
+		ebrw_writestr.int_u32(self.trim)
+		ebrw_writestr.int_u32(self.arprepeat)
+		ebrw_writestr.int_u32(self.stretchingtime)
+		ebrw_writestr.int_s32(self.stretchingpitch)
+		ebrw_writestr.int_s32(self.stretchingmultiplier)
+		ebrw_writestr.int_s32(self.stretchingmode)
+		ebrw_writestr.int_u32(self.midi_chan_thru)
+		ebrw_writestr.int_s32(-2)
+		ebrw_writestr.int_s32(-1)
+		ebrw_writestr.int_s32(0)
+		ebrw_writestr.double(self.start)
+		ebrw_writestr.double(self.length)
+		ebrw_writestr.double(self.start_offset)
+		ebrw_writestr.raw(b'\xff\xff\xff\xff\x00\x01\x00\x00')
+		ebrw_writestr.double((self.stretchingformant/24)+0.5)
+		return ebrw_writestr.getvalue()
 
 class flp_channel_basicparams:
 	def __init__(self):
@@ -224,13 +225,14 @@ class flp_channel_basicparams:
 		self.mod_type = 0
 
 	def read(self, event_data):
-		event_bio = bytereader.bytereader(event_data)
-		self.pan = ((event_bio.uint32()/12800)-0.5)*2
-		self.volume = (event_bio.uint32()/12800)
-		self.pitch = event_bio.int32()
-		self.mod_x = event_bio.uint32()/256
-		self.mod_y = event_bio.uint32()/256
-		self.mod_type = event_bio.uint32()
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(event_data)
+		self.pan = ((ebrw_readstr.int_u32()/12800)-0.5)*2
+		self.volume = (ebrw_readstr.int_u32()/12800)
+		self.pitch = ebrw_readstr.int_s32()
+		self.mod_x = ebrw_readstr.int_u32()/256
+		self.mod_y = ebrw_readstr.int_u32()/256
+		self.mod_type = ebrw_readstr.int_u32()
 
 	def write(self):
 		basicp_pan = int(xtramath.clamp((self.pan/2)+0.5, 0, 1)*12800)
@@ -238,14 +240,14 @@ class flp_channel_basicparams:
 		basicp_pitch = int(self.pitch)
 		basicp_mod_x = int(xtramath.clamp(self.mod_x, 0, 1)*256)
 		basicp_mod_y = int(xtramath.clamp(self.mod_y, 0, 1)*256)
-		bytes_basicparams = bytewriter.bytewriter()
-		bytes_basicparams.uint32(basicp_pan)
-		bytes_basicparams.uint32(basicp_volume)
-		bytes_basicparams.int32(basicp_pitch)
-		bytes_basicparams.uint32(basicp_mod_x)
-		bytes_basicparams.uint32(basicp_mod_y)
-		bytes_basicparams.uint32(self.mod_type)
-		return bytes_basicparams.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u32(basicp_pan)
+		ebrw_writestr.int_u32(basicp_volume)
+		ebrw_writestr.int_s32(basicp_pitch)
+		ebrw_writestr.int_u32(basicp_mod_x)
+		ebrw_writestr.int_u32(basicp_mod_y)
+		ebrw_writestr.int_u32(self.mod_type)
+		return ebrw_writestr.getvalue()
 
 class flp_channel_poly:
 	def __init__(self):
@@ -254,17 +256,18 @@ class flp_channel_poly:
 		self.flags = 0
 
 	def read(self, event_data):
-		event_bio = bytereader.bytereader(event_data)
-		self.max = event_bio.uint32()
-		self.slide = event_bio.uint32()
-		self.flags = event_bio.uint8()
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(event_data)
+		self.max = ebrw_readstr.int_u32()
+		self.slide = ebrw_readstr.int_u32()
+		self.flags = ebrw_readstr.int_u8()
 
 	def write(self):
-		bytes_poly = bytewriter.bytewriter()
-		bytes_poly.uint32(self.max)
-		bytes_poly.uint32(self.slide)
-		bytes_poly.uint8(self.flags)
-		return bytes_poly.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u32(self.max)
+		ebrw_writestr.int_u32(self.slide)
+		ebrw_writestr.int_u8(self.flags)
+		return ebrw_writestr.getvalue()
 
 class flp_channel_tracking:
 	def __init__(self):
@@ -274,19 +277,20 @@ class flp_channel_tracking:
 		self.mod_y = 0
 
 	def read(self, event_data):
-		event_bio = bytereader.bytereader(event_data)
-		self.mid = event_bio.int32()
-		self.pan = event_bio.int32()
-		self.mod_x = event_bio.int32()
-		self.mod_y = event_bio.int32()
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(event_data)
+		self.mid = ebrw_readstr.int_s32()
+		self.pan = ebrw_readstr.int_s32()
+		self.mod_x = ebrw_readstr.int_s32()
+		self.mod_y = ebrw_readstr.int_s32()
 
 	def write(self):
-		bytes_trking = bytewriter.bytewriter()
-		bytes_trking.int32(self.mid)
-		bytes_trking.int32(self.pan)
-		bytes_trking.int32(self.mod_x)
-		bytes_trking.int32(self.mod_y)
-		return bytes_trking.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_s32(self.mid)
+		ebrw_writestr.int_s32(self.pan)
+		ebrw_writestr.int_s32(self.mod_x)
+		ebrw_writestr.int_s32(self.mod_y)
+		return ebrw_writestr.getvalue()
 
 class flp_channel_delay:
 	def __init__(self):
@@ -297,21 +301,22 @@ class flp_channel_delay:
 		self.time = 3
 
 	def read(self, event_data):
-		event_bio = bytereader.bytereader(event_data)
-		self.feedback = event_bio.uint32()/12800
-		self.pan = event_bio.uint32()/19200
-		self.pitch = event_bio.uint32()
-		self.echoes = event_bio.uint32()
-		self.time = event_bio.uint32()/48
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(event_data)
+		self.feedback = ebrw_readstr.int_u32()/12800
+		self.pan = ebrw_readstr.int_u32()/19200
+		self.pitch = ebrw_readstr.int_u32()
+		self.echoes = ebrw_readstr.int_u32()
+		self.time = ebrw_readstr.int_u32()/48
 
 	def write(self):
-		bytes_delay = bytewriter.bytewriter()
-		bytes_delay.uint32(int(self.feedback*12800))
-		bytes_delay.uint32(int(self.pan*19200))
-		bytes_delay.uint32(self.pitch)
-		bytes_delay.uint32(self.echoes)
-		bytes_delay.uint32(int(self.time*48))
-		return bytes_delay.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u32(int(self.feedback*12800))
+		ebrw_writestr.int_u32(int(self.pan*19200))
+		ebrw_writestr.int_u32(self.pitch)
+		ebrw_writestr.int_u32(self.echoes)
+		ebrw_writestr.int_u32(int(self.time*48))
+		return ebrw_writestr.getvalue()
 
 class flp_channel:
 	def __init__(self):

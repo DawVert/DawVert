@@ -2,7 +2,7 @@
 from io import BytesIO
 #from objects import globalstore
 
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 
 from objects.file_proj._midi.vendors import universal
 from objects.file_proj._midi.vendors import roland
@@ -10,16 +10,16 @@ from objects.file_proj._midi.vendors import yamaha
 from objects.file_proj._midi.vendors import sony
 
 class vendor_obj:
-	def __init__(self, bstream):
+	def __init__(self, ebrw_readstr):
 		self.id = None
 		self.ext = False
 		self.name = None
 		self.hex = None
-		if bstream:
-			self.id = bstream.read(1)
+		if ebrw_readstr:
+			self.id = ebrw_readstr.read(1)
 			if self.id[0] == 0:
 				self.ext = True
-				self.id += bstream.read(2)
+				self.id += ebrw_readstr.read(2)
 
 			self.hex = '#'+bytes.hex(self.id)
 			#if idvals_sysex_brands.check_exists(self.hex): 
@@ -51,35 +51,35 @@ class seqspec_obj:
 		self.value = None
 
 	def detect(self, sysexdata):
-		bstream = bytereader.bytereader()
-		bstream.load_raw(sysexdata)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(sysexdata)
 
-		self.vendor = vendor_obj(bstream)
+		self.vendor = vendor_obj(ebrw_readstr)
 		if self.vendor.id == 5 and self.vendor.ext == False:
 			self.sequencer = 'anvil_studio'
-			first = bstream.read(1)[0]
+			first = ebrw_readstr.read(1)[0]
 			if first == 15:
-				second = bstream.read(1)[0]
-				if second == 52: self.param, self.value = 'color', decode_anvil_color(bstream.read(4))
-				elif second == 45: self.param, self.value = 'data', bstream.rest().decode().split(',')
-				elif second == 6: self.param, self.value = 'synth_name', bstream.rest().decode()
-				else: self.value = [15, second, bstream.rest()]
-			else: self.value = [first[0], bstream.rest()]
+				second = ebrw_readstr.read(1)[0]
+				if second == 52: self.param, self.value = 'color', decode_anvil_color(ebrw_readstr.read(4))
+				elif second == 45: self.param, self.value = 'data', ebrw_readstr.rest().decode().split(',')
+				elif second == 6: self.param, self.value = 'synth_name', ebrw_readstr.rest().decode()
+				else: self.value = [15, second, ebrw_readstr.rest()]
+			else: self.value = [first[0], ebrw_readstr.rest()]
 
 		elif self.vendor.id == 83 and self.vendor.ext == False:
-			if bstream.read(5) == b'ign\x01\xff': 
+			if ebrw_readstr.read(5) == b'ign\x01\xff': 
 				self.sequencer = 'signal_midi'
 				self.param = 'color'
-				self.value = [x for x in bstream.read(3)[::-1]]
+				self.value = [x for x in ebrw_readstr.read(3)[::-1]]
 
 		elif self.vendor.id == 80 and self.vendor.ext == False:
-			if bstream.read(5) == b'reS\x01\xff':
+			if ebrw_readstr.read(5) == b'reS\x01\xff':
 				self.sequencer = 'studio_one'
 				self.param = 'color'
-				self.value = [x for x in bstream.read(3)[::-1]]
+				self.value = [x for x in ebrw_readstr.read(3)[::-1]]
 
 		else:
-			self.value = bstream.rest()
+			self.value = ebrw_readstr.rest()
 
 	def print(self):
 		print(self.vendor.id, self.vendor.name, self.data, self.sequencer, self.param, self.value if self.param != None else self.value.hex())
@@ -116,28 +116,28 @@ class sysex_obj:
 		datlen = len(sysexdata)
 		self.starttxt = sysexdata[0:10]
 
-		bstream = BytesIO(sysexdata)
+		ebrw_readstr = BytesIO(sysexdata)
 
-		self.vendor = vendor_obj(bstream)
+		self.vendor = vendor_obj(ebrw_readstr)
 
 		if datlen <= 3: return False
 
-		self.device = bstream.read(1)[0]
-		self.model_id = bstream.read(1)[0]
-		self.command = bstream.read(1)[0]
+		self.device = ebrw_readstr.read(1)[0]
+		self.model_id = ebrw_readstr.read(1)[0]
+		self.command = ebrw_readstr.read(1)[0]
 
 		if self.vendor.ext == False:
 			if self.vendor.id == 65: 
-				roland.decode(self, bstream)
+				roland.decode(self, ebrw_readstr)
 
 			elif self.vendor.id in [126, 127]: 
-				universal.decode(self, bstream)
+				universal.decode(self, ebrw_readstr)
 
 			elif self.vendor.id == 76: 
-				sony.decode(self, bstream)
+				sony.decode(self, ebrw_readstr)
 
 			elif self.vendor.id == 67: 
-				yamaha.decode(self, bstream)
+				yamaha.decode(self, ebrw_readstr)
 
 		#self.print()
 

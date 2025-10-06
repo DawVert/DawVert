@@ -1,7 +1,8 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
+from external.easybinrw import chunked
 from objects.exceptions import ProjectFileParserException
 import numpy as np
 
@@ -11,252 +12,252 @@ logger_projparse = logging.getLogger('projparse')
 # --------------------------------------------------------- Machine ---------------------------------------------------------
 
 class caustic_machine_SSYN:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.controls = caustic_controls()
 		self.patterns = caustic_patterns()
 
-		self.unknown1 = song_data.uint16()
-		self.unknown2 = song_data.uint8()
-		self.unknown3 = song_data.uint8()
-		self.controls.parse(song_data)
-		self.presetname = song_data.string(32)
-		self.presetpath = song_data.c_string__int32(False)
-		self.unknown4 = song_data.uint32()
-		self.customwaveform1 = song_data.l_int16(660)
-		self.customwaveform2 = song_data.l_int16(660)
-		self.poly = song_data.uint32()
-		self.osc1_mode = song_data.uint32()
-		self.osc2_mode = song_data.uint32()
-		self.patterns.parse(song_data)
+		self.unknown1 = ebrw_readstr.int_u16()
+		self.unknown2 = ebrw_readstr.int_u8()
+		self.unknown3 = ebrw_readstr.int_u8()
+		self.controls.parse(ebrw_readstr)
+		self.presetname = ebrw_readstr.string(32)
+		self.presetpath = ebrw_readstr.string_i32()
+		self.unknown4 = ebrw_readstr.int_u32()
+		self.customwaveform1 = ebrw_readstr.list_int_s16(660)
+		self.customwaveform2 = ebrw_readstr.list_int_s16(660)
+		self.poly = ebrw_readstr.int_u32()
+		self.osc1_mode = ebrw_readstr.int_u32()
+		self.osc2_mode = ebrw_readstr.int_u32()
+		self.patterns.parse(ebrw_readstr)
 
 class caustic_machine_BLNE:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.controls = caustic_controls()
 		self.patterns = caustic_patterns()
 
-		self.unknown1 = song_data.uint16()
-		self.unknown2 = song_data.uint8()
-		self.unknown3 = song_data.uint8()
-		self.controls.parse(song_data)
-		self.presetname = song_data.string(32)
-		self.presetpath = song_data.c_string__int32(False)
-		self.keyboard_octave = song_data.uint32()
-		self.patterns.parse(song_data)
-		self.legacy_glide = song_data.float()
-		self.customwaveform1 = song_data.l_int16(660)
+		self.unknown1 = ebrw_readstr.int_u16()
+		self.unknown2 = ebrw_readstr.int_u8()
+		self.unknown3 = ebrw_readstr.int_u8()
+		self.controls.parse(ebrw_readstr)
+		self.presetname = ebrw_readstr.string(32)
+		self.presetpath = ebrw_readstr.string_i32()
+		self.keyboard_octave = ebrw_readstr.int_u32()
+		self.patterns.parse(ebrw_readstr)
+		self.legacy_glide = ebrw_readstr.float()
+		self.customwaveform1 = ebrw_readstr.list_int_s16(660)
 
 class caustic_machine_PADS:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.controls = caustic_controls()
 		self.patterns = caustic_patterns()
 		
-		self.controls.parse(song_data)
-		self.presetname = song_data.string(32)
-		self.presetpath = song_data.c_string__int32(False)
-		self.keyboard_octave = song_data.uint32()
-		self.unknown1 = song_data.uint32()
-		self.visual = song_data.uint32()
-		self.harm1 = song_data.l_float(24)
-		self.harm1vol = song_data.float()
-		self.harm2 = song_data.l_float(24)
-		self.harm2vol = song_data.float()
-		self.patterns.parse(song_data)
+		self.controls.parse(ebrw_readstr)
+		self.presetname = ebrw_readstr.string(32)
+		self.presetpath = ebrw_readstr.string_i32()
+		self.keyboard_octave = ebrw_readstr.int_u32()
+		self.unknown1 = ebrw_readstr.int_u32()
+		self.visual = ebrw_readstr.int_u32()
+		self.harm1 = ebrw_readstr.list_float(24)
+		self.harm1vol = ebrw_readstr.float()
+		self.harm2 = ebrw_readstr.list_float(24)
+		self.harm2vol = ebrw_readstr.float()
+		self.patterns.parse(ebrw_readstr)
 
 class caustic_machine_ORGN:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.controls = caustic_controls()
 		self.patterns = caustic_patterns()
 		
-		self.controls.parse(song_data)
-		self.presetname = song_data.string(32)
-		self.presetpath = song_data.c_string__int32(False)
-		self.keyboard_octave = song_data.uint32()
-		self.unknown1 = song_data.uint32()
+		self.controls.parse(ebrw_readstr)
+		self.presetname = ebrw_readstr.string(32)
+		self.presetpath = ebrw_readstr.string_i32()
+		self.keyboard_octave = ebrw_readstr.int_u32()
+		self.unknown1 = ebrw_readstr.int_u32()
 
 class caustic_machine_FMSN:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.controls = caustic_controls()
 		self.patterns = caustic_patterns()
 		
-		self.unknown1 = song_data.uint16()
-		self.unknown2 = song_data.uint8()
-		self.unknown3 = song_data.uint8()
-		self.controls.parse(song_data)
-		self.algorithm = song_data.uint32()
-		self.poly = song_data.uint32()
-		self.presetname = song_data.string(32)
-		self.presetpath = song_data.c_string__int32(False)
-		self.keyboard_octave = song_data.uint32()
-		self.patterns.parse(song_data)
+		self.unknown1 = ebrw_readstr.int_u16()
+		self.unknown2 = ebrw_readstr.int_u8()
+		self.unknown3 = ebrw_readstr.int_u8()
+		self.controls.parse(ebrw_readstr)
+		self.algorithm = ebrw_readstr.int_u32()
+		self.poly = ebrw_readstr.int_u32()
+		self.presetname = ebrw_readstr.string(32)
+		self.presetpath = ebrw_readstr.string_i32()
+		self.keyboard_octave = ebrw_readstr.int_u32()
+		self.patterns.parse(ebrw_readstr)
 
 class caustic_machine_KSSN:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.controls = caustic_controls()
 		self.patterns = caustic_patterns()
 		
-		self.unknown1 = song_data.uint16()
-		self.unknown2 = song_data.uint8()
-		self.unknown3 = song_data.uint8()
-		self.controls.parse(song_data)
-		self.presetname = song_data.string(32)
-		self.presetpath = song_data.c_string__int32(False)
-		self.keyboard_octave = song_data.uint32()
-		self.patterns.parse(song_data)
+		self.unknown1 = ebrw_readstr.int_u16()
+		self.unknown2 = ebrw_readstr.int_u8()
+		self.unknown3 = ebrw_readstr.int_u8()
+		self.controls.parse(ebrw_readstr)
+		self.presetname = ebrw_readstr.string(32)
+		self.presetpath = ebrw_readstr.string_i32()
+		self.keyboard_octave = ebrw_readstr.int_u32()
+		self.patterns.parse(ebrw_readstr)
 
 class caustic_machine_SAWS:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.controls = caustic_controls()
 		self.patterns = caustic_patterns()
 		
-		self.unknown1 = song_data.uint16()
-		self.unknown2 = song_data.uint8()
-		self.unknown3 = song_data.uint8()
-		self.controls.parse(song_data)
-		self.presetname = song_data.string(32)
-		self.presetpath = song_data.c_string__int32(False)
-		self.keyboard_octave = song_data.uint32()
-		self.poly = song_data.uint32()
-		self.patterns.parse(song_data)
+		self.unknown1 = ebrw_readstr.int_u16()
+		self.unknown2 = ebrw_readstr.int_u8()
+		self.unknown3 = ebrw_readstr.int_u8()
+		self.controls.parse(ebrw_readstr)
+		self.presetname = ebrw_readstr.string(32)
+		self.presetpath = ebrw_readstr.string_i32()
+		self.keyboard_octave = ebrw_readstr.int_u32()
+		self.poly = ebrw_readstr.int_u32()
+		self.patterns.parse(ebrw_readstr)
 
 class caustic_machine_8SYN:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.controls = caustic_controls()
 		self.patterns = caustic_patterns()
 		
-		self.unknown1 = song_data.uint16()
-		self.unknown2 = song_data.uint8()
-		self.unknown3 = song_data.uint8()
-		self.controls.parse(song_data)
-		self.bitcode1 = song_data.string(128)
-		self.bitcode2 = song_data.string(128)
-		self.unknown4 = song_data.uint32()
-		self.unknown5 = song_data.uint32()
-		self.presetname = song_data.string(32)
-		self.presetpath = song_data.c_string__int32(False)
-		self.keyboard_octave = song_data.uint32()
-		self.patterns.parse(song_data)
+		self.unknown1 = ebrw_readstr.int_u16()
+		self.unknown2 = ebrw_readstr.int_u8()
+		self.unknown3 = ebrw_readstr.int_u8()
+		self.controls.parse(ebrw_readstr)
+		self.bitcode1 = ebrw_readstr.string(128)
+		self.bitcode2 = ebrw_readstr.string(128)
+		self.unknown4 = ebrw_readstr.int_u32()
+		self.unknown5 = ebrw_readstr.int_u32()
+		self.presetname = ebrw_readstr.string(32)
+		self.presetpath = ebrw_readstr.string_i32()
+		self.keyboard_octave = ebrw_readstr.int_u32()
+		self.patterns.parse(ebrw_readstr)
 
 class caustic_machine_BBOX_sample:
-	def __init__(self, song_data):
-		self.name = song_data.string(32)
-		self.len = song_data.uint32()
-		self.hz = song_data.uint32()
-		self.chan = song_data.uint32()
+	def __init__(self, ebrw_readstr):
+		self.name = ebrw_readstr.string(32)
+		self.len = ebrw_readstr.int_u32()
+		self.hz = ebrw_readstr.int_u32()
+		self.chan = ebrw_readstr.int_u32()
 		logger_projparse.info('caustic3: BBOX | len:'+str(self.len)+', hz:'+str(self.hz)+', ch:'+str(self.chan))
-		self.data = song_data.read((self.len*2)*self.chan)
+		self.data = ebrw_readstr.read((self.len*2)*self.chan)
 		self.mute = 0
 		self.solo = 0
 		self.mutegroup = 0
 		
 class caustic_machine_BBOX:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.controls = caustic_controls()
 		self.patterns = caustic_patterns()
 		
-		self.unknown1 = song_data.uint16()
-		self.unknown2 = song_data.uint8()
-		self.unknown3 = song_data.uint8()
-		self.controls.parse(song_data)
-		self.patterns.parse(song_data)
-		song_data.skip(4)
-		self.presetpath = song_data.string(256)
-		song_data.skip(4)
-		self.samples = [caustic_machine_BBOX_sample(song_data) for _ in range(8)]
+		self.unknown1 = ebrw_readstr.int_u16()
+		self.unknown2 = ebrw_readstr.int_u8()
+		self.unknown3 = ebrw_readstr.int_u8()
+		self.controls.parse(ebrw_readstr)
+		self.patterns.parse(ebrw_readstr)
+		ebrw_readstr.skip(4)
+		self.presetpath = ebrw_readstr.string(256)
+		ebrw_readstr.skip(4)
+		self.samples = [caustic_machine_BBOX_sample(ebrw_readstr) for _ in range(8)]
 		for _ in range(8):
-			self.mute = song_data.uint8()
-			self.solo = song_data.uint8()
-			self.mutegroup = song_data.uint8()
-		self.presetname = song_data.string(32)
-		self.presetpath = song_data.c_string__int32(False)
+			self.mute = ebrw_readstr.int_u8()
+			self.solo = ebrw_readstr.int_u8()
+			self.mutegroup = ebrw_readstr.int_u8()
+		self.presetname = ebrw_readstr.string(32)
+		self.presetpath = ebrw_readstr.string_i32()
 
 class caustic_machine_VCDR_sample:
-	def __init__(self, song_data):
-		self.name = song_data.string(256)
-		song_data.skip(4)
-		self.len = song_data.uint32()
-		self.hz = song_data.uint32()
-		self.data = song_data.read(self.len*2)
+	def __init__(self, ebrw_readstr):
+		self.name = ebrw_readstr.string(256)
+		ebrw_readstr.skip(4)
+		self.len = ebrw_readstr.int_u32()
+		self.hz = ebrw_readstr.int_u32()
+		self.data = ebrw_readstr.read(self.len*2)
 		logger_projparse.info('caustic3: VCDR | len:'+str(self.len)+', hz:'+str(self.hz))
 		
 class caustic_machine_VCDR:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.controls = caustic_controls()
 		self.patterns = caustic_patterns()
 		
-		self.unknown1 = song_data.uint16()
-		self.unknown2 = song_data.uint8()
-		self.unknown3 = song_data.uint8()
-		self.controls.parse(song_data)
-		self.currentnumber = song_data.uint32()
-		song_data.read(28)
-		song_data.read(8)
-		self.samples = [caustic_machine_VCDR_sample(song_data) for _ in range(6)]
+		self.unknown1 = ebrw_readstr.int_u16()
+		self.unknown2 = ebrw_readstr.int_u8()
+		self.unknown3 = ebrw_readstr.int_u8()
+		self.controls.parse(ebrw_readstr)
+		self.currentnumber = ebrw_readstr.int_u32()
+		ebrw_readstr.read(28)
+		ebrw_readstr.read(8)
+		self.samples = [caustic_machine_VCDR_sample(ebrw_readstr) for _ in range(6)]
 
-		self.keyboard_octave = song_data.uint32()
-		self.patterns.parse(song_data)
+		self.keyboard_octave = ebrw_readstr.int_u32()
+		self.patterns.parse(ebrw_readstr)
 
 class caustic_machine_MDLR:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.controls = caustic_controls()
 		self.patterns = caustic_patterns()
 		self.slots = [caustic_modularslot() for x in range(16)]
 		self.main = caustic_modularslot()
 		self.connections = []
 		
-		for m in self.slots: m.slot_type = song_data.uint32()
+		for m in self.slots: m.slot_type = ebrw_readstr.int_u32()
 
 		for m in self.slots: 
 			if m.slot_type != 0:
-				song_data.magic_check(b'MCOM')
-				m.params = song_data.l_float(song_data.uint32()//4)
+				ebrw_readstr.magic_check(b'MCOM')
+				m.params = ebrw_readstr.list_float(ebrw_readstr.int_u32()//4)
 
-		song_data.magic_check(b'MCOM')
-		self.main.params = song_data.l_float(song_data.uint32()//4)
-		self.controls.parse(song_data)
-		song_data.read(5)
-		self.unknown1 = song_data.uint32()
-		for linknum in range(song_data.uint32()): 
-			self.connections.append( song_data.l_uint32(9) )
+		ebrw_readstr.magic_check(b'MCOM')
+		self.main.params = ebrw_readstr.list_float(ebrw_readstr.int_u32()//4)
+		self.controls.parse(ebrw_readstr)
+		ebrw_readstr.read(5)
+		self.unknown1 = ebrw_readstr.int_u32()
+		for linknum in range(ebrw_readstr.int_u32()): 
+			self.connections.append( ebrw_readstr.list_int_u32(9) )
 
-		self.patterns.parse(song_data)
+		self.patterns.parse(ebrw_readstr)
 
-		self.presetname = song_data.string(32)
-		self.presetpath = song_data.c_string__int32(False)
+		self.presetname = ebrw_readstr.string(32)
+		self.presetpath = ebrw_readstr.string_i32()
 
 class caustic_machine_PCMS_sample:
-	def __init__(self, song_data):
-		self.volume = song_data.float()
-		song_data.skip(4)
-		self.pan = song_data.float()
-		self.key_root = song_data.uint32()
-		self.key_lo = song_data.uint32()
-		self.key_hi = song_data.uint32()
-		self.mode = song_data.uint32()
-		self.start = song_data.uint32()
-		self.end = song_data.uint32()-1
-		self.path = song_data.string(256)
-		song_data.skip(4)
-		self.samp_size = song_data.uint32()
-		self.samp_hz = song_data.uint32()
-		song_data.skip(4)
-		self.samp_chan = song_data.uint32()
-		self.samp_data = song_data.read((self.samp_size*2)*self.samp_chan)
+	def __init__(self, ebrw_readstr):
+		self.volume = ebrw_readstr.float()
+		ebrw_readstr.skip(4)
+		self.pan = ebrw_readstr.float()
+		self.key_root = ebrw_readstr.int_u32()
+		self.key_lo = ebrw_readstr.int_u32()
+		self.key_hi = ebrw_readstr.int_u32()
+		self.mode = ebrw_readstr.int_u32()
+		self.start = ebrw_readstr.int_u32()
+		self.end = ebrw_readstr.int_u32()-1
+		self.path = ebrw_readstr.string(256)
+		ebrw_readstr.skip(4)
+		self.samp_size = ebrw_readstr.int_u32()
+		self.samp_hz = ebrw_readstr.int_u32()
+		ebrw_readstr.skip(4)
+		self.samp_chan = ebrw_readstr.int_u32()
+		self.samp_data = ebrw_readstr.read((self.samp_size*2)*self.samp_chan)
 
 class caustic_machine_PCMS:
-	def __init__(self, song_data):
+	def __init__(self, ebrw_readstr):
 		self.controls = caustic_controls()
 		self.patterns = caustic_patterns()
 
-		self.unknown1 = song_data.uint16()
-		self.unknown2 = song_data.uint8()
-		self.unknown3 = song_data.uint8()
-		self.controls.parse(song_data)
-		self.presetname = song_data.string(32)
-		self.presetpath = song_data.c_string__int32(False)
-		song_data.skip(4)
-		self.samples = [caustic_machine_PCMS_sample(song_data) for _ in range(song_data.uint32())]
-		song_data.read(9)
-		self.patterns.parse(song_data)
+		self.unknown1 = ebrw_readstr.int_u16()
+		self.unknown2 = ebrw_readstr.int_u8()
+		self.unknown3 = ebrw_readstr.int_u8()
+		self.controls.parse(ebrw_readstr)
+		self.presetname = ebrw_readstr.string(32)
+		self.presetpath = ebrw_readstr.string_i32()
+		ebrw_readstr.skip(4)
+		self.samples = [caustic_machine_PCMS_sample(ebrw_readstr) for _ in range(ebrw_readstr.int_u32())]
+		ebrw_readstr.read(9)
+		self.patterns.parse(ebrw_readstr)
 
 # --------------------------------------------------------- MAIN ---------------------------------------------------------
 
@@ -264,15 +265,14 @@ class caustic_controls:
 	def __init__(self):
 		self.data = {}
 
-	def parse(self, song_data):
-		song_data.magic_check(b'CCOL')
-		CCOL_size = song_data.uint32()
-		startpos = song_data.tell()
-		trk_iff_obj = song_data.chunk_objmake()
-		for chunk_obj in trk_iff_obj.iter(startpos, startpos+CCOL_size):
-			pid = song_data.uint32()
-			self.data[pid] = song_data.float()
-		song_data.skip(CCOL_size)
+	def parse(self, ebrw_readstr):
+		ebrw_readstr.magic_check(b'CCOL')
+		CCOL_size = ebrw_readstr.int_u32()
+		ebrw_readstr.isolate_size(CCOL_size)
+		for part_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
+			pid = ebrw_readstr.int_u32()
+			self.data[pid] = ebrw_readstr.float()
+		ebrw_readstr.isolate_end()
 		logger_projparse.info('caustic3: CCOL | '+str(len(self.data))+' Controls')
 
 class caustic_modularslot:
@@ -301,9 +301,9 @@ class caustic_machine:
 		self.name = ''
 		self.data = None
 
-	def parse(self, song_data):
+	def parse(self, ebrw_readstr):
 		if self.mach_id in caustic_machine.machobjs:
-			self.data = caustic_machine.machobjs[self.mach_id](song_data)
+			self.data = caustic_machine.machobjs[self.mach_id](ebrw_readstr)
 
 class caustic_mixer:
 	def __init__(self):
@@ -312,12 +312,12 @@ class caustic_mixer:
 		self.controls = []
 		self.chainnum = 0
 
-	def parse(self, song_data):
-		song_data.skip(4)
+	def parse(self, ebrw_readstr):
+		ebrw_readstr.skip(4)
 		controls = caustic_controls()
-		controls.parse(song_data)
+		controls.parse(ebrw_readstr)
 		self.controls.append(controls)
-		for n in range(14): self.solo_mute[(self.chainnum*2)+n] = song_data.uint8()
+		for n in range(14): self.solo_mute[(self.chainnum*2)+n] = ebrw_readstr.int_u8()
 		self.chainnum += 7
 
 class caustic_fxslot:
@@ -326,73 +326,73 @@ class caustic_fxslot:
 		self.mode = 0
 		self.fx_type = -1
 
-	def parse(self, song_data):
-		self.fx_type = song_data.uint32()
+	def parse(self, ebrw_readstr):
+		self.fx_type = ebrw_readstr.int_u32()
 		if self.fx_type == 0: #Delay
-			self.controls.parse(song_data)
-			self.mode = song_data.uint32()
+			self.controls.parse(ebrw_readstr)
+			self.mode = ebrw_readstr.int_u32()
 		if self.fx_type == 1: #Reverb
-			self.controls.parse(song_data)
+			self.controls.parse(ebrw_readstr)
 		if self.fx_type == 2: #Distortion
-			self.controls.parse(song_data)
+			self.controls.parse(ebrw_readstr)
 		if self.fx_type == 3: #Compresser
-			self.controls.parse(song_data)
-			self.mode = song_data.uint32()
+			self.controls.parse(ebrw_readstr)
+			self.mode = ebrw_readstr.int_u32()
 		if self.fx_type == 4: #Bitcrush
-			self.controls.parse(song_data)
+			self.controls.parse(ebrw_readstr)
 		if self.fx_type == 5: #Flanger
-			self.controls.parse(song_data)
-			self.mode = song_data.uint32()
+			self.controls.parse(ebrw_readstr)
+			self.mode = ebrw_readstr.int_u32()
 		if self.fx_type == 6: #Phaser
-			self.controls.parse(song_data)
+			self.controls.parse(ebrw_readstr)
 		if self.fx_type == 7: #Chorus
-			self.controls.parse(song_data)
-			self.mode = song_data.uint32()
+			self.controls.parse(ebrw_readstr)
+			self.mode = ebrw_readstr.int_u32()
 		if self.fx_type == 8: #AutoWah
-			self.controls.parse(song_data)
+			self.controls.parse(ebrw_readstr)
 		if self.fx_type == 9: #Param EQ
-			self.controls.parse(song_data)
+			self.controls.parse(ebrw_readstr)
 		if self.fx_type == 10: #Limiter
-			self.controls.parse(song_data)
+			self.controls.parse(ebrw_readstr)
 		if self.fx_type == 11: #VInylSim
-			self.controls.parse(song_data)
+			self.controls.parse(ebrw_readstr)
 		if self.fx_type == 12: #Comb
-			self.controls.parse(song_data)
+			self.controls.parse(ebrw_readstr)
 		if self.fx_type == 14: #Cab Sim
-			self.controls.parse(song_data)
+			self.controls.parse(ebrw_readstr)
 		if self.fx_type == 16: #StaticFlanger
-			self.controls.parse(song_data)
-			self.mode = song_data.uint32()
+			self.controls.parse(ebrw_readstr)
+			self.mode = ebrw_readstr.int_u32()
 		if self.fx_type == 17: #Filter
-			self.controls.parse(song_data)
-			self.mode = song_data.uint32()
+			self.controls.parse(ebrw_readstr)
+			self.mode = ebrw_readstr.int_u32()
 		if self.fx_type == 18: #Octaver
-			self.controls.parse(song_data)
+			self.controls.parse(ebrw_readstr)
 		if self.fx_type == 19: #Vibrato
-			self.controls.parse(song_data)
-			self.mode = song_data.uint32()
+			self.controls.parse(ebrw_readstr)
+			self.mode = ebrw_readstr.int_u32()
 		if self.fx_type == 20: #Tremolo
-			self.controls.parse(song_data)
+			self.controls.parse(ebrw_readstr)
 		if self.fx_type == 21: #AutoPan
-			self.controls.parse(song_data)
+			self.controls.parse(ebrw_readstr)
 
 class caustic_fxchain:
 	def __init__(self):
 		self.chainnum = 0
 		self.fxslots = [caustic_fxslot() for x in range(28)]
-	def parse(self, song_data):
+	def parse(self, ebrw_readstr):
 		for n in range(14): 
-			self.fxslots[n+self.chainnum].parse(song_data)
-		if self.chainnum == 0: song_data.read(4)
+			self.fxslots[n+self.chainnum].parse(ebrw_readstr)
+		if self.chainnum == 0: ebrw_readstr.read(4)
 		self.chainnum += 14
 
 class caustic_master:
 	def __init__(self):
 		self.fxslots = [caustic_fxslot() for x in range(2)]
 		self.controls = caustic_controls()
-	def parse(self, song_data):
-		for n in range(2): self.fxslots[n].parse(song_data)
-		self.controls.parse(song_data)
+	def parse(self, ebrw_readstr):
+		for n in range(2): self.fxslots[n].parse(ebrw_readstr)
+		self.controls.parse(ebrw_readstr)
 
 class caustic_autoblocks:
 	def __init__(self):
@@ -411,36 +411,36 @@ class caustic_patterns:
 		self.data = [caustic_pattern() for x in range(16*4)]
 		self.auto = [{} for x in range(16*4)]
 
-	def parse(self, song_data):
+	def parse(self, ebrw_readstr):
 		logger_projparse.info('caustic3: SPAT')
-		song_data.magic_check(b'SPAT')
+		ebrw_readstr.magic_check(b'SPAT')
 
-		SPAT_size = song_data.uint32()
-		end_pos = song_data.tell()+SPAT_size
+		SPAT_size = ebrw_readstr.int_u32()
+		end_pos = ebrw_readstr.tell()+SPAT_size
 
-		for n in range(16*4): self.data[n].measures = song_data.uint32()
-		for n in range(16*4): self.data[n].numnote = song_data.uint32()
+		for n in range(16*4): self.data[n].measures = ebrw_readstr.int_u32()
+		for n in range(16*4): self.data[n].numnote = ebrw_readstr.int_u32()
 		for n in range(16*4):
-			pln = np.frombuffer(song_data.read(56*self.data[n].numnote), dtype=dtype_notearr)
+			pln = np.frombuffer(ebrw_readstr.read(56*self.data[n].numnote), dtype=dtype_notearr)
 			self.data[n].notes = pln[np.where(pln['type']==0)]
 
-		song_data.skip(512)
-		unknown1 = song_data.float()
-		autoctrlid = song_data.l_uint32(64)
+		ebrw_readstr.skip(512)
+		unknown1 = ebrw_readstr.float()
+		autoctrlid = ebrw_readstr.list_int_u32(64)
 
-		song_data.skip(256)
-		song_data.skip(512)
+		ebrw_readstr.skip(256)
+		ebrw_readstr.skip(512)
 
 		for n, i in enumerate(autoctrlid):
 			for v in range(i):
 				blockobj = caustic_autoblocks()
-				autoblkhdr = np.frombuffer(song_data.read(24), dtype=[('ctrl_id', np.int32),('unk2', np.single),('unk3', np.single),('unk4', np.single),('smooth', np.single),('unk6', np.single)])[0]
+				autoblkhdr = np.frombuffer(ebrw_readstr.read(24), dtype=[('ctrl_id', np.int32),('unk2', np.single),('unk3', np.single),('unk4', np.single),('smooth', np.single),('unk6', np.single)])[0]
 				blockobj.ctrl_id = autoblkhdr['ctrl_id']
 				blockobj.smooth = autoblkhdr['smooth']
-				blockobj.data = song_data.l_float(self.data[n].measures*32)
+				blockobj.data = ebrw_readstr.list_float(self.data[n].measures*32)
 				self.auto[n][blockobj.ctrl_id] = blockobj
 
-		song_data.seek(end_pos)
+		ebrw_readstr.seek(end_pos)
 
 dtype_notearr = np.dtype([
 	('mach', np.int32), 
@@ -499,33 +499,33 @@ class caustic_sequence:
 		self.auto_mixer = [caustic_autoset() for x in range(2)]
 		self.auto_master = caustic_autoset()
 
-	def parse(self, song_data):
-		song_data.skip(4)
-		pl_count = song_data.uint32()
+	def parse(self, ebrw_readstr):
+		ebrw_readstr.skip(4)
+		pl_count = ebrw_readstr.int_u32()
 
-		pln = np.frombuffer(song_data.read(56*pl_count), dtype=dtype_notearr)
+		pln = np.frombuffer(ebrw_readstr.read(56*pl_count), dtype=dtype_notearr)
 
 		for _ in range(pl_count):
 			np.where(pln['type']==2)
 			self.parts = pln[np.where(pln['type']==2)]
 			self.notes = pln[np.where(pln['type']==0)]
 
-		song_data.read(46)
+		ebrw_readstr.read(46)
 
-		for m in self.auto_mach: m.parse(song_data)
-		for m in self.auto_fx: m.parse(song_data)
-		for m in self.auto_mixer: m.parse(song_data)
-		self.auto_master.parse(song_data)
-		song_data.skip(2)
-		n = song_data.uint32()
-		s = song_data.uint32()
-		for _ in range(n): self.tempoauto.append(song_data.l_float(2))
+		for m in self.auto_mach: m.parse(ebrw_readstr)
+		for m in self.auto_fx: m.parse(ebrw_readstr)
+		for m in self.auto_mixer: m.parse(ebrw_readstr)
+		self.auto_master.parse(ebrw_readstr)
+		ebrw_readstr.skip(2)
+		n = ebrw_readstr.int_u32()
+		s = ebrw_readstr.int_u32()
+		for _ in range(n): self.tempoauto.append(ebrw_readstr.list_float(2))
 
 class caustic_project:
 
 	def load_from_file(self, input_file):
-		song_data = bytereader.bytereader()
-		song_data.load_file(input_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
 		self.effx = caustic_fxchain()
 		self.mixr = caustic_mixer()
@@ -541,64 +541,73 @@ class caustic_project:
 		self.mixrnum = 0
 
 		rackchunkfound = False
-		main_iff_obj = song_data.chunk_objmake()
-		for chunk_obj in main_iff_obj.iter(0, song_data.end):
+		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
 			if chunk_obj.id == b'RACK':
 				rackchunkfound = True
-				header = song_data.read(4)
-				name = song_data.read(260)
-				while chunk_obj.end > song_data.tell():
-					chunk_datatype = song_data.read(4)
+				header = ebrw_readstr.read(4)
+				name = ebrw_readstr.read(260)
+				while chunk_obj.end > ebrw_readstr.tell():
+					chunk_datatype = ebrw_readstr.read(4)
 					logger_projparse.info('caustic3: main | chunk: '+str(chunk_datatype))
-					if chunk_datatype == b'OUTP': self.read_OUTP(song_data)
-					elif chunk_datatype == b'EFFX': self.read_EFFX(song_data)
-					elif chunk_datatype == b'MIXR': self.read_MIXR(song_data)
-					elif chunk_datatype == b'MSTR': self.read_MSTR(song_data)
-					elif chunk_datatype == b'SEQN': self.read_SEQN(song_data)
+					if chunk_datatype == b'OUTP': self.read_OUTP(ebrw_readstr)
+					elif chunk_datatype == b'EFFX': self.read_EFFX(ebrw_readstr)
+					elif chunk_datatype == b'MIXR': self.read_MIXR(ebrw_readstr)
+					elif chunk_datatype == b'MSTR': self.read_MSTR(ebrw_readstr)
+					elif chunk_datatype == b'SEQN': self.read_SEQN(ebrw_readstr)
 					else: break
 		if not rackchunkfound:
 			raise ProjectFileParserException('Caustic3: RACK chunk not found')
 		else:
 			return True
 
-	def read_OUTP(self, song_data):
-		OUTP_size = song_data.uint32()
+	def read_OUTP(self, ebrw_readstr):
+		OUTP_size = ebrw_readstr.int_u32()
 
-		with song_data.isolate_size(OUTP_size, True) as outp_data:
-			outp_data.skip(82)
-			self.tempo = outp_data.float()
-			self.numerator = outp_data.uint8()
+		ebrw_readstr.isolate_size(OUTP_size)
+		ebrw_readstr.skip(82)
+		self.tempo = ebrw_readstr.float()
+		self.numerator = ebrw_readstr.int_u8()
+		ebrw_readstr.isolate_end()
 
 		for n in range(14):
-			self.machines[n].mach_id = song_data.string(4)
-			song_data.skip(1)
+			self.machines[n].mach_id = ebrw_readstr.string(4)
+			ebrw_readstr.skip(1)
 
 		for n, machdata in enumerate(self.machines):
 			logger_projparse.info('caustic3: OUTP | '+machdata.mach_id)
 			if machdata.mach_id != 'NULL':
-				machdata.name = song_data.string(10)
-				mach_head = song_data.raw(4)
-				data_size = song_data.uint32()
-				with song_data.isolate_size(data_size, True) as mach_data: machdata.parse(mach_data)
+				machdata.name = ebrw_readstr.string(10)
+				mach_head = ebrw_readstr.raw(4)
+				data_size = ebrw_readstr.int_u32()
+				ebrw_readstr.isolate_size(data_size)
+				machdata.parse(ebrw_readstr)
+				ebrw_readstr.isolate_end()
 
-	def read_EFFX(self, song_data):
-		data_size = song_data.uint32()
-		with song_data.isolate_size(data_size, True) as effx_data:
-			self.effx.parse(effx_data)
-			if self.effxnum == 0: effx_data.read(4)
-		if self.effxnum == 0: song_data.read(4)
+	def read_EFFX(self, ebrw_readstr):
+		data_size = ebrw_readstr.int_u32()
+		ebrw_readstr.isolate_size(data_size)
+		self.effx.parse(ebrw_readstr)
+		if self.effxnum == 0: ebrw_readstr.read(4)
+		ebrw_readstr.isolate_end()
+		if self.effxnum == 0: ebrw_readstr.read(4)
 		self.effxnum += 1
 
-	def read_MIXR(self, song_data):
-		data_size = song_data.uint32()
-		with song_data.isolate_size(data_size, True) as mixr_data: self.mixr.parse(mixr_data)
-		if self.mixrnum == 0: song_data.read(4)
+	def read_MIXR(self, ebrw_readstr):
+		data_size = ebrw_readstr.int_u32()
+		ebrw_readstr.isolate_size(data_size)
+		self.mixr.parse(ebrw_readstr)
+		ebrw_readstr.isolate_end()
+		if self.mixrnum == 0: ebrw_readstr.read(4)
 		self.mixrnum += 1
 
-	def read_MSTR(self, song_data):
-		data_size = song_data.uint32()
-		with song_data.isolate_size(data_size, True) as mstr_data: self.mstr.parse(mstr_data)
+	def read_MSTR(self, ebrw_readstr):
+		data_size = ebrw_readstr.int_u32()
+		ebrw_readstr.isolate_size(data_size)
+		self.mstr.parse(ebrw_readstr)
+		ebrw_readstr.isolate_end()
 
-	def read_SEQN(self, song_data):
-		data_size = song_data.uint32()
-		with song_data.isolate_size(data_size, True) as seqn_data: self.seqn.parse(seqn_data)
+	def read_SEQN(self, ebrw_readstr):
+		data_size = ebrw_readstr.int_u32()
+		ebrw_readstr.isolate_size(data_size)
+		self.seqn.parse(ebrw_readstr)
+		ebrw_readstr.isolate_end()

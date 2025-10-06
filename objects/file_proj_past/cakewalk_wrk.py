@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 from objects.file_proj_past._cakewalk_wrk import chunks
 
 class cakewalk_wrk_file:
@@ -9,29 +9,29 @@ class cakewalk_wrk_file:
 		self.version = 0
 
 	def load_from_file(self, input_file):
-		byr_stream = bytereader.bytereader()
-		byr_stream.load_file(input_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
-		byr_stream.magic_check(b'CAKEWALK\x1a\x00')
-		self.version = byr_stream.uint8()
+		ebrw_readstr.magic_check(b'CAKEWALK\x1a\x00')
+		self.version = ebrw_readstr.int_u8()
 
 		self.chunks = []
-		while byr_stream.remaining():
-			chunk = chunks.cakewalk_wrk_chunk(byr_stream)
+		while ebrw_readstr.remaining():
+			chunk = chunks.cakewalk_wrk_chunk(ebrw_readstr)
 			self.chunks.append(chunk)
 		return True
 
 	def viewchunks(self, input_file):
-		byr_stream = bytereader.bytereader()
-		byr_stream.load_file(input_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
-		byr_stream.magic_check(b'CAKEWALK\x1a\x00')
-		self.version = byr_stream.uint8()
+		ebrw_readstr.magic_check(b'CAKEWALK\x1a\x00')
+		self.version = ebrw_readstr.int_u8()
 
-		while byr_stream.remaining():
-			self.id = byr_stream.uint8()
+		while ebrw_readstr.remaining():
+			self.id = ebrw_readstr.int_u8()
 			if self.id != 255: 
-				csize = byr_stream.uint32()
+				csize = ebrw_readstr.int_u32()
 				name = '?? Unknown ?? '
 				if self.id in chunks.chunkids: name = chunks.chunkids[self.id]
 
@@ -40,10 +40,10 @@ class cakewalk_wrk_file:
 				if self.id in chunks.chunkobjects:
 					if 'viewchunks' in dir(chunks.chunkobjects[self.id]):
 						f = True
-						with byr_stream.isolate_size(csize, True) as bye_stream:
+						with ebrw_readstr.isolate_size(csize, True) as bye_stream:
 							chunks.chunkobjects[self.id].viewchunks(bye_stream)
 				if not f:
-					data = byr_stream.raw(csize)
+					data = ebrw_readstr.raw(csize)
 					print(str(self.id).rjust(4), '|', name.ljust(32), data.hex())
 
 

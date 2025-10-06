@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import xml.etree.ElementTree as ET
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 import os
 import numpy as np
 
@@ -151,49 +151,49 @@ class nanostudio_song:
 							self.instruments[int(inpart.attrib['Index'])] = nanostudio_instrument(inpart)
 
 	def events__load_from_file(self, input_file):
-		byr_stream = bytereader.bytereader()
-		byr_stream.load_file(input_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
-		byr_stream.skip(4) # version
-		byr_stream.skip(4) # full size
-		self.unknowns.append(byr_stream.l_uint32(32))
-		self.tempo = byr_stream.float()
-		self.unknowns.append(byr_stream.uint32())
-		self.unknowns.append(byr_stream.uint32())
-		self.loop = byr_stream.uint32()
-		self.unknowns.append(byr_stream.uint32())
-		self.unknowns.append(byr_stream.uint32())
-		self.unknowns.append(byr_stream.uint32())
-		self.unknowns.append(byr_stream.float())
-		self.unknowns.append(byr_stream.uint32())
-		self.unknowns.append(byr_stream.uint32())
-		self.unknowns.append(byr_stream.uint32())
-		self.unknowns.append(byr_stream.uint32())
-		self.unknowns.append(byr_stream.uint32())
-		self.unknowns.append(byr_stream.uint32())
-		self.unknowns.append(byr_stream.float())
-		self.click = byr_stream.uint32()
+		ebrw_readstr.skip(4) # version
+		ebrw_readstr.skip(4) # full size
+		self.unknowns.append(ebrw_readstr.list_int_u32(32))
+		self.tempo = ebrw_readstr.float()
+		self.unknowns.append(ebrw_readstr.int_u32())
+		self.unknowns.append(ebrw_readstr.int_u32())
+		self.loop = ebrw_readstr.int_u32()
+		self.unknowns.append(ebrw_readstr.int_u32())
+		self.unknowns.append(ebrw_readstr.int_u32())
+		self.unknowns.append(ebrw_readstr.int_u32())
+		self.unknowns.append(ebrw_readstr.float())
+		self.unknowns.append(ebrw_readstr.int_u32())
+		self.unknowns.append(ebrw_readstr.int_u32())
+		self.unknowns.append(ebrw_readstr.int_u32())
+		self.unknowns.append(ebrw_readstr.int_u32())
+		self.unknowns.append(ebrw_readstr.int_u32())
+		self.unknowns.append(ebrw_readstr.int_u32())
+		self.unknowns.append(ebrw_readstr.float())
+		self.click = ebrw_readstr.int_u32()
 
-		for n in range(byr_stream.uint32()):
-			vtype = byr_stream.uint32()
+		for n in range(ebrw_readstr.int_u32()):
+			vtype = ebrw_readstr.int_u32()
 			stype = vtype>>8
 
 			eventd = [stype, []]
-			data_len = byr_stream.uint32()
-			eventbytes = byr_stream.raw(12*data_len)
+			data_len = ebrw_readstr.int_u32()
+			eventbytes = ebrw_readstr.raw(12*data_len)
 			eventd[1] = np.frombuffer(eventbytes, dtype=dt_event)
 
 			self.patterns.append(eventd)
 
-		for _ in range(byr_stream.uint32()):
-			v = byr_stream.uint32()==0
+		for _ in range(ebrw_readstr.int_u32()):
+			v = ebrw_readstr.int_u32()==0
 			
-			clipsize = byr_stream.uint16()
-			byr_stream.skip(3)
-			data_len = byr_stream.uint32()
+			clipsize = ebrw_readstr.int_u16()
+			ebrw_readstr.skip(3)
+			data_len = ebrw_readstr.int_u32()
 
 			eventd = [clipsize, None]
 			if data_len!=0:
-				eventbytes = byr_stream.raw(16*data_len)
+				eventbytes = ebrw_readstr.raw(16*data_len)
 				eventd[1] = np.frombuffer(eventbytes, dtype=dt_ev2)
 			self.clips.append(eventd)

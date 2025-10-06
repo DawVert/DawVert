@@ -29,25 +29,29 @@ class input_soundfile(plugins.base):
 	def convert_file(self, sampleref_obj, to_type, outpath):
 		import soundfile
 		import io
-		from objects.data_bytes import riff_chunks
+		from external.easybinrw import easybinrw
+		from external.easybinrw import riff_chunks
 		if sampleref_obj.fileref.file.extension == 'wav':
 			input_file = sampleref_obj.fileref.get_path(None, False)
-			riff_data = riff_chunks.riff_chunk()
-			byr_stream = riff_data.load_from_file(input_file, False)
+			ebrw_readstr = easybinrw.binread()
+			ebrw_readstr.load_file(input_file)
+			riffchunks = riff_chunks.riff_chunk()
+			riffchunks.read(ebrw_readstr, 0)
 
 			data_pos = 0
 			data_end = 0
 			fmt_format = 0
 
-			for riff_part in riff_data.in_data:
+			for riff_part in riffchunks.iter_reader(ebrw_readstr):
 				if riff_part.name == b'fmt ': 
-					with byr_stream.isolate_range(riff_part.start, riff_part.end, False) as bye_stream: fmt_format = bye_stream.uint16()
+					fmt_format = ebrw_readstr.int_u16()
 				elif riff_part.name == b'data': 
 					data_pos = riff_part.start
 					data_end = riff_part.end
 
 			if fmt_format in [26447, 26448, 26480, 26449]:
-				with byr_stream.isolate_range(data_pos, data_end, False) as bye_stream: audiodata = bye_stream.raw(data_end-data_pos)
+				ebrw_readstr.seek(data_pos)
+				audiodata = ebrw_readstr.raw(data_end-data_pos)
 				samples, samplerate = soundfile.read(io.BytesIO(audiodata))
 				outfileref = sampleref_obj.fileref.copy()
 				outfileref.set_folder(None, outpath, False)

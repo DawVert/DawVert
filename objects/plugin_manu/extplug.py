@@ -3,8 +3,7 @@
 
 from objects import globalstore
 from objects import valobjs
-from objects.data_bytes import bytereader
-from objects.data_bytes import bytewriter
+from external.easybinrw import easybinrw
 import numpy as np
 import logging
 logger_plugins = logging.getLogger('extplug')
@@ -147,20 +146,20 @@ class extplug_manu:
 			logger_plugins.warning(plugtype+': plugin not found in database: '+outtxt)
 			return False
 
-	def get_chunk(self, byr_stream, offset, platformtxt):
-		byr_stream.seek(offset)
-		if byr_stream.detectheader(offset, b'CcnK'):
-			self.vst2__import_presetdata('byr', byr_stream, platformtxt)
+	def get_chunk(self, ebrw_readstr, offset, platformtxt):
+		ebrw_readstr.seek(offset)
+		if ebrw_readstr.detectheader(offset, b'CcnK'):
+			self.vst2__import_presetdata('byr', ebrw_readstr, platformtxt)
 			return True
 
-		byr_stream.seek(offset)
-		if byr_stream.detectheader(offset, b'VST3'):
-			self.vst3__import_presetdata('byr', byr_stream, platformtxt)
+		ebrw_readstr.seek(offset)
+		if ebrw_readstr.detectheader(offset, b'VST3'):
+			self.vst3__import_presetdata('byr', ebrw_readstr, platformtxt)
 			return True
 
-		byr_stream.seek(offset)
-		if byr_stream.detectheader(offset, b'clap'):
-			self.clap__import_presetdata('byr', byr_stream, platformtxt)
+		ebrw_readstr.seek(offset)
+		if ebrw_readstr.detectheader(offset, b'clap'):
+			self.clap__import_presetdata('byr', ebrw_readstr, platformtxt)
 			return True
 
 # --------------------------------------------------- VST3 ---------------------------------------------------
@@ -173,14 +172,14 @@ class extplug_manu:
 
 	def vst3__import_presetdata(self, datatype, indata, platformtxt):
 		from objects.file import preset_vst3
-		byr_stream = bytereader.bytereader()
+		ebrw_readstr = easybinrw.binread()
 		preset_obj = preset_vst3.vst3_main()
 		if datatype == 'raw': 
-			byr_stream.load_raw(indata)
-			preset_obj.parse(byr_stream)
+			ebrw_readstr.load_raw(indata)
+			preset_obj.parse(ebrw_readstr)
 		if datatype == 'file': 
-			byr_stream.load_file(indata)
-			preset_obj.parse(byr_stream)
+			ebrw_readstr.load_file(indata)
+			preset_obj.parse(ebrw_readstr)
 		if datatype == 'byr': 
 			preset_obj.parse(indata)
 		self.vst3__replace_data('id', preset_obj.uuid, preset_obj.data, platformtxt)
@@ -190,15 +189,15 @@ class extplug_manu:
 		plugin_obj = self.plugin_obj
 		external_info = plugin_obj.external_info
 
-		byw_stream = bytewriter.bytewriter()
+		ebrw_writestr = easybinrw.binwrite()
 		preset_obj = preset_vst3.vst3_main()
 		vstid = external_info.id
 		outdata = b''
 		if vstid != None:
 			preset_obj.uuid = vstid
 			preset_obj.data = plugin_obj.rawdata_get('chunk')
-			preset_obj.write(byw_stream)
-			outdata = byw_stream.getvalue()
+			preset_obj.write(ebrw_writestr)
+			outdata = ebrw_writestr.getvalue()
 		else:
 			logger_plugins.warning('vst3: id is missing')
 
@@ -221,14 +220,14 @@ class extplug_manu:
 
 	def dx__import_presetdata(self, datatype, indata):
 		from objects.file import preset_dx
-		byr_stream = bytereader.bytereader()
+		ebrw_readstr = easybinrw.binread()
 		preset_obj = preset_dx.dx_preset()
 		if datatype == 'raw': 
-			byr_stream.load_raw(indata)
-			preset_obj.parse(byr_stream)
+			ebrw_readstr.load_raw(indata)
+			preset_obj.parse(ebrw_readstr)
 		if datatype == 'file': 
-			byr_stream.load_file(indata)
-			preset_obj.parse(byr_stream)
+			ebrw_readstr.load_file(indata)
+			preset_obj.parse(ebrw_readstr)
 		if datatype == 'byr': 
 			preset_obj.parse(indata)
 		self.dx__replace_data(preset_obj.id, preset_obj.data)
@@ -244,15 +243,15 @@ class extplug_manu:
 		plugin_obj = self.plugin_obj
 		external_info = plugin_obj.external_info
 
-		byw_stream = bytewriter.bytewriter()
+		ebrw_writestr = easybinrw.binwrite()
 		preset_obj = preset_dx.dx_preset()
 		vstid = external_info.id
 		outdata = b''
 		if vstid != None:
 			preset_obj.id = vstid
 			preset_obj.data = plugin_obj.rawdata_get('chunk')
-			preset_obj.write(byw_stream)
-			outdata = byw_stream.getvalue()
+			preset_obj.write(ebrw_writestr)
+			outdata = ebrw_writestr.getvalue()
 		else:
 			logger_plugins.warning('dx: id is missing')
 
@@ -275,14 +274,14 @@ class extplug_manu:
 
 	def clap__import_presetdata(self, datatype, indata, platformtxt):
 		from objects.file import preset_clap
-		byr_stream = bytereader.bytereader()
+		ebrw_readstr = easybinrw.binread()
 		preset_obj = preset_clap.clap_preset()
 		if datatype == 'raw': 
-			byr_stream.load_raw(indata)
-			preset_obj.parse(byr_stream)
+			ebrw_readstr.load_raw(indata)
+			preset_obj.parse(ebrw_readstr)
 		if datatype == 'file': 
-			byr_stream.load_file(indata)
-			preset_obj.parse(byr_stream)
+			ebrw_readstr.load_file(indata)
+			preset_obj.parse(ebrw_readstr)
 		if datatype == 'byr': 
 			preset_obj.parse(indata)
 		self.clap__replace_data('id', preset_obj.id, preset_obj.data, platformtxt)
@@ -292,15 +291,15 @@ class extplug_manu:
 		plugin_obj = self.plugin_obj
 		external_info = plugin_obj.external_info
 
-		byw_stream = bytewriter.bytewriter()
+		ebrw_writestr = easybinrw.binwrite()
 		preset_obj = preset_clap.clap_preset()
 		vstid = external_info.id
 		outdata = b''
 		if vstid != None:
 			preset_obj.id = vstid
 			preset_obj.data = plugin_obj.rawdata_get('chunk')
-			preset_obj.write(byw_stream)
-			outdata = byw_stream.getvalue()
+			preset_obj.write(ebrw_writestr)
+			outdata = ebrw_writestr.getvalue()
 		else:
 			logger_plugins.warning('clap: id is missing')
 
@@ -337,14 +336,14 @@ class extplug_manu:
 		plugin_obj = self.plugin_obj
 		external_info = plugin_obj.external_info
 
-		byr_stream = bytereader.bytereader()
+		ebrw_readstr = easybinrw.binread()
 		fxp_obj = preset_vst2.vst2_main()
 		if datatype == 'raw': 
-			byr_stream.load_raw(indata)
-			fxp_obj.parse(byr_stream)
+			ebrw_readstr.load_raw(indata)
+			fxp_obj.parse(ebrw_readstr)
 		if datatype == 'file': 
-			byr_stream.load_file(indata)
-			fxp_obj.parse(byr_stream)
+			ebrw_readstr.load_file(indata)
+			fxp_obj.parse(ebrw_readstr)
 		if datatype == 'byr': 
 			fxp_obj.parse(indata)
 
@@ -405,7 +404,7 @@ class extplug_manu:
 		datatype = external_info.datatype
 		fourid = external_info.fourid
 
-		byw_stream = bytewriter.bytewriter()
+		ebrw_writestr = easybinrw.binwrite()
 		fxp_obj = preset_vst2.vst2_main()
 
 		outdata = b''
@@ -422,8 +421,8 @@ class extplug_manu:
 				fpch.num_programs = 1
 				fpch.prgname = plugin_obj.state.preset.name
 				fpch.chunk = plugin_obj.rawdata_get('chunk')
-				fxp_obj.write(byw_stream)
-				outdata = byw_stream.getvalue()
+				fxp_obj.write(ebrw_writestr)
+				outdata = ebrw_writestr.getvalue()
 	
 			if datatype == 'param':
 				if not external_info.is_bank:
@@ -433,8 +432,8 @@ class extplug_manu:
 					fxck.num_params = external_info.numparams
 					fxck.prgname = plugin_obj.state.preset.name
 					fxck.params = [plugin_obj.params.get('ext_param_'+str(c), 0).value for c in range(fxck.num_params)]
-					fxp_obj.write(byw_stream)
-					outdata = byw_stream.getvalue()
+					fxp_obj.write(ebrw_writestr)
+					outdata = ebrw_writestr.getvalue()
 				else:
 					fxbk = program.set_fxBank(None)
 					fxbk.fourid = fourid
@@ -449,8 +448,8 @@ class extplug_manu:
 						fxck.prgname = program.preset.name
 						fxck.params = [program.params.get('ext_param_'+str(c), 0).value for c in range(fxck.num_params)]
 						fxbk.programs.append([1130589771, inccnk])
-					fxp_obj.write(byw_stream)
-					outdata = byw_stream.getvalue()
+					fxp_obj.write(ebrw_writestr)
+					outdata = ebrw_writestr.getvalue()
 
 			if filename:
 				with open(filename, 'wb') as f: f.write(outdata)

@@ -2,7 +2,7 @@
 from io import BytesIO
 from objects import globalstore
 
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 
 def decode_anvil_color(anvilcolordata):
 	red_p1 = anvilcolordata[3] & 0x3f 
@@ -45,26 +45,26 @@ class seqspec_obj:
 				self.value = [x for x in sysexdata[6:9][::-1]]
 				return True
 
-		bstream = bytereader.bytereader()
-		bstream.load_raw(sysexdata)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_raw(sysexdata)
 		
-		self.vendor.read(bstream)
+		self.vendor.read(ebrw_readstr)
 		if self.vendor == '#53':
 			self.sequencer = 'anvil_studio'
-			first = bstream.read(1)[0]
+			first = ebrw_readstr.read(1)[0]
 			if first == 15:
-				second = bstream.read(1)[0]
-				if second == 52: self.param, self.value = 'color', decode_anvil_color(bstream.read(4))
-				elif second == 45: self.param, self.value = 'data', bstream.rest().decode().split(',')
-				elif second == 6: self.param, self.value = 'synth_name', bstream.rest().decode()
-				else: self.value = [15, second, bstream.rest()]
+				second = ebrw_readstr.read(1)[0]
+				if second == 52: self.param, self.value = 'color', decode_anvil_color(ebrw_readstr.read(4))
+				elif second == 45: self.param, self.value = 'data', ebrw_readstr.rest().decode().split(',')
+				elif second == 6: self.param, self.value = 'synth_name', ebrw_readstr.rest().decode()
+				else: self.value = [15, second, ebrw_readstr.rest()]
 				return True
 			else: 
-				self.value = [first, bstream.rest()]
+				self.value = [first, ebrw_readstr.rest()]
 				return True
 
 		else:
-			self.value = bstream.rest()
+			self.value = ebrw_readstr.rest()
 
 	def __repr__(self):
 
@@ -93,11 +93,11 @@ class vendor_obj:
 	def __eq__(self, o):
 		return self.hex==o
 
-	def read(self, bstream):
-		self.bytes = bstream.read(1)
+	def read(self, ebrw_readstr):
+		self.bytes = ebrw_readstr.read(1)
 		if self.bytes[0] == 0:
 			self.ext = True
-			self.bytes += bstream.read(2)
+			self.bytes += ebrw_readstr.read(2)
 		self.hex = '#'+bytes.hex(self.bytes)
 
 	def get_name(self):
@@ -140,30 +140,30 @@ class sysex_obj:
 
 		if datlen <= 3: return False
 
-		bstream = BytesIO(sysexdata)
+		ebrw_readstr = BytesIO(sysexdata)
 
-		self.vendor.read(bstream)
+		self.vendor.read(ebrw_readstr)
 
-		self.device = bstream.read(1)[0]
-		self.model_id = bstream.read(1)[0]
-		self.command = bstream.read(1)[0]
+		self.device = ebrw_readstr.read(1)[0]
+		self.model_id = ebrw_readstr.read(1)[0]
+		self.command = ebrw_readstr.read(1)[0]
 
 		if self.vendor.ext == False:
 			if self.vendor == '#41': 
 				from objects.midi_modernize.vendors import roland
-				roland.decode(self, bstream)
+				roland.decode(self, ebrw_readstr)
 
 			elif self.vendor in ['#7e', '#7f']: 
 				from objects.midi_modernize.vendors import universal
-				universal.decode(self, bstream)
+				universal.decode(self, ebrw_readstr)
 
 			elif self.vendor == '#4c': 
 				from objects.midi_modernize.vendors import sony
-				sony.decode(self, bstream)
+				sony.decode(self, ebrw_readstr)
 
 			elif self.vendor == '#43': 
 				from objects.midi_modernize.vendors import yamaha
-				yamaha.decode(self, bstream)
+				yamaha.decode(self, ebrw_readstr)
 
 
 		#self.print()

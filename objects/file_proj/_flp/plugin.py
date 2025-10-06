@@ -3,6 +3,7 @@
 
 from io import BytesIO
 import struct
+from external.easybinrw import easybinrw
 
 class flp_plugin:
 	def __init__(self):
@@ -29,10 +30,21 @@ class flp_plugin:
 		self.unk6 = 0
 
 	def read(self, event_data):
-		event_bio = BytesIO(event_data)
-		self.fxnum, self.slotnum, self.unk1, self.unk2, flags = struct.unpack('IIiII', event_bio.read(20))
-		self.unk3, self.unk4, self.unk5, self.unk6 = struct.unpack('IIII', event_bio.read(16))
-		self.window_p_x, self.window_p_y, self.window_s_x, self.window_s_y = struct.unpack('IIII', event_bio.read(16))
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(event_data)
+		self.fxnum = ebrw_readstr.int_u32()
+		self.slotnum = ebrw_readstr.int_u32()
+		self.unk1 = ebrw_readstr.int_s32()
+		self.unk2 = ebrw_readstr.int_u32()
+		flags = ebrw_readstr.int_u32()
+		self.unk3 = ebrw_readstr.int_u32()
+		self.unk4 = ebrw_readstr.int_u32()
+		self.unk5 = ebrw_readstr.int_u32()
+		self.unk6 = ebrw_readstr.int_u32()
+		self.window_p_x = ebrw_readstr.int_u32()
+		self.window_p_y = ebrw_readstr.int_u32()
+		self.window_s_x = ebrw_readstr.int_u32()
+		self.window_s_y = ebrw_readstr.int_u32()
 
 		self.visible = bool(flags&1)
 		self.detached = bool(flags&4)
@@ -56,13 +68,18 @@ class flp_plugin:
 		outflags += int(self.hide_settings)<<8
 		#outflags += int(self.minimized)<<9
 
-		out_data = b''
-		out_data += struct.pack('IIIII', self.fxnum, self.slotnum, self.unk1, self.unk2, outflags)
-		out_data += struct.pack('IIII', self.unk3, self.unk4, self.unk5, self.unk6)
-		out_data += struct.pack('IIII', self.window_p_x, self.window_p_y, self.window_s_x, self.window_s_y)
-
-
-		#print(self.unk1, self.unk2, outflags, self.unk3, self.unk4, self.unk5, self.unk6)
-
-
-		return out_data
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u32(self.fxnum)
+		ebrw_writestr.int_u32(self.slotnum)
+		ebrw_writestr.int_s32(self.unk1)
+		ebrw_writestr.int_u32(self.unk2)
+		ebrw_writestr.int_u32(outflags)
+		ebrw_writestr.int_u32(self.unk3)
+		ebrw_writestr.int_u32(self.unk4)
+		ebrw_writestr.int_u32(self.unk5)
+		ebrw_writestr.int_u32(self.unk6)
+		ebrw_writestr.int_u32(self.window_p_x)
+		ebrw_writestr.int_u32(self.window_p_y)
+		ebrw_writestr.int_u32(self.window_s_x)
+		ebrw_writestr.int_u32(self.window_s_y)
+		return ebrw_writestr.getvalue()

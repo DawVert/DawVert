@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functions.dawspecific import flp_plugchunks
-from objects.data_bytes import bytewriter
+from external.easybinrw import easybinrw
 from objects.dawspecific import flp_plugins
 from dataclasses import dataclass
 from dataclasses import field
@@ -66,37 +66,37 @@ class directwave_region_main:
 	unk_4: int = 0
 	unk_5: int = 0
 
-	def from_byr(self, byr_stream): 
-		self.key_root = byr_stream.uint8()
-		self.key_min = byr_stream.uint8()
-		self.key_max = byr_stream.uint8()
-		self.vel_min = byr_stream.uint8()
-		self.vel_max = byr_stream.uint8()
-		self.mute = byr_stream.uint16()
-		self.flags = byr_stream.flags16()
-		self.gain = byr_stream.float()
-		self.pan = byr_stream.float()
-		self.unk_2 = byr_stream.float()
-		self.unk_3 = byr_stream.uint8()
-		self.unk_4 = byr_stream.uint8()
-		self.unk_5 = byr_stream.uint16()
+	def from_ebrw(self, ebrw_readstr): 
+		self.key_root = ebrw_readstr.int_u8()
+		self.key_min = ebrw_readstr.int_u8()
+		self.key_max = ebrw_readstr.int_u8()
+		self.vel_min = ebrw_readstr.int_u8()
+		self.vel_max = ebrw_readstr.int_u8()
+		self.mute = ebrw_readstr.int_u16()
+		self.flags = ebrw_readstr.flags_i16()
+		self.gain = ebrw_readstr.float()
+		self.pan = ebrw_readstr.float()
+		self.unk_2 = ebrw_readstr.float()
+		self.unk_3 = ebrw_readstr.int_u8()
+		self.unk_4 = ebrw_readstr.int_u8()
+		self.unk_5 = ebrw_readstr.int_u16()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint8(self.key_root)
-		byw_stream.uint8(self.key_min)
-		byw_stream.uint8(self.key_max)
-		byw_stream.uint8(self.vel_min)
-		byw_stream.uint8(self.vel_max)
-		byw_stream.uint16(self.mute)
-		byw_stream.flags16(self.flags)
-		byw_stream.float(self.gain)
-		byw_stream.float(self.pan)
-		byw_stream.float(self.unk_2)
-		byw_stream.uint8(self.unk_3)
-		byw_stream.uint8(self.unk_4)
-		byw_stream.uint16(self.unk_5)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u8(self.key_root)
+		ebrw_writestr.int_u8(self.key_min)
+		ebrw_writestr.int_u8(self.key_max)
+		ebrw_writestr.int_u8(self.vel_min)
+		ebrw_writestr.int_u8(self.vel_max)
+		ebrw_writestr.int_u16(self.mute)
+		ebrw_writestr.flags_i16(self.flags)
+		ebrw_writestr.float(self.gain)
+		ebrw_writestr.float(self.pan)
+		ebrw_writestr.float(self.unk_2)
+		ebrw_writestr.int_u8(self.unk_3)
+		ebrw_writestr.int_u8(self.unk_4)
+		ebrw_writestr.int_u16(self.unk_5)
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_region_sample:
@@ -109,31 +109,31 @@ class directwave_region_sample:
 	loop_end: int = 0
 	start: int = 0
 
-	def from_byr(self, byr_stream): 
-		self.num_samples = byr_stream.uint32()
-		byr_stream.skip(4)
-		self.channels = byr_stream.uint32()
-		self.bits = byr_stream.uint32()
-		self.hz = byr_stream.float()
-		self.loop_type = byr_stream.uint32()
-		self.loop_start = byr_stream.uint32()
-		self.loop_end = byr_stream.uint32()
-		self.start = byr_stream.uint32()
-		#print(  byr_stream.rest()  )
+	def from_ebrw(self, ebrw_readstr): 
+		self.num_samples = ebrw_readstr.int_u32()
+		ebrw_readstr.skip(4)
+		self.channels = ebrw_readstr.int_u32()
+		self.bits = ebrw_readstr.int_u32()
+		self.hz = ebrw_readstr.float()
+		self.loop_type = ebrw_readstr.int_u32()
+		self.loop_start = ebrw_readstr.int_u32()
+		self.loop_end = ebrw_readstr.int_u32()
+		self.start = ebrw_readstr.int_u32()
+		#print(  ebrw_readstr.rest()  )
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint32(max(0, self.num_samples))
-		byw_stream.uint32(0)
-		byw_stream.uint32(self.channels)
-		byw_stream.uint32(self.bits)
-		byw_stream.float(self.hz)
-		byw_stream.uint32(self.loop_type)
-		byw_stream.uint32(int(self.loop_start))
-		byw_stream.uint32(int(self.loop_end))
-		byw_stream.uint32(int(self.start))
-		byw_stream.raw(b'\x10\x00\x00\x00')
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u32(max(0, self.num_samples))
+		ebrw_writestr.int_u32(0)
+		ebrw_writestr.int_u32(self.channels)
+		ebrw_writestr.int_u32(self.bits)
+		ebrw_writestr.float(self.hz)
+		ebrw_writestr.int_u32(self.loop_type)
+		ebrw_writestr.int_u32(int(self.loop_start))
+		ebrw_writestr.int_u32(int(self.loop_end))
+		ebrw_writestr.int_u32(int(self.start))
+		ebrw_writestr.raw(b'\x10\x00\x00\x00')
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_region_pitch:
@@ -142,19 +142,19 @@ class directwave_region_pitch:
 	fine: int = 0
 	k_trk: int = 100
 
-	def from_byr(self, byr_stream): 
-		self.tune = byr_stream.float()
-		self.semi = byr_stream.int8()
-		self.fine = byr_stream.int8()
-		self.k_trk = byr_stream.uint16()
+	def from_ebrw(self, ebrw_readstr): 
+		self.tune = ebrw_readstr.float()
+		self.semi = ebrw_readstr.int_s8()
+		self.fine = ebrw_readstr.int_s8()
+		self.k_trk = ebrw_readstr.int_u16()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.float(self.tune)
-		byw_stream.int8(self.semi)
-		byw_stream.int8(self.fine)
-		byw_stream.uint16(self.k_trk)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.float(self.tune)
+		ebrw_writestr.int_s8(self.semi)
+		ebrw_writestr.int_s8(self.fine)
+		ebrw_writestr.int_u16(self.k_trk)
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_region_timestretch:
@@ -164,21 +164,21 @@ class directwave_region_timestretch:
 	grain: float = 0.5
 	smooth: float = 1
 
-	def from_byr(self, byr_stream): 
-		self.time = byr_stream.uint8()
-		self.sync = byr_stream.uint8()
-		self.stretch = byr_stream.float()
-		self.grain = byr_stream.float()
-		self.smooth = byr_stream.float()
+	def from_ebrw(self, ebrw_readstr): 
+		self.time = ebrw_readstr.int_u8()
+		self.sync = ebrw_readstr.int_u8()
+		self.stretch = ebrw_readstr.float()
+		self.grain = ebrw_readstr.float()
+		self.smooth = ebrw_readstr.float()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint8(self.time)
-		byw_stream.uint8(self.sync)
-		byw_stream.float(self.stretch)
-		byw_stream.float(self.grain)
-		byw_stream.float(self.smooth)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u8(self.time)
+		ebrw_writestr.int_u8(self.sync)
+		ebrw_writestr.float(self.stretch)
+		ebrw_writestr.float(self.grain)
+		ebrw_writestr.float(self.smooth)
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_region_filter:
@@ -187,35 +187,35 @@ class directwave_region_filter:
 	shape: float = 0
 	type: int = 0
 
-	def from_byr(self, byr_stream): 
-		self.type = byr_stream.uint32()
-		self.cutoff = byr_stream.float()
-		self.reso = byr_stream.float()
-		self.shape = byr_stream.float()
+	def from_ebrw(self, ebrw_readstr): 
+		self.type = ebrw_readstr.int_u32()
+		self.cutoff = ebrw_readstr.float()
+		self.reso = ebrw_readstr.float()
+		self.shape = ebrw_readstr.float()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint32(self.type)
-		byw_stream.float(self.cutoff)
-		byw_stream.float(self.reso)
-		byw_stream.float(self.shape)
-		byw_stream.uint32(0)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u32(self.type)
+		ebrw_writestr.float(self.cutoff)
+		ebrw_writestr.float(self.reso)
+		ebrw_writestr.float(self.shape)
+		ebrw_writestr.int_u32(0)
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_region_sysl:
 	sy: int = 0
 	sl: int = 0
 
-	def from_byr(self, byr_stream): 
-		self.sy = byr_stream.uint8()
-		self.sl = byr_stream.uint8()
+	def from_ebrw(self, ebrw_readstr): 
+		self.sy = ebrw_readstr.int_u8()
+		self.sl = ebrw_readstr.int_u8()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint8(self.sy)
-		byw_stream.uint8(self.sl)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u8(self.sy)
+		ebrw_writestr.int_u8(self.sl)
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_region_adsr:
@@ -224,19 +224,19 @@ class directwave_region_adsr:
 	sustain: float = 0.5
 	release: float = 0.25
 
-	def from_byr(self, byr_stream): 
-		self.attack = byr_stream.float()
-		self.decay = byr_stream.float()
-		self.sustain = byr_stream.float()
-		self.release = byr_stream.float()
+	def from_ebrw(self, ebrw_readstr): 
+		self.attack = ebrw_readstr.float()
+		self.decay = ebrw_readstr.float()
+		self.sustain = ebrw_readstr.float()
+		self.release = ebrw_readstr.float()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.float(self.attack)
-		byw_stream.float(self.decay)
-		byw_stream.float(self.sustain)
-		byw_stream.float(self.release)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.float(self.attack)
+		ebrw_writestr.float(self.decay)
+		ebrw_writestr.float(self.sustain)
+		ebrw_writestr.float(self.release)
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_region_fx_2param:
@@ -244,17 +244,17 @@ class directwave_region_fx_2param:
 	param1: float = 0
 	param2: float = 1
 
-	def from_byr(self, byr_stream): 
-		self.enable = byr_stream.uint8()
-		self.param1 = byr_stream.float()
-		self.param2 = byr_stream.float()
+	def from_ebrw(self, ebrw_readstr): 
+		self.enable = ebrw_readstr.int_u8()
+		self.param1 = ebrw_readstr.float()
+		self.param2 = ebrw_readstr.float()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint8(self.enable)
-		byw_stream.float(self.param1)
-		byw_stream.float(self.param2)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u8(self.enable)
+		ebrw_writestr.float(self.param1)
+		ebrw_writestr.float(self.param2)
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_region_lfo:
@@ -264,24 +264,24 @@ class directwave_region_lfo:
 	phase: float = 1
 	attack: float = 0
 
-	def from_byr(self, byr_stream): 
-		self.wave = byr_stream.uint8()
-		self.ratetype = byr_stream.uint16()
-		byr_stream.skip(1)
-		self.rate = byr_stream.float()
-		self.phase = byr_stream.float()
-		self.attack = byr_stream.float()
+	def from_ebrw(self, ebrw_readstr): 
+		self.wave = ebrw_readstr.int_u8()
+		self.ratetype = ebrw_readstr.int_u16()
+		ebrw_readstr.skip(1)
+		self.rate = ebrw_readstr.float()
+		self.phase = ebrw_readstr.float()
+		self.attack = ebrw_readstr.float()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint8(self.wave)
-		byw_stream.uint16(self.ratetype)
-		byw_stream.uint8(0)
-		byw_stream.float(self.rate)
-		byw_stream.float(self.phase)
-		byw_stream.float(self.attack)
-		byw_stream.uint32(0)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u8(self.wave)
+		ebrw_writestr.int_u16(self.ratetype)
+		ebrw_writestr.int_u8(0)
+		ebrw_writestr.float(self.rate)
+		ebrw_writestr.float(self.phase)
+		ebrw_writestr.float(self.attack)
+		ebrw_writestr.int_u32(0)
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_region_mod:
@@ -289,17 +289,17 @@ class directwave_region_mod:
 	mod_to: int = 0
 	amount: float = 0.5
 
-	def from_byr(self, byr_stream): 
-		self.mod_from = byr_stream.uint16()
-		self.mod_to = byr_stream.uint16()
-		self.amount = byr_stream.float()
+	def from_ebrw(self, ebrw_readstr): 
+		self.mod_from = ebrw_readstr.int_u16()
+		self.mod_to = ebrw_readstr.int_u16()
+		self.amount = ebrw_readstr.float()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint16(self.mod_from)
-		byw_stream.uint16(self.mod_to)
-		byw_stream.float(self.amount)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u16(self.mod_from)
+		ebrw_writestr.int_u16(self.mod_to)
+		ebrw_writestr.float(self.amount)
+		return ebrw_writestr.getvalue()
 
 class directwave_region:
 	def __init__(self):
@@ -347,86 +347,90 @@ class directwave_region:
 		self.pcmdata = None
 		self.flacdata = None
 
-	def read(self, byr_stream):
+	def read(self, ebrw_readstr):
 		self.modmatrix = []
 		filternum = 0
 		altenvnum = 0
 		lfonum = 0
-		while byr_stream.remaining():
-			chunktype, chunksize = flp_plugchunks.read_header(byr_stream)
-			with byr_stream.isolate_size(chunksize, True) as bye_stream: 
-				if VERBOSE: 
-					print('\t\t\t', getname(chunktype), chunksize, end='')
-					print(bye_stream.rest().hex())
-					bye_stream.seek(0)
-				if chunktype == 500: self.main.from_byr(bye_stream)
-				elif chunktype == 501: self.name = bye_stream.raw(chunksize)
-				elif chunktype == 502: self.path = bye_stream.raw(chunksize)
-				elif chunktype == 503: self.sample.from_byr(bye_stream)
-				elif chunktype == 504: self.pitch.from_byr(bye_stream)
-				elif chunktype == 505: self.timestretch.from_byr(bye_stream)
-				elif chunktype == 506: self.sends_fx = bye_stream.l_float(4)
-				elif chunktype == 507:
-					if filternum == 0: self.filter_a.from_byr(bye_stream)
-					if filternum == 1: self.filter_b.from_byr(bye_stream)
-					filternum += 1
-				elif chunktype == 508: self.sysl.from_byr(bye_stream)
-				elif chunktype == 509: self.env_main.from_byr(bye_stream)
-				elif chunktype == 510: self.fx_ringmod.from_byr(bye_stream)
-				elif chunktype == 511: self.fx_decimator.from_byr(bye_stream)
-				elif chunktype == 512: self.fx_quantizer.from_byr(bye_stream)
-				elif chunktype == 513: self.fx_phaser.from_byr(bye_stream)
-				elif chunktype == 514:
-					if altenvnum == 0: self.env_alt1.from_byr(bye_stream)
-					if altenvnum == 1: self.env_alt2.from_byr(bye_stream)
-					altenvnum += 1
-				elif chunktype == 515:
-					if lfonum == 0: self.lfo1.from_byr(bye_stream)
-					if lfonum == 1: self.lfo2.from_byr(bye_stream)
-					lfonum += 1
-				elif chunktype == 516:
-					mod_obj = directwave_region_mod()
-					mod_obj.from_byr(bye_stream)
-					self.modmatrix.append(mod_obj)
-				elif chunktype == 517:
-					self.pcmdata = bye_stream.raw(chunksize)
-				elif chunktype == 518:
-					self.flacdata = bye_stream.raw(chunksize)
+		while ebrw_readstr.remaining():
+			chunktype, chunksize = flp_plugchunks.read_header(ebrw_readstr)
 
+			ebrw_readstr.isolate_size(chunksize)
+
+			if VERBOSE: 
+				print('\t\t\t', getname(chunktype), chunksize, end='')
+				print(ebrw_readstr.rest().hex())
+				ebrw_readstr.seek(0)
+			if chunktype == 500: self.main.from_ebrw(ebrw_readstr)
+			elif chunktype == 501: self.name = ebrw_readstr.raw(chunksize)
+			elif chunktype == 502: self.path = ebrw_readstr.raw(chunksize)
+			elif chunktype == 503: self.sample.from_ebrw(ebrw_readstr)
+			elif chunktype == 504: self.pitch.from_ebrw(ebrw_readstr)
+			elif chunktype == 505: self.timestretch.from_ebrw(ebrw_readstr)
+			elif chunktype == 506: self.sends_fx = ebrw_readstr.list_float(4)
+			elif chunktype == 507:
+				if filternum == 0: self.filter_a.from_ebrw(ebrw_readstr)
+				if filternum == 1: self.filter_b.from_ebrw(ebrw_readstr)
+				filternum += 1
+			elif chunktype == 508: self.sysl.from_ebrw(ebrw_readstr)
+			elif chunktype == 509: self.env_main.from_ebrw(ebrw_readstr)
+			elif chunktype == 510: self.fx_ringmod.from_ebrw(ebrw_readstr)
+			elif chunktype == 511: self.fx_decimator.from_ebrw(ebrw_readstr)
+			elif chunktype == 512: self.fx_quantizer.from_ebrw(ebrw_readstr)
+			elif chunktype == 513: self.fx_phaser.from_ebrw(ebrw_readstr)
+			elif chunktype == 514:
+				if altenvnum == 0: self.env_alt1.from_ebrw(ebrw_readstr)
+				if altenvnum == 1: self.env_alt2.from_ebrw(ebrw_readstr)
+				altenvnum += 1
+			elif chunktype == 515:
+				if lfonum == 0: self.lfo1.from_ebrw(ebrw_readstr)
+				if lfonum == 1: self.lfo2.from_ebrw(ebrw_readstr)
+				lfonum += 1
+			elif chunktype == 516:
+				mod_obj = directwave_region_mod()
+				mod_obj.from_ebrw(ebrw_readstr)
+				self.modmatrix.append(mod_obj)
+			elif chunktype == 517:
+				self.pcmdata = ebrw_readstr.raw(chunksize)
+			elif chunktype == 518:
+				self.flacdata = ebrw_readstr.raw(chunksize)
+
+			ebrw_readstr.isolate_end()
+			
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		flp_plugchunks.write_chunk(byw_stream, 500, self.main.dump())
-		flp_plugchunks.write_chunk(byw_stream, 501, self.name)
-		flp_plugchunks.write_chunk(byw_stream, 502, self.path)
-		flp_plugchunks.write_chunk(byw_stream, 503, self.sample.dump())
-		flp_plugchunks.write_chunk(byw_stream, 504, self.pitch.dump())
-		flp_plugchunks.write_chunk(byw_stream, 505, self.timestretch.dump())
+		ebrw_writestr = easybinrw.binwrite()
+		flp_plugchunks.write_chunk(ebrw_writestr, 500, self.main.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 501, self.name)
+		flp_plugchunks.write_chunk(ebrw_writestr, 502, self.path)
+		flp_plugchunks.write_chunk(ebrw_writestr, 503, self.sample.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 504, self.pitch.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 505, self.timestretch.dump())
 
-		info_sendsfx = bytewriter.bytewriter()
-		info_sendsfx.l_float(self.sends_fx, 4)
+		info_sendsfx = easybinrw.binwrite()
+		info_sendsfx.list_float(self.sends_fx, 4)
 		info_sendsfx.raw(b'\0'*32)
-		flp_plugchunks.write_chunk(byw_stream, 506, info_sendsfx.getvalue())
-		flp_plugchunks.write_chunk(byw_stream, 507, self.filter_a.dump())
-		flp_plugchunks.write_chunk(byw_stream, 507, self.filter_b.dump())
-		flp_plugchunks.write_chunk(byw_stream, 508, self.sysl.dump())
-		flp_plugchunks.write_chunk(byw_stream, 509, self.env_main.dump())
-		flp_plugchunks.write_chunk(byw_stream, 510, self.fx_ringmod.dump())
-		flp_plugchunks.write_chunk(byw_stream, 511, self.fx_decimator.dump())
-		flp_plugchunks.write_chunk(byw_stream, 512, self.fx_quantizer.dump())
-		flp_plugchunks.write_chunk(byw_stream, 513, self.fx_phaser.dump())
-		flp_plugchunks.write_chunk(byw_stream, 514, self.env_alt1.dump())
-		flp_plugchunks.write_chunk(byw_stream, 514, self.env_alt2.dump())
-		flp_plugchunks.write_chunk(byw_stream, 515, self.lfo1.dump())
-		flp_plugchunks.write_chunk(byw_stream, 515, self.lfo2.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 506, info_sendsfx.getvalue())
+		flp_plugchunks.write_chunk(ebrw_writestr, 507, self.filter_a.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 507, self.filter_b.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 508, self.sysl.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 509, self.env_main.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 510, self.fx_ringmod.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 511, self.fx_decimator.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 512, self.fx_quantizer.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 513, self.fx_phaser.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 514, self.env_alt1.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 514, self.env_alt2.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 515, self.lfo1.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 515, self.lfo2.dump())
 		for mod_obj in self.modmatrix:
-			flp_plugchunks.write_chunk(byw_stream, 516, mod_obj.dump())
+			flp_plugchunks.write_chunk(ebrw_writestr, 516, mod_obj.dump())
 		if self.pcmdata is not None:
-			flp_plugchunks.write_chunk(byw_stream, 517, self.pcmdata)
+			flp_plugchunks.write_chunk(ebrw_writestr, 517, self.pcmdata)
 		if self.flacdata is not None:
-			flp_plugchunks.write_chunk(byw_stream, 518, self.flacdata)
-		flp_plugchunks.write_chunk(byw_stream, 4, b'')
+			flp_plugchunks.write_chunk(ebrw_writestr, 518, self.flacdata)
+		flp_plugchunks.write_chunk(ebrw_writestr, 4, b'')
 
-		return byw_stream.getvalue()
+		return ebrw_writestr.getvalue()
 
 # ============================================= Program ============================================= 
 
@@ -437,19 +441,19 @@ class directwave_program_fx_drive:
 	a_amount: float = 0
 	b_amount: float = 0
 
-	def from_byr(self, byr_stream): 
-		self.a_enable = byr_stream.uint8()
-		self.b_enable = byr_stream.uint8()
-		self.a_amount = byr_stream.float()
-		self.b_amount = byr_stream.float()
+	def from_ebrw(self, ebrw_readstr): 
+		self.a_enable = ebrw_readstr.int_u8()
+		self.b_enable = ebrw_readstr.int_u8()
+		self.a_amount = ebrw_readstr.float()
+		self.b_amount = ebrw_readstr.float()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint8(self.a_enable)
-		byw_stream.uint8(self.b_enable)
-		byw_stream.float(self.a_amount)
-		byw_stream.float(self.b_amount)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u8(self.a_enable)
+		ebrw_writestr.int_u8(self.b_enable)
+		ebrw_writestr.float(self.a_amount)
+		ebrw_writestr.float(self.b_amount)
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_program_fx_delay:
@@ -460,23 +464,23 @@ class directwave_program_fx_delay:
 	low_cut: float = 0.5
 	high_cut: float = 0.75
 
-	def from_byr(self, byr_stream): 
-		self.enable = byr_stream.uint8()
-		self.mode = byr_stream.uint8()
-		self.delay = byr_stream.float()
-		self.feedback = byr_stream.float()
-		self.low_cut = byr_stream.float()
-		self.high_cut = byr_stream.float()
+	def from_ebrw(self, ebrw_readstr): 
+		self.enable = ebrw_readstr.int_u8()
+		self.mode = ebrw_readstr.int_u8()
+		self.delay = ebrw_readstr.float()
+		self.feedback = ebrw_readstr.float()
+		self.low_cut = ebrw_readstr.float()
+		self.high_cut = ebrw_readstr.float()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint8(self.enable)
-		byw_stream.uint8(self.mode)
-		byw_stream.float(self.delay)
-		byw_stream.float(self.feedback)
-		byw_stream.float(self.low_cut)
-		byw_stream.float(self.high_cut)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u8(self.enable)
+		ebrw_writestr.int_u8(self.mode)
+		ebrw_writestr.float(self.delay)
+		ebrw_writestr.float(self.feedback)
+		ebrw_writestr.float(self.low_cut)
+		ebrw_writestr.float(self.high_cut)
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_program_fx_reverb:
@@ -486,21 +490,21 @@ class directwave_program_fx_reverb:
 	diffusion: float = 0.75
 	decay: float = 0.25
 
-	def from_byr(self, byr_stream): 
-		self.enable = byr_stream.uint8()
-		self.room = byr_stream.float()
-		self.damp = byr_stream.float()
-		self.diffusion = byr_stream.float()
-		self.decay = byr_stream.float()
+	def from_ebrw(self, ebrw_readstr): 
+		self.enable = ebrw_readstr.int_u8()
+		self.room = ebrw_readstr.float()
+		self.damp = ebrw_readstr.float()
+		self.diffusion = ebrw_readstr.float()
+		self.decay = ebrw_readstr.float()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint8(self.enable)
-		byw_stream.float(self.room)
-		byw_stream.float(self.damp)
-		byw_stream.float(self.diffusion)
-		byw_stream.float(self.decay)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u8(self.enable)
+		ebrw_writestr.float(self.room)
+		ebrw_writestr.float(self.damp)
+		ebrw_writestr.float(self.diffusion)
+		ebrw_writestr.float(self.decay)
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_program_fx_chorus:
@@ -510,21 +514,21 @@ class directwave_program_fx_chorus:
 	rate: float = 0.25
 	feedback: float = 0
 
-	def from_byr(self, byr_stream): 
-		self.enable = byr_stream.uint8()
-		self.delay = byr_stream.float()
-		self.depth = byr_stream.float()
-		self.rate = byr_stream.float()
-		self.feedback = byr_stream.float()
+	def from_ebrw(self, ebrw_readstr): 
+		self.enable = ebrw_readstr.int_u8()
+		self.delay = ebrw_readstr.float()
+		self.depth = ebrw_readstr.float()
+		self.rate = ebrw_readstr.float()
+		self.feedback = ebrw_readstr.float()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint8(self.enable)
-		byw_stream.float(self.delay)
-		byw_stream.float(self.depth)
-		byw_stream.float(self.rate)
-		byw_stream.float(self.feedback)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u8(self.enable)
+		ebrw_writestr.float(self.delay)
+		ebrw_writestr.float(self.depth)
+		ebrw_writestr.float(self.rate)
+		ebrw_writestr.float(self.feedback)
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_program_lfo:
@@ -534,24 +538,24 @@ class directwave_program_lfo:
 	phase: float = 1
 	attack: float = 0
 
-	def from_byr(self, byr_stream): 
-		self.enable = byr_stream.uint8()
-		self.wave = byr_stream.uint8()
-		byr_stream.skip(2)
-		self.rate = byr_stream.float()
-		self.phase = byr_stream.float()
-		self.attack = byr_stream.float()
+	def from_ebrw(self, ebrw_readstr): 
+		self.enable = ebrw_readstr.int_u8()
+		self.wave = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(2)
+		self.rate = ebrw_readstr.float()
+		self.phase = ebrw_readstr.float()
+		self.attack = ebrw_readstr.float()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint8(self.enable)
-		byw_stream.uint8(self.wave)
-		byw_stream.raw(b'\0'*2)
-		byw_stream.float(self.rate)
-		byw_stream.float(self.phase)
-		byw_stream.float(self.attack)
-		byw_stream.raw(b'\0'*4)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u8(self.enable)
+		ebrw_writestr.int_u8(self.wave)
+		ebrw_writestr.raw(b'\0'*2)
+		ebrw_writestr.float(self.rate)
+		ebrw_writestr.float(self.phase)
+		ebrw_writestr.float(self.attack)
+		ebrw_writestr.raw(b'\0'*4)
+		return ebrw_writestr.getvalue()
 
 @dataclass
 class directwave_program_main:
@@ -562,26 +566,26 @@ class directwave_program_main:
 	glidetime: float = 0
 	used: int = 0
 
-	def from_byr(self, byr_stream): 
-		self.num = byr_stream.uint32()
-		self.playmode = byr_stream.uint8()
-		self.glidemode = byr_stream.uint8()
-		self.vol = byr_stream.float()
-		self.glidetime = byr_stream.float()
-		self.used = byr_stream.uint32()
+	def from_ebrw(self, ebrw_readstr): 
+		self.num = ebrw_readstr.int_u32()
+		self.playmode = ebrw_readstr.int_u8()
+		self.glidemode = ebrw_readstr.int_u8()
+		self.vol = ebrw_readstr.float()
+		self.glidetime = ebrw_readstr.float()
+		self.used = ebrw_readstr.int_u32()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint32(self.num)
-		byw_stream.uint8(self.playmode)
-		byw_stream.uint8(self.glidemode)
-		byw_stream.float(self.vol)
-		byw_stream.float(self.glidetime)
-		byw_stream.uint32(self.used)
-		byw_stream.uint32(0)
-		byw_stream.uint32(0)
-		byw_stream.uint32(0)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u32(self.num)
+		ebrw_writestr.int_u8(self.playmode)
+		ebrw_writestr.int_u8(self.glidemode)
+		ebrw_writestr.float(self.vol)
+		ebrw_writestr.float(self.glidetime)
+		ebrw_writestr.int_u32(self.used)
+		ebrw_writestr.int_u32(0)
+		ebrw_writestr.int_u32(0)
+		ebrw_writestr.int_u32(0)
+		return ebrw_writestr.getvalue()
 
 class directwave_program:
 	def __init__(self):
@@ -602,77 +606,77 @@ class directwave_program:
 		self.regions.append(region_obj)
 		return region_obj
 
-	def read(self, byr_stream):
+	def read(self, ebrw_readstr):
 		self.regions = []
 		self.modvals = []
 		lfonum = 0
-		while byr_stream.remaining():
-			chunktype, chunksize = flp_plugchunks.read_header(byr_stream)
-			with byr_stream.isolate_size(chunksize, True) as bye_stream: 
+		while ebrw_readstr.remaining():
+			chunktype, chunksize = flp_plugchunks.read_header(ebrw_readstr)
+			with ebrw_readstr.isolate_size(chunksize, True) as ebrw_readstr: 
 				if VERBOSE: print('\t\t', getname(chunktype), chunksize, end=' > ')
 				if chunktype == 100:
-					self.main.from_byr(bye_stream)
+					self.main.from_ebrw(ebrw_readstr)
 					if VERBOSE: print(self.main)
 				elif chunktype == 102:
-					self.name = bye_stream.raw(chunksize)
+					self.name = ebrw_readstr.raw(chunksize)
 					if VERBOSE: print(self.name)
 				elif chunktype == 103:
-					self.path = bye_stream.raw(chunksize)
+					self.path = ebrw_readstr.raw(chunksize)
 					if VERBOSE: print(self.path)
 				elif chunktype == 104:
-					self.fx_drive.from_byr(bye_stream)
+					self.fx_drive.from_ebrw(ebrw_readstr)
 					if VERBOSE: print(self.fx_drive)
 				elif chunktype == 105:
-					self.fx_delay.from_byr(bye_stream)
+					self.fx_delay.from_ebrw(ebrw_readstr)
 					if VERBOSE: print(self.fx_delay)
 				elif chunktype == 106:
-					self.fx_reverb.from_byr(bye_stream)
+					self.fx_reverb.from_ebrw(ebrw_readstr)
 					if VERBOSE: print(self.fx_reverb)
 				elif chunktype == 107:
-					self.fx_chorus.from_byr(bye_stream)
+					self.fx_chorus.from_ebrw(ebrw_readstr)
 					if VERBOSE: print(self.fx_chorus)
 				elif chunktype == 108:
 					if VERBOSE: print()
-					if lfonum == 0: self.lfo1.from_byr(bye_stream)
-					if lfonum == 1: self.lfo2.from_byr(bye_stream)
+					if lfonum == 0: self.lfo1.from_ebrw(ebrw_readstr)
+					if lfonum == 1: self.lfo2.from_ebrw(ebrw_readstr)
 					lfonum += 1
 				elif chunktype == 109:
 					if VERBOSE: print()
-					self.modvals.append(bye_stream.float())
+					self.modvals.append(ebrw_readstr.float())
 				elif chunktype == 3:
 					if VERBOSE: print()
 					region_obj = directwave_region()
-					region_obj.read(bye_stream)
+					region_obj.read(ebrw_readstr)
 					self.regions.append(region_obj)
 				else:
-					if VERBOSE: print(bye_stream.raw(chunksize).hex())
+					if VERBOSE: print(ebrw_readstr.raw(chunksize).hex())
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		flp_plugchunks.write_chunk(byw_stream, 100, self.main.dump())
-		flp_plugchunks.write_chunk(byw_stream, 102, self.name)
-		flp_plugchunks.write_chunk(byw_stream, 103, self.path)
-		flp_plugchunks.write_chunk(byw_stream, 104, self.fx_drive.dump())
-		flp_plugchunks.write_chunk(byw_stream, 105, self.fx_delay.dump())
-		flp_plugchunks.write_chunk(byw_stream, 106, self.fx_reverb.dump())
-		flp_plugchunks.write_chunk(byw_stream, 107, self.fx_chorus.dump())
-		flp_plugchunks.write_chunk(byw_stream, 108, self.lfo1.dump())
-		flp_plugchunks.write_chunk(byw_stream, 108, self.lfo2.dump())
+		ebrw_writestr = easybinrw.binwrite()
+		flp_plugchunks.write_chunk(ebrw_writestr, 100, self.main.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 102, self.name)
+		flp_plugchunks.write_chunk(ebrw_writestr, 103, self.path)
+		flp_plugchunks.write_chunk(ebrw_writestr, 104, self.fx_drive.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 105, self.fx_delay.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 106, self.fx_reverb.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 107, self.fx_chorus.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 108, self.lfo1.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 108, self.lfo2.dump())
 		for x in self.modvals:
-			info_modvals = bytewriter.bytewriter()
-			info_modvals.float(x)
-			flp_plugchunks.write_chunk(byw_stream, 109, info_modvals.getvalue())
+			modvals__ebrw_writestr = easybinrw.binwrite()
+			modvals__ebrw_writestr.float(x)
+			flp_plugchunks.write_chunk(ebrw_writestr, 109, modvals__ebrw_writestr.getvalue())
 		for x in range(100):
-			info_modvals = bytewriter.bytewriter()
-			info_modvals.uint8(x)
-			info_modvals.uint32(0)
-			info_modvals.float(1)
-			info_modvals.uint32(0)
-			flp_plugchunks.write_chunk(byw_stream, 110, info_modvals.getvalue())
+			modvals__ebrw_writestr = easybinrw.binwrite()
+			modvals__ebrw_writestr.int_u8(x)
+			modvals__ebrw_writestr.int_u32(0)
+			modvals__ebrw_writestr.float(1)
+			modvals__ebrw_writestr.int_u32(0)
+			flp_plugchunks.write_chunk(ebrw_writestr, 110, modvals__ebrw_writestr.getvalue())
 		for region in self.regions:
-			flp_plugchunks.write_chunk(byw_stream, 3, region.dump())
-		flp_plugchunks.write_chunk(byw_stream, 2, b'')
-		return byw_stream.getvalue()
+			flp_plugchunks.write_chunk(ebrw_writestr, 3, region.dump())
+		flp_plugchunks.write_chunk(ebrw_writestr, 2, b'')
+		return ebrw_writestr.getvalue()
 
 # ============================================= Main ============================================= 
 
@@ -702,67 +706,67 @@ class directwave_channel:
 	res_014: float = 0
 	res_015: float = 0
 
-	def from_byr(self, byr_stream): 
-		self.channelid = byr_stream.uint8()
-		self.unk1 = byr_stream.float()
-		byr_stream.skip(515)
-		self.prognum = byr_stream.uint8()
-		self.output = byr_stream.uint8()
-		byr_stream.skip(2)
-		self.mute = byr_stream.uint8()
-		self.solo = byr_stream.uint8()
-		byr_stream.skip(2)
-		byr_stream.skip(4)
-		self.pitchbend_range = byr_stream.int32()
-		byr_stream.skip(28)
-		self.pitch_bend = byr_stream.float()
-		self.mod_wheel = byr_stream.float()
-		self.mast_vol = byr_stream.float()
-		self.mast_pan = byr_stream.float()
-		self.mast_exp = byr_stream.float()
-		self.res_005 = byr_stream.float()
-		self.res_006 = byr_stream.float()
-		self.res_007 = byr_stream.float()
-		self.res_008 = byr_stream.float()
-		self.res_009 = byr_stream.float()
-		self.res_010 = byr_stream.float()
-		self.res_011 = byr_stream.float()
-		self.res_012 = byr_stream.float()
-		self.res_013 = byr_stream.float()
-		self.res_014 = byr_stream.float()
-		self.res_015 = byr_stream.float()
+	def from_ebrw(self, ebrw_readstr): 
+		self.channelid = ebrw_readstr.int_u8()
+		self.unk1 = ebrw_readstr.float()
+		ebrw_readstr.skip(515)
+		self.prognum = ebrw_readstr.int_u8()
+		self.output = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(2)
+		self.mute = ebrw_readstr.int_u8()
+		self.solo = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(2)
+		ebrw_readstr.skip(4)
+		self.pitchbend_range = ebrw_readstr.int_s32()
+		ebrw_readstr.skip(28)
+		self.pitch_bend = ebrw_readstr.float()
+		self.mod_wheel = ebrw_readstr.float()
+		self.mast_vol = ebrw_readstr.float()
+		self.mast_pan = ebrw_readstr.float()
+		self.mast_exp = ebrw_readstr.float()
+		self.res_005 = ebrw_readstr.float()
+		self.res_006 = ebrw_readstr.float()
+		self.res_007 = ebrw_readstr.float()
+		self.res_008 = ebrw_readstr.float()
+		self.res_009 = ebrw_readstr.float()
+		self.res_010 = ebrw_readstr.float()
+		self.res_011 = ebrw_readstr.float()
+		self.res_012 = ebrw_readstr.float()
+		self.res_013 = ebrw_readstr.float()
+		self.res_014 = ebrw_readstr.float()
+		self.res_015 = ebrw_readstr.float()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint8(self.channelid)
-		byw_stream.float(self.unk1)
-		byw_stream.raw(b'\0'*515)
-		byw_stream.uint8(self.prognum)
-		byw_stream.uint8(self.output)
-		byw_stream.raw(b'\0'*2)
-		byw_stream.uint8(self.mute)
-		byw_stream.uint8(self.solo)
-		byw_stream.raw(b'\0'*2)
-		byw_stream.raw(b'\0'*4)
-		byw_stream.int32(self.pitchbend_range)
-		byw_stream.raw(b'\0'*28)
-		byw_stream.float(self.pitch_bend)
-		byw_stream.float(self.mod_wheel)
-		byw_stream.float(self.mast_vol)
-		byw_stream.float(self.mast_pan)
-		byw_stream.float(self.mast_exp)
-		byw_stream.float(self.res_005)
-		byw_stream.float(self.res_006)
-		byw_stream.float(self.res_007)
-		byw_stream.float(self.res_008)
-		byw_stream.float(self.res_009)
-		byw_stream.float(self.res_010)
-		byw_stream.float(self.res_011)
-		byw_stream.float(self.res_012)
-		byw_stream.float(self.res_013)
-		byw_stream.float(self.res_014)
-		byw_stream.float(self.res_015)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u8(self.channelid)
+		ebrw_writestr.float(self.unk1)
+		ebrw_writestr.raw(b'\0'*515)
+		ebrw_writestr.int_u8(self.prognum)
+		ebrw_writestr.int_u8(self.output)
+		ebrw_writestr.raw(b'\0'*2)
+		ebrw_writestr.int_u8(self.mute)
+		ebrw_writestr.int_u8(self.solo)
+		ebrw_writestr.raw(b'\0'*2)
+		ebrw_writestr.raw(b'\0'*4)
+		ebrw_writestr.int_s32(self.pitchbend_range)
+		ebrw_writestr.raw(b'\0'*28)
+		ebrw_writestr.float(self.pitch_bend)
+		ebrw_writestr.float(self.mod_wheel)
+		ebrw_writestr.float(self.mast_vol)
+		ebrw_writestr.float(self.mast_pan)
+		ebrw_writestr.float(self.mast_exp)
+		ebrw_writestr.float(self.res_005)
+		ebrw_writestr.float(self.res_006)
+		ebrw_writestr.float(self.res_007)
+		ebrw_writestr.float(self.res_008)
+		ebrw_writestr.float(self.res_009)
+		ebrw_writestr.float(self.res_010)
+		ebrw_writestr.float(self.res_011)
+		ebrw_writestr.float(self.res_012)
+		ebrw_writestr.float(self.res_013)
+		ebrw_writestr.float(self.res_014)
+		ebrw_writestr.float(self.res_015)
+		return ebrw_writestr.getvalue()
 
 class directwave_plugin:
 	def __init__(self):
@@ -780,34 +784,37 @@ class directwave_plugin:
 			program_obj.main.num = x
 			self.programs.append(program_obj)
 
-	def read(self, byr_stream):
+	def read(self, ebrw_readstr):
 		self.programs = []
 		self.channels = []
-		self.version = byr_stream.uint32()
-		while byr_stream.remaining():
-			chunktype, chunksize = flp_plugchunks.read_header(byr_stream)
-			with byr_stream.isolate_size(chunksize, True) as bye_stream:
-				if VERBOSE: print('\t', getname(chunktype), chunksize, end=' > ')
-				if chunktype == 1:
-					if VERBOSE: print()
-					program_obj = directwave_program()
-					program_obj.read(bye_stream)
-					self.programs.append(program_obj)
-				elif chunktype == 5:
-					if VERBOSE: print()
-					channel_obj = directwave_channel()
-					channel_obj.from_byr(bye_stream)
-					self.channels.append(channel_obj)
-				else:
-					if VERBOSE: print(bye_stream.raw(chunksize).hex())
+		self.version = ebrw_readstr.int_u32()
+		while ebrw_readstr.remaining():
+			chunktype, chunksize = flp_plugchunks.read_header(ebrw_readstr)
+
+			ebrw_readstr.isolate_size(chunksize)
+			if VERBOSE: print('\t', getname(chunktype), chunksize, end=' > ')
+			if chunktype == 1:
+				if VERBOSE: print()
+				program_obj = directwave_program()
+				program_obj.read(ebrw_readstr)
+				self.programs.append(program_obj)
+			elif chunktype == 5:
+				if VERBOSE: print()
+				channel_obj = directwave_channel()
+				channel_obj.from_ebrw(ebrw_readstr)
+				self.channels.append(channel_obj)
+			else:
+				if VERBOSE: print(ebrw_readstr.raw(chunksize).hex())
+
+			ebrw_readstr.isolate_end()
 
 	def dump(self):
-		byw_stream = bytewriter.bytewriter()
-		byw_stream.uint32(self.version)
-		flp_plugchunks.write_chunk(byw_stream, 6, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
-		flp_plugchunks.write_chunk(byw_stream, 518, b'\x01\x00\x00\x00\x00\x00\x00')
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u32(self.version)
+		flp_plugchunks.write_chunk(ebrw_writestr, 6, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+		flp_plugchunks.write_chunk(ebrw_writestr, 518, b'\x01\x00\x00\x00\x00\x00\x00')
 		for channel_obj in self.channels:
-			flp_plugchunks.write_chunk(byw_stream, 5, channel_obj.dump())
+			flp_plugchunks.write_chunk(ebrw_writestr, 5, channel_obj.dump())
 		for program_obj in self.programs:
-			flp_plugchunks.write_chunk(byw_stream, 1, program_obj.dump())
-		return byw_stream.getvalue()
+			flp_plugchunks.write_chunk(ebrw_writestr, 1, program_obj.dump())
+		return ebrw_writestr.getvalue()

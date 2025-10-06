@@ -2,37 +2,36 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from lxml import etree as ET
-from objects.data_bytes import bytereader
-from objects.data_bytes import bytewriter
+from external.easybinrw import easybinrw
 
 VERBOSE = False
 
-def read_number(byr_stream):
-	intlen = byr_stream.uint8()
+def read_number(ebrw_readstr):
+	intlen = ebrw_readstr.int_u8()
 	out = 0
-	if intlen == 1: out = byr_stream.uint8()
-	if intlen == 2: out = byr_stream.uint16()
-	if intlen == 3: out = byr_stream.uint24()
-	if intlen == 4: out = byr_stream.uint32()
+	if intlen == 1: out = ebrw_readstr.int_u8()
+	if intlen == 2: out = ebrw_readstr.int_u16()
+	if intlen == 3: out = ebrw_readstr.int_u24()
+	if intlen == 4: out = ebrw_readstr.int_u32()
 	if VERBOSE: print(intlen, out)
 	return out
 
-def write_number(byw_stream, val):
+def write_number(ebrw_writestr, val):
 	if val>0xFFFFFF: 
-		byw_stream.uint8(4)
-		byw_stream.uint32(val)
+		ebrw_writestr.int_u8(4)
+		ebrw_writestr.int_u32(val)
 	elif val>0xFFFF: 
-		byw_stream.uint8(3)
-		byw_stream.uint16(val&0xFFFF)
-		byw_stream.uint8(val>>16)
+		ebrw_writestr.int_u8(3)
+		ebrw_writestr.int_u16(val&0xFFFF)
+		ebrw_writestr.int_u8(val>>16)
 	elif val>0xFF: 
-		byw_stream.uint8(2)
-		byw_stream.uint16(val)
+		ebrw_writestr.int_u8(2)
+		ebrw_writestr.int_u16(val)
 	elif val:
-		byw_stream.uint8(1)
-		byw_stream.uint8(val)
+		ebrw_writestr.int_u8(1)
+		ebrw_writestr.int_u8(val)
 	else:
-		byw_stream.uint8(0)
+		ebrw_writestr.int_u8(0)
 
 class juce_binaryxml_object:
 	__slots__ = ['type', 'data']
@@ -56,39 +55,39 @@ class juce_binaryxml_object:
 		elif self.type == 8: return str(self.data)
 		return str(self.data)
 
-	def read_byr(self, byr_stream):
-		with byr_stream.isolate_size(read_number(byr_stream), True) as bye_stream:
-			self.type = bye_stream.uint8()
-			if self.type == 1: self.data = bye_stream.uint32()
-			elif self.type == 2: self.data = True
-			elif self.type == 3: self.data = False
-			elif self.type == 4: self.data = bye_stream.double()
-			elif self.type == 5: self.data = bye_stream.string_t()
-			elif self.type == 6: self.data = bye_stream.uint64()
-			elif self.type == 8: self.data = bye_stream.rest()
-				
-			else:
-				if VERBOSE: print('error |', valtype)
-				#byr_stream.debug__peek()
-				exit()
+	def read_ebrw(self, ebrw_readstr):
+		ebrw_readstr.isolate_size(read_number(ebrw_readstr))
+		self.type = ebrw_readstr.int_u8()
+		if self.type == 1: self.data = ebrw_readstr.int_u32()
+		elif self.type == 2: self.data = True
+		elif self.type == 3: self.data = False
+		elif self.type == 4: self.data = ebrw_readstr.double()
+		elif self.type == 5: self.data = ebrw_readstr.string_t()
+		elif self.type == 6: self.data = ebrw_readstr.int_u64()
+		elif self.type == 8: self.data = ebrw_readstr.rest()
+		else:
+			if VERBOSE: print('error |', valtype)
+			#ebrw_readstr.debug__peek()
+			exit()
+		ebrw_readstr.isolate_end()
 
-	def to_bytes(self, byw_stream):
-		byw_stream = bytewriter.bytewriter()
-		self.write_byw(byw_stream)
-		return byw_stream.getvalue()
+	def to_bytes(self, ebrw_writestr):
+		ebrw_writestr = easybinrw.binwrite()
+		self.write_ebrw(ebrw_writestr)
+		return ebrw_writestr.getvalue()
 
-	def write_byw(self, byw_stream):
+	def write_ebrw(self, ebrw_writestr):
 		if self.type:
-			outs_stream = bytewriter.bytewriter()
-			outs_stream.uint8(self.type)
-			if self.type == 1: outs_stream.uint32(min(self.data, 2147483647))
-			elif self.type == 4: outs_stream.double(self.data)
-			elif self.type == 5: outs_stream.string_t(self.data)
-			elif self.type == 6: outs_stream.uint64(self.data)
-			elif self.type == 8: outs_stream.raw(self.data)
-			outdata = outs_stream.getvalue()
-			write_number(byw_stream, len(outdata))
-			byw_stream.raw(outdata)
+			out__ebrw_writestr = easybinrw.binwrite()
+			out__ebrw_writestr.int_u8(self.type)
+			if self.type == 1: out__ebrw_writestr.int_u32(min(self.data, 2147483647))
+			elif self.type == 4: out__ebrw_writestr.double(self.data)
+			elif self.type == 5: out__ebrw_writestr.string_t(self.data)
+			elif self.type == 6: out__ebrw_writestr.int_u64(self.data)
+			elif self.type == 8: out__ebrw_writestr.raw(self.data)
+			outdata = out__ebrw_writestr.getvalue()
+			write_number(ebrw_writestr, len(outdata))
+			ebrw_writestr.raw(outdata)
 
 	def set(self, value):
 		if isinstance(value, str):
@@ -147,41 +146,42 @@ class juce_binaryxml_element:
 		return len(self.children)
 
 	def read_bytes(self, inbytes):
-		byr_stream = bytereader.bytereader(inbytes)
-		try: self.read_byr(byr_stream)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(inbytes)
+		try: self.read_ebrw(ebrw_readstr)
 		except: pass
 
-	def read_byr(self, byr_stream):
-		self.tag = byr_stream.string_t()
-		for _ in range(read_number(byr_stream)):
-			aname = byr_stream.string_t()
+	def read_ebrw(self, ebrw_readstr):
+		self.tag = ebrw_readstr.string_t()
+		for _ in range(read_number(ebrw_readstr)):
+			aname = ebrw_readstr.string_t()
 			b_obj = juce_binaryxml_object()
-			b_obj.read_byr(byr_stream)
+			b_obj.read_ebrw(ebrw_readstr)
 
 			if aname == 'data': print(aname, b_obj.type)
 
 			self.attrib[aname] = b_obj
 
-		for _ in range(read_number(byr_stream)):
+		for _ in range(read_number(ebrw_readstr)):
 			subele = juce_binaryxml_element()
-			subele.read_byr(byr_stream)
+			subele.read_ebrw(ebrw_readstr)
 			self.children.append(subele)
 
-	def write_byw(self, byw_stream):
-		byw_stream.string_t(self.tag)
-		write_number(byw_stream, len(self.attrib))
+	def write_ebrw(self, ebrw_writestr):
+		ebrw_writestr.string_t(self.tag)
+		write_number(ebrw_writestr, len(self.attrib))
 		for k, v in self.attrib.items():
-			byw_stream.string_t(k)
-			v.write_byw(byw_stream)
+			ebrw_writestr.string_t(k)
+			v.write_ebrw(ebrw_writestr)
 
-		write_number(byw_stream, len(self.children))
+		write_number(ebrw_writestr, len(self.children))
 		for x in self.children:
-			x.write_byw(byw_stream)
+			x.write_ebrw(ebrw_writestr)
 
 	def to_bytes(self):
-		byw_stream = bytewriter.bytewriter()
-		self.write_byw(byw_stream)
-		return byw_stream.getvalue()
+		ebrw_writestr = easybinrw.binwrite()
+		self.write_ebrw(ebrw_writestr)
+		return ebrw_writestr.getvalue()
 
 	def to_xml(self, xmldata):
 		xml_part = ET.SubElement(xmldata, self.tag)

@@ -14,7 +14,7 @@ from objects import valobjs
 from functions import data_bytes
 from functions import data_values
 from functions import xtramath
-from objects.data_bytes import bytewriter
+from external.easybinrw import easybinrw
 
 import logging
 logger_output = logging.getLogger('output')
@@ -253,22 +253,22 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj):
 
 				pluginfo_obj = globalstore.extplug.get('vst2', 'id', vst_fx_fourid, None, [64, 32])
 
-				vsthdrwriter = bytewriter.bytewriter()
-				vsthdrwriter.uint32(vst_fx_fourid)
-				vsthdrwriter.uint32(4276969198)
-				vsthdrwriter.uint32(2)
-				vsthdrwriter.uint32(1)
+				ebrw_writestr = easybinrw.binwrite()
+				ebrw_writestr.int_u32(vst_fx_fourid)
+				ebrw_writestr.int_u32(4276969198)
+				ebrw_writestr.int_u32(2)
+				ebrw_writestr.int_u32(1)
 				for _ in range(pluginfo_obj.audio_num_inputs if pluginfo_obj.audio_num_inputs else 2):
-					vsthdrwriter.flags64([33])
+					ebrw_writestr.flags_i64([33])
 				for n in range(pluginfo_obj.audio_num_outputs if pluginfo_obj.audio_num_inputs else 2):
-					vsthdrwriter.flags64([n])
-				vsthdrwriter.uint32(vstparamsnum)
-				vsthdrwriter.uint32(vst_fx_datatype == 'chunk')
-				vsthdrwriter.int16(plugin_obj.current_program)
-				vsthdrwriter.uint8(16)
-				vsthdrwriter.uint8(0)
+					ebrw_writestr.flags_i64([n])
+				ebrw_writestr.int_u32(vstparamsnum)
+				ebrw_writestr.int_u32(vst_fx_datatype == 'chunk')
+				ebrw_writestr.int_s16(plugin_obj.current_program)
+				ebrw_writestr.int_u8(16)
+				ebrw_writestr.int_u8(0)
 
-				rpp_vst_obj.data_con = vsthdrwriter.getvalue()
+				rpp_vst_obj.data_con = ebrw_writestr.getvalue()
 				if vstparams: rpp_vst_obj.data_chunk = vstparams
 				rpp_plug_obj.bypass['bypass'] = not fx_on
 				rpp_plug_obj.wet['wet'] = fx_wet
@@ -294,11 +294,11 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj):
 		#	rpp_au_obj.subtype = subtype
 		#	rpp_au_obj.manufacturer = manufacturer
 #
-		#	dxhdrwriter = bytewriter.bytewriter()
-		#	dxhdrwriter.uint32(vst_fx_fourid)
-		#	dxhdrwriter.uint32(1001)
-		#	dxhdrwriter.uint32(0)
-		#	dxhdrwriter.uint32(1)
+		#	ebrw_writestr = easybinrw.binwrite()
+		#	ebrw_writestr.int_u32(vst_fx_fourid)
+		#	ebrw_writestr.int_u32(1001)
+		#	ebrw_writestr.int_u32(0)
+		#	ebrw_writestr.int_u32(1)
 #
 		#	rpp_au_obj.data_chunk = b'test'
 

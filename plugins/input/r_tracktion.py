@@ -540,7 +540,7 @@ class input_tracktion_edit(plugins.base):
 		software_mode = ''
 
 		if dawvert_intent.input_mode == 'file':
-			if True:
+			try:
 				project_obj.load_from_file(dawvert_intent.input_file)
 
 				logger_input.info('Software Mode: Waveform')
@@ -561,18 +561,18 @@ class input_tracktion_edit(plugins.base):
 								videos |= dict([(tproj.projectId+'/'+i, o.path) for i, o in tproj.objects.items() if (o.type == 'video')])
 							except:
 								pass
-			#except:
-			#	pass
+			except:
+				pass
 
 			try:
-				from objects.data_bytes import bytereader
+				from external.easybinrw import easybinrw
 				from objects.binary_fmt import juce_binaryxml
 				import zlib
 
-				byr_stream = bytereader.bytereader()
-				byr_stream.load_file(dawvert_intent.input_file)
-				byr_stream.magic_check(b'SNDR')
-				compdata = byr_stream.raw(byr_stream.uint32())
+				ebrw_readstr = easybinrw.binread()
+				ebrw_readstr.load_file(dawvert_intent.input_file)
+				ebrw_readstr.magic_check(b'SNDR')
+				compdata = ebrw_readstr.raw(ebrw_readstr.int_u32())
 				decompdata = zlib.decompress(compdata)
 				decompdata = zlib.decompress(decompdata)
 		
@@ -626,7 +626,7 @@ class input_tracktion_edit(plugins.base):
 				timemarker_obj.duration = markclip.length*8
 				timemarker_obj.type = 'region'
 				timemarker_obj.visual.name = str(markclip.name)
-				do_color(timemarker_obj.visual, arrclip.colour)
+				do_color(timemarker_obj.visual, markclip.colour)
 
 		for wf_plugin in project_obj.masterplugins:
 			do_plugin(convproj_obj, wf_plugin, convproj_obj.track_master, software_mode)

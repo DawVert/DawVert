@@ -4,7 +4,7 @@
 from objects.exceptions import ProjectFileParserException
 from objects import globalstore
 from functions import data_bytes
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 import plugins
 import json
 import os
@@ -372,19 +372,19 @@ class input_reaper(plugins.base):
 								pluginfo_obj = globalstore.extplug.get('vst2', 'id', fourid, None, [64, 32])
 
 								try:
-									vstdataconreader = bytereader.bytereader()
-									vstdataconreader.load_raw(rpp_extplug.data_con)
-									vstdataconreader.skip(4) # id
-									vstdataconreader.skip(4) # unknown 2
-									num_inchannels = vstdataconreader.uint32()
-									vstdataconreader.skip(4) # 1
-									aud_in_chan = [vstdataconreader.flags64() for x in range(num_inchannels)]
-									aud_out_chan = [vstdataconreader.flags64() for x in range(pluginfo_obj.audio_num_outputs)]
-									chunk_size = vstdataconreader.uint32() # chunk size
-									uses_chunk = vstdataconreader.uint32() # uses chunk
-									programnum = vstdataconreader.int16() # program
-									vstdataconreader.skip(1) # 16
-									vstdataconreader.skip(1) # 16
+									ebrw_readstr = easybinrw.binread()
+									ebrw_readstr.load_data(rpp_extplug.data_con)
+									ebrw_readstr.skip(4) # id
+									ebrw_readstr.skip(4) # unknown 2
+									num_inchannels = ebrw_readstr.int_u32()
+									ebrw_readstr.skip(4) # 1
+									aud_in_chan = [ebrw_readstr.flags_i64() for x in range(num_inchannels)]
+									aud_out_chan = [ebrw_readstr.flags_i64() for x in range(pluginfo_obj.audio_num_outputs)]
+									chunk_size = ebrw_readstr.int_u32() # chunk size
+									uses_chunk = ebrw_readstr.int_u32() # uses chunk
+									programnum = ebrw_readstr.int_s16() # program
+									ebrw_readstr.skip(1) # 16
+									ebrw_readstr.skip(1) # 16
 
 									plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst2', None)
 									plugin_obj.fxdata_add(not rpp_plugin.bypass['bypass'], rpp_plugin.wet['wet'])
@@ -495,16 +495,16 @@ class input_reaper(plugins.base):
 
 						rpp_extplug = rpp_plugin.plugin
 
-						vstdataconreader = bytereader.bytereader()
-						vstdataconreader.load_raw(rpp_extplug.data_chunk)
-						vstdataconreader.raw(4) # 1001
-						vstdataconreader.raw(4) # 0
-						num_inchannels = vstdataconreader.uint32()
-						vstdataconreader.raw(4) # 1
-						aud_in_chan = [vstdataconreader.flags64() for x in range(num_inchannels)]
-						aud_out_chan = [vstdataconreader.flags64() for x in range(num_inchannels)]
-						size = vstdataconreader.uint64() # chunk size
-						audata = vstdataconreader.raw(size)
+						ebrw_readstr = easybinrw.binread()
+						ebrw_readstr.load_data(rpp_extplug.data_chunk)
+						ebrw_readstr.raw(4) # 1001
+						ebrw_readstr.raw(4) # 0
+						num_inchannels = ebrw_readstr.int_u32()
+						ebrw_readstr.raw(4) # 1
+						aud_in_chan = [ebrw_readstr.flags_i64() for x in range(num_inchannels)]
+						aud_out_chan = [ebrw_readstr.flags_i64() for x in range(num_inchannels)]
+						size = ebrw_readstr.int_u64() # chunk size
+						audata = ebrw_readstr.raw(size)
 
 						track_obj.plugin_autoplace(plugin_obj, pluginid)
 						extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)

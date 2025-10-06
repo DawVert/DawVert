@@ -1,7 +1,8 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
+from external.easybinrw import chunked
 from functions.dawspecific import format_flp_tlv
 from objects.exceptions import ProjectFileParserException
 
@@ -86,15 +87,15 @@ class ftr_plugin:
 		self.params = []
 
 	def read(self, pluginbytes):
-		plugindata = bytereader.bytereader()
-		plugindata.load_raw(pluginbytes)
-		self.slotnum = plugindata.uint8()
-		self.enabled = plugindata.uint8()
-		plugindata.skip(1)
-		self.name = plugindata.c_string__int32(False)
-		paramsize = plugindata.uint32()
-		numparams = plugindata.uint32()
-		self.params = plugindata.l_float(numparams)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(pluginbytes)
+		self.slotnum = ebrw_readstr.int_u8()
+		self.enabled = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(1)
+		self.name = ebrw_readstr.string_i32()
+		paramsize = ebrw_readstr.int_u32()
+		numparams = ebrw_readstr.int_u32()
+		self.params = ebrw_readstr.list_float(numparams)
 
 class ftr_song:
 	def __init__(self):
@@ -114,8 +115,8 @@ class ftr_song:
 		self.plugins = {}
 
 	def load_from_file(self, input_file):
-		song_data = bytereader.bytereader()
-		song_data.load_file(input_file)
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
 
 		cur_track = None
 		cur_clip = None
@@ -130,11 +131,10 @@ class ftr_song:
 		clip_cutoff = 0
 
 		tlvdatafound = False
-		main_iff_obj = song_data.chunk_objmake()
-		for chunk_obj in main_iff_obj.iter(0, song_data.end):
+		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
 			if chunk_obj.id == b'FTdt':
 				tlvdatafound = True
-				for event_id, event_data in format_flp_tlv.decode(song_data, chunk_obj.end):
+				for event_id, event_data in format_flp_tlv.decode(ebrw_readstr):
 					if event_id == 2: vol = event_data
 					elif event_id == 3: pan = event_data
 					elif event_id == 7: 
@@ -204,12 +204,12 @@ class ftr_song:
 			for clip in track.clips:
 				if clip.vol_env is not None:
 					points = []
-					envdata = bytereader.bytereader()
-					envdata.load_raw(clip.vol_env)
-					numpoints = envdata.uint32()
+					envdata__ebrw_readstr = easybinrw.binread()
+					envdata__ebrw_readstr.load_data(clip.vol_env)
+					numpoints = envdata__ebrw_readstr.int_u32()
 					for _ in range(numpoints):
-						pos = envdata.uint32()
-						val = envdata.float()
+						pos = envdata__ebrw_readstr.int_u32()
+						val = envdata__ebrw_readstr.float()
 						points.append([pos, val])
 					clip.vol_env = points
 

@@ -1,27 +1,27 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 from objects.exceptions import ProjectFileParserException
 import numpy as np
 
 # ============================================= instrument ============================================= 
 
 class ceol_instrument:
-	def __init__(self, song_file):
+	def __init__(self, ebrw_readstr):
 		self.inst = 0
 		self.type = 0
 		self.palette = 0
 		self.cutoff = 128
 		self.resonance = 0
 		self.volume = 256
-		if song_file:
-			self.inst = song_file.uint16()
-			self.type = song_file.uint16()
-			self.palette = song_file.uint16()
-			self.cutoff = song_file.uint16()
-			self.resonance = song_file.uint16()
-			self.volume = song_file.uint16()
+		if ebrw_readstr:
+			self.inst = ebrw_readstr.int_u16()
+			self.type = ebrw_readstr.int_u16()
+			self.palette = ebrw_readstr.int_u16()
+			self.cutoff = ebrw_readstr.int_u16()
+			self.resonance = ebrw_readstr.int_u16()
+			self.volume = ebrw_readstr.int_u16()
 
 # ============================================= pattern ============================================= 
 
@@ -33,24 +33,25 @@ class ceol_note:
 		self.pos = 0
 
 class ceol_pattern:
-	def __init__(self, song_file):
+	def __init__(self, ebrw_readstr):
 		self.notes = []
 		self.recordfilter = None
-		if song_file:
-			self.key = song_file.uint16()
-			self.scale = song_file.uint16()
-			self.inst = song_file.uint16()
-			self.palette = song_file.uint16()
-			numnotes = song_file.uint16()
+		if ebrw_readstr:
+			self.key = ebrw_readstr.int_u16()
+			self.scale = ebrw_readstr.int_u16()
+			self.inst = ebrw_readstr.int_u16()
+			self.palette = ebrw_readstr.int_u16()
+			numnotes = ebrw_readstr.int_u16()
 			for _ in range(numnotes):
 				note_obj = ceol_note()
-				note_obj.key = song_file.uint16()
-				note_obj.len = song_file.uint16()
-				note_obj.pos = song_file.uint16()
-				song_file.skip(2)
+				note_obj.key = ebrw_readstr.int_u16()
+				note_obj.len = ebrw_readstr.int_u16()
+				note_obj.pos = ebrw_readstr.int_u16()
+				ebrw_readstr.skip(2)
 				self.notes.append(note_obj)
-			if song_file.uint16():
-				self.recordfilter = song_file.table16([16, 3])
+			if ebrw_readstr.int_u16():
+				self.recordfilter = ebrw_readstr.list_int_u16(16*3)
+				self.recordfilter = np.reshape(self.recordfilter, [16, 3])
 
 # ============================================= song ============================================= 
 
@@ -79,21 +80,22 @@ class ceol_song:
 
 		if not len(ceol_array): raise ProjectFileParserException('boscaceoil: array is empty')
 		
-		song_file = bytereader.bytereader()
-		song_file.load_raw(ceol_array.tobytes())
-		self.versionnum = song_file.uint16()
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(ceol_array.tobytes())
+		self.versionnum = ebrw_readstr.int_u16()
 
-		self.swing = song_file.uint16()
-		self.effect_type = song_file.uint16()
-		self.effect_value = song_file.uint16()
-		self.bpm = song_file.uint16()
-		self.pattern_length = song_file.uint16()
-		self.bar_length = song_file.uint16()
-		self.instruments = [ceol_instrument(song_file) for x in range(song_file.uint16())]
-		self.patterns = [ceol_pattern(song_file) for x in range(song_file.uint16())]
+		self.swing = ebrw_readstr.int_u16()
+		self.effect_type = ebrw_readstr.int_u16()
+		self.effect_value = ebrw_readstr.int_u16()
+		self.bpm = ebrw_readstr.int_u16()
+		self.pattern_length = ebrw_readstr.int_u16()
+		self.bar_length = ebrw_readstr.int_u16()
+		self.instruments = [ceol_instrument(ebrw_readstr) for x in range(ebrw_readstr.int_u16())]
+		self.patterns = [ceol_pattern(ebrw_readstr) for x in range(ebrw_readstr.int_u16())]
 
-		self.length = song_file.uint16()
-		self.loopstart = song_file.uint16()
-		self.loopend = song_file.uint16()
-		self.spots = song_file.stable16([self.length, 8])
+		self.length = ebrw_readstr.int_u16()
+		self.loopstart = ebrw_readstr.int_u16()
+		self.loopend = ebrw_readstr.int_u16()
+		self.spots = ebrw_readstr.list_int_s16(self.length*8)
+		self.spots = np.reshape(self.spots, [self.length, 8])
 		return True

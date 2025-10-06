@@ -16,27 +16,27 @@ class openmpt_plugin:
 		self.data = None
 		self.params = None
 
-	def read(self, song_file):
-		self.type = song_file.raw(4)
-		self.id = song_file.uint32()
-		self.route = song_file.uint8()
-		self.mix = song_file.uint8()
-		self.gain = song_file.uint8()
-		song_file.skip(1)
-		self.output_routing = song_file.uint32()
-		song_file.skip(16)
-		self.name = song_file.string(32, encoding="windows-1252")
-		self.libname = song_file.string(64, encoding="windows-1252")
+	def read(self, ebrw_readstr):
+		self.type = ebrw_readstr.raw(4)
+		self.id = ebrw_readstr.int_u32()
+		self.route = ebrw_readstr.int_u8()
+		self.mix = ebrw_readstr.int_u8()
+		self.gain = ebrw_readstr.int_u8()
+		ebrw_readstr.skip(1)
+		self.output_routing = ebrw_readstr.int_u32()
+		ebrw_readstr.skip(16)
+		self.name = ebrw_readstr.string(32, encoding="windows-1252")
+		self.libname = ebrw_readstr.string(64, encoding="windows-1252")
 
-		datalen = song_file.uint32()
+		datalen = ebrw_readstr.int_u32()
 		if self.type == b'DBM0':
-			song_file.skip(4)
-			self.params = song_file.l_uint8(datalen-4)
+			ebrw_readstr.skip(4)
+			self.params = ebrw_readstr.list_int_u8(datalen-4)
 		elif self.type == b'SymM':
-			song_file.skip(4)
-			self.params = song_file.l_uint8(datalen-4)
+			ebrw_readstr.skip(4)
+			self.params = ebrw_readstr.list_int_u8(datalen-4)
 		else:
-			self.data = song_file.raw(datalen)
+			self.data = ebrw_readstr.raw(datalen)
 
 	def to_cvpj(self, fxnum, convproj_obj):
 		pluginid = 'FX'+str(fxnum)

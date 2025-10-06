@@ -1,5 +1,7 @@
+# SPDX-FileCopyrightText: 2024 SatyrDiamond
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 import os
 from lxml import etree as ET
 import zlib
@@ -86,20 +88,20 @@ class file_detector_def:
 				if self.archived__type == 'zip':
 					if 'file' in attrib: self.archived__infiles = attrib['file'].split(';')
 
-def comp__detect(offset, proj_file, comptype): 
-	proj_file.seek(offset)
-	if comptype == 'zlib': return proj_file.raw(2) in [b'\x78\x08', b'\x78\x5E', b'\x78\x9C', b'\x78\xDA']
-	if comptype == 'gzip': return proj_file.raw(3) == b'\x1f\x8b\x08'
+def comp__detect(offset, ebrw_readstr, comptype): 
+	ebrw_readstr.seek(offset)
+	if comptype == 'zlib': return ebrw_readstr.raw(2) in [b'\x78\x08', b'\x78\x5E', b'\x78\x9C', b'\x78\xDA']
+	if comptype == 'gzip': return ebrw_readstr.raw(3) == b'\x1f\x8b\x08'
 
-def comp__startdata(offset, proj_file, comptype):
-	proj_file.seek(offset)
+def comp__startdata(offset, ebrw_readstr, comptype):
+	ebrw_readstr.seek(offset)
 	try:
 		if comptype == 'zlib':
 			decomp_obj = zlib.decompressobj(wbits=zlib.MAX_WBITS)
-			data = decomp_obj.decompress(proj_file.raw(1024), max_length=512)
+			data = decomp_obj.decompress(ebrw_readstr.raw(1024), max_length=512)
 			return True, data
 		if comptype == 'gzip':
-			decomp_obj = gzip.GzipFile(fileobj=proj_file)
+			decomp_obj = gzip.GzipFile(fileobj=ebrw_readstr)
 			data = f.read(512)
 			return True, data
 	except: return False, b''
@@ -159,14 +161,14 @@ class file_detector:
 					if cond_files and cond_ext: return det_obj.plug__set, det_obj.plug__name
 	
 			else:
-				proj_file = bytereader.bytereader()
-				proj_file.load_file(filename)
+				ebrw_readstr = easybinrw.binread()
+				ebrw_readstr.load_file(filename)
 	
 				archived_type = None
 	
-				proj_file.seek(0)
-				if proj_file.raw(4) == b'PK\x03\x04': archived_type = 'zip'
-				proj_file.seek(0)
+				ebrw_readstr.seek(0)
+				if ebrw_readstr.raw(4) == b'PK\x03\x04': archived_type = 'zip'
+				ebrw_readstr.seek(0)
 
 				if archived_type:
 					if archived_type in self.q_archived__type:
@@ -195,13 +197,13 @@ class file_detector:
 						comp_valid = False
 						if compressed__type:
 							if DEBUGTXT: print('TRY: data: compressed')
-							if comp__detect(det_obj.compressed__offset, proj_file, compressed__type):
-								comp_valid, decomp_data = comp__startdata(det_obj.compressed__offset, proj_file, compressed__type)
+							if comp__detect(det_obj.compressed__offset, ebrw_readstr, compressed__type):
+								comp_valid, decomp_data = comp__startdata(det_obj.compressed__offset, ebrw_readstr, compressed__type)
 								if comp_valid: data = decomp_data
 
 						if len(data)==0:
-							proj_file.seek(0)
-							data = proj_file.read(256)
+							ebrw_readstr.seek(0)
+							data = ebrw_readstr.read(256)
 
 						arequired = False
 						brequired = False
@@ -230,8 +232,8 @@ class file_detector:
 					for det_obj in self.q_nonarchived_xml[1]:
 						if DEBUGTXT: print('TRY: compressed xml')
 						compressed__type = det_obj.compressed__type
-						if comp__detect(det_obj.compressed__offset, proj_file, compressed__type):
-							comp_valid, decomp_data = comp__startdata(det_obj.compressed__offset, proj_file, compressed__type)
+						if comp__detect(det_obj.compressed__offset, ebrw_readstr, compressed__type):
+							comp_valid, decomp_data = comp__startdata(det_obj.compressed__offset, ebrw_readstr, compressed__type)
 							if comp_valid:
 								try:
 									textstring = decomp_data.decode()

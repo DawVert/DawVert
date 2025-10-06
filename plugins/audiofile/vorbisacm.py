@@ -28,11 +28,14 @@ class input_soundfile(plugins.base):
 	def getinfo(self, input_file, sampleref_obj, fileextlow):
 		import soundfile
 		import io
-		from objects.data_bytes import riff_chunks
+		from external.easybinrw import easybinrw
+		from external.easybinrw import riff_chunks
 
 		if fileextlow == 'wav':
-			riff_data = riff_chunks.riff_chunk()
-			byr_stream = riff_data.load_from_file(input_file, False)
+			ebrw_readstr = easybinrw.binread()
+			ebrw_readstr.load_file(input_file)
+			riffchunks = riff_chunks.riff_chunk()
+			riffchunks.read(ebrw_readstr, 0)
 
 			data_pos = 0
 			data_size = 0
@@ -44,22 +47,22 @@ class input_soundfile(plugins.base):
 			fmt_datablocksize = 0
 			fmt_bits = 0
 
-			for riff_part in riff_data.in_data:
+			for riff_part in riffchunks.iter_reader(ebrw_readstr):
 				if riff_part.name == b'fmt ': 
-					with byr_stream.isolate_range(riff_part.start, riff_part.end, False) as bye_stream: 
-						fmt_format = bye_stream.uint16()
-						fmt_channels = bye_stream.uint16()
-						fmt_rate = bye_stream.uint32()
-						fmt_bytessec = bye_stream.uint32()
-						fmt_datablocksize = bye_stream.uint16()
-						fmt_bits = bye_stream.uint16()
+					fmt_format = ebrw_readstr.int_u16()
+					fmt_channels = ebrw_readstr.int_u16()
+					fmt_rate = ebrw_readstr.int_u32()
+					fmt_bytessec = ebrw_readstr.int_u32()
+					fmt_datablocksize = ebrw_readstr.int_u16()
+					fmt_bits = ebrw_readstr.int_u16()
 				elif riff_part.name == b'data': 
 					data_pos = riff_part.start
 					data_end = riff_part.end
+					data_size = data_end-data_pos
 
 			if fmt_format in [26447, 26448, 26480, 26449]:
-				with byr_stream.isolate_range(data_pos, data_end, False) as bye_stream:
-					audiodata = bye_stream.raw(data_end-data_pos)
+				ebrw_readstr.seek(data_pos)
+				audiodata = ebrw_readstr.raw(data_end-data_pos)
 
 				samples, samplerate = soundfile.read(io.BytesIO(audiodata))
 				sampleref_obj.set_hz(samplerate)

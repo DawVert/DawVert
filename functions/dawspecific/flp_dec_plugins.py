@@ -8,12 +8,13 @@ import math
 import varint
 import uuid
 import numpy as np
-from functions import data_values
-from functions.dawspecific import flp_plugchunks
 from io import BytesIO
+
+from functions import data_values
+
 from objects import audio_data
 from objects import globalstore
-from objects.data_bytes import bytereader
+from external.easybinrw import easybinrw
 from objects.dawspecific import flp_plugins
 from objects.dawspecific import flp_plugins_directwave
 from objects.file import audio_wav
@@ -72,30 +73,30 @@ def make_sample_ref(convproj_obj, samplefilename, dawvert_intent, os_type):
 	#print(outd, samplefilename)
 	return smapleid, sampleref_obj
 
-def decode_sslf(fl_plugstr):
-	header = fl_plugstr.read(4)
+def decode_sslf(ebrw_readstr):
+	header = ebrw_readstr.read(4)
 	out = b''
 	if header == b'SSLF':
-		size = fl_plugstr.uint32()
-		out = fl_plugstr.read(size)
+		size = ebrw_readstr.int_u32()
+		out = ebrw_readstr.read(size)
 	return out
 
 def simsynth_time(value): return pow(value*2, 3)/2
 
-def decode_pointdata(fl_plugstr):
-	autoheader = struct.unpack('bii', fl_plugstr.read(12))
+def decode_pointdata(ebrw_readstr):
+	autoheader = struct.unpack('bii', ebrw_readstr.read(12))
 	pointdata_table = []
 
 	positionlen = 0
 	for num in range(autoheader[2]):
-		chunkdata = struct.unpack('ddfbbbb', fl_plugstr.read(24))
+		chunkdata = struct.unpack('ddfbbbb', ebrw_readstr.read(24))
 		positionlen += round(chunkdata[0], 6)
 		pointdata_table.append( [positionlen, chunkdata[1:], 0.0, 0] )
 		if num != 0:
 			pointdata_table[num-1][2] = chunkdata[2]
 			pointdata_table[num-1][3] = chunkdata[3]
 
-	fl_plugstr.read(20).hex()
+	ebrw_readstr.read(20).hex()
 	return pointdata_table
 
 ss_envvol_mul = 7
@@ -139,8 +140,8 @@ def directwave_audio_obj(pcmdata, samplerate, channels):
 	return audio_obj
 
 def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_intent):
-	fl_plugstr = bytereader.bytereader()
-	fl_plugstr.load_raw(flplugin.params if flplugin.params else b'')
+	ebrw_readstr = easybinrw.binread()
+	ebrw_readstr.load_data(flplugin.params if flplugin.params else b'')
 	flplugin.name = flplugin.name.lower()
 
 	plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'flstudio', flplugin.name)
@@ -155,46 +156,20 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 
 	# ------------------------------------------------------------------------------------------- VST
 	if flplugin.name == 'fruity wrapper':
-		fl_plugstr.skip(4)
+		wrapper_plugin = flp_plugins.fruity_wrapper()
+		wrapper_plugin.read(ebrw_readstr)
 
-		wrapperdata = {}
-		while fl_plugstr.tell() < fl_plugstr.end:
-			chunktype = fl_plugstr.uint32()
-			chunksize = fl_plugstr.uint32()
-			fl_plugstr.skip(4)
-
-			if chunktype == 50: 
-				wrapperdata['plugin_info'] = [fl_plugstr.uint32(), fl_plugstr.raw(chunksize-4)]
-			else:
-				chunkdata = fl_plugstr.raw(chunksize)
-				if chunktype == 1: wrapperdata['midi'] = chunkdata
-				elif chunktype == 2: wrapperdata['flags'] = chunkdata
-				elif chunktype == 30: wrapperdata['io'] = chunkdata
-				elif chunktype == 32: wrapperdata['outputs'] = chunkdata
-				elif chunktype == 51: wrapperdata['fourid'] = int.from_bytes(chunkdata, "little")
-				elif chunktype == 52: wrapperdata['16id'] = chunkdata
-				elif chunktype == 53: wrapperdata['state'] = chunkdata
-				elif chunktype == 54: wrapperdata['name'] = chunkdata.decode()
-				elif chunktype == 55: wrapperdata['file'] = chunkdata.decode()
-				elif chunktype == 56: wrapperdata['vendor'] = chunkdata.decode()
-				elif chunktype == 57: wrapperdata['57'] = chunkdata
-				elif chunktype == 58: wrapperdata['clapid'] = chunkdata.decode()
-				#else: print(chunktype, chunkdata)
-
-			#print(' >I', chunktype, chunkdata[0:100])
-
-		if 'plugin_info' in wrapperdata:
-
-			wrapper_vsttype = wrapperdata['plugin_info'][0]
+		if wrapper_plugin.plugin_type!=-1:
+			wrapper_vsttype = wrapper_plugin.plugin_type
 
 			if wrapper_vsttype in [4,0]:
 				if wrapper_vsttype == 0: plugin_obj.role == 'fx'
 				if wrapper_vsttype == 4: plugin_obj.role == 'synth'
 				plugin_obj.type_set('external', 'vst2', 'win')
-				if 'fourid' in wrapperdata: plugin_obj.external_info.id = wrapperdata['fourid']
-				if 'name' in wrapperdata: plugin_obj.external_info.name = wrapperdata['name']
-				if 'state' in wrapperdata:
-					pluginstate = wrapperdata['state']
+				if wrapper_plugin.fourid: plugin_obj.external_info.id = wrapper_plugin.fourid
+				if wrapper_plugin.name: plugin_obj.external_info.name = wrapper_plugin.name
+				if wrapper_plugin.state:
+					pluginstate = wrapper_plugin.state
 					wrapper_vststate = pluginstate[0:9]
 					wrapper_vstsize = int.from_bytes(pluginstate[9:13], "little")
 					wrapper_vstpad = pluginstate[13:17]
@@ -208,27 +183,26 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 						if wrapper_vststate[4] in [13, 12]:
 							plugin_obj.rawdata_add('chunk', wrapper_vstdata)
 	
-							extmanu_obj.vst2__replace_data('id', wrapperdata['fourid'], wrapper_vstdata, None, False)
-							if 'name' in wrapperdata: plugin_obj.external_info.name = wrapperdata['name']
+							extmanu_obj.vst2__replace_data('id', wrapper_plugin.fourid, wrapper_vstdata, None, False)
+							if wrapper_plugin.name: plugin_obj.external_info.name = wrapper_plugin.name
 							plugin_obj.current_program = wrapper_vstprogram
 							numparams = plugin_obj.external_info.numparams = -1
 	
 						if wrapper_vststate[4] in [5, 4]:
-							stream_data = bytereader.bytereader()
-							stream_data.load_raw(wrapper_vstdata)
-							vst_total_params = stream_data.uint32()
-							vst_params_data = stream_data.l_float(vst_total_params)
-							vst_num_names = stream_data.uint32()
+							vst__ebrw_readstr = easybinrw.binread()
+							vst__ebrw_readstr.load_data(wrapper_vstdata)
+							vst_total_params = vst__ebrw_readstr.int_u32()
+							vst_params_data = vst__ebrw_readstr.list_float(vst_total_params)
+							vst_num_names = vst__ebrw_readstr.int_u32()
 							vst_names = []
 							for _ in range(vst_num_names):
-								vst_names.append(stream_data.string(25, encoding='utf-8'))
+								vst_names.append(vst__ebrw_readstr.string(25, encoding='utf-8'))
 	
 							numparamseach = vst_total_params//vst_num_names
 							bankparams = data_values.list__chunks(vst_params_data, numparamseach)
 	
-							extmanu_obj.vst2__setup_params('id', wrapperdata['fourid'], numparamseach, None, False)
+							extmanu_obj.vst2__setup_params('id', wrapper_plugin.fourid, numparamseach, None, False)
 							extmanu_obj.vst2__set_numprogs(vst_num_names)
-
 							for num in range(vst_num_names):
 								extmanu_obj.vst2__set_program(num)
 								extmanu_obj.vst2__set_program_name(vst_names[num])
@@ -242,25 +216,24 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 					if wrapper_vsttype == 1: plugin_obj.role == 'fx'
 					if wrapper_vsttype == 5: plugin_obj.role == 'synth'
 					external_info = plugin_obj.external_info
-					if '16id' in wrapperdata:
-						pluguuid = wrapperdata['16id'].hex().upper()
+					if wrapper_plugin.uuid:
+						pluguuid = wrapper_plugin.uuid.hex().upper()
 						extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
-						extmanu_obj.dx__replace_data(pluguuid, wrapperdata['state'])
-					if 'name' in wrapperdata: 
-						plugin_obj.external_info.name = wrapperdata['name']
+						extmanu_obj.dx__replace_data(pluguuid, wrapper_plugin.state)
+					if wrapper_plugin.name: 
+						plugin_obj.external_info.name = wrapper_plugin.name
 			except:
 				import traceback
 				print(traceback.format_exc())
 
-			if wrapper_vsttype in [8,7] and 'state' in wrapperdata:
+			if wrapper_vsttype in [8,7] and wrapper_plugin.state!=None:
 				plugin_obj.type_set('external', 'vst3', 'win')
-				pluginstate = wrapperdata['state']
-
-				if '16id' in wrapperdata:
-					dev_uuid = uuid.UUID(int=int.from_bytes(wrapperdata['16id'], 'big')).bytes_le
+				if wrapper_plugin.state:
+					dev_uuid = uuid.UUID(int=int.from_bytes(wrapper_plugin.uuid, 'big')).bytes_le
 					pluguuid = dev_uuid.hex().upper()
 
-					chunkdata = bytereader.bytereader(pluginstate)
+					chunkdata = easybinrw.binread()
+					chunkdata.load_data(wrapper_plugin.state)
 					chunkdata.seek(84)
 
 					wrapper_vstsize = chunkdata.uint32()
@@ -272,9 +245,9 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 					if wrapper_vsttype == 7: plugin_obj.role == 'fx'
 					if wrapper_vsttype == 8: plugin_obj.role == 'synth'
 
-			if wrapper_vsttype in [12,11] and 'state' in wrapperdata:
+			if wrapper_vsttype in [12,11] and wrapper_plugin.state!=None:
 				plugin_obj.type_set('external', 'clap', 'win')
-				pluginstate = wrapperdata['state']
+				pluginstate = wrapper_plugin.state
 
 				if wrapper_vsttype == 11: plugin_obj.role == 'fx'
 				if wrapper_vsttype == 12: plugin_obj.role == 'synth'
@@ -282,45 +255,45 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 				wrapper_vstdata = pluginstate[4:]
 
 				extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
-				if 'clapid' in wrapperdata: 
-					extmanu_obj.clap__replace_data('id', wrapperdata['clapid'], wrapper_vstdata, None)
-					if 'name' in wrapperdata: plugin_obj.external_info.name = wrapperdata['name']
-				elif 'name' in wrapperdata: 
-					extmanu_obj.clap__replace_data('name', wrapperdata['name'], wrapper_vstdata, None)
+				if wrapper_plugin.clapid: 
+					extmanu_obj.clap__replace_data('id', wrapper_plugin.clapid, wrapper_vstdata, None)
+					if wrapper_plugin.name: plugin_obj.external_info.name = wrapper_plugin.name
+				elif wrapper_plugin.name: 
+					extmanu_obj.clap__replace_data('name', wrapper_plugin.name, wrapper_vstdata, None)
 
 	# ------------------------------------------------------------------------------------------- Inst
 
 
 	#elif flplugin.name == 'frequency splitter':
-	#	version = fl_plugstr.uint32()
-	#	lowmid_freq = fl_plugstr.uint32()
-	#	midhigh_freq = fl_plugstr.uint32()
-	#	lowmid_slope = fl_plugstr.uint32()
-	#	midhigh_slope = fl_plugstr.uint32()
-	#	linear_phase = fl_plugstr.uint32()
-	#	num_bands = fl_plugstr.uint32()
-	#	linear_phase_quality = fl_plugstr.uint32()
-	#	mod_speed = fl_plugstr.uint32()
-	#	send_low = fl_plugstr.uint32()
-	#	send_mid = fl_plugstr.uint32()
-	#	send_high = fl_plugstr.uint32()
-	#	out_low = fl_plugstr.uint32()
-	#	out_mid = fl_plugstr.uint32()
-	#	out_high = fl_plugstr.uint32()
-	#	target_low = fl_plugstr.uint32()
-	#	target_mid = fl_plugstr.uint32()
-	#	target_high = fl_plugstr.uint32()
-	#	print(   fl_plugstr.uint32()   , end=' ')	
-	#	print(   fl_plugstr.uint32()   , end=' ')	
-	#	print(   fl_plugstr.uint32()   , end=' ')	
-	#	print(   fl_plugstr.uint32())	
-	#	flags = fl_plugstr.uint8()
-	#	vis_hist_range = fl_plugstr.uint32()
-	#	vis_hist_pivot_slope = fl_plugstr.uint32()
-	#	vis_hist_freq_pos = fl_plugstr.uint32()
-	#	vis_hist_time_smooth = fl_plugstr.uint32()
-	#	print(   fl_plugstr.uint32()   , end=' ')	
-	#	vis_heatmap_pos = fl_plugstr.uint32()
+	#	version = ebrw_readstr.int_u32()
+	#	lowmid_freq = ebrw_readstr.int_u32()
+	#	midhigh_freq = ebrw_readstr.int_u32()
+	#	lowmid_slope = ebrw_readstr.int_u32()
+	#	midhigh_slope = ebrw_readstr.int_u32()
+	#	linear_phase = ebrw_readstr.int_u32()
+	#	num_bands = ebrw_readstr.int_u32()
+	#	linear_phase_quality = ebrw_readstr.int_u32()
+	#	mod_speed = ebrw_readstr.int_u32()
+	#	send_low = ebrw_readstr.int_u32()
+	#	send_mid = ebrw_readstr.int_u32()
+	#	send_high = ebrw_readstr.int_u32()
+	#	out_low = ebrw_readstr.int_u32()
+	#	out_mid = ebrw_readstr.int_u32()
+	#	out_high = ebrw_readstr.int_u32()
+	#	target_low = ebrw_readstr.int_u32()
+	#	target_mid = ebrw_readstr.int_u32()
+	#	target_high = ebrw_readstr.int_u32()
+	#	print(   ebrw_readstr.int_u32()   , end=' ')	
+	#	print(   ebrw_readstr.int_u32()   , end=' ')	
+	#	print(   ebrw_readstr.int_u32()   , end=' ')	
+	#	print(   ebrw_readstr.int_u32())	
+	#	flags = ebrw_readstr.int_u8()
+	#	vis_hist_range = ebrw_readstr.int_u32()
+	#	vis_hist_pivot_slope = ebrw_readstr.int_u32()
+	#	vis_hist_freq_pos = ebrw_readstr.int_u32()
+	#	vis_hist_time_smooth = ebrw_readstr.int_u32()
+	#	print(   ebrw_readstr.int_u32()   , end=' ')	
+	#	vis_heatmap_pos = ebrw_readstr.int_u32()
 	#	print( )
 
 	elif flplugin.name == 'directwave':
@@ -330,12 +303,12 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 			import sys
 			orig_stdout = sys.stdout
 			sys.stdout = open('dw_in.log', 'w')
-			fpc_plugin.read(fl_plugstr)
+			fpc_plugin.read(ebrw_readstr)
 			sys.stdout = orig_stdout
 
-			fl_plugstr.seek(0)
+			ebrw_readstr.seek(0)
 			with open('dw_in.bin', 'wb') as f:
-				f.write(fl_plugstr.rest())
+				f.write(ebrw_readstr.rest())
 
 			with open('dw_in_out.bin', 'wb') as f:
 				f.write(fpc_plugin.dump())
@@ -408,7 +381,7 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 			plugin_obj.type_set('universal', 'sampler', 'drums')
 
 			fpc_plugin = flp_plugins.fpc_plugin()
-			fpc_plugin.read(fl_plugstr)
+			fpc_plugin.read(ebrw_readstr)
 			for padnum, pad_obj in enumerate(fpc_plugin.pads):
 				drumpad_obj = plugin_obj.drumpad_add()
 				drumpad_obj.key = pad_obj.key-60
@@ -440,33 +413,33 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 			pass
 
 	elif flplugin.name in ['fruity soundfont player', 'soundfont player']:
-		flsf_vers = fl_plugstr.uint32()
-		flsf_patch = fl_plugstr.uint32()-1
-		flsf_bank = fl_plugstr.uint32()
-		flsf_reverb_sendlvl = fl_plugstr.uint32()
-		flsf_chorus_sendlvl = fl_plugstr.uint32()
-		flsf_mod = fl_plugstr.uint32()
+		flsf_vers = ebrw_readstr.int_u32()
+		flsf_patch = ebrw_readstr.int_u32()-1
+		flsf_bank = ebrw_readstr.int_u32()
+		flsf_reverb_sendlvl = ebrw_readstr.int_u32()
+		flsf_chorus_sendlvl = ebrw_readstr.int_u32()
+		flsf_mod = ebrw_readstr.int_u32()
 
-		flsf_asdf_A = fl_plugstr.int32()
-		flsf_asdf_D = fl_plugstr.int32()
-		flsf_asdf_S = fl_plugstr.int32()
-		flsf_asdf_R = fl_plugstr.int32()
+		flsf_asdf_A = ebrw_readstr.int_s32()
+		flsf_asdf_D = ebrw_readstr.int_s32()
+		flsf_asdf_S = ebrw_readstr.int_s32()
+		flsf_asdf_R = ebrw_readstr.int_s32()
 
-		flsf_lfo_predelay = fl_plugstr.int32()
-		flsf_lfo_amount = fl_plugstr.int32()
-		flsf_lfo_speed = fl_plugstr.int32()
-		flsf_cutoff = fl_plugstr.uint32()
+		flsf_lfo_predelay = ebrw_readstr.int_s32()
+		flsf_lfo_amount = ebrw_readstr.int_s32()
+		flsf_lfo_speed = ebrw_readstr.int_s32()
+		flsf_cutoff = ebrw_readstr.int_u32()
 
-		flsf_filename = fl_plugstr.c_string__int8(encoding='utf-8')
+		flsf_filename = ebrw_readstr.string_i8(encoding='utf-8')
 
 		flsf_filename = get_sample(flsf_filename)
 
-		flsf_reverb_sendto = fl_plugstr.uint32()
-		flsf_reverb_builtin = fl_plugstr.uint8()
-		flsf_chorus_sendto = fl_plugstr.uint32()
-		flsf_chorus_builtin = fl_plugstr.uint8()
+		flsf_reverb_sendto = ebrw_readstr.int_u32()
+		flsf_reverb_builtin = ebrw_readstr.int_u8()
+		flsf_chorus_sendto = ebrw_readstr.int_u32()
+		flsf_chorus_builtin = ebrw_readstr.int_u8()
 
-		flsf_hqrender = fl_plugstr.uint8()
+		flsf_hqrender = ebrw_readstr.int_u8()
 
 		plugin_obj.type_set('universal', 'soundfont2', None)
 
@@ -509,16 +482,16 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 
 	elif flplugin.name == 'fruity slicer':
 		plugin_obj.type_set('universal', 'sampler', 'slicer')
-		slicer_version = fl_plugstr.int32()
-		slicer_beats = fl_plugstr.float()
-		slicer_bpm = fl_plugstr.float()
-		slicer_pitch = fl_plugstr.int32()
-		slicer_fitlen = fl_plugstr.int32()
-		slicer_stretchtype = fl_plugstr.int32()
-		slicer_att = fl_plugstr.int32()
-		slicer_dec = fl_plugstr.int32()
+		slicer_version = ebrw_readstr.int_s32()
+		slicer_beats = ebrw_readstr.float()
+		slicer_bpm = ebrw_readstr.float()
+		slicer_pitch = ebrw_readstr.int_s32()
+		slicer_fitlen = ebrw_readstr.int_s32()
+		slicer_stretchtype = ebrw_readstr.int_s32()
+		slicer_att = ebrw_readstr.int_s32()
+		slicer_dec = ebrw_readstr.int_s32()
 
-		slicer_filename = fl_plugstr.c_string__int8(encoding='utf-8')
+		slicer_filename = ebrw_readstr.string_i8(encoding='utf-8')
 		#slicechannels = 2
 
 		slicer_filename = get_sample(slicer_filename)
@@ -537,18 +510,18 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 		if slicer_bpm: stretch_obj.timing.set__speed(1/stretch_multiplier)
 		sre_obj.pitch = slicer_pitch/100
 
-		slicer_numslices = fl_plugstr.uint32()
+		slicer_numslices = ebrw_readstr.int_u32()
 
 		for _ in range(slicer_numslices):
 			slice_obj = sre_obj.add_slice()
-			slice_obj.name = fl_plugstr.c_string__int8(encoding='utf-8')
-			slice_obj.start = fl_plugstr.uint32()
-			custom_key = fl_plugstr.int32()
+			slice_obj.name = ebrw_readstr.string_i8(encoding='utf-8')
+			slice_obj.start = ebrw_readstr.int_u32()
+			custom_key = ebrw_readstr.int_s32()
 			if custom_key != -1:
 				slice_obj.is_custom_key = True
 				slice_obj.custom_key = custom_key-60
-			fl_plugstr.skip(4)
-			slice_obj.reverse = fl_plugstr.bool8()
+			ebrw_readstr.skip(4)
+			slice_obj.reverse = ebrw_readstr.bool_8()
 
 		plugin_obj.datavals.add('bpm', slicer_bpm)
 		plugin_obj.datavals.add('beats', slicer_beats)
@@ -579,14 +552,14 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 			stretch_algo.type = 'elastique_v2'
 			stretch_algo.subtype = 'speech'
 
-		slicer_animate = fl_plugstr.bool8()
-		slicer_starting_key = fl_plugstr.uint32()
-		slicer_play_to_end = fl_plugstr.bool8()
-		slicer_bitrate = fl_plugstr.uint32()
-		slicer_auto_dump = fl_plugstr.bool8()
-		slicer_declick = fl_plugstr.bool8()
-		slicer_auto_fit = fl_plugstr.bool8()
-		slicer_view_spectrum = fl_plugstr.bool32()
+		slicer_animate = ebrw_readstr.bool_8()
+		slicer_starting_key = ebrw_readstr.int_u32()
+		slicer_play_to_end = ebrw_readstr.bool_8()
+		slicer_bitrate = ebrw_readstr.int_u32()
+		slicer_auto_dump = ebrw_readstr.bool_8()
+		slicer_declick = ebrw_readstr.bool_8()
+		slicer_auto_fit = ebrw_readstr.bool_8()
+		slicer_view_spectrum = ebrw_readstr.bool_32()
 
 		plugin_obj.viscustom_add('animate', slicer_animate)
 		sre_obj.slicer_start_key = slicer_starting_key-60
@@ -600,20 +573,20 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 
 	#elif flplugin.name == 'fruity convolver':
 	#	try:
-	#		fl_plugstr.read(20)
-	#		fromstorage = fl_plugstr.int8()
-	#		filename = data_bytes.readstring_lenbyte(fl_plugstr, 1, 'little', None)
+	#		ebrw_readstr.read(20)
+	#		fromstorage = ebrw_readstr.int_s8()
+	#		filename = data_bytes.readstring_lenbyte(ebrw_readstr, 1, 'little', None)
 	#		if fromstorage == 0:
-	#			audiosize = fl_plugstr.uint32()
+	#			audiosize = ebrw_readstr.int_u32()
 	#			filename = os.path.join(foldername, pluginid+'_custom_audio.wav')
 	#			with open(filename, "wb") as customconvolverfile:
-	#				customconvolverfile.write(fl_plugstr.read(audiosize))
+	#				customconvolverfile.write(ebrw_readstr.read(audiosize))
 	#		plugin_obj.type_set('native', 'flstudio', flplugin.name)
 	#		plugin_obj.datavals.add('file', filename.decode())
-	#		fl_plugstr.read(36)
+	#		ebrw_readstr.read(36)
 	#		autodata = {}
 	#		for autoname in ['pan', 'vol', 'stereo', 'allpurpose', 'eq']:
-	#			autodata_table = decode_pointdata(fl_plugstr)
+	#			autodata_table = decode_pointdata(ebrw_readstr)
 	#			autopoints_obj = plugin_obj.env_points_add(autoname, 4, True, 'float')
 	#			for point in autodata_table:
 	#				autopoint_obj = autopoints_obj.add_point()
@@ -629,59 +602,59 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 
 	elif flplugin.name == 'fruity html notebook':
 		plugin_obj.type_set('native', 'flstudio', flplugin.name)
-		version = fl_plugstr.uint32()
-		if version == 1: plugin_obj.datavals.add('url', fl_plugstr.c_string__int8(encoding='utf-8'))
+		version = ebrw_readstr.int_u32()
+		if version == 1: plugin_obj.datavals.add('url', ebrw_readstr.string_i8(encoding='utf-8'))
 		
 
 	elif flplugin.name in ['fruity notebook 2', 'fruity notebook']:
 		plugin_obj.type_set('native', 'flstudio', flplugin.name)
-		version = fl_plugstr.uint32()
+		version = ebrw_readstr.int_u32()
 		if (version == 0 and flplugin.name == 'fruity notebook 2') or (version == 1000 and flplugin.name == 'fruity notebook'): 
-			plugin_obj.params.add('currentpage', fl_plugstr.uint32(), 'int')
+			plugin_obj.params.add('currentpage', ebrw_readstr.int_u32(), 'int')
 			pagesdata = {}
 			while True:
-				pagenum = fl_plugstr.uint32()
+				pagenum = ebrw_readstr.int_u32()
 				if pagenum == 0 or pagenum > 100: break
 				if flplugin.name == 'fruity notebook 2': 
-					length = fl_plugstr.varint()
-					text = fl_plugstr.read(length*2).decode('utf-16le')
+					length = ebrw_readstr.varint()
+					text = ebrw_readstr.read(length*2).decode('utf-16le')
 				if flplugin.name == 'fruity notebook': 
-					length = fl_plugstr.uint32()
-					text = fl_plugstr.read(length).decode('ascii')
+					length = ebrw_readstr.int_u32()
+					text = ebrw_readstr.read(length).decode('ascii')
 				pagesdata[pagenum] = text
 			plugin_obj.datavals.add('pages', pagesdata)
-			plugin_obj.datavals.add('editing_enabled', fl_plugstr.int8())
+			plugin_obj.datavals.add('editing_enabled', ebrw_readstr.int_s8())
 		
 
 	elif flplugin.name == 'fruity vocoder':
 		plugin_obj.type_set('native', 'flstudio', flplugin.name)
-		voc_version = fl_plugstr.uint32()
-		voc_num_bands = fl_plugstr.uint32()
-		voc_filter = fl_plugstr.uint32()
-		fl_plugstr.skip(4)
-		voc_left_right = fl_plugstr.uint8()
-		voc_bands = fl_plugstr.l_float(voc_num_bands)
+		voc_version = ebrw_readstr.int_u32()
+		voc_num_bands = ebrw_readstr.int_u32()
+		voc_filter = ebrw_readstr.int_u32()
+		ebrw_readstr.skip(4)
+		voc_left_right = ebrw_readstr.int_u8()
+		voc_bands = ebrw_readstr.list_float(voc_num_bands)
 
 		plugin_obj.array_add('bands', voc_bands)
 		plugin_obj.datavals.add('filter', voc_filter)
 		plugin_obj.datavals.add('left_right', voc_left_right)
 
-		plugin_obj.params.add_named('freq_min', fl_plugstr.uint32(), 'int', "Freq Min")
-		plugin_obj.params.add_named('freq_max', fl_plugstr.uint32(), 'int', "Freq Max")
-		plugin_obj.params.add_named('freq_scale', fl_plugstr.uint32(), 'int', "Freq Scale")
-		plugin_obj.params.add_named('freq_invert', fl_plugstr.uint32(), 'bool', "Freq Invert")
-		plugin_obj.params.add_named('freq_formant', fl_plugstr.uint32(), 'int', "Freq Formant")
-		plugin_obj.params.add_named('freq_bandwidth', fl_plugstr.uint32(), 'int', "Freq BandWidth")
-		plugin_obj.params.add_named('env_att', fl_plugstr.uint32(), 'int', "Env Att")
-		plugin_obj.params.add_named('env_rel', fl_plugstr.uint32(), 'int', "Env Rel")
-		plugin_obj.params.add_named('hold', fl_plugstr.uint32(), 'int', "Hold")
-		plugin_obj.params.add_named('mix_mod', fl_plugstr.uint32(), 'int', "Mix Mod")
-		plugin_obj.params.add_named('mix_car', fl_plugstr.uint32(), 'int', "Mix Car")
-		plugin_obj.params.add_named('mix_wet', fl_plugstr.uint32(), 'int', "Mix Wet")
+		plugin_obj.params.add_named('freq_min', ebrw_readstr.int_u32(), 'int', "Freq Min")
+		plugin_obj.params.add_named('freq_max', ebrw_readstr.int_u32(), 'int', "Freq Max")
+		plugin_obj.params.add_named('freq_scale', ebrw_readstr.int_u32(), 'int', "Freq Scale")
+		plugin_obj.params.add_named('freq_invert', ebrw_readstr.int_u32(), 'bool', "Freq Invert")
+		plugin_obj.params.add_named('freq_formant', ebrw_readstr.int_u32(), 'int', "Freq Formant")
+		plugin_obj.params.add_named('freq_bandwidth', ebrw_readstr.int_u32(), 'int', "Freq BandWidth")
+		plugin_obj.params.add_named('env_att', ebrw_readstr.int_u32(), 'int', "Env Att")
+		plugin_obj.params.add_named('env_rel', ebrw_readstr.int_u32(), 'int', "Env Rel")
+		plugin_obj.params.add_named('hold', ebrw_readstr.int_u32(), 'int', "Hold")
+		plugin_obj.params.add_named('mix_mod', ebrw_readstr.int_u32(), 'int', "Mix Mod")
+		plugin_obj.params.add_named('mix_car', ebrw_readstr.int_u32(), 'int', "Mix Car")
+		plugin_obj.params.add_named('mix_wet', ebrw_readstr.int_u32(), 'int', "Mix Wet")
 
 	elif flplugin.name == 'fruity waveshaper':
 		plugin_obj.type_set('native', 'flstudio', flplugin.name)
-		flplugvals = struct.unpack('bHHIIbbbbbb', fl_plugstr.read(22))
+		flplugvals = struct.unpack('bHHIIbbbbbb', ebrw_readstr.read(22))
 		#print(flplugvals)
 		plugin_obj.params.add_named('preamp', flplugvals[2], 'int', "Pre Amp")
 		plugin_obj.params.add_named('wet', flplugvals[3], 'int', "Wet")
@@ -689,7 +662,7 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 		plugin_obj.params.add_named('bipolarmode', flplugvals[5], 'bool', "Bi-polar Mode")
 		plugin_obj.params.add_named('removedc', flplugvals[6], 'bool', "Remove DC")
 
-		autodata_table = decode_pointdata(fl_plugstr)
+		autodata_table = decode_pointdata(ebrw_readstr)
 
 		autopoints_obj = plugin_obj.env_points_add('shape', 4, True, 'float')
 		for point in autodata_table:
@@ -699,7 +672,7 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 				autopoints_obj.points__add_normal(point[0], point[1][0], point[2], envshapes[point[3]])
 
 	elif flplugin.name in ['bassdrum', 'pitcher']:
-		sslfdata = decode_sslf(fl_plugstr)
+		sslfdata = decode_sslf(ebrw_readstr)
 
 		if flplugin.name == 'bassdrum': 
 			plugin_obj.type_set('native', 'flstudio', flplugin.name)
@@ -710,26 +683,26 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 			plugin_obj.from_bytes(sslfdata, 'fl_studio', 'fl_studio', 'plugin', flplugin.name, 'sslf_pitcher')
 
 	elif flplugin.name == 'slicex':
-		version = fl_plugstr.l_uint16(2)
+		version = ebrw_readstr.list_int_u16(2)
 		plugin_obj.datavals.add('version', version)
-		plugin_obj.params.add('play_pause', fl_plugstr.int32(), 'int')
-		plugin_obj.params.add('live_selection', fl_plugstr.int32(), 'int')
-		plugin_obj.params.add('master_level', fl_plugstr.int32(), 'int')
-		plugin_obj.params.add('master_random_level', fl_plugstr.int32(), 'int')
-		plugin_obj.params.add('master_lfo_level', fl_plugstr.int32(), 'int')
-		plugin_obj.params.add('master_pitch', fl_plugstr.int32(), 'int')
-		plugin_obj.params.add('mod_x', fl_plugstr.int32(), 'int')
-		plugin_obj.params.add('mod_y', fl_plugstr.int32(), 'int')
-		plugin_obj.datavals.add('layering', fl_plugstr.int32())
-		plugin_obj.datavals.add('crossfade', fl_plugstr.int32())
-		fl_plugstr.skip(4*11 + 1)
-		data_exists = fl_plugstr.int8()
-		fl_plugstr.skip(2)
-		rawdata = fl_plugstr.raw(4)
+		plugin_obj.params.add('play_pause', ebrw_readstr.int_s32(), 'int')
+		plugin_obj.params.add('live_selection', ebrw_readstr.int_s32(), 'int')
+		plugin_obj.params.add('master_level', ebrw_readstr.int_s32(), 'int')
+		plugin_obj.params.add('master_random_level', ebrw_readstr.int_s32(), 'int')
+		plugin_obj.params.add('master_lfo_level', ebrw_readstr.int_s32(), 'int')
+		plugin_obj.params.add('master_pitch', ebrw_readstr.int_s32(), 'int')
+		plugin_obj.params.add('mod_x', ebrw_readstr.int_s32(), 'int')
+		plugin_obj.params.add('mod_y', ebrw_readstr.int_s32(), 'int')
+		plugin_obj.datavals.add('layering', ebrw_readstr.int_s32())
+		plugin_obj.datavals.add('crossfade', ebrw_readstr.int_s32())
+		ebrw_readstr.skip(4*11 + 1)
+		data_exists = ebrw_readstr.int_s8()
+		ebrw_readstr.skip(2)
+		rawdata = ebrw_readstr.raw(4)
 
-		slicex_filename = get_sample(fl_plugstr.c_string__int8())
-		wavedata_size = fl_plugstr.int32()
-		wavedata = fl_plugstr.raw(wavedata_size)
+		slicex_filename = get_sample(ebrw_readstr.string_i8())
+		wavedata_size = ebrw_readstr.int_s32()
+		wavedata = ebrw_readstr.raw(wavedata_size)
 
 		plugin_obj.type_set('universal', 'sampler', 'slicer')
 
@@ -766,7 +739,7 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 				slice_obj.start = marker_obj.sampleoffset
 
 	elif flplugin.name == 'buzz generator adapter':
-		filename = fl_plugstr.string_t()
+		filename = ebrw_readstr.string_t()
 		if filename:
 			plugin_obj.type_set('external', 'buzz', 'win')
 
@@ -774,22 +747,22 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 			convproj_obj.fileref__add(buzz_pathid, filename, 'win')
 			plugin_obj.filerefs_global['plugin'] = buzz_pathid
 
-			plugin_obj.state.poly.max = fl_plugstr.int32()
-			plugin_obj.datavals_global.add('note_param', fl_plugstr.int32())
-			plugin_obj.datavals_global.add('no_note_off', bool(fl_plugstr.int8()))
-			plugin_obj.datavals_global.add('use_midinote', bool(fl_plugstr.int8()))
-			fl_plugstr.skip(4)
-			numparams = fl_plugstr.int32()
+			plugin_obj.state.poly.max = ebrw_readstr.int_s32()
+			plugin_obj.datavals_global.add('note_param', ebrw_readstr.int_s32())
+			plugin_obj.datavals_global.add('no_note_off', bool(ebrw_readstr.int_s8()))
+			plugin_obj.datavals_global.add('use_midinote', bool(ebrw_readstr.int_s8()))
+			ebrw_readstr.skip(4)
+			numparams = ebrw_readstr.int_s32()
 
 			parammods = []
-			for x in range(numparams): parammods.append(fl_plugstr.l_int16(3))
-			params = fl_plugstr.l_int32(numparams)
-			attrib = fl_plugstr.l_int32(fl_plugstr.int32())
+			for x in range(numparams): parammods.append(ebrw_readstr.list_int_s16(3))
+			params = ebrw_readstr.list_int_s32(numparams)
+			attrib = ebrw_readstr.list_int_s32(ebrw_readstr.int_s32())
 			for n, x in enumerate(params): plugin_obj.params.add('ext_param_%i' % n, x, 'int')
 			for n, x in enumerate(attrib): plugin_obj.datavals.add('attrib_%i' % n, x)
 
 	elif flplugin.name == 'buzz effect adapter':
-		filename = fl_plugstr.string_t()
+		filename = ebrw_readstr.string_t()
 		if filename:
 			plugin_obj.type_set('external', 'buzz', 'win')
 
@@ -797,11 +770,11 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 			convproj_obj.fileref__add(buzz_pathid, filename, 'win')
 			plugin_obj.filerefs_global['plugin'] = buzz_pathid
 
-			fl_plugstr.skip(4)
-			numparams = fl_plugstr.int32()
+			ebrw_readstr.skip(4)
+			numparams = ebrw_readstr.int_s32()
 
-			params = fl_plugstr.l_int32(numparams)
-			attrib = fl_plugstr.l_int32(fl_plugstr.int32())
+			params = ebrw_readstr.list_int_s32(numparams)
+			attrib = ebrw_readstr.list_int_s32(ebrw_readstr.int_s32())
 			for n, x in enumerate(params): plugin_obj.params.add('ext_param_%i' % n, x, 'int')
 			for n, x in enumerate(attrib): plugin_obj.datavals.add('attrib_%i' % n, x)
 
