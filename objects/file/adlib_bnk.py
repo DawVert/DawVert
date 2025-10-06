@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 SatyrDiamond
+# SPDX-FileCopyrightText: 2025 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later 
 
 from objects.inst_params import fm_opl

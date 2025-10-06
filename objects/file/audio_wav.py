@@ -20,13 +20,15 @@ class wav_loop:
 		self.end = 0
 		self.fraction = 0
 		self.playcount = 0
-		if ebrw_readstr != None:
-			self.identifier = ebrw_readstr.int_s32()
-			self.type = ebrw_readstr.int_s32()
-			self.start = ebrw_readstr.int_s32()
-			self.end = ebrw_readstr.int_s32()
-			self.fraction = ebrw_readstr.int_s32()
-			self.playcount = ebrw_readstr.int_s32()
+		if ebrw_readstr != None: self.read(ebrw_readstr)
+
+	def read(self, ebrw_readstr):
+		self.identifier = ebrw_readstr.int_s32()
+		self.type = ebrw_readstr.int_s32()
+		self.start = ebrw_readstr.int_s32()
+		self.end = ebrw_readstr.int_s32()
+		self.fraction = ebrw_readstr.int_s32()
+		self.playcount = ebrw_readstr.int_s32()
 
 	def write(self):
 		return struct.pack('<iiiiii', self.identifier, self.type, self.start, self.end, self.fraction, self.playcount)
@@ -49,7 +51,6 @@ class wav_slice:
 		self.samplePosition2Upper = ebrw_readstr.int_u32()
 		self.samplePosition2Lower = ebrw_readstr.int_u32()
 		self.id2 = ebrw_readstr.int_u32()
-
 		print(self.header, self.id1, self.samplePositionUpper, self.samplePositionLower, self.samplePosition2Upper, self.samplePosition2Lower, self.data3, self.id2)
 
 class wav_marker:

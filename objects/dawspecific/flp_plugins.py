@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 SatyrDiamond
+# SPDX-FileCopyrightText: 2025 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functions.dawspecific import flp_plugchunks
@@ -231,7 +231,7 @@ class fpc_plugin:
 
 	def dump(self):
 		total_writer = easybinrw.binwrite()
-		total_writer.uint32(self.version)
+		total_writer.int_u32(self.version)
 		for pad_obj in self.pads:
 			flp_plugchunks.write_chunk(total_writer, 2, pad_obj.dump())
 		flp_plugchunks.write_chunk(total_writer, 1, b'')

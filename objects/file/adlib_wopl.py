@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 SatyrDiamond
+# SPDX-FileCopyrightText: 2025 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later 
 
 from objects.inst_params import fm_opl
@@ -27,14 +27,13 @@ def read_inst(ebrw_readstr, oplo, isbank):
 
 class opli_file:
 	def __init__(self):
+		self.version = 0
 		self.patch = fm_opl.opl_inst()
 
 	def read_file(self, oplifile):
 		ebrw_readstr = easybinrw.binread()
 		ebrw_readstr.load_file(oplifile)
-
 		ebrw_readstr.magic_check(b'WOPL3-INST\x00')
-		version = ebrw_readstr.int_u16()
-		is_perc = ebrw_readstr.int_u8()
-		self.patch.perc_on = bool(is_perc)
+		self.version = ebrw_readstr.int_u16()
+		self.patch.perc_on = bool(ebrw_readstr.int_u8())
 		read_inst(ebrw_readstr, self.patch, False)

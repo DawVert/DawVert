@@ -231,7 +231,6 @@ class binread:
 	def string_i16(self, **k): return self.str.read(self.int_u16()).split(b'\x00')[0].decode(**k)
 	def string_i32(self, **k): 
 		o = self.str.read(self.int_u32())
-		print(o)
 		return o.decode(**k).rstrip('\x00')
 	def string_i64(self, **k): return self.str.read(self.int_u64()).split(b'\x00')[0].decode(**k)
 	def string_i16_b(self, **k): return self.str.read(self.int_u16_b()).split(b'\x00')[0].decode(**k)

@@ -61,7 +61,7 @@ class zenbeats_note:
 		self.reverse = 0
 		self.pan_linear = 0.5
 		self.pitch_offset = 0
-
+		self.mpe = {}
 		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
@@ -81,6 +81,13 @@ class zenbeats_note:
 		if 'reverse' in attrib: self.reverse = float(attrib['reverse'])
 		if 'pan_linear' in attrib: self.pan_linear = float(attrib['pan_linear'])
 		if 'pitch_offset' in attrib: self.pitch_offset = float(attrib['pitch_offset'])*100
+		for x_part in xml_data:
+			if x_part.tag in 'MPE_Pressure':
+				self.mpe['pressure'] = automation.zenbeats_automation_curve(x_part)
+			if x_part.tag in 'MPE_Pitch':
+				self.mpe['pitch'] = automation.zenbeats_automation_curve(x_part)
+			if x_part.tag in 'MPE_Timbre':
+				self.mpe['timbre'] = automation.zenbeats_automation_curve(x_part)
 
 	def write(self, xml_data):
 		tempxml = ET.SubElement(xml_data, "note")
@@ -95,6 +102,15 @@ class zenbeats_note:
 		if self.velocity_jitter is not None: tempxml.set('velocity_jitter', str(self.velocity_jitter))
 		tempxml.set('probability', str(self.probability))
 		if self.filter_high_cut is not None: tempxml.set('filter_high_cut', str(self.filter_high_cut))
+		if 'pressure' in self.mpe:
+			self.mpe['pressure'].tag = 'MPE_Pressure'
+			self.mpe['pressure'].write(tempxml)
+		if 'pitch' in self.mpe:
+			self.mpe['pitch'].tag = 'MPE_Pitch'
+			self.mpe['pitch'].write(tempxml)
+		if 'timbre' in self.mpe:
+			self.mpe['timbre'].tag = 'MPE_Timbre'
+			self.mpe['timbre'].write(tempxml)
 
 class zenbeats_pattern:
 	def __init__(self, xml_data):

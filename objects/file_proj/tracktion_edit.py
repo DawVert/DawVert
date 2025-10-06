@@ -3,9 +3,266 @@
 
 from lxml import etree as ET
 from objects.exceptions import ProjectFileParserException
+DEBUG_IN_OUT = False
 
 import logging
 logger_projparse = logging.getLogger('projparse')
+
+# =================================================== RACK ===================================================
+
+class tracktion_rack_connection:
+	def __init__(self):
+		self.src = 0
+		self.dst = 0
+		self.srcPin = 0
+		self.dstPin = 0
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'src': self.src = int(v)
+			elif n == 'dst': self.dst = int(v)
+			elif n == 'srcPin': self.srcPin = int(v)
+			elif n == 'dstPin': self.dstPin = int(v)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "CONNECTION")
+		tempxml.set('src', str(self.src))
+		tempxml.set('dst', str(self.dst))
+		tempxml.set('srcPin', str(self.srcPin))
+		tempxml.set('dstPin', str(self.dstPin))
+
+class tracktion_rack_plugininstance:
+	def __init__(self):
+		self.x = 0
+		self.y = 0
+		self.plugin = tracktion_plugin()
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'x': self.x = float(v)
+			if n == 'y': self.y = float(v)
+		for subxml in xmldata:
+			if subxml.tag == 'PLUGIN': 
+				self.plugin.load(subxml)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "PLUGININSTANCE")
+		tempxml.set('x', str(self.x))
+		tempxml.set('y', str(self.y))
+		self.plugin.write(tempxml)
+
+class tracktion_rack_output:
+	def __init__(self):
+		self.name = ''
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'name': self.name = v
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "OUTPUT")
+		tempxml.set('name', str(self.name))
+
+class tracktion_rack_input:
+	def __init__(self):
+		self.name = ''
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'name': self.name = v
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "INPUT")
+		tempxml.set('name', str(self.name))
+
+class tracktion_rack:
+	def __init__(self):
+		self.id_num = 0
+		self.name = ''
+		self.macroparameters = tracktion_macroparameters()
+		self.outputs = []
+		self.inputs = []
+		self.connections = []
+		self.modifiers = tracktion_modifiers()
+		self.plugins = {}
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'id': self.id_num = int(v)
+			if n == 'name': self.name = v
+
+		for xmlpart in xmldata:
+			if xmlpart.tag == 'MACROPARAMETERS': self.macroparameters.load(xmlpart)
+			elif xmlpart.tag == 'OUTPUT': 
+				x_out = tracktion_rack_output()
+				x_out.load(xmlpart)
+				self.outputs.append(x_out)
+			elif xmlpart.tag == 'INPUT': 
+				x_out = tracktion_rack_input()
+				x_out.load(xmlpart)
+				self.inputs.append(x_out)
+			elif xmlpart.tag == 'MODIFIERS': self.modifiers.load(xmlpart)
+			elif xmlpart.tag == 'PLUGININSTANCE': 
+				x_out = tracktion_rack_plugininstance()
+				x_out.load(xmlpart)
+				self.plugins[int(x_out.plugin.id_num)] = x_out
+			elif xmlpart.tag == 'CONNECTION': 
+				x_out = tracktion_rack_connection()
+				x_out.load(xmlpart)
+				self.connections.append(x_out)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "RACK")
+		tempxml.set('id', str(self.id_num))
+		tempxml.set('name', str(self.name))
+		self.macroparameters.write(tempxml)
+		for x in self.outputs: x.write(tempxml)
+		for x in self.inputs: x.write(tempxml)
+		self.modifiers.write(tempxml)
+		used_plugins = []
+		for connection in self.connections:
+			do_plugins = [connection.src, connection.dst]
+			for plugid in do_plugins:
+				if plugid and plugid not in used_plugins:
+					self.plugins[plugid].write(tempxml)
+					used_plugins.append(plugid)
+			connection.write(tempxml)
+
+# =================================================== OTHER ===================================================
+
+class tracktion_auxbusname:
+	def __init__(self):
+		self.bus = 0
+		self.name = ''
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'bus': self.bus = int(v)
+			if n == 'name': self.name = v
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, 'NAME')
+		tempxml.set('bus', str(self.bus))
+		tempxml.set('name', self.name)
+
+class tracktion_followactions:
+	def __init__(self):
+		pass
+
+	def load(self, xmldata):
+		pass
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "FOLLOWACTIONS")
+
+# =================================================== MODIFIERS ===================================================
+
+class tracktion_modifierassignment:
+	def __init__(self):
+		self.type = None
+		self.source = 0
+		self.paramID = None
+		self.value = 1.0
+		self.end = 1.0
+
+	def load(self, xmldata):
+		self.type = xmldata.tag
+		for n, v in xmldata.attrib.items():
+			if n == 'source': self.source = int(v)
+			if n == 'paramID': self.paramID = v
+			if n == 'value': self.value = float(v)
+			if n == 'end': self.end = float(v)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, self.type)
+		tempxml.set('source', str(self.source))
+		tempxml.set('paramID', self.paramID)
+		tempxml.set('value', str(self.value))
+		tempxml.set('end', str(self.end))
+
+class tracktion_modifierassignments:
+	def __init__(self):
+		self.modifierassignments = []
+
+	def load(self, xmldata):
+		for x in xmldata:
+			m = tracktion_modifierassignment()
+			m.load(x)
+			self.modifierassignments.append(m)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "MODIFIERASSIGNMENTS")
+		for m in self.modifierassignments: m.write(tempxml)
+
+class tracktion_modifier_midinode:
+	def __init__(self):
+		self.midi = 60
+		self.value = 0
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'midi': self.midi = int(v)
+			if n == 'value': self.value = float(v)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, 'NODE')
+		tempxml.set('midi', str(self.midi))
+		tempxml.set('value', str(self.value))
+
+class tracktion_modifier:
+	def __init__(self):
+		self.type = None
+		self.remapOnTempoChange = 1
+		self.id_num = 0
+		self.colour = None
+		self.modifierassignments = tracktion_modifierassignments()
+		self.nodes = None
+		self.params = {}
+
+	def load(self, xmldata):
+		self.type = xmldata.tag
+		for n, v in xmldata.attrib.items():
+			if n == 'id': self.id_num = int(v)
+			elif n == 'remapOnTempoChange': self.remapOnTempoChange = int(v)
+			elif n == 'colour': self.colour = v
+			else: self.params[n] = v
+
+		for xmlpart in xmldata:
+			if xmlpart.tag == 'MODIFIERASSIGNMENTS': self.modifierassignments.load(xmlpart)
+			if xmlpart.tag == 'NODES': 
+				self.nodes = []
+				for subinxml in xmlpart:
+					if subinxml.tag == 'NODE':
+						node = tracktion_modifier_midinode()
+						node.load(subinxml)
+						self.nodes.append(node)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, self.type)
+		tempxml.set('id', str(self.id_num))
+		tempxml.set('remapOnTempoChange', str(self.remapOnTempoChange))
+		if self.colour: tempxml.set('colour', self.colour)
+		for n, v in self.params.items(): tempxml.set(n, str(v))
+		self.modifierassignments.write(tempxml)
+		if self.nodes is not None:
+			nodesxml = ET.SubElement(tempxml, 'NODES')
+			for node in self.nodes: node.write(nodesxml)
+
+
+class tracktion_modifiers:
+	def __init__(self):
+		self.modifiers = []
+
+	def load(self, xmldata):
+		for x in xmldata:
+			m = tracktion_modifier()
+			m.load(x)
+			self.modifiers.append(m)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "MODIFIERS")
+		for m in self.modifiers:
+			m.write(tempxml)
 
 # =================================================== AUTOMATION ===================================================
 
@@ -108,6 +365,9 @@ class tracktion_plugin:
 		self.params = {}
 		self.macroparameters = tracktion_macroparameters()
 		self.automationcurves = []
+		self.modifierassignments = None
+		self.base64_parameters = None
+		self.rackType = 0
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -121,6 +381,8 @@ class tracktion_plugin:
 			elif n == 'width': self.width = float(v)
 			elif n == 'height': self.height = int(v)
 			elif n == 'quickParamName': self.quickParamName = v
+			elif n == 'base64:parameters': self.base64_parameters = v
+			elif n == 'rackType': self.rackType = v
 			else: self.params[n] = v
 		for xmlpart in xmldata:
 			if xmlpart.tag == 'MACROPARAMETERS': self.macroparameters.load(xmlpart)
@@ -128,10 +390,14 @@ class tracktion_plugin:
 				autocurve_obj = tracktion_automationcurve()
 				autocurve_obj.load(xmlpart)
 				self.automationcurves.append(autocurve_obj)
+			if xmlpart.tag == 'MODIFIERASSIGNMENTS':
+				self.modifierassignments = tracktion_modifierassignments()
+				self.modifierassignments.load(xmlpart)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "PLUGIN")
 		if self.plugtype: tempxml.set('type', str(self.plugtype))
+		if self.rackType: tempxml.set('rackType', str(self.rackType))
 		if self.windowLocked: tempxml.set('windowLocked', str(self.windowLocked))
 		if self.id_num: tempxml.set('id', str(self.id_num))
 		if self.enabled: tempxml.set('enabled', str(self.enabled))
@@ -146,7 +412,7 @@ class tracktion_plugin:
 		for c in self.automationcurves:
 			c.write(tempxml)
 		self.macroparameters.write(tempxml)
-		ET.SubElement(tempxml, "MODIFIERASSIGNMENTS")
+		if self.modifierassignments: self.modifierassignments.write(tempxml)
 
 # =================================================== MIDI CLIP ===================================================
 
@@ -252,6 +518,9 @@ class tracktion_midiclip:
 		self.loopLengthBeats = 0.0
 		self.groupID = -1
 		self.sequence = tracktion_sequence()
+		self.proxyAllowed = 1
+		self.patterngenerator = None
+		self.followactions = None
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -261,7 +530,7 @@ class tracktion_midiclip:
 			elif n == 'length': self.length = float(v)
 			elif n == 'offset': self.offset = float(v)
 			elif n == 'id_num': self.id_num = float(v)
-			elif n == 'sync': self.sync = float(v)
+			elif n == 'sync': self.sync = int(v)
 			elif n == 'colour': self.colour = v
 			elif n == 'mute': self.mute = int(v)
 			elif n == 'currentTake': self.currentTake = int(v)
@@ -271,10 +540,17 @@ class tracktion_midiclip:
 			elif n == 'loopStartBeats': self.loopStartBeats = float(v)
 			elif n == 'loopLengthBeats': self.loopLengthBeats = float(v)
 			elif n == 'groupID': self.groupID = int(v)
+			elif n == 'proxyAllowed': self.proxyAllowed = int(v)
 			else: logger_projparse.warning('tracktion_edit: midiclip: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
 			if subxml.tag == 'SEQUENCE': self.sequence.load(subxml)
+			elif subxml.tag == 'PATTERNGENERATOR':
+				self.patterngenerator = tracktion_patterngenerator()
+				self.patterngenerator.load(subxml)
+			elif subxml.tag == 'FOLLOWACTIONS':
+				self.followactions = tracktion_followactions()
+				self.followactions.load(subxml)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "MIDICLIP")
@@ -287,8 +563,9 @@ class tracktion_midiclip:
 		tempxml.set('colour', self.colour)
 		tempxml.set('currentTake', str(self.currentTake))
 		tempxml.set('speed', str(self.speed))
-		tempxml.set('volDb', str(self.volDb))
+		if self.volDb: tempxml.set('volDb', str(self.volDb))
 		if self.mute: tempxml.set('mute', str(self.mute))
+		tempxml.set('proxyAllowed', str(self.proxyAllowed))
 		tempxml.set('originalLength', str(self.originalLength))
 		tempxml.set('loopStartBeats', str(self.loopStartBeats))
 		tempxml.set('loopLengthBeats', str(self.loopLengthBeats))
@@ -296,6 +573,8 @@ class tracktion_midiclip:
 		ET.SubElement(tempxml, "QUANTISATION")
 		ET.SubElement(tempxml, "GROOVE")
 		self.sequence.write(tempxml)
+		if self.patterngenerator: self.patterngenerator.write(tempxml)
+		if self.followactions: self.followactions.write(tempxml)
 
 # =================================================== AUDIO CLIP ===================================================
 
@@ -613,10 +892,11 @@ class tracktion_stepclip_pattern:
 		tempxml.set('numNotes', str(self.numNotes))
 		tempxml.set('noteLength', str(self.noteLength))
 
-		for n in range(max(self.data.keys())+1):
-			chanxml = ET.SubElement(tempxml, "CHANNEL")
-			if n in self.data: chanxml.set('pattern', self.data[n])
-			else: chanxml.set('pattern', '0')
+		if self.data:
+			for n in range(max(self.data.keys())+1):
+				chanxml = ET.SubElement(tempxml, "CHANNEL")
+				if n in self.data: chanxml.set('pattern', self.data[n])
+				else: chanxml.set('pattern', '0')
 
 class tracktion_stepclip:
 	def __init__(self):
@@ -627,8 +907,8 @@ class tracktion_stepclip:
 		self.offset = 0
 		self.sequence = 0
 		self.colour = 'ffff0000'
-		self.repeatSequence = 1
-		self.volDb = 0
+		self.repeatSequence = 0
+		self.volDb = None
 		self.speed = 1
 		self.source = ''
 		self.sync = 0
@@ -637,6 +917,10 @@ class tracktion_stepclip:
 		self.channels = []
 		self.patterns = []
 		self.groupID = -1
+		self.originalLength = 0
+		self.loopStartBeats = 0.0
+		self.loopLengthBeats = 0.0
+		self.followactions = None
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -655,6 +939,9 @@ class tracktion_stepclip:
 			elif n == 'showingTakes': self.showingTakes = int(v)
 			elif n == 'mute': self.mute = int(v)
 			elif n == 'groupID': self.groupID = int(v)
+			elif n == 'originalLength': self.originalLength = float(v)
+			elif n == 'loopStartBeats': self.loopStartBeats = float(v)
+			elif n == 'loopLengthBeats': self.loopLengthBeats = float(v)
 			else: print('[waveform] stepclip: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
@@ -664,31 +951,35 @@ class tracktion_stepclip:
 						chan_obj = tracktion_stepclip_channel()
 						chan_obj.load(chanxml)
 						self.channels.append(chan_obj)
-
-		for subxml in xmldata:
-			if subxml.tag == 'PATTERNS':
+			elif subxml.tag == 'PATTERNS':
 				for chanxml in subxml:
 					if chanxml.tag == 'PATTERN':
 						pat_obj = tracktion_stepclip_pattern()
 						pat_obj.load(chanxml)
 						self.patterns.append(pat_obj)
+			elif subxml.tag == 'FOLLOWACTIONS':
+				self.followactions = tracktion_followactions()
+				self.followactions.load(subxml)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "STEPCLIP")
-		tempxml.set('id', str(self.id_num))
 		if self.name: tempxml.set('name', str(self.name))
 		tempxml.set('start', str(self.start))
 		tempxml.set('length', str(self.length))
 		tempxml.set('offset', str(self.offset))
+		tempxml.set('id', str(self.id_num))
 		tempxml.set('sequence', ','.join([str(x) for x in self.sequence]))
 		tempxml.set('colour', str(self.colour))
-		tempxml.set('repeatSequence', str(self.repeatSequence))
-		tempxml.set('volDb', str(self.volDb))
-		tempxml.set('speed', str(self.speed))
-		tempxml.set('source', str(self.source))
-		tempxml.set('sync', str(self.sync))
-		tempxml.set('showingTakes', str(self.showingTakes))
-		tempxml.set('mute', str(self.mute))
+		if self.repeatSequence: tempxml.set('repeatSequence', str(self.repeatSequence))
+		if self.speed!=1: tempxml.set('speed', str(self.speed))
+		if self.source: tempxml.set('source', str(self.source))
+		if self.sync: tempxml.set('sync', str(self.sync))
+		if self.showingTakes: tempxml.set('showingTakes', str(self.showingTakes))
+		if self.mute: tempxml.set('mute', str(self.mute))
+		if self.originalLength: tempxml.set('originalLength', str(self.originalLength))
+		tempxml.set('loopStartBeats', str(self.loopStartBeats))
+		if self.loopLengthBeats: tempxml.set('loopLengthBeats', str(self.loopLengthBeats))
+		if self.volDb is not None: tempxml.set('volDb', str(self.volDb))
 		if self.channels:
 			chanxml = ET.SubElement(tempxml, "CHANNELS")
 			for chan_obj in self.channels:
@@ -698,8 +989,59 @@ class tracktion_stepclip:
 			for chan_obj in self.patterns:
 				chan_obj.write(patxml)
 		if self.groupID != -1: tempxml.set('groupID', str(self.groupID))
+		if self.followactions: self.followactions.write(tempxml)
 
 # =================================================== TRACK ===================================================
+
+class tracktion_inputdevicedestination:
+	def __init__(self):
+		self.targetID = None
+		self.targetIndex = None
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'targetID': self.targetID = int(v)
+			if n == 'targetIndex': self.targetIndex = int(v)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "INPUTDEVICEDESTINATION")
+		if self.targetID is not None: tempxml.set('targetID', str(self.targetID))
+		if self.targetIndex is not None: tempxml.set('targetIndex', str(self.targetIndex))
+
+class tracktion_inputdevice:
+	def __init__(self):
+		self.name = None
+		self.destinations = []
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'name': self.name = v
+
+		for subxml in xmldata:
+			if subxml.tag == 'INPUTDEVICEDESTINATION': 
+				inputdevicedestination = tracktion_inputdevicedestination()
+				inputdevicedestination.load(subxml)
+				self.destinations.append(inputdevicedestination)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "INPUTDEVICE")
+		if self.name: tempxml.set('name', str(self.name))
+		for destination in self.destinations: destination.write(tempxml)
+
+class tracktion_inputdevices:
+	def __init__(self):
+		self.devices = []
+
+	def load(self, xmldata):
+		for subxml in xmldata:
+			if subxml.tag == 'INPUTDEVICE':
+				imputdevice = tracktion_inputdevice()
+				imputdevice.load(subxml)
+				self.devices.append(imputdevice)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "INPUTDEVICES")
+		for device in self.devices: device.write(tempxml)
 
 class tracktion_outputdevices:
 	def __init__(self):
@@ -727,6 +1069,7 @@ class tracktion_foldertrack:
 		self.colour = None
 		self.mute = 0
 		self.solo = 0
+		self.modifiers = tracktion_modifiers()
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -740,29 +1083,54 @@ class tracktion_foldertrack:
 
 		for subxml in xmldata:
 			if subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
-			if subxml.tag == 'TRACK':
+			elif subxml.tag == 'TRACK':
 				track_obj = tracktion_track()
 				track_obj.load(subxml)
 				self.tracks.append(track_obj)
-			if subxml.tag in ['PLUGIN', 'FILTER']:
+			elif subxml.tag in ['PLUGIN', 'FILTER']:
 				plugin_obj = tracktion_plugin()
 				plugin_obj.load(subxml)
 				self.plugins.append(plugin_obj)
+			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "FOLDERTRACK")
 		tempxml.set('id', str(self.id_num))
 		tempxml.set('height', str(self.height))
-		tempxml.set('expanded', str(self.expanded))
+		if self.expanded: tempxml.set('expanded', str(self.expanded))
 		if self.mute: tempxml.set('mute', str(self.mute))
 		if self.solo: tempxml.set('solo', str(self.solo))
 		self.macroparameters.write(tempxml)
+		self.modifiers.write(tempxml)
 		for track_obj in self.tracks:
 			track_obj.write(tempxml)
 		for plugin_obj in self.plugins:
 			plugin_obj.write(tempxml)
 		if self.name: tempxml.set('name', self.name)
 		if self.colour: tempxml.set('colour', self.colour)
+
+class tracktion_clipslot:
+	def __init__(self):
+		self.id_num = 0
+		self.clip = None
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'id': self.id_num = v
+
+		for subxml in xmldata:
+			if subxml.tag == 'MIDICLIP':
+				self.clip = tracktion_midiclip()
+				self.clip.load(subxml)
+			if subxml.tag == 'STEPCLIP':
+				self.clip = tracktion_stepclip()
+				self.clip.load(subxml)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "CLIPSLOT")
+		tempxml.set('id', str(self.id_num))
+		if self.clip:
+			self.clip.write(tempxml)
 
 class tracktion_track:
 	def __init__(self):
@@ -780,6 +1148,8 @@ class tracktion_track:
 		self.midiclips = []
 		self.audioclips = []
 		self.stepclips = []
+		self.clipslots = []
+		self.modifiers = tracktion_modifiers()
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -794,31 +1164,37 @@ class tracktion_track:
 
 		for subxml in xmldata:
 			if subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
-			if subxml.tag in ['PLUGIN', 'FILTER']:
+			elif subxml.tag in ['PLUGIN', 'FILTER']:
 				plugin_obj = tracktion_plugin()
 				plugin_obj.load(subxml)
 				self.plugins.append(plugin_obj)
-			if subxml.tag == 'OUTPUTDEVICES':
+			elif subxml.tag == 'OUTPUTDEVICES':
 				self.outputdevices.load(subxml)
-			if subxml.tag == 'MIDICLIP':
+			elif subxml.tag == 'MIDICLIP':
 				midiclip_obj = tracktion_midiclip()
 				midiclip_obj.load(subxml)
 				self.midiclips.append(midiclip_obj)
-			if subxml.tag == 'AUDIOCLIP':
+			elif subxml.tag == 'AUDIOCLIP':
 				audioclip_obj = tracktion_audioclip()
 				audioclip_obj.load(subxml)
 				self.audioclips.append(audioclip_obj)
-			if subxml.tag == 'STEPCLIP':
+			elif subxml.tag == 'STEPCLIP':
 				stepclip_obj = tracktion_stepclip()
 				stepclip_obj.load(subxml)
 				self.stepclips.append(stepclip_obj)
-			if subxml.tag == 'CLIP':
+			elif subxml.tag == 'CLIP':
 				if 'type' in subxml.attrib:
 					cliptype = subxml.attrib['type']
 					if cliptype == 'wave': 
 						audioclip_obj = tracktion_audioclip()
 						audioclip_obj.load(subxml)
 						self.audioclips.append(audioclip_obj)
+			elif subxml.tag == 'CLIPSLOTS':
+				for subinxml in subxml:
+					clipslot = tracktion_clipslot()
+					clipslot.load(subinxml)
+					self.clipslots.append(clipslot)
+			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "TRACK")
@@ -831,7 +1207,10 @@ class tracktion_track:
 		if self.mute: tempxml.set('mute', str(self.mute))
 		if self.solo: tempxml.set('solo', str(self.solo))
 		self.macroparameters.write(tempxml)
-		ET.SubElement(tempxml, "MODIFIERS")
+		self.modifiers.write(tempxml)
+		if self.clipslots is not None:
+			x_clipslots = ET.SubElement(tempxml, "CLIPSLOTS")
+			for clipslot in self.clipslots: clipslot.write(x_clipslots)
 		for audioclip_obj in self.audioclips: audioclip_obj.write(tempxml)
 		for stepclip_obj in self.stepclips: stepclip_obj.write(tempxml)
 		for plugin_obj in self.plugins: plugin_obj.write(tempxml)
@@ -873,24 +1252,32 @@ class tracktion_arrangertrack:
 		self.clips = []
 		self.name = 'Arranger'
 		self.id_num = 0
+		self.height = 0
+		self.macroparameters = tracktion_macroparameters()
+		self.modifiers = tracktion_modifiers()
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
 			if n == 'id': self.id_num = v
 			elif n == 'name': self.name = v
+			elif n == 'height': self.height = float(v)
 
 		for subxml in xmldata:
 			if subxml.tag == 'ARRANGERCLIP': 
 				arrc_obj = tracktion_arrangerclip()
 				arrc_obj.load(subxml)
 				self.clips.append(arrc_obj)
+			elif subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
+			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "ARRANGERTRACK")
-		tempxml.set('id', str(self.id_num))
 		if self.name: tempxml.set('name', str(self.name))
-		for clip_obj in self.clips:
-			clip_obj.write(tempxml)
+		tempxml.set('id', str(self.id_num))
+		if self.height: tempxml.set('height', str(self.height))
+		self.macroparameters.write(tempxml)
+		self.modifiers.write(tempxml)
+		for clip_obj in self.clips: clip_obj.write(tempxml)
 
 class tracktion_markerclip:
 	def __init__(self):
@@ -934,24 +1321,196 @@ class tracktion_markertrack:
 		self.clips = []
 		self.name = 'Marker'
 		self.id_num = 0
+		self.height = 0
+		self.macroparameters = tracktion_macroparameters()
+		self.modifiers = tracktion_modifiers()
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
 			if n == 'id': self.id_num = v
 			elif n == 'name': self.name = v
+			elif n == 'height': self.height = float(v)
 
 		for subxml in xmldata:
 			if subxml.tag == 'MARKERCLIP': 
 				arrc_obj = tracktion_markerclip()
 				arrc_obj.load(subxml)
 				self.clips.append(arrc_obj)
+			elif subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
+			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "MARKERTRACK")
 		tempxml.set('id', str(self.id_num))
 		if self.name: tempxml.set('name', str(self.name))
+		if self.height: tempxml.set('height', str(self.height))
+		self.macroparameters.write(tempxml)
+		self.modifiers.write(tempxml)
 		for clip_obj in self.clips:
 			clip_obj.write(tempxml)
+
+class tracktion_progression_item:
+	def __init__(self):
+		self.chordName = ''
+		self.pitches = ''
+		self.octave = 0
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'chordName': self.chordName = v
+			elif n == 'pitches': self.pitches = v
+			elif n == 'octave': self.octave = int(v)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "PROGRESSIONITEM")
+		tempxml.set('chordName', self.chordName)
+		tempxml.set('pitches', self.pitches)
+		if self.octave: tempxml.set('octave', str(self.octave))
+
+class tracktion_patterngenerator:
+	def __init__(self):
+		self.progression_items = []
+
+	def load(self, xmldata):
+		for subxml in xmldata:
+			if subxml.tag == 'PROGRESSION':
+				for subinxml in subxml:
+					if subinxml.tag == 'PROGRESSIONITEM':
+						pitem = tracktion_progression_item()
+						pitem.load(subinxml)
+						self.progression_items.append(pitem)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "PATTERNGENERATOR")
+		x_progression = ET.SubElement(tempxml, "PROGRESSION")
+		for progression_item in self.progression_items:
+			progression_item.write(x_progression)
+
+class tracktion_chordclip:
+	def __init__(self):
+		self.name = 'Chord'
+		self.start = 0
+		self.length = 0
+		self.offset = 0
+		self.id_num = 0
+		self.colour = 'ffaa00ff'
+		self.speed = 1.0
+		self.groupID = 0
+		self.patterngenerator = tracktion_patterngenerator()
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'id': self.id_num = v
+			elif n == 'name': self.name = v
+			elif n == 'start': self.start = float(v)
+			elif n == 'length': self.length = float(v)
+			elif n == 'offset': self.offset = float(v)
+			elif n == 'colour': self.colour = v
+			elif n == 'speed': self.speed = float(v)
+			elif n == 'groupID': self.groupID = int(v)
+			else: logger_projparse.warning('tracktion_edit: chordclip: unimplemented attrib: '+n)
+
+		for subxml in xmldata:
+			if subxml.tag == 'PATTERNGENERATOR': self.patterngenerator.load(subxml)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "CHORDCLIP")
+		tempxml.set('name', self.name)
+		tempxml.set('start', str(self.start))
+		tempxml.set('length', str(self.length))
+		tempxml.set('offset', str(self.offset))
+		tempxml.set('id', str(self.id_num))
+		tempxml.set('colour', self.colour)
+		tempxml.set('speed', str(self.speed))
+		if self.groupID: tempxml.set('groupID', str(self.groupID))
+		self.patterngenerator.write(tempxml)
+
+class tracktion_chordtrack:
+	def __init__(self):
+		self.clips = []
+		self.name = 'Marker'
+		self.id_num = 0
+		self.height = 0
+		self.macroparameters = tracktion_macroparameters()
+		self.modifiers = tracktion_modifiers()
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'id': self.id_num = v
+			elif n == 'name': self.name = v
+			elif n == 'height': self.height = float(v)
+
+		for subxml in xmldata:
+			if subxml.tag == 'CHORDCLIP': 
+				chord_obj = tracktion_chordclip()
+				chord_obj.load(subxml)
+				self.clips.append(chord_obj)
+			elif subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
+			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "CHORDTRACK")
+		if self.name: tempxml.set('name', str(self.name))
+		tempxml.set('id', str(self.id_num))
+		if self.height: tempxml.set('height', str(self.height))
+		self.macroparameters.write(tempxml)
+		self.modifiers.write(tempxml)
+		for clip_obj in self.clips:
+			clip_obj.write(tempxml)
+
+class tracktion_tempotrack:
+	def __init__(self):
+		self.clips = []
+		self.name = 'Global'
+		self.id_num = 0
+		self.height = 0
+		self.macroparameters = tracktion_macroparameters()
+		self.modifiers = tracktion_modifiers()
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'id': self.id_num = v
+			elif n == 'name': self.name = v
+			elif n == 'height': self.height = float(v)
+
+		for subxml in xmldata:
+			if subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
+			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "TEMPOTRACK")
+		if self.name: tempxml.set('name', str(self.name))
+		tempxml.set('id', str(self.id_num))
+		if self.height: tempxml.set('height', str(self.height))
+		self.macroparameters.write(tempxml)
+		self.modifiers.write(tempxml)
+
+class tracktion_mastertrack:
+	def __init__(self):
+		self.clips = []
+		self.name = 'Master'
+		self.id_num = 0
+		self.height = 0
+		self.macroparameters = tracktion_macroparameters()
+		self.modifiers = tracktion_modifiers()
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'id': self.id_num = v
+			elif n == 'name': self.name = v
+			elif n == 'height': self.height = float(v)
+
+		for subxml in xmldata:
+			if subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
+			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "MASTERTRACK")
+		if self.name: tempxml.set('name', str(self.name))
+		tempxml.set('id', str(self.id_num))
+		if self.height: tempxml.set('height', str(self.height))
+		self.macroparameters.write(tempxml)
+		self.modifiers.write(tempxml)
 
 # =================================================== PROJECT ===================================================
 
@@ -986,7 +1545,7 @@ class tracktion_transport:
 		tempxml.set('endToEnd', str(self.endToEnd))
 		tempxml.set('position', str(self.position))
 		tempxml.set('scrubInterval', str(self.scrubInterval))
-		tempxml.set('looping', str(int(self.looping)))
+		if self.looping: tempxml.set('looping', str(int(self.looping)))
 		if self.start >= 0: tempxml.set('start', str(self.start))
 		if self.loopPoint1 >= 0: tempxml.set('loopPoint1', str(self.loopPoint1))
 		if self.loopPoint2 >= 0: tempxml.set('loopPoint2', str(self.loopPoint2))
@@ -1007,8 +1566,14 @@ class tracktion_edit:
 		self.mastervolume = tracktion_plugin()
 		self.arrangertrack = tracktion_arrangertrack()
 		self.markertrack = tracktion_markertrack()
+		self.chordtrack = tracktion_chordtrack()
+		self.tempotrack = tracktion_tempotrack()
+		self.mastertrack = tracktion_mastertrack()
 		self.masterplugins = []
 		self.tracks = []
+		self.inputdevices = tracktion_inputdevices()
+		self.racks = []
+		self.auxbusnames = []
 
 	def load_from_file(self, input_file):
 		parser = ET.XMLParser(recover=True, encoding='utf-8')
@@ -1016,7 +1581,14 @@ class tracktion_edit:
 
 		x_EDIT = xml_data.getroot()
 		if x_EDIT == None: raise ProjectFileParserException('tracktion_edit: no XML root found')
-		return self.load_from_elementdata(x_EDIT)
+		e = self.load_from_elementdata(x_EDIT)
+
+		if DEBUG_IN_OUT:
+			outfile = ET.ElementTree(x_EDIT)
+			ET.indent(xml_data)
+			outfile.write('debug_in.xml', xml_declaration = True)
+			self.save_to_file('debug_out.xml')
+		return e
 
 	def load_from_elementdata(self, x_EDIT):
 		self.appVersion = x_EDIT.get('appVersion')
@@ -1037,6 +1609,10 @@ class tracktion_edit:
 				if level: self.clicktrack = float(level)
 			elif xmlpart.tag == 'ARRANGERTRACK': self.arrangertrack.load(xmlpart)
 			elif xmlpart.tag == 'MARKERTRACK': self.markertrack.load(xmlpart)
+			elif xmlpart.tag == 'CHORDTRACK': self.chordtrack.load(xmlpart)
+			elif xmlpart.tag == 'TEMPOTRACK': self.tempotrack.load(xmlpart)
+			elif xmlpart.tag == 'MASTERTRACK': self.mastertrack.load(xmlpart)
+			elif xmlpart.tag == 'INPUTDEVICES': self.inputdevices.load(xmlpart)
 			elif xmlpart.tag == 'ID3VORBISMETADATA': self.id3vorbismetadata = xmlpart.attrib
 			elif xmlpart.tag == 'MASTERVOLUME':
 				for subxml in xmlpart:
@@ -1056,11 +1632,21 @@ class tracktion_edit:
 				track_obj = tracktion_foldertrack()
 				track_obj.load(xmlpart)
 				self.tracks.append(track_obj)
-
+			elif xmlpart.tag == 'RACKS':
+				for subxml in xmlpart:
+					if subxml.tag == 'RACK':
+						rack_obj = tracktion_rack()
+						rack_obj.load(subxml)
+						self.racks.append(rack_obj)
+			elif xmlpart.tag == 'AUXBUSNAMES':
+				for subxml in xmlpart:
+					if subxml.tag == 'NAME':
+						name_obj = tracktion_auxbusname()
+						name_obj.load(subxml)
+						self.auxbusnames.append(name_obj)
 			#else:
 			#	print(xmlpart.tag)
 		return True
-
 
 	def save_to_file(self, output_file):
 		wf_proj = ET.Element("EDIT")
@@ -1082,19 +1668,24 @@ class tracktion_edit:
 		for n, v in self.id3vorbismetadata.items(): id3_xml.set(n, str(v))
 		wf_mv = ET.SubElement(wf_proj, "MASTERVOLUME")
 		self.mastervolume.write(wf_mv)
-		ET.SubElement(wf_proj, "RACKS")
+		wf_racks = ET.SubElement(wf_proj, "RACKS")
+		for plugin_obj in self.racks:
+			plugin_obj.write(wf_racks)
 		wf_mp = ET.SubElement(wf_proj, "MASTERPLUGINS")
 		for plugin_obj in self.masterplugins:
 			plugin_obj.write(wf_mp)
-		ET.SubElement(wf_proj, "AUXBUSNAMES")
-
-		ET.SubElement(wf_proj, "INPUTDEVICES")
+		abn = ET.SubElement(wf_proj, "AUXBUSNAMES")
+		for x in self.auxbusnames: x.write(abn)
+		self.inputdevices.write(wf_proj)
 		ET.SubElement(wf_proj, "TRACKCOMPS")
 		ET.SubElement(wf_proj, "ARADOCUMENT")
 		ET.SubElement(wf_proj, "CONTROLLERMAPPINGS")
 
 		self.arrangertrack.write(wf_proj)
+		self.chordtrack.write(wf_proj)
 		self.markertrack.write(wf_proj)
+		self.tempotrack.write(wf_proj)
+		self.mastertrack.write(wf_proj)
 
 		for track_obj in self.tracks:
 			track_obj.write(wf_proj)

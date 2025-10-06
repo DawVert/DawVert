@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 SatyrDiamond
+# SPDX-FileCopyrightText: 2025 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later 
 
 from external.easybinrw import easybinrw
@@ -9,18 +9,23 @@ class vst3_main:
 		self.uuid = '00000000000000000000000000000000'
 		self.data = b''
 
-	def read_file(self, fxfile):
-		ebrw_readstr = self.ebrw_readstr = easybinrw.binread()
-		ebrw_readstr.load_file(fxfile)
-		self.parse(ebrw_readstr)
-
 	def parse(self, ebrw_readstr):
 		ebrw_readstr.magic_check(b'VST3')
-		self.version = ebrw_readstr.uint32()
+		self.version = ebrw_readstr.int_u32()
 		self.uuid = ebrw_readstr.string(32)
-		size = ebrw_readstr.uint32()
+		size = ebrw_readstr.int_u32()
 		ebrw_readstr.skip(4)
 		self.data = ebrw_readstr.raw(size)
+
+	def read_file(self, input_file):
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(input_file)
+		self.parse(ebrw_readstr)
+
+	def read_raw(self, indata):
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(indata)
+		self.parse(ebrw_readstr)
 
 	def write(self, ebrw_writestr):
 		ebrw_writestr.raw(b'VST3')
@@ -34,3 +39,8 @@ class vst3_main:
 		ebrw_writestr = easybinrw.binwrite()
 		self.write(ebrw_writestr)
 		ebrw_writestr.to_file(output_file)
+
+	def write_to_raw(self):
+		ebrw_writestr = easybinrw.binwrite()
+		self.write(ebrw_writestr)
+		return ebrw_writestr.getvalue()

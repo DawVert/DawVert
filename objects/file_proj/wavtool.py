@@ -3,6 +3,8 @@
 
 import uuid
 
+DEBUG_IN_OUT = False
+
 # =================================================== DEVICES ===================================================
 
 class wavtool_device:
@@ -121,7 +123,7 @@ class wavtool_clip:
 			wt_clip['loopEnd'] = self.loopEnd
 			wt_clip['type'] = self.type
 			wt_clip['loopEnabled'] = self.loopEnabled
-			wt_clip['transpose'] = self.transpose
+			if self.transpose: wt_clip['transpose'] = self.transpose
 			wt_clip['audioBufferId'] = self.audioBufferId
 			wt_clip['id'] = "audioClip-"+wt_id
 			if self.warp: wt_clip['warp'] = self.warp
@@ -216,6 +218,7 @@ class wavtool_project:
 		self.deviceRouting = {}
 		self.devices = wavtool_connections()
 		self.bpmAutomation = []
+		self.markers = []
 
 		self.devices.add_track('master')
 
@@ -227,6 +230,7 @@ class wavtool_project:
 			if 'loopEnd' in pd: self.loopEnd = pd['loopEnd']
 			if 'loopLifted' in pd: self.loopLifted = pd['loopLifted']
 			if 'loopEnabled' in pd: self.loopEnabled = pd['loopEnabled']
+			if 'markers' in pd: self.markers = pd['markers']
 			if 'bpm' in pd: self.bpm = pd['bpm']
 			if 'beatNumerator' in pd: self.beatNumerator = pd['beatNumerator']
 			if 'beatDenominator' in pd: self.beatDenominator = pd['beatDenominator']
@@ -270,6 +274,13 @@ class wavtool_project:
 			if 'focusedSignal' in pd: self.focusedSignal = pd['focusedSignal'] 
 			if 'bpmAutomation' in pd: self.bpmAutomation = pd['bpmAutomation']
 
+			if DEBUG_IN_OUT:
+				import json
+				f = open('debug_in.json', 'w')
+				f.write(json.dumps(pd, indent = 2))
+	
+				f = open('debug_out.json', 'w')
+				f.write(json.dumps(self.write(), indent = 2))
 
 	def write(self):
 		wt_out = {}
@@ -277,12 +288,12 @@ class wavtool_project:
 		wt_out['metronome'] = self.metronome
 		wt_out['midiOverdub'] = self.midiOverdub
 		wt_out['loopStart'] = self.loopStart
-		wt_out['loopEnd'] = self.loopEnd if self.loopStart>self.loopEnd else self.loopEnd+16
+		wt_out['loopEnd'] = self.loopEnd if self.loopStart<self.loopEnd else self.loopEnd+16
 		wt_out['loopLifted'] = self.loopLifted
 		wt_out['loopEnabled'] = self.loopEnabled
 		wt_out['bpm'] = int(self.bpm)
-		wt_out['bpmAutomation'] = self.bpmAutomation
-		wt_out['markers'] = []
+		if self.bpmAutomation: wt_out['bpmAutomation'] = self.bpmAutomation
+		if self.markers: wt_out['markers'] = []
 		wt_out['beatNumerator'] = self.beatNumerator
 		wt_out['beatDenominator'] = self.beatDenominator
 		wt_out['name'] = self.name

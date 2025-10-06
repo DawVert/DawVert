@@ -9,6 +9,8 @@ from objects.file_proj._zenbeats import automation
 from objects.file_proj._zenbeats import misc
 from objects.file_proj._zenbeats import bankrack
 
+DEBUG_IN_OUT = False
+
 # =================================================== CLIP SCENE ===================================================
 
 class zenbeats_clip_scene:
@@ -211,12 +213,19 @@ class zenbeats_song:
 	def load_from_file(self, input_file):
 		x_root = ET.parse(input_file).getroot()
 		self.read(x_root)
+		if DEBUG_IN_OUT:
+			outfile = ET.ElementTree(x_root)
+			ET.indent(outfile)
+			outfile.write('debug_in.song', xml_declaration = True)
 		return True
 
 	def save_to_file(self, out_file):
 		zenbeats_proj = ET.Element("song")
 		self.write(zenbeats_proj)
-
+		if DEBUG_IN_OUT:
+			outfile = ET.ElementTree(zenbeats_proj)
+			ET.indent(outfile)
+			outfile.write('debug_out.song', xml_declaration = True)
 		outfile = ET.ElementTree(zenbeats_proj)
 		ET.indent(outfile)
 		outfile.write(out_file, xml_declaration = True)

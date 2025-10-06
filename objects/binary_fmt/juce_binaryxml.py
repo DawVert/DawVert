@@ -1,11 +1,10 @@
-# SPDX-FileCopyrightText: 2024 SatyrDiamond
+# SPDX-FileCopyrightText: 2025 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from lxml import etree as ET
 from external.easybinrw import easybinrw
 
 VERBOSE = False
-
 def read_number(ebrw_readstr):
 	intlen = ebrw_readstr.int_u8()
 	out = 0
@@ -65,10 +64,7 @@ class juce_binaryxml_object:
 		elif self.type == 5: self.data = ebrw_readstr.string_t()
 		elif self.type == 6: self.data = ebrw_readstr.int_u64()
 		elif self.type == 8: self.data = ebrw_readstr.rest()
-		else:
-			if VERBOSE: print('error |', valtype)
-			#ebrw_readstr.debug__peek()
-			exit()
+		else: raise ValueError('binaryxml: unknown datatype %i' % self.type)
 		ebrw_readstr.isolate_end()
 
 	def to_bytes(self, ebrw_writestr):
@@ -93,15 +89,12 @@ class juce_binaryxml_object:
 		if isinstance(value, str):
 			self.type = 5
 			self.data = value
-
 		if isinstance(value, bool):
 			self.type = 2 if value else 3
 			self.data = value
-
 		if isinstance(value, int):
 			self.type = 1
 			self.data = value
-			
 		if isinstance(value, float):
 			self.type = 4
 			self.data = value
@@ -157,9 +150,7 @@ class juce_binaryxml_element:
 			aname = ebrw_readstr.string_t()
 			b_obj = juce_binaryxml_object()
 			b_obj.read_ebrw(ebrw_readstr)
-
 			if aname == 'data': print(aname, b_obj.type)
-
 			self.attrib[aname] = b_obj
 
 		for _ in range(read_number(ebrw_readstr)):

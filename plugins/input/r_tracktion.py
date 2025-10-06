@@ -387,7 +387,7 @@ def do_track(convproj_obj, wf_track, track_obj, software_mode, dawvert_intent):
 		time_obj = placement_obj.time
 		time_obj.set_posdur_real(stepclip.start, stepclip.length)
 
-		placement_obj.group = str(midiclip.groupID) if midiclip.groupID!=-1 else None
+		placement_obj.group = str(stepclip.groupID) if stepclip.groupID!=-1 else None
 
 		curpos = 0
 		stepchannels = stepclip.channels
@@ -403,9 +403,9 @@ def do_track(convproj_obj, wf_track, track_obj, software_mode, dawvert_intent):
 			curpos += curpat.numNotes
 
 		if not stepclip.repeatSequence:
-			time_obj.set_offset(midiclip.offset*4)
+			time_obj.set_offset(stepclip.offset*4)
 		else:
-			time_obj.set_loop_data(midiclip.offset*4, 0, curpos)
+			time_obj.set_loop_data(stepclip.offset*4, 0, curpos)
 	
 	for audioclip in wf_track.audioclips:
 		if not audioclip.srcVideo:
@@ -541,6 +541,7 @@ class input_tracktion_edit(plugins.base):
 
 		if dawvert_intent.input_mode == 'file':
 			try:
+			#if True:
 				project_obj.load_from_file(dawvert_intent.input_file)
 
 				logger_input.info('Software Mode: Waveform')

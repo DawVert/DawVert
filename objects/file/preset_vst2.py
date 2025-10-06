@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 SatyrDiamond
+# SPDX-FileCopyrightText: 2025 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later 
 
 import struct
@@ -184,20 +184,20 @@ class vst2_main:
 	def __init__(self):
 		self.program = vst2_program()
 
-	def load_from_file(self, fxfile):
+	def parse(self, ebrw_readstr):
+		if ebrw_readstr.read(4) == b'CcnK':
+			size = ebrw_readstr.int_u32_b()
+			self.program.parse(ebrw_readstr, size)
+
+	def load_from_file(self, inputfile):
 		self.ebrw_readstr = easybinrw.binread()
-		self.ebrw_readstr.load_file(fxfile)
+		self.ebrw_readstr.load_file(inputfile)
 		self.parse(self.ebrw_readstr)
 
 	def load_raw(self, in_bytes):
 		self.ebrw_readstr = easybinrw.binread()
 		self.ebrw_readstr.load_data(in_bytes)
 		self.parse(self.ebrw_readstr)
-
-	def parse(self, ebrw_readstr):
-		if ebrw_readstr.read(4) == b'CcnK':
-			size = ebrw_readstr.int_u32_b()
-			self.program.parse(ebrw_readstr, size)
 
 	def write(self, ebrw_writestr):
 		ccnk__ebrw_writestr = easybinrw.binwrite()
@@ -212,3 +212,8 @@ class vst2_main:
 		ebrw_writestr = easybinrw.binwrite()
 		self.write(ebrw_writestr)
 		ebrw_writestr.to_file(output_file)
+
+	def write_to_raw(self):
+		ebrw_writestr = easybinrw.binwrite()
+		self.write(ebrw_writestr)
+		return ebrw_writestr.getvalue()

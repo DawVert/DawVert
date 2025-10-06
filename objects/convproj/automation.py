@@ -126,7 +126,6 @@ class cvpj_s_automation:
 			self.u_nopl_ticks = True
 			self.nopl_ticks.merge(other.nopl_ticks)
 
-
 	def sort(self):
 		if self.u_pl_points: self.pl_points.sort()
 

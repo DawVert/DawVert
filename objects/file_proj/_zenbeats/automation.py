@@ -26,10 +26,11 @@ class zenbeats_automation_point:
 
 class zenbeats_automation_curve:
 	def __init__(self, xml_data):
+		self.tag = 'automation_curve'
 		self.version = misc.zenbeats_version()
 		self.visual = misc.zenbeats_visual_info()
 		self.uid = func.make_uuid()
-		self.target_object = "" 
+		self.target_object = None 
 		self.target = ""
 		self.function = ""
 		self.parameter = 0
@@ -43,6 +44,7 @@ class zenbeats_automation_curve:
 		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
+		self.tag = xml_data.tag
 		attrib = xml_data.attrib
 		self.visual.read(xml_data)
 		self.version.read(xml_data)
@@ -61,11 +63,11 @@ class zenbeats_automation_curve:
 			if x_part.tag == 'point': self.points.append(zenbeats_automation_point(x_part))
 
 	def write(self, xml_data):
-		tempxml = ET.SubElement(xml_data, "automation_curve")
+		tempxml = ET.SubElement(xml_data, self.tag)
 		self.version.write(tempxml)
 		self.visual.write(tempxml)
 		tempxml.set('uid', str(self.uid))
-		tempxml.set('target_object', str(self.target_object))
+		if self.target_object is not None: tempxml.set('target_object', str(self.target_object))
 		tempxml.set('target', str(self.target))
 		tempxml.set('function', str(self.function))
 		tempxml.set('parameter', str(self.parameter))
