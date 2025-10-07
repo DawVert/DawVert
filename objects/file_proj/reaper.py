@@ -3,6 +3,8 @@
 
 import rpp
 
+DEBUG_IN_OUT = False
+
 from objects.file_proj._rpp import project as rpp_project
 
 def iter_rpp(rpp_data):
@@ -102,6 +104,12 @@ class rpp_song:
 		bytestream = open(input_file, 'r', encoding="utf-8")
 		rpp_data = rpp.load(bytestream)
 		self.project.load(rpp_data)
+
+		if DEBUG_IN_OUT:
+			import shutil
+			shutil.copy(input_file, 'debug_in.rpp')
+
+			self.save_to_file('debug_out.rpp')
 		return True
 
 	def save_to_file(self, output_file):

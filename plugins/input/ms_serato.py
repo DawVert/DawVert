@@ -69,18 +69,21 @@ def add_vst_data(vstdata, pluginid, convproj_obj, state, params):
 
 		return plugin_obj
 
+def get_velocity(velocity):
+	return velocity/100 if velocity is not None else 1
+
 def do_chan_strip(eq_defined, convproj_obj, trackid, channel_strip, fxslots_audio):
 
-	if not (channel_strip.low_eq == channel_strip.mid_eq == channel_strip.high_eq == 0):
-		fxplugid = trackid+'_fx_eq'
-		fxplugin_obj = convproj_obj.plugin__add(fxplugid, 'native', 'serato', '3band')
-		fxplugin_obj.params.add('low_gain', channel_strip.low_eq, 'float')
-		fxplugin_obj.params.add('mid_gain', channel_strip.mid_eq, 'float')
-		fxplugin_obj.params.add('high_gain', channel_strip.high_eq, 'float')
-		fxplugin_obj.params.add('lowmid_freq', 500, 'float')
-		fxplugin_obj.params.add('midhigh_freq', 5000, 'float')
-		fxslots_audio.append(fxplugid)
-		if trackid not in eq_defined: eq_defined.append(trackid)
+	#if not (channel_strip.low_eq == channel_strip.mid_eq == channel_strip.high_eq == None):
+	fxplugid = trackid+'_fx_eq'
+	fxplugin_obj = convproj_obj.plugin__add(fxplugid, 'native', 'serato', '3band')
+	fxplugin_obj.params.add('low_gain', channel_strip.low_eq if channel_strip.low_eq is not None else 0, 'float')
+	fxplugin_obj.params.add('mid_gain', channel_strip.mid_eq if channel_strip.mid_eq is not None else 0, 'float')
+	fxplugin_obj.params.add('high_gain', channel_strip.high_eq if channel_strip.high_eq is not None else 0, 'float')
+	fxplugin_obj.params.add('lowmid_freq', 500, 'float')
+	fxplugin_obj.params.add('midhigh_freq', 5000, 'float')
+	fxslots_audio.append(fxplugid)
+	if trackid not in eq_defined: eq_defined.append(trackid)
 
 	if channel_strip.post_fader_effects != None:
 		for fxnum, pfe in enumerate(channel_strip.post_fader_effects):
@@ -159,56 +162,61 @@ class input_serato(plugins.base):
 				base_trk_id = 'track_'+str(num+1)
 				group_obj = convproj_obj.fx__group__add(base_trk_id)
 				group_obj.visual.name = scene_deck.name
-				group_obj.params.add('vol', scene_strip.gain*scene_strip.volume, 'float')
-				group_obj.params.add('pan', scene_strip.pan, 'float')
-				group_obj.params.add('enabled', scene_strip.mute!=1, 'bool')
+				vol = (scene_strip.gain if scene_strip.gain is not None else 1)
+				vol *= (scene_strip.volume if scene_strip.volume is not None else 1)
+				group_obj.params.add('vol', vol, 'float')
+				group_obj.params.add('pan', scene_strip.pan if scene_strip.pan is not None else 0, 'float')
+				group_obj.params.add('enabled', (scene_strip.mute) if scene_strip.mute is not None else True, 'bool')
 				group_obj.datavals.add('pan_mode', 'stereo')
 				do_chan_strip(eq_defined, convproj_obj, base_trk_id, scene_strip, group_obj.plugslots.slots_audio)
 				eq_track[cvpj_trackid] = track_obj.plugslots.slots_audio
-				for dnum, drumdata in enumerate(scene_deck.drums):
-					cvpj_instid_p = base_trk_id+'_'+str(dnum)
-					if drumdata.used:
-						drumsamp = drumdata.sample
-
-						samplefile = drumsamp.file
-
-						channel_strip = drumdata.channel_strip
-
-						if samplefile:
-							inst_obj = convproj_obj.instrument__add(cvpj_instid_p)
-							inst_obj.group = base_trk_id
-							inst_obj.is_drum = True
-							inst_obj.plugslots.set_synth(cvpj_instid_p)
-							eq_track[cvpj_instid_p] = inst_obj.plugslots.slots_audio
-							if channel_strip.gain: inst_obj.params.add('vol', channel_strip.gain*channel_strip.volume, 'float')
-							inst_obj.params.add('pan', channel_strip.pan, 'float')
-							inst_obj.params.add('enabled', scene_strip.mute!=1, 'bool')
-							do_chan_strip(eq_defined, convproj_obj, cvpj_instid_p, channel_strip, inst_obj.plugslots.slots_audio)
-
-							sampleprefix, samplepath = parse_sampleref_path(drumsamp.file)
-
-							plugin_obj, sampleref_obj, samplepart_obj = convproj_obj.plugin__addspec__sampler(cvpj_instid_p, samplepath, 'win', prefix=sampleprefix)
-
-							inst_obj.visual.name = urllib.parse.unquote(samplefile).split('/')[-1]
-
-							if drumsamp.color:
-								inst_obj.visual.color.set_hex(drumsamp.color[3:])
-
-							samplepart_obj.point_value_type = 'percent'
-							dur_sec = sampleref_obj.get_dur_sec()
-							if dur_sec is not None:
-								samplepart_obj.start = drumsamp.start/dur_sec
-								samplepart_obj.end = drumsamp.end/dur_sec
-							else:
-								samplepart_obj.start = 0
-								samplepart_obj.end = 1
-
-							samplepart_obj.pitch = drumsamp.pitch_shift
-							samplepart_obj.trigger = 'oneshot'
-
-							stretch_obj = samplepart_obj.stretch
-							stretch_obj.timing.set__speed(1/drumsamp.playback_speed)
-							stretch_obj.preserve_pitch = True
+				if scene_deck.drums is not None:
+					for dnum, drumdata in enumerate(scene_deck.drums):
+						cvpj_instid_p = base_trk_id+'_'+str(dnum)
+						if drumdata.used:
+							drumsamp = drumdata.sample
+	
+							samplefile = drumsamp.file
+	
+							channel_strip = drumdata.channel_strip
+	
+							if samplefile:
+								inst_obj = convproj_obj.instrument__add(cvpj_instid_p)
+								inst_obj.group = base_trk_id
+								inst_obj.is_drum = True
+								inst_obj.plugslots.set_synth(cvpj_instid_p)
+								eq_track[cvpj_instid_p] = inst_obj.plugslots.slots_audio
+								s_vol = (channel_strip.gain if channel_strip.gain is not None else 1)
+								s_vol *= (channel_strip.volume if channel_strip.volume is not None else 1)
+								inst_obj.params.add('vol', s_vol, 'float')
+								inst_obj.params.add('pan', channel_strip.pan if channel_strip.pan is not None else 0, 'float')
+								inst_obj.params.add('enabled', (scene_strip.mute) if scene_strip.mute is not None else True, 'bool')
+								do_chan_strip(eq_defined, convproj_obj, cvpj_instid_p, channel_strip, inst_obj.plugslots.slots_audio)
+	
+								sampleprefix, samplepath = parse_sampleref_path(drumsamp.file)
+	
+								plugin_obj, sampleref_obj, samplepart_obj = convproj_obj.plugin__addspec__sampler(cvpj_instid_p, samplepath, 'win', prefix=sampleprefix)
+	
+								inst_obj.visual.name = urllib.parse.unquote(samplefile).split('/')[-1]
+	
+								if drumsamp.color:
+									inst_obj.visual.color.set_hex(drumsamp.color[3:])
+	
+								samplepart_obj.point_value_type = 'percent'
+								dur_sec = sampleref_obj.get_dur_sec()
+								if dur_sec is not None:
+									samplepart_obj.start = drumsamp.start/dur_sec
+									samplepart_obj.end = drumsamp.end/dur_sec
+								else:
+									samplepart_obj.start = 0
+									samplepart_obj.end = 1
+	
+								samplepart_obj.pitch = drumsamp.pitch_shift
+								samplepart_obj.trigger = 'oneshot'
+	
+								stretch_obj = samplepart_obj.stretch
+								stretch_obj.timing.set__speed(1/drumsamp.playback_speed)
+								stretch_obj.preserve_pitch = True
 
 			if scene_deck.type == 'plugin':
 				track_obj = convproj_obj.track__add(cvpj_trackid, 'instruments', 1, False)
@@ -220,10 +228,12 @@ class input_serato(plugins.base):
 				inst_obj.plugslots.set_synth(cvpj_instid)
 				eq_track[cvpj_trackid] = group_obj.plugslots.slots_audio
 
-				track_obj.params.add('vol', 0.7*scene_strip.gain*scene_strip.volume, 'float')
-				track_obj.params.add('pan', scene_strip.pan, 'float')
+				vol = (scene_strip.gain if scene_strip.gain is not None else 1)
+				vol *= (scene_strip.volume if scene_strip.volume is not None else 1)
+				track_obj.params.add('vol', 0.7*vol, 'float')
+				track_obj.params.add('pan', scene_strip.pan if scene_strip.pan is not None else 0, 'float')
 				track_obj.datavals.add('pan_mode', 'stereo')
-				track_obj.params.add('enabled', scene_strip.mute!=1, 'bool')
+				track_obj.params.add('enabled', (scene_strip.mute) if scene_strip.mute is not None else True, 'bool')
 				do_chan_strip(eq_defined, convproj_obj, cvpj_trackid, scene_strip, track_obj.plugslots.slots_audio)
 
 			if scene_deck.type == 'instrument':
@@ -241,10 +251,12 @@ class input_serato(plugins.base):
 				adsr_obj.release_tension = -1
 				eq_track[cvpj_trackid] = group_obj.plugslots.slots_audio
 
-				inst_obj.params.add('vol', 0.7*scene_strip.gain*scene_strip.volume, 'float')
-				inst_obj.params.add('pan', scene_strip.pan, 'float')
+				vol = (scene_strip.gain if scene_strip.gain is not None else 1)
+				vol *= (scene_strip.volume if scene_strip.volume is not None else 1)
+				inst_obj.params.add('vol', 0.7*vol, 'float')
+				inst_obj.params.add('pan', scene_strip.pan if scene_strip.pan is not None else 0, 'float')
 				inst_obj.datavals.add('pan_mode', 'stereo')
-				inst_obj.params.add('enabled', scene_strip.mute!=1, 'bool')
+				inst_obj.params.add('enabled', (scene_strip.mute) if scene_strip.mute is not None else True, 'bool')
 				do_chan_strip(eq_defined, convproj_obj, cvpj_trackid, scene_strip, inst_obj.plugslots.slots_audio)
 
 			if scene_deck.type == 'sample':
@@ -316,10 +328,12 @@ class input_serato(plugins.base):
 						s_sample_entry['part'] = samplepart_obj
 						s_sample_entry['sampleref'] = sampleref_obj
 
-				track_obj.params.add('vol', 0.7*scene_strip.gain*scene_strip.volume, 'float')
-				track_obj.params.add('pan', scene_strip.pan, 'float')
+				vol = (scene_strip.gain if scene_strip.gain is not None else 1)
+				vol *= (scene_strip.volume if scene_strip.volume is not None else 1)
+				track_obj.params.add('vol', 0.7*vol, 'float')
+				track_obj.params.add('pan', scene_strip.pan if scene_strip.pan is not None else 0, 'float')
 				track_obj.datavals.add('pan_mode', 'stereo')
-				track_obj.params.add('enabled', scene_strip.mute!=1, 'bool')
+				track_obj.params.add('enabled', (scene_strip.mute) if scene_strip.mute is not None else True, 'bool')
 				do_chan_strip(eq_defined, convproj_obj, cvpj_trackid, scene_strip, track_obj.plugslots.slots_audio)
 
 
@@ -439,7 +453,7 @@ class input_serato(plugins.base):
 							if valid:
 								key = note.number+note.channel
 								if key >= 60: key -= 60
-								cvpj_notelist.add_m('track_'+str(decknum+1)+'_'+str(key), note.start, note.duration, 0, note.velocity/100, None)
+								cvpj_notelist.add_m('track_'+str(decknum+1)+'_'+str(key), note.start, note.duration, 0, get_velocity(note.velocity), None)
 						cvpj_notelist.sort()
 
 					if scene_deck.type in ['instrument', 'plugin']:
@@ -450,7 +464,7 @@ class input_serato(plugins.base):
 						for note in deck_sequence.notes:
 							if note.start < scenedur:
 								key = note.number-60
-								placement_obj.notelist.add_m('track_'+str(decknum+1)+'_0', note.start, note.duration, key+project_obj.transpose, note.velocity/100, None)
+								placement_obj.notelist.add_m('track_'+str(decknum+1)+'_0', note.start, note.duration, key+project_obj.transpose, get_velocity(note.velocity), None)
 
 					if scene_deck.type == 'sample':
 						scenedur = scene.length if scene.length else max([note.start+note.duration for note in deck_sequence.notes])
@@ -461,7 +475,7 @@ class input_serato(plugins.base):
 							for note in deck_sequence.notes:
 								if note.start < scenedur:
 									key = note.number
-									placement_obj.notelist.add_m('track_'+str(decknum+1)+'_0', note.start, note.duration, key, note.velocity/100, None)
+									placement_obj.notelist.add_m('track_'+str(decknum+1)+'_0', note.start, note.duration, key, get_velocity(note.velocity), None)
 						else:
 							placement_obj = None
 							s_sample_entry = sample_data[decknum]
@@ -491,7 +505,7 @@ class input_serato(plugins.base):
 									startoffset = calcpos_stretch(c_start, scene_deck.original_bpm, project_obj.bpm, sampledeck.playback_speed, True)
 									endoffset = calcpos_stretch(c_end, scene_deck.original_bpm, project_obj.bpm, sampledeck.playback_speed, False)
 
-									samplenotes[note.start] = [note.duration, startoffset*960, endoffset*960, color, cuedata, note.velocity/100]
+									samplenotes[note.start] = [note.duration, startoffset*960, endoffset*960, color, cuedata, get_velocity(note.velocity)]
 
 								samplenotes = dict(sorted(samplenotes.items()))
 								if extendlast and samplenotes:
@@ -558,8 +572,10 @@ class input_serato(plugins.base):
 				master_strip = arrangement.channel_strip
 				master_obj = convproj_obj.track_master
 				if arrangement.name: master_obj.visual.name = arrangement.name
-				master_obj.params.add('vol', 0.7*master_strip.gain*master_strip.volume, 'float')
-				master_obj.params.add('pan', master_strip.pan, 'float')
+				m_vol = (master_strip.gain if master_strip.gain is not None else 1)
+				m_vol *= (master_strip.volume if master_strip.volume is not None else 1)
+				master_obj.params.add('vol', 0.7*m_vol, 'float')
+				master_obj.params.add('pan', master_strip.pan if master_strip.pan is not None else 0, 'float')
 				master_obj.datavals.add('pan_mode', 'stereo')
 				do_chan_strip(eq_defined, convproj_obj, 'master', master_strip, master_obj.plugslots.slots_audio)
 

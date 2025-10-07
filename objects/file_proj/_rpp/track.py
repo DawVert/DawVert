@@ -145,7 +145,7 @@ class rpp_track:
 		self.peakcol.write('PEAKCOL',rpp_data)
 		self.beat.write('BEAT',rpp_data)
 		self.automode.write('AUTOMODE',rpp_data)
-		self.panmode.write('PANMODE',rpp_data)
+		if self.panmode.get(): self.panmode.write('PANMODE',rpp_data)
 		self.panlawflags.write('PANLAWFLAGS',rpp_data)
 		self.volpan.write('VOLPAN', rpp_data)
 		self.mutesolo.write('MUTESOLO', rpp_data)

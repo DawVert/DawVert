@@ -7,7 +7,11 @@ import numpy as np
 def iter_rpp(rpp_data):
 	for rpp_var in rpp_data:
 		if isinstance(rpp_var, list): yield rpp_var[0], False, rpp_var[1:], None
-		else: yield rpp_var.tag, True, rpp_var.attrib, rpp_var.children
+		else: 
+			if not isinstance(rpp_var, str):
+				yield rpp_var.tag, True, rpp_var.attrib, rpp_var.children
+			else:
+				yield rpp_var, True, [], []
 
 def valguesser(i_val):
 	if i_val.replace('.','',1).lstrip('-+').isdigit(): 

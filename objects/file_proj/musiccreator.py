@@ -180,5 +180,4 @@ class mc_song:
 			if n == 4: self.drum_kit = [mc_instrument(x.split(',')) for x in d.split(';')]
 			if n == 5: self.sound_font = [mc_soundfont(x.split(',')) for x in d.split(';')]
 			if n == 6: self.section_order = mc_sectionorder([x.split(',') for x in d.split(';')])
-
 		return True

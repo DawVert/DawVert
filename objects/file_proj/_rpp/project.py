@@ -78,7 +78,7 @@ class rpp_project:
 		self.master_panlawflags = rvs(0, float, False)
 		self.master_fx = rvs(1, float, True)
 		self.master_sel = rvs(0, float, True)
-		self.masterfxlist = rvs(0, float, False)
+		self.masterfxlist = None
 		self.masterplayspeedenv = rpp_env.rpp_env()
 		self.tempoenvex = rpp_env.rpp_env()
 		self.tracks = []
@@ -193,9 +193,10 @@ class rpp_project:
 	def write(self, rpp_data):
 		self.title.write('TITLE',rpp_data)
 		self.author.write('AUTHOR',rpp_data)
-		rpp_notes = robj('NOTES',[self.notes_vals.values])
-		for x in self.notes_data: rpp_notes.children.append('|'+x)
-		rpp_data.children.append(rpp_notes)
+		if self.notes_data:
+			rpp_notes = robj('NOTES',[self.notes_vals.values])
+			for x in self.notes_data: rpp_notes.children.append('|'+x)
+			rpp_data.children.append(rpp_notes)
 		self.ripple.write('RIPPLE',rpp_data)
 		self.groupoverride.write('GROUPOVERRIDE', rpp_data)
 		self.autoxfade.write('AUTOXFADE',rpp_data)
@@ -259,7 +260,9 @@ class rpp_project:
 		self.master_fx.write('MASTER_FX',rpp_data)
 		self.master_sel.write('MASTER_SEL',rpp_data)
 		if self.masterfxlist != None:
-			self.masterfxlist.write('MASTERFXLIST', rpp_data)
+			rpp_masterfxlist = robj('MASTERFXLIST',[])
+			self.masterfxlist.write(rpp_masterfxlist)
+			rpp_data.children.append(rpp_masterfxlist)
 		if self.pooledenvs:
 			for x in self.pooledenvs:
 				x.write('POOLEDENV', rpp_data)

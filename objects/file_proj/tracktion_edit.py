@@ -368,6 +368,7 @@ class tracktion_plugin:
 		self.modifierassignments = None
 		self.base64_parameters = None
 		self.rackType = 0
+		self.other_elem = {}
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -386,13 +387,15 @@ class tracktion_plugin:
 			else: self.params[n] = v
 		for xmlpart in xmldata:
 			if xmlpart.tag == 'MACROPARAMETERS': self.macroparameters.load(xmlpart)
-			if xmlpart.tag == 'AUTOMATIONCURVE': 
+			elif xmlpart.tag == 'AUTOMATIONCURVE': 
 				autocurve_obj = tracktion_automationcurve()
 				autocurve_obj.load(xmlpart)
 				self.automationcurves.append(autocurve_obj)
-			if xmlpart.tag == 'MODIFIERASSIGNMENTS':
+			elif xmlpart.tag == 'MODIFIERASSIGNMENTS':
 				self.modifierassignments = tracktion_modifierassignments()
 				self.modifierassignments.load(xmlpart)
+			else:
+				self.other_elem[xmlpart.tag] = xmlpart
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "PLUGIN")
@@ -412,6 +415,8 @@ class tracktion_plugin:
 		for c in self.automationcurves:
 			c.write(tempxml)
 		self.macroparameters.write(tempxml)
+		for k, v in self.other_elem.items():
+			tempxml.append(v)
 		if self.modifierassignments: self.modifierassignments.write(tempxml)
 
 # =================================================== MIDI CLIP ===================================================
@@ -521,6 +526,13 @@ class tracktion_midiclip:
 		self.proxyAllowed = 1
 		self.patterngenerator = None
 		self.followactions = None
+		self.linkID = None
+		self.source = None
+		self.showingTakes = None
+		self.mpeMode = None
+		self.sendProgramChange = None
+		self.sendBankChange = None
+		self.grooveStrength = None
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -541,6 +553,13 @@ class tracktion_midiclip:
 			elif n == 'loopLengthBeats': self.loopLengthBeats = float(v)
 			elif n == 'groupID': self.groupID = int(v)
 			elif n == 'proxyAllowed': self.proxyAllowed = int(v)
+			elif n == 'linkID': self.linkID = v
+			elif n == 'source': self.source = v
+			elif n == 'showingTakes': self.showingTakes = v
+			elif n == 'mpeMode': self.mpeMode = v
+			elif n == 'sendProgramChange': self.sendProgramChange = v
+			elif n == 'sendBankChange': self.sendBankChange = v
+			elif n == 'grooveStrength': self.grooveStrength = v
 			else: logger_projparse.warning('tracktion_edit: midiclip: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
@@ -564,6 +583,13 @@ class tracktion_midiclip:
 		tempxml.set('currentTake', str(self.currentTake))
 		tempxml.set('speed', str(self.speed))
 		if self.volDb: tempxml.set('volDb', str(self.volDb))
+		if self.linkID: tempxml.set('linkID', self.linkID)
+		if self.source: tempxml.set('source', self.source)
+		if self.showingTakes: tempxml.set('showingTakes', self.showingTakes)
+		if self.mpeMode: tempxml.set('mpeMode', self.mpeMode)
+		if self.sendProgramChange: tempxml.set('sendProgramChange', self.sendProgramChange)
+		if self.sendBankChange: tempxml.set('sendBankChange', self.sendBankChange)
+		if self.grooveStrength: tempxml.set('grooveStrength', self.grooveStrength)
 		if self.mute: tempxml.set('mute', str(self.mute))
 		tempxml.set('proxyAllowed', str(self.proxyAllowed))
 		tempxml.set('originalLength', str(self.originalLength))
@@ -714,6 +740,7 @@ class tracktion_audioclip:
 		self.warpTime = 0
 		self.groupID = -1
 		self.effectsVisible = 1
+		self.linkID = None
 
 		self.video = None
 		self.srcVideo = None
@@ -769,6 +796,7 @@ class tracktion_audioclip:
 			elif n == 'warpTime': self.warpTime = int(v)
 			elif n == 'effectsVisible': self.effectsVisible = int(v)
 			elif n == 'groupID': self.groupID = int(v)
+			elif n == 'linkID': self.linkID = v
 
 			elif n == 'video': self.video = v
 			elif n == 'srcVideo': self.srcVideo = v
@@ -801,6 +829,7 @@ class tracktion_audioclip:
 		tempxml.set('colour', str(self.colour))
 		tempxml.set('proxyAllowed', str(self.proxyAllowed))
 		tempxml.set('resamplingQuality', str(self.resamplingQuality))
+		if self.linkID: tempxml.set('linkID', self.linkID)
 		tempxml.set('autoTempo', str(self.autoTempo))
 
 		if self.fadeIn != 0: tempxml.set('fadeIn', str(self.fadeIn))
@@ -921,6 +950,7 @@ class tracktion_stepclip:
 		self.loopStartBeats = 0.0
 		self.loopLengthBeats = 0.0
 		self.followactions = None
+		self.linkID = None
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -942,7 +972,8 @@ class tracktion_stepclip:
 			elif n == 'originalLength': self.originalLength = float(v)
 			elif n == 'loopStartBeats': self.loopStartBeats = float(v)
 			elif n == 'loopLengthBeats': self.loopLengthBeats = float(v)
-			else: print('[waveform] stepclip: unimplemented attrib: '+n)
+			elif n == 'linkID': self.linkID = v
+			else: logger_projparse.warning('tracktion_edit: stepclip: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
 			if subxml.tag == 'CHANNELS':
@@ -980,6 +1011,7 @@ class tracktion_stepclip:
 		tempxml.set('loopStartBeats', str(self.loopStartBeats))
 		if self.loopLengthBeats: tempxml.set('loopLengthBeats', str(self.loopLengthBeats))
 		if self.volDb is not None: tempxml.set('volDb', str(self.volDb))
+		if self.linkID: tempxml.set('linkID', self.linkID)
 		if self.channels:
 			chanxml = ET.SubElement(tempxml, "CHANNELS")
 			for chan_obj in self.channels:
