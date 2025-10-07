@@ -1617,7 +1617,7 @@ class tracktion_edit:
 
 		if DEBUG_IN_OUT:
 			outfile = ET.ElementTree(x_EDIT)
-			ET.indent(xml_data)
+			ET.indent(outfile)
 			outfile.write('debug_in.xml', xml_declaration = True)
 			self.save_to_file('debug_out.xml')
 		return e
