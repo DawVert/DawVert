@@ -108,7 +108,6 @@ class rpp_song:
 		if DEBUG_IN_OUT:
 			import shutil
 			shutil.copy(input_file, 'debug_in.rpp')
-
 			self.save_to_file('debug_out.rpp')
 		return True
 

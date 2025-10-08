@@ -4,6 +4,7 @@
 import gzip
 import base64
 import xml.etree.ElementTree as ET
+DEBUG_IN_OUT = False
 
 class muse_controller:
 	def __init__(self):
@@ -13,15 +14,20 @@ class muse_controller:
 		self.autopoints = []
 
 	def read(self, xmltag):
-		if 'cur' in xmltag.attrib: self.cur = float.fromhex(xmltag.attrib['cur'])
+		if 'cur' in xmltag.attrib: 
+			try: self.cur = float.fromhex(xmltag.attrib['cur'])
+			except: pass
+			try: self.cur = float(xmltag.attrib['cur'])
+			except: pass
 		if 'color' in xmltag.attrib: self.color = xmltag.attrib['color']
 		if 'visible' in xmltag.attrib: self.visible = int(xmltag.attrib['visible'])
-		if xpart.text: self.autopoints = [x.split(' ') for x in xpart.text.strip().split(',')]
+		if xmltag.text: self.autopoints = [x.split(' ') for x in xmltag.text.strip().split(',')]
 
 	def write(self, xmltag, idnum):
 		trackx = ET.SubElement(xmltag, "controller")
 		trackx.set('id', str(idnum))
-		trackx.set('cur', float(self.cur).hex())
+		trackx.set('cur', str(int(self.cur) if not (self.cur%1) else self.cur))
+		#trackx.set('cur', float(self.cur).hex() if self.cur else '0')
 		trackx.set('color', self.color)
 		trackx.set('visible', str(self.visible))
 		stretchtxt = [' '.join([(n.hex() if isinstance(n, float) else str(n)) for n in x]) for x in self.autopoints]
@@ -270,6 +276,7 @@ class muse_track:
 		self.prefader = 0
 		self.sendMetronome = 1
 		self.gain = 1
+		self.index = 0
 
 		self.controllers = {}
 		self.note_parts = []
@@ -319,6 +326,7 @@ class muse_track:
 			if xpart.tag == 'prefader': self.prefader = int(xpart.text)
 			if xpart.tag == 'sendMetronome': self.sendMetronome = int(xpart.text)
 			if xpart.tag == 'gain': self.gain = float(xpart.text)
+			if xpart.tag == 'index': self.index = int(xpart.text)
 
 			if self.type == "SynthI": 
 				if xpart.tag == 'synthType': self.synth_synthType = xpart.text
@@ -401,6 +409,28 @@ class muse_track:
 			ET.SubElement(trackx, 'compression').text = str(self.compression)
 			ET.SubElement(trackx, 'automation').text = str(self.automation)
 			ET.SubElement(trackx, 'clef').text = str(self.clef)
+
+		if self.type == 'AudioGroup':
+			ET.SubElement(trackx, 'recMonitor').text = str(self.recMonitor)
+			ET.SubElement(trackx, 'prefader').text = str(self.prefader)
+			ET.SubElement(trackx, 'sendMetronome').text = str(self.sendMetronome)
+			ET.SubElement(trackx, 'automation').text = str(self.automation)
+			ET.SubElement(trackx, 'gain').text = str(self.gain)
+
+		if self.type == 'AudioAux':
+			ET.SubElement(trackx, 'recMonitor').text = str(self.recMonitor)
+			ET.SubElement(trackx, 'prefader').text = str(self.prefader)
+			ET.SubElement(trackx, 'sendMetronome').text = str(self.sendMetronome)
+			ET.SubElement(trackx, 'automation').text = str(self.automation)
+			ET.SubElement(trackx, 'gain').text = str(self.gain)
+			ET.SubElement(trackx, 'index').text = str(self.index)
+
+		if self.type == 'AudioInput':
+			ET.SubElement(trackx, 'recMonitor').text = str(self.recMonitor)
+			ET.SubElement(trackx, 'prefader').text = str(self.prefader)
+			ET.SubElement(trackx, 'sendMetronome').text = str(self.sendMetronome)
+			ET.SubElement(trackx, 'automation').text = str(self.automation)
+			ET.SubElement(trackx, 'gain').text = str(self.gain)
 
 		for plugin_obj in self.plugins:
 			plugin_obj.write(trackx)
@@ -562,6 +592,104 @@ class muse_key:
 		ET.SubElement(tempox, 'val').text = str(self.val)
 		ET.SubElement(tempox, 'minor').text = str(self.minor)
 
+
+# =================================================== CONFIG ===================================================
+
+class muse_mididevice:
+	def __init__(self):
+		self.name = ''
+		self.type = 0
+		self.openFlags = 0
+		self.rwFlags = 0
+
+	def read(self, xmltag):
+		for x_part in xmltag:
+			if x_part.tag == 'name': self.name = x_part.text
+			if x_part.tag == 'type': self.type = int(x_part.text)
+			if x_part.tag == 'openFlags': self.openFlags = int(x_part.text)
+			if x_part.tag == 'rwFlags': self.rwFlags = int(x_part.text)
+
+	def write(self, xmltag):
+		mididevicex = ET.SubElement(xmltag, "mididevice")
+		ET.SubElement(mididevicex, 'name').text = str(self.name)
+		ET.SubElement(mididevicex, 'type').text = str(self.type)
+		if self.openFlags: ET.SubElement(mididevicex, 'openFlags').text = str(self.openFlags)
+		ET.SubElement(mididevicex, 'rwFlags').text = str(self.rwFlags)
+
+class muse_midiport:
+	def __init__(self):
+		self.defaultInChans = 0
+		self.trackIdx = -1
+		self.name = ''
+		self.idx = 0
+
+	def read(self, xmltag):
+		if 'idx' in xmltag.attrib: self.idx = int(xmltag.attrib['idx'])
+		for x_part in xmltag:
+			if x_part.tag == 'defaultInChans': self.defaultInChans = int(x_part.text)
+			if x_part.tag == 'trackIdx': self.trackIdx = int(x_part.text)
+			if x_part.tag == 'name': self.name = x_part.text
+
+	def write(self, xmltag):
+		midiportx = ET.SubElement(xmltag, "midiport")
+		midiportx.set('idx', str(self.idx))
+		ET.SubElement(midiportx, 'defaultInChans').text = str(self.defaultInChans)
+		if self.trackIdx!=-1: ET.SubElement(midiportx, 'trackIdx').text = str(self.trackIdx)
+		if self.name: ET.SubElement(midiportx, 'name').text = str(self.name)
+
+class muse_configuration_sequencer:
+	def __init__(self):
+		self.mididevices = []
+		self.midiports = []
+
+	def read(self, xmltag):
+		for x_part in xmltag:
+			if x_part.tag == 'mididevice': 
+				d = muse_mididevice()
+				d.read(x_part)
+				self.mididevices.append(d)
+			if x_part.tag == 'midiport': 
+				d = muse_midiport()
+				d.read(x_part)
+				self.midiports.append(d)
+
+	def write(self, xmltag):
+		configurationx = ET.SubElement(xmltag, "sequencer")
+		for x in self.mididevices: x.write(configurationx)
+		for x in self.midiports: x.write(configurationx)
+
+class muse_configuration:
+	def __init__(self):
+		self.sequencer = muse_configuration_sequencer()
+		pass
+
+	def read(self, xmltag):
+		for x_part in xmltag:
+			if x_part.tag == 'sequencer': self.sequencer.read(x_part)
+
+	def write(self, xmltag):
+		configurationx = ET.SubElement(xmltag, "configuration")
+		self.sequencer.write(configurationx)
+
+# =================================================== MAIN ===================================================
+
+def indent(elem, level=0):
+    i = "\n" + level*"  "
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + "  "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+        for elem in elem:
+            indent(elem, level+1)
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = "\n"+((level+1)*"  ")
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
+        if elem.tag in ['controller']:
+            elem.text = "\n"+((level+1)*"  ")
+
 class muse_song:
 	def __init__(self):
 		self.tracks = []
@@ -589,6 +717,7 @@ class muse_song:
 		self.siglist = []
 		self.keylist = []
 		self.marker = {}
+		self.config = muse_configuration()
 
 	def add_track(self, tracktype):
 		track_obj = muse_track(tracktype)
@@ -603,6 +732,7 @@ class muse_song:
 	def load_from_file(self, input_file):
 		x_root = ET.parse(input_file).getroot()
 		for x_part in x_root:
+			if x_part.tag == 'configuration': self.config.read(x_part)
 			if x_part.tag == 'song':
 				for x_song in x_part:
 					#print(x_song.tag)
@@ -625,7 +755,7 @@ class muse_song:
 					if x_song.tag == 'follow': self.follow = int(x_song.text)
 					if x_song.tag == 'midiDivision': self.midiDivision = int(x_song.text)
 					if x_song.tag == 'sampleRate': self.sampleRate = int(x_song.text)
-					if x_song.tag in ['AudioOutput', 'miditrack', 'SynthI', 'newdrumtrack', 'wavetrack']: 
+					if x_song.tag in ['AudioOutput', 'AudioGroup', 'AudioInput', 'miditrack', 'SynthI', 'newdrumtrack', 'wavetrack', 'AudioAux']: 
 						track_obj = muse_track(x_song.tag)
 						track_obj.read(x_song)
 						self.tracks.append(track_obj)
@@ -650,15 +780,16 @@ class muse_song:
 						markerpos = x_song.attrib['tick'] if 'tick' in x_song.attrib else 0
 						self.marker[markerpos] = x_song.attrib['name'] if 'name' in x_song.attrib else ''
 
-
-
-
+		if DEBUG_IN_OUT:
+			outfile = ET.ElementTree(x_root)
+			outfile.write('debug_in.xml', xml_declaration = True)
+			self.save_to_file('debug_out.xml')
 
 	def save_to_file(self, out_file):
 		muse_proj = ET.Element("muse")
 		muse_proj.set('version', "3.4")
+		self.config.write(muse_proj)
 		songx = ET.SubElement(muse_proj, "song")
-
 		ET.SubElement(songx, 'info').text = str(self.info) if self.info else ' '
 		ET.SubElement(songx, 'showinfo').text = str(self.showinfo)
 		ET.SubElement(songx, 'cpos').text = str(self.cpos)
@@ -698,6 +829,6 @@ class muse_song:
 			marker_x.set('tick', str(pos))
 			marker_x.set('name', name)
 
+		indent(muse_proj)
 		outfile = ET.ElementTree(muse_proj)
-		ET.indent(outfile)
 		outfile.write(out_file, xml_declaration = True)

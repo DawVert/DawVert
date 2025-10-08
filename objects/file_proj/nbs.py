@@ -16,16 +16,13 @@ class nbs_key:
 		self.pan = 100
 		self.pitch = 0
 
-def nbs_parsekey(ebrw_readstr, nbs_newformat, note_tick):
-	note_obj = nbs_key()
-	note_obj.pos = note_tick
-	note_obj.inst = ebrw_readstr.int_u8()
-	note_obj.key = ebrw_readstr.int_u8()
-	if nbs_newformat == 1:
-		note_obj.vel = ebrw_readstr.int_u8()
-		note_obj.pan = ebrw_readstr.int_u8()
-		note_obj.pitch = ebrw_readstr.int_s16()
-	return note_obj
+	def read(self, ebrw_readstr, nbs_newformat):
+		self.inst = ebrw_readstr.int_u8()
+		self.key = ebrw_readstr.int_u8()
+		if nbs_newformat == 1:
+			self.vel = ebrw_readstr.int_u8()
+			self.pan = ebrw_readstr.int_u8()
+			self.pitch = ebrw_readstr.int_s16()
 
 class nbs_layer:
 	def __init__(self):
@@ -106,10 +103,11 @@ class nbs_song:
 					note_layer = jump_layer
 					layer_done = 0
 					while layer_done == 0:
-						note_obj = nbs_parsekey(ebrw_readstr, self.newformat, note_tick)
+						note_obj = nbs_key()
+						note_obj.pos = note_tick
+						note_obj.read(ebrw_readstr, self.newformat)
 						outlayer = note_layer-1
-						if outlayer < len(self.layers):
-							self.layers[outlayer].notes.append(note_obj)
+						if outlayer < len(self.layers): self.layers[outlayer].notes.append(note_obj)
 						jump_layer = ebrw_readstr.int_u16()
 						if jump_layer == 0: layer_done = 1
 						note_layer += jump_layer

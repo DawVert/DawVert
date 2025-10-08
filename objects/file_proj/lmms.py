@@ -6,6 +6,8 @@ import zlib
 from functions import data_values
 from objects.exceptions import ProjectFileParserException
 
+DEBUG_IN_OUT = False
+
 import logging
 logger_projparse = logging.getLogger('projparse')
 
@@ -290,6 +292,7 @@ class lmms_midiport:
 		self.outputcontroller = 0
 		self.inputcontroller = 0
 		self.writable = 0
+		self.inports = []
 
 	def read(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -304,6 +307,8 @@ class lmms_midiport:
 			if n == 'outputcontroller': self.outputcontroller = int(v)
 			if n == 'inputcontroller': self.inputcontroller = int(v)
 			if n == 'writable': self.writable = int(v)
+			if n == 'inports': self.inports = [x.split(' ', 1) for x in v.split(',')]
+			if n == 'outports': self.outports = [x.split(' ', 1) for x in v.split(',')]
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, 'midiport')
@@ -1119,6 +1124,12 @@ class lmms_project:
 		for xmlpart in xmldata:
 			if xmlpart.tag == 'head': self.head.read(xmlpart)
 			if xmlpart.tag == 'song': self.song.read(xmlpart)
+
+		if DEBUG_IN_OUT:
+			outfile = ET.ElementTree(xmldata)
+			outfile.write('debug_in.xml', xml_declaration = True)
+			self.save_to_file('debug_out.xml')
+
 		return True
 
 	def save_to_file(self, output_file):
