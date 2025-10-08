@@ -375,13 +375,13 @@ def setparams(convproj_obj, plugin_obj):
 			if vst_datatype == 'chunk':
 				if vst_current_program != -1:
 					wrapper_state.raw(b'\xf7\xff\xff\xff\r\xfe\xff\xff\xff')
-					wrapper_state.uint32(len(vstdata_bytes))
+					wrapper_state.int_u32(len(vstdata_bytes))
 					wrapper_state.raw(b'\x00\x00\x00\x00')
-					wrapper_state.uint32(vst_current_program)
+					wrapper_state.int_u32(vst_current_program)
 					wrapper_state.raw(vstdata_bytes)
 				else:
 					wrapper_state.raw(b'\xf7\xff\xff\xff\x0c\xfe\xff\xff\xff')
-					wrapper_state.uint32(len(vstdata_bytes))
+					wrapper_state.int_u32(len(vstdata_bytes))
 					wrapper_state.raw(b'\x00\x00\x00\x00\x00\x00\x00\x00')
 					wrapper_state.raw(vstdata_bytes)
 
@@ -392,7 +392,7 @@ def setparams(convproj_obj, plugin_obj):
 				wrapper_state.raw(b'\xf7\xff\xff\xff\x05\xfe\xff\xff\xff')
 				wrapper_state.raw(b'\x00\x00\x00\x00')
 				wrapper_state.raw(b'\x00\x00\x00\x00')
-				wrapper_state.uint32(prognum)
+				wrapper_state.int_u32(prognum)
 	
 				vst_total_params = 0
 				vst_num_names = len(plugin_obj.programs)
@@ -407,9 +407,9 @@ def setparams(convproj_obj, plugin_obj):
 						vst_params_data.float(paramval)
 					vst_names.string(progstate.preset.name, 25)
 	
-				wrapper_state.uint32(vst_total_params)
+				wrapper_state.int_u32(vst_total_params)
 				wrapper_state.raw(vst_params_data.getvalue())
-				wrapper_state.uint32(vst_num_names)
+				wrapper_state.int_u32(vst_num_names)
 				wrapper_state.raw(vst_names.getvalue())
 	
 			wrapper_plugin = flp_plugins.fruity_wrapper()

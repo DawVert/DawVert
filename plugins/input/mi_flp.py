@@ -620,7 +620,7 @@ class input_flp(plugins.base):
 			#print('INPUT')
 
 			for item in fl_arrangement.items:
-				playlistline = (item.trackindex*-1)+tr_n
+				playlistline = item.trackindex
 				if playlistline not in used_tracks: used_tracks.append(playlistline)
 
 				if playlistline not in temp_pl_track:

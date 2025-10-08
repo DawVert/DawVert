@@ -3,6 +3,7 @@
 
 import struct
 from io import BytesIO
+from external.easybinrw import easybinrw
 
 def calcaudiopos(i_value):
 	i_out = (i_value)/125
@@ -11,6 +12,9 @@ def calcaudiopos(i_value):
 def calcaudiopos_enc(i_value):
 	i_out = i_value*125
 	return i_out
+
+VERBOSE_PRINT = False
+VERBOSE_BYTES = False
 
 class flp_arrangement_clip:
 	def __init__(self):
@@ -22,34 +26,46 @@ class flp_arrangement_clip:
 		self.unknown1 = 120
 		self.flags = 64
 		self.unknown2 = 2155897920
-		self.id = -1
-		self.f_in_dur = 0
-		self.f_in_tens = 0
-		self.f_out_dur = 0
-		self.f_out_tens = 0
-		self.vol = 1
-		self.fade_flags = b''
+		self.id = 0
+		self.f_in_dur = 0.0
+		self.f_in_tens = 0.0
+		self.f_out_dur = 0.0
+		self.f_out_tens = 0.0
+		self.vol = 1.0
+		self.fade_flags = b'\0\0\0\0'
 		self.startoffset = 4294967295
 		self.endoffset = 4294967295
+		self.unknown3 = 0
+		self.stretch_mul = 1.0
+		self.unknown4 = b'\0\0\0\0\0\0\0\0'
 
+	def read(self, ebrw_readstr, version_split, num_tracks):
+		p = ebrw_readstr.tell()
 
-	def read(self, event_bio, version_split):
-		self.position, self.patternbase, self.itemindex, self.length, self.trackindex, self.unknown1, self.flags, self.unknown2 = struct.unpack('IHHIIHHI', event_bio.read(24))
+		self.position = ebrw_readstr.int_u32()
+		self.patternbase = ebrw_readstr.int_u16()
+		self.itemindex = ebrw_readstr.int_u16()
+		self.length = ebrw_readstr.int_u32()
+		self.trackindex = ebrw_readstr.int_u32()
+		self.unknown1 = ebrw_readstr.int_u16()
+		self.flags = ebrw_readstr.int_u16()
+		self.unknown2 = ebrw_readstr.int_u32()
 
-		startoffset_bytes = event_bio.read(4)
-		endoffset_bytes = event_bio.read(4)
+		startoffset_bytes = ebrw_readstr.read(4)
+		endoffset_bytes = ebrw_readstr.read(4)
 
-		ifextraarr = 0
-		if version_split[0] == 20 and version_split[1] >= 99: ifextraarr = 1
-		elif version_split[0] > 20: ifextraarr = 1
+		if VERBOSE_PRINT: print('I', self.position
+		,self.patternbase
+		,self.itemindex
+		,self.length
+		,self.trackindex
+		,self.unknown1
+		,self.flags
+		,startoffset_bytes.hex()
+		,endoffset_bytes.hex()
+		,self.unknown2, end=' ')
 
-		if ifextraarr == 1:
-			self.id, self.f_in_dur, self.f_in_tens, self.f_out_dur, self.f_out_tens, self.vol = struct.unpack('Ifffff', event_bio.read(24))
-			self.fade_flags = event_bio.read(4)
-		else:
-			self.id = -1
-			self.f_in_dur, self.f_in_tens, self.f_out_dur, self.f_out_tens, self.vol, = 0,0,0,0,1
-			self.fade_flags = b''
+		self.trackindex = num_tracks-self.trackindex
 
 		startoffset = int.from_bytes(startoffset_bytes, "little")
 		endoffset = int.from_bytes(endoffset_bytes, "little")
@@ -63,29 +79,111 @@ class flp_arrangement_clip:
 			self.startoffset = calcaudiopos(startoffset_float)
 			self.endoffset = calcaudiopos(endoffset_float)
 
+		if (version_split[0] == 20 and version_split[1] >= 99) or (version_split[0] > 20): 
+			self.id = ebrw_readstr.int_u32()
+			self.f_in_dur = ebrw_readstr.float()
+			self.f_in_tens = ebrw_readstr.float()
+			self.f_out_dur = ebrw_readstr.float()
+			self.f_out_tens = ebrw_readstr.float()
+			self.vol = ebrw_readstr.float()
+			self.fade_flags = ebrw_readstr.read(4)
 
-	def write(self):
-		BytesIO_arrangement = BytesIO()
+			if VERBOSE_PRINT: print('-E-'
+			,self.id
+			,self.f_in_dur
+			,self.f_in_tens
+			,self.f_out_dur
+			,self.f_out_tens
+			,self.vol
+			,self.fade_flags.hex(), end=' ')
 
-		BytesIO_arrangement.write(self.position.to_bytes(4, 'little'))
-		BytesIO_arrangement.write(self.patternbase.to_bytes(2, 'little'))
-		BytesIO_arrangement.write(int(self.itemindex).to_bytes(2, 'little'))
-		BytesIO_arrangement.write(int(self.length).to_bytes(4, 'little'))
-		BytesIO_arrangement.write(self.trackindex.to_bytes(4, 'little'))
-		BytesIO_arrangement.write(self.unknown1.to_bytes(2, 'little'))
-		BytesIO_arrangement.write(self.flags.to_bytes(2, 'little'))
-		BytesIO_arrangement.write(self.unknown2.to_bytes(4, 'little'))
+		if (version_split[0] >= 25): 
+			self.unknown3 = ebrw_readstr.int_u32()
+			self.stretch_mul = ebrw_readstr.double()
+			self.unknown4 = ebrw_readstr.raw(8)
+
+			if VERBOSE_PRINT: print('-N-'
+			,self.unknown3
+			,self.stretch_mul
+			,self.unknown4.hex()
+			, end=' ')
+
+		if VERBOSE_PRINT: print()
+
+		if VERBOSE_BYTES: 
+			maxv = ebrw_readstr.tell()-p
+			ebrw_readstr.seek(p)
+			print( 'I', ebrw_readstr.raw(maxv).hex() )
+
+	def write(self, flversion, num_tracks):
+		ebrw_writestr = easybinrw.binwrite()
+
+		ebrw_writestr.int_u32(self.position)
+		ebrw_writestr.int_u16(self.patternbase)
+		ebrw_writestr.int_u16(self.itemindex)
+		ebrw_writestr.int_u32(self.length)
+		ebrw_writestr.int_u32(num_tracks-self.trackindex)
+		ebrw_writestr.int_u16(self.unknown1)
+		ebrw_writestr.int_u16(self.flags)
+		ebrw_writestr.int_u32(self.unknown2)
 
 		if self.itemindex > self.patternbase:
-			BytesIO_arrangement.write(self.startoffset.to_bytes(4, 'little'))
-			BytesIO_arrangement.write(self.endoffset.to_bytes(4, 'little'))
+			ebrw_writestr.int_u32(self.startoffset)
+			ebrw_writestr.int_u32(self.endoffset)
 		else:
-			BytesIO_arrangement.write(struct.pack('<f', calcaudiopos_enc(self.startoffset)))
-			BytesIO_arrangement.write(struct.pack('<f', calcaudiopos_enc(self.endoffset)))
+			ebrw_writestr.float(calcaudiopos_enc(self.startoffset))
+			ebrw_writestr.float(calcaudiopos_enc(self.endoffset))
 
-		BytesIO_arrangement.seek(0)
+		assert ebrw_writestr.tell()==32
 
-		return BytesIO_arrangement.read()
+		if VERBOSE_PRINT: print('O', self.position
+		,self.patternbase
+		,self.itemindex
+		,self.length
+		,num_tracks-self.trackindex
+		,self.unknown1
+		,self.flags
+		,'XXXXXXXX'
+		,'XXXXXXXX'
+		,self.unknown2, end=' ')
+
+		if (flversion > 20): 
+			ebrw_writestr.int_u32(self.id)
+			ebrw_writestr.float(self.f_in_dur)
+			ebrw_writestr.float(self.f_in_tens)
+			ebrw_writestr.float(self.f_out_dur)
+			ebrw_writestr.float(self.f_out_tens)
+			ebrw_writestr.float(self.vol)
+			ebrw_writestr.raw(self.fade_flags)
+
+			if VERBOSE_PRINT: print('-E-'
+			,self.id
+			,self.f_in_dur
+			,self.f_in_tens
+			,self.f_out_dur
+			,self.f_out_tens
+			,self.vol
+			,self.fade_flags.hex(), end=' ')
+			assert ebrw_writestr.tell()==60
+
+		if (flversion >= 25): 
+			ebrw_writestr.int_u32(self.unknown3)
+			ebrw_writestr.double(self.stretch_mul)
+			ebrw_writestr.raw(self.unknown4)
+
+			if VERBOSE_PRINT: print('-N-'
+			,self.unknown3
+			,self.stretch_mul
+			,self.unknown4.hex()
+			, end=' ')
+			assert ebrw_writestr.tell()==80
+
+		if VERBOSE_PRINT: print()
+
+		if VERBOSE_BYTES: 
+			print( 'O', ebrw_writestr.getvalue().hex() )
+
+		return ebrw_writestr.getvalue()
 
 class flp_arrangement:
 	def __init__(self):
@@ -120,8 +218,26 @@ class flp_track:
 		if event_len >= 44: 
 			self.id, self.color, self.icon, self.enabled, self.height, self.lockedtocontent, self.motion, self.press, self.triggersync, self.queued, self.tolerant, self.positionSync, self.grouped, self.locked = struct.unpack('<IIIBfBIIIIIIBB', event_bio.read(44))
 
-	def write(self):
-		return struct.pack('<IIIBfBIIIIIIBB', self.id, self.color, self.icon, self.enabled, self.height, self.lockedtocontent, self.motion, self.press, self.triggersync, self.queued, self.tolerant, self.positionSync, self.grouped, self.locked) + b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\x01\x00\x00\x00\x00'
+	def write(self, versionnum):
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u32(self.id)
+		ebrw_writestr.int_u32(self.color)
+		ebrw_writestr.int_u32(self.icon)
+		ebrw_writestr.int_u8(self.enabled)
+		ebrw_writestr.float(self.height)
+		ebrw_writestr.int_u8(self.lockedtocontent)
+		ebrw_writestr.int_u32(self.motion)
+		ebrw_writestr.int_u32(self.press)
+		ebrw_writestr.int_u32(self.triggersync)
+		ebrw_writestr.int_u32(self.queued)
+		ebrw_writestr.int_u32(self.tolerant)
+		ebrw_writestr.int_u32(self.positionSync)
+		ebrw_writestr.int_u8(self.grouped)
+		ebrw_writestr.int_u8(self.locked)
+		ebrw_writestr.raw(b'\x00\x00\x00\x00\x00')
+		if versionnum>=20:
+			ebrw_writestr.raw(b'\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\x01\x00\x00\x00\x00')
+		return ebrw_writestr.getvalue()
 
 
 class flp_timemarker:

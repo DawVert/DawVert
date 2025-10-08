@@ -3,6 +3,9 @@
 
 import json
 from lxml import etree
+from objects.exceptions import ProjectFileParserException
+
+DEBUG_IN_OUT = False
 
 class jummbox_filter:
 	def __init__(self, pd, starttxt):
@@ -286,32 +289,47 @@ class jummbox_project:
 		self.patternInstruments = False
 		self.channels = []
 		self.customSamples = []
+		if pd is not None: self.load(pd)
 
-		if pd != None:
-			if 'name' in pd: self.name = pd['name']
-			if 'format' in pd: self.format = pd['format']
-			if 'version' in pd: self.version = pd['version']
-			if 'scale' in pd: self.scale = pd['scale']
-			if 'key' in pd: self.key = pd['key']
-			if 'keyOctave' in pd: self.keyOctave = pd['keyOctave']
-			if 'customScale' in pd: self.customScale = pd['customScale']
-			if 'customSamples' in pd: self.customSamples = pd['customSamples']
-			if 'introBars' in pd: self.introBars = pd['introBars']
-			if 'loopBars' in pd: self.loopBars = pd['loopBars']
-			if 'beatsPerBar' in pd: self.beatsPerBar = pd['beatsPerBar']
-			if 'ticksPerBeat' in pd: self.ticksPerBeat = pd['ticksPerBeat']
-			if 'beatsPerMinute' in pd: self.beatsPerMinute = pd['beatsPerMinute']
-			if 'reverb' in pd: self.reverb = pd['reverb']
-			if 'masterGain' in pd: self.masterGain = pd['masterGain']
-			if 'compressionThreshold' in pd: self.compressionThreshold = pd['compressionThreshold']
-			if 'limitThreshold' in pd: self.limitThreshold = pd['limitThreshold']
-			if 'limitDecay' in pd: self.limitDecay = pd['limitDecay']
-			if 'limitRise' in pd: self.limitRise = pd['limitRise']
-			if 'limitRatio' in pd: self.limitRatio = pd['limitRatio']
-			if 'compressionRatio' in pd: self.compressionRatio = pd['compressionRatio']
-			if 'layeredInstruments' in pd: self.layeredInstruments = pd['layeredInstruments']
-			if 'patternInstruments' in pd: self.patternInstruments = pd['patternInstruments']
-			if 'channels' in pd: self.channels = [jummbox_channel(x) for x in pd['channels']]
+	def load(self, pd):
+		if 'name' in pd: self.name = pd['name']
+		if 'format' in pd: self.format = pd['format']
+		if 'version' in pd: self.version = pd['version']
+		if 'scale' in pd: self.scale = pd['scale']
+		if 'key' in pd: self.key = pd['key']
+		if 'keyOctave' in pd: self.keyOctave = pd['keyOctave']
+		if 'customScale' in pd: self.customScale = pd['customScale']
+		if 'customSamples' in pd: self.customSamples = pd['customSamples']
+		if 'introBars' in pd: self.introBars = pd['introBars']
+		if 'loopBars' in pd: self.loopBars = pd['loopBars']
+		if 'beatsPerBar' in pd: self.beatsPerBar = pd['beatsPerBar']
+		if 'ticksPerBeat' in pd: self.ticksPerBeat = pd['ticksPerBeat']
+		if 'beatsPerMinute' in pd: self.beatsPerMinute = pd['beatsPerMinute']
+		if 'reverb' in pd: self.reverb = pd['reverb']
+		if 'masterGain' in pd: self.masterGain = pd['masterGain']
+		if 'compressionThreshold' in pd: self.compressionThreshold = pd['compressionThreshold']
+		if 'limitThreshold' in pd: self.limitThreshold = pd['limitThreshold']
+		if 'limitDecay' in pd: self.limitDecay = pd['limitDecay']
+		if 'limitRise' in pd: self.limitRise = pd['limitRise']
+		if 'limitRatio' in pd: self.limitRatio = pd['limitRatio']
+		if 'compressionRatio' in pd: self.compressionRatio = pd['compressionRatio']
+		if 'layeredInstruments' in pd: self.layeredInstruments = pd['layeredInstruments']
+		if 'patternInstruments' in pd: self.patternInstruments = pd['patternInstruments']
+		if 'channels' in pd: self.channels = [jummbox_channel(x) for x in pd['channels']]
+
+	def load_from_file(self, input_file):
+		f = open(input_file, 'r', encoding='utf8')
+		try: jummb_json = json.load(f)
+		except: raise ProjectFileParserException('serato: JSON Decoding Error')
+
+		self.load(jummb_json)
+
+		if DEBUG_IN_OUT:
+			f = open('debug_in.json', 'w')
+			f.write(json.dumps(jummb_json, indent = 2))
+		
+			f = open('debug_out.json', 'w')
+			f.write(json.dumps(self.dump(), indent = 2))
 
 	def get_durpos(self):
 		autodur = {}
@@ -336,7 +354,7 @@ class jummbox_project:
 
 		return sequencelen
 
-	def write(self):
+	def dump(self):
 		jummbox_proj = {}
 		jummbox_proj['name'] = self.name
 		jummbox_proj['format'] = self.format

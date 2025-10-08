@@ -74,6 +74,7 @@ class flp_env_lfo:
 
 class flp_channel_params:
 	def __init__(self):
+		self.unk0 = 0
 		self.addtokey = 0
 		self.arpchord = 4294967295
 		self.arpdirection = 0
@@ -115,7 +116,8 @@ class flp_channel_params:
 	def read(self, event_data):
 		ebrw_readstr = easybinrw.binread()
 		ebrw_readstr.load_data(event_data)
-		ebrw_readstr.skip(8) # ffffffff 00000000
+		self.unk0 = ebrw_readstr.int_s32()
+		ebrw_readstr.skip(4) # 00000000
 		self.unkflag1 = ebrw_readstr.int_u8()
 		self.remove_dc = ebrw_readstr.int_u8()
 		self.delayflags = ebrw_readstr.int_u8()
@@ -163,9 +165,9 @@ class flp_channel_params:
 		if ebrw_readstr.remaining(): ebrw_readstr.skip(4)
 		if ebrw_readstr.remaining(): self.stretchingformant = (ebrw_readstr.double()-0.5)*24
 
-	def write(self):
+	def write(self, versionnum):
 		ebrw_writestr = easybinrw.binwrite()
-		ebrw_writestr.int_s32(-1)
+		ebrw_writestr.int_s32(self.unk0)
 		ebrw_writestr.int_s32(0)
 		ebrw_writestr.int_s8(self.unkflag1)
 		ebrw_writestr.int_s8(self.remove_dc)
@@ -207,12 +209,15 @@ class flp_channel_params:
 		ebrw_writestr.int_u32(self.midi_chan_thru)
 		ebrw_writestr.int_s32(-2)
 		ebrw_writestr.int_s32(-1)
-		ebrw_writestr.int_s32(0)
-		ebrw_writestr.double(self.start)
-		ebrw_writestr.double(self.length)
-		ebrw_writestr.double(self.start_offset)
-		ebrw_writestr.raw(b'\xff\xff\xff\xff\x00\x01\x00\x00')
-		ebrw_writestr.double((self.stretchingformant/24)+0.5)
+		if versionnum==12:
+			ebrw_writestr.int_s8(0)
+		if versionnum>=20:
+			ebrw_writestr.int_s32(0)
+			ebrw_writestr.double(self.start)
+			ebrw_writestr.double(self.length)
+			ebrw_writestr.double(self.start_offset)
+			ebrw_writestr.raw(b'\xff\xff\xff\xff\x00\x01\x00\x00')
+			ebrw_writestr.double((self.stretchingformant/24)+0.5)
 		return ebrw_writestr.getvalue()
 
 class flp_channel_basicparams:

@@ -140,6 +140,11 @@ class output_cvpjs(plugins.base):
 		from objects.file_proj._flp import arrangement
 		from objects.file_proj._flp import fx
 
+		flversion = 20
+
+		num_fx = proj_flp.total_num_fx[flversion]
+		num_tracks = proj_flp.total_num_tracks[flversion]
+
 		ppq = 96
 		convproj_obj.change_timings(ppq)
 
@@ -336,7 +341,8 @@ class output_cvpjs(plugins.base):
 									if fl_note_obj.pos not in fl_notes: fl_notes[fl_note_obj.pos] = []
 									fl_notes[fl_note_obj.pos].append(fl_note_obj)
 					else:
-						logger_output.warning('Instrument "'+t_inst+'" is missing, not placing note')
+						if t_inst:
+							logger_output.warning('Instrument "'+t_inst+'" is missing, not placing note')
 
 			for poslist in sorted(fl_notes):
 				for fl_note in fl_notes[poslist]:
@@ -372,6 +378,8 @@ class output_cvpjs(plugins.base):
 
 		#print('OUTPUT')
 
+		clipid = 1
+
 		if not DEBUG_IGNORE_PLACEMENTS:
 
 			for idnum, playlist_obj in convproj_obj.playlist__iter():
@@ -384,14 +392,14 @@ class output_cvpjs(plugins.base):
 						time_obj = pl_obj.time
 
 						position, duration = time_obj.get_posdur()
-						
+
 						item = arrangement.flp_arrangement_clip()
 						item.position = int(position)
 						item.itemindex = int(pat_id[pl_obj.fromindex] + item.patternbase)
 						item.length = int(max(duration, 0))
 						item.startoffset = 0
 						item.endoffset = int(duration)
-						item.trackindex = (-500 + int(idnum))*-1
+						item.trackindex = idnum
 						if pl_obj.muted == True: item.flags = 12352
 	
 						if time_obj.cut_type == 'cut':
@@ -412,7 +420,7 @@ class output_cvpjs(plugins.base):
 						item.itemindex = samples_id[pl_obj.fromindex]
 						item.length = max(0, int(duration))
 						item.endoffset = int(duration)/ppq
-						item.trackindex = (-500 + int(idnum))*-1
+						item.trackindex = idnum
 						if pl_obj.muted == True: item.flags = 12352
 	
 						samplepart_obj = g_inst_id[pl_obj.fromindex]
@@ -478,9 +486,13 @@ class output_cvpjs(plugins.base):
 
 		FL_Playlist_Sorted = dict(sorted(FL_Playlist_BeforeSort.items(), key=lambda item: item[0]))
 
+		numid = 1
 		for itemposition in FL_Playlist_Sorted:
 			playlistposvalues = FL_Playlist_Sorted[itemposition]
-			for itemrow in playlistposvalues: arrangement_obj.items.append(itemrow)
+			for itemrow in playlistposvalues: 
+				itemrow.id = numid
+				numid += 1
+				arrangement_obj.items.append(itemrow)
 
 		if convproj_obj.transport.loop_active:
 			flp_timemarker_obj = arrangement.flp_timemarker()
@@ -524,7 +536,7 @@ class output_cvpjs(plugins.base):
 		flp_obj.arrangements[0] = arrangement_obj
 
 		flp_obj.initfxvals.initvals['main/vol'] = int(convproj_obj.params.get('vol',1).value*12800)
-		for fxnum in range(126):
+		for fxnum in range(num_fx):
 			for slotnum in range(10):
 				fxstxt = 'fx/'+str(fxnum)+'/slot/'+str(slotnum)+'/'
 				flp_obj.initfxvals.initvals[fxstxt+'on'] = 1
@@ -626,4 +638,4 @@ class output_cvpjs(plugins.base):
 				logger_output.warning('Mixer Channel "'+str(fx_num)+'" does not exist.')
 
 		if dawvert_intent.output_mode == 'file':
-			flp_obj.make(dawvert_intent.output_file)
+			flp_obj.make(dawvert_intent.output_file, flversion)

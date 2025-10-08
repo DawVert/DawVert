@@ -53,7 +53,7 @@ class flp_fxchan:
 			self.seperator = bool(flags&1024)
 			self.solo = bool(flags&4096)
 
-	def write(self):
+	def write(self, versionnum):
 		outflags = 0
 		outflags += int(self.reversepolarity)*1
 		outflags += int(self.swap_lr)*2
@@ -61,11 +61,13 @@ class flp_fxchan:
 		outflags += int(self.enabled)*8
 		outflags += int(self.disable_threaded_proc)*16
 		outflags += int(self.docked_center)*64
+		#outflags += 32
 		outflags += int(self.docked_pos)*128
 		outflags += int(self.seperator)*1024
 		outflags += int(self.solo)*4096
 		ebrw_writestr = easybinrw.binwrite()
 		ebrw_writestr.float(self.latency)
 		ebrw_writestr.int_u32(outflags)
-		ebrw_writestr.int_u32(0)
+		if versionnum>=20:
+			ebrw_writestr.int_u32(0)
 		return ebrw_writestr.getvalue()
