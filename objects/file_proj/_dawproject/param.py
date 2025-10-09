@@ -28,7 +28,7 @@ class dawproject_param_path:
 	def write(self, xmltag):
 		if self.used:
 			tempxml = ET.SubElement(xmltag, self.xmlname)
-			if self.external != None: tempxml.set('external', 'true' if self.external else 'false')
+			if self.external: tempxml.set('external', 'true' if self.external else 'false')
 			if self.path != None: tempxml.set('path', str(self.path))
 
 class dawproject_param_numeric:
@@ -80,12 +80,12 @@ class dawproject_param_bool:
 		self.id = None
 
 	def __bool__(self):
-		return self.value=='true'
+		return self.value
 
 	def read(self, xml_data):
 		self.used = True
 		if 'name' in xml_data.attrib: self.name = xml_data.attrib['name']
-		if 'value' in xml_data.attrib: self.value = xml_data.attrib['value']
+		if 'value' in xml_data.attrib: self.value = xml_data.attrib['value']=='true'
 		if 'id' in xml_data.attrib: self.id = xml_data.attrib['id']
 
 	def write(self, xmltag):

@@ -24,8 +24,8 @@ class dawproject_audio:
 		tempxml = ET.SubElement(xmltag, 'Audio')
 		if self.algorithm != None: tempxml.set('algorithm', self.algorithm)
 		if self.channels != None: tempxml.set('channels', str(self.channels))
-		if self.duration != None: tempxml.set('duration', str(self.duration))
 		if self.sampleRate != None: tempxml.set('sampleRate', str(self.sampleRate))
+		if self.duration != None: tempxml.set('duration', str(self.duration))
 		if self.id != None: tempxml.set('id', self.id)
 		self.file.write(tempxml)
 
@@ -145,6 +145,7 @@ class dawproject_clip:
 		self.fadeTimeUnit = None
 		self.fadeInTime = None
 		self.fadeOutTime = None
+		self.enable = True
 		self.name = None
 		self.color = None
 		self.insideclips = None
@@ -171,6 +172,7 @@ class dawproject_clip:
 		if 'fadeOutTime' in xml_data.attrib: self.fadeOutTime = float(xml_data.attrib['fadeOutTime'])
 		if 'name' in xml_data.attrib: self.name = xml_data.attrib['name']
 		if 'color' in xml_data.attrib: self.color = xml_data.attrib['color']
+		if 'enable' in xml_data.attrib: self.enable = xml_data.attrib['enable']=='true'
 		for x_part in xml_data:
 			if x_part.tag == 'Clips': 
 				self.clips = dawproject_clips()
@@ -201,6 +203,7 @@ class dawproject_clip:
 		if self.fadeTimeUnit != None: tempxml.set('fadeTimeUnit', str(self.fadeTimeUnit))
 		if self.fadeInTime != None: tempxml.set('fadeInTime', str(self.fadeInTime))
 		if self.fadeOutTime != None: tempxml.set('fadeOutTime', str(self.fadeOutTime))
+		tempxml.set('enable', 'true' if self.enable else 'false')
 		if self.name != None: tempxml.set('name', str(self.name))
 		if self.color != None: tempxml.set('color', str(self.color))
 		if self.clips: self.clips.write(tempxml)

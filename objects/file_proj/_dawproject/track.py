@@ -8,6 +8,7 @@ class dawproject_send:
 		self.type = None
 		self.id = None
 
+		self.enable = param.dawproject_param_bool('Enable')
 		self.volume = param.dawproject_param_numeric('Volume')
 
 	def read(self, xml_data):
@@ -15,6 +16,7 @@ class dawproject_send:
 		if 'type' in xml_data.attrib: self.type = xml_data.attrib['type']
 		if 'id' in xml_data.attrib: self.id = xml_data.attrib['id']
 		for x_part in xml_data:
+			if x_part.tag == 'Enable': self.enable.read(x_part)
 			if x_part.tag == 'Volume': self.volume.read(x_part)
 
 	def write(self, xmltag):
@@ -23,6 +25,7 @@ class dawproject_send:
 		if self.type != None: tempxml.set('type', str(self.type))
 		if self.id != None: tempxml.set('id', str(self.id))
 
+		self.enable.write(tempxml)
 		self.volume.write(tempxml)
 
 class dawproject_channel:
@@ -105,6 +108,7 @@ class dawproject_track:
 		self.color = None
 		self.channel = dawproject_channel()
 		self.tracks = []
+		self.comment = ''
 
 	def read(self, xml_data):
 		if 'contentType' in xml_data.attrib: self.contentType = xml_data.attrib['contentType']
@@ -130,6 +134,7 @@ class dawproject_track:
 		if self.name != None: tempxml.set('name', str(self.name))
 		if self.color != None: tempxml.set('color', str(self.color))
 		if self.channel != None: self.channel.write(tempxml)
+		tempxml.set('comment', str(self.comment))
 
 		for t in self.tracks:
 			t.write(tempxml)

@@ -20,8 +20,8 @@ class dawproject_band:
 	def write(self, xmltag):
 		tempxml = ET.SubElement(xmltag, 'Band')
 		if self.type != None: tempxml.set('type', str(self.type))
-		self.gain.write(tempxml)
 		self.freq.write(tempxml)
+		self.gain.write(tempxml)
 		self.q.write(tempxml)
 		self.enabled.write(tempxml)
 

@@ -8,6 +8,23 @@ from objects.file_proj._dawproject import param
 from objects.file_proj._dawproject import points
 from objects.file_proj._dawproject import track
 
+DEBUG_IN_OUT = False
+
+def indent(elem, level=0):
+    i = "\n" + level*"    "
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + "    "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+        for elem in elem:
+            indent(elem, level+1)
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
+
 class dawproject_transport:
 	def __init__(self):
 		self.Tempo = param.dawproject_param_numeric('Tempo')
@@ -155,6 +172,13 @@ class dawproject_song:
 						track_obj.read(x_trackpart)
 						self.tracks.append(track_obj)
 
+		if DEBUG_IN_OUT:
+			outfile = ET.ElementTree(x_root)
+			ET.indent(outfile, space="    ")
+			outfile.write('debug_in.xml', xml_declaration = True)
+
+			self.save_to_file('debug_out.xml')
+
 	def load_metadata(self, input_data):
 		x_root = ET.fromstring(input_data)
 		for x_part in x_root:
@@ -185,5 +209,6 @@ class dawproject_song:
 		for t in self.tracks: t.write(xstructure)
 		self.arrangement.write(x_root)
 
-		xmlstr = minidom.parseString(ET.tostring(x_root)).toprettyxml(indent="\t")
-		return xmlstr.encode("UTF-8")
+		indent(x_root)
+
+		return ET.tostring(x_root)
