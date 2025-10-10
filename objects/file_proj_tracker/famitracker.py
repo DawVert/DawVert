@@ -8,6 +8,9 @@ from objects.exceptions import ProjectFileParserException
 import logging
 logger_projparse = logging.getLogger('projparse')
 
+# UNFINISHED
+DEBUG_IN_OUT = False
+
 # ============================================= instrument ============================================= 
 
 class famitracker_dpcm:
@@ -16,45 +19,47 @@ class famitracker_dpcm:
 		self.data = b''
 
 class famitracker_dpcmkey:
-	def __init__(self, i_list):
+	def __init__(self):
 		self.inst = -1
 		self.octave = -1
 		self.note = -1
 		self.id = -1
 		self.pitch = -1
 		self.loop = -1
-		if i_list:
-			keydpcm = [int(x) for x in i_list]
-			self.inst = keydpcm[0]
-			self.octave = keydpcm[1]
-			self.note = keydpcm[2]
-			self.id = keydpcm[3]
-			self.pitch = keydpcm[4]
-			self.loop = keydpcm[5]
+
+	def read(self, i_list):
+		keydpcm = [int(x) for x in i_list]
+		self.inst = keydpcm[0]
+		self.octave = keydpcm[1]
+		self.note = keydpcm[2]
+		self.id = keydpcm[3]
+		self.pitch = keydpcm[4]
+		self.loop = keydpcm[5]
 
 class famitracker_fds_macro:
-	def __init__(self, i_txt):
+	def __init__(self):
 		self.inst = 0
 		self.type = -1
 		self.loop = -1
 		self.release = -1
 		self.setting = -1
 		self.data = []
-		if i_txt:
-			macrosplit = [shlex.split(s) for s in i_txt.split(':')]
-			if len(macrosplit)>1:
-				m_target, m_data = macrosplit
-				m_target = [int(x) for x in m_target]
-				m_data = [int(x) for x in m_data]
-				self.inst = m_target[0]
-				self.type = m_target[1]
-				self.id = m_target[2]
-				self.loop = m_target[3]
-				self.release = m_target[4]
-				self.data = m_data
+
+	def read(self, i_txt):
+		macrosplit = [shlex.split(s) for s in i_txt.split(':')]
+		if len(macrosplit)>1:
+			m_target, m_data = macrosplit
+			m_target = [int(x) for x in m_target]
+			m_data = [int(x) for x in m_data]
+			self.inst = m_target[0]
+			self.type = m_target[1]
+			self.id = m_target[2]
+			self.loop = m_target[3]
+			self.release = m_target[4]
+			self.data = m_data
 
 class famitracker_macro:
-	def __init__(self, i_chip, i_txt):
+	def __init__(self, i_chip):
 		self.chip = i_chip
 		self.type = -1
 		self.id = -1
@@ -62,21 +67,33 @@ class famitracker_macro:
 		self.release = -1
 		self.setting = -1
 		self.data = []
-		if i_txt:
-			macrosplit = [shlex.split(s) for s in i_txt.split(':')]
-			if len(macrosplit)>1:
-				m_target, m_data = macrosplit
-				m_target = [int(x) for x in m_target]
-				m_data = [int(x) for x in m_data]
-				self.type = m_target[0]
-				self.id = m_target[1]
-				self.loop = m_target[2]
-				self.release = m_target[3]
-				self.setting = m_target[4]
-				self.data = m_data
+
+	def read(self, i_txt):
+		macrosplit = [shlex.split(s) for s in i_txt.split(':')]
+		if len(macrosplit)>1:
+			m_target, m_data = macrosplit
+			m_target = [int(x) for x in m_target]
+			m_data = [int(x) for x in m_data]
+			self.type = m_target[0]
+			self.id = m_target[1]
+			self.loop = m_target[2]
+			self.release = m_target[3]
+			self.setting = m_target[4]
+			self.data = m_data
+
+	def make(self):
+		o = 'MACRO    '
+		o += str(self.type).rjust(4)
+		o += str(self.id).rjust(4)
+		o += str(self.loop).rjust(4)
+		o += str(self.release).rjust(4)
+		o += str(self.setting).rjust(4)
+		o += ' : '
+		o += ' '.join([str(x) for x in self.data])
+		return o
 
 class famitracker_inst:
-	def __init__(self, i_chip, i_list):
+	def __init__(self, i_chip):
 		self.name = ''
 		self.chip = i_chip
 		self.id = -1
@@ -99,38 +116,39 @@ class famitracker_inst:
 		self.vrc7_patch = 0
 		self.vrc7_regs = [0,0,0,0,0,0,0,0]
 		self.dpcm_keys = {}
-		if i_list:
-			if i_chip in ['2A03','VRC6','S5B']:
-				self.id = int(i_list[0])
-				self.macro_vol = int(i_list[1])
-				self.macro_arp = int(i_list[2])
-				self.macro_pitch = int(i_list[3])
-				self.macro_hipitch = int(i_list[4])
-				self.macro_duty = int(i_list[5])
-				self.name = i_list[6]
-			if i_chip in ['FDS']:
-				self.id = int(i_list[0])
-				self.fds_mod_enable = int(i_list[1])
-				self.fds_mod_speed = int(i_list[2])
-				self.fds_mod_depth = int(i_list[3])
-				self.fds_mod_delay = int(i_list[4])
-				self.name = i_list[5]
-			if i_chip in ['N163']:
-				self.id = int(i_list[0])
-				self.macro_vol = int(i_list[1])
-				self.macro_arp = int(i_list[2])
-				self.macro_pitch = int(i_list[3])
-				self.macro_hipitch = int(i_list[4])
-				self.macro_duty = int(i_list[5])
-				self.n163_size = int(i_list[6])
-				self.n163_pos = int(i_list[7])
-				self.n163_count = int(i_list[8])
-				self.name = i_list[9]
-			if i_chip in ['VRC7']:
-				self.id = int(i_list[0])
-				self.vrc7_patch = int(i_list[1])
-				self.vrc7_regs = [int(x, 16) for x in i_list[2:10]]
-				self.name = i_list[10]
+
+	def read(self, i_list):
+		if self.chip in ['2A03','VRC6','S5B']:
+			self.id = int(i_list[0])
+			self.macro_vol = int(i_list[1])
+			self.macro_arp = int(i_list[2])
+			self.macro_pitch = int(i_list[3])
+			self.macro_hipitch = int(i_list[4])
+			self.macro_duty = int(i_list[5])
+			self.name = i_list[6]
+		if self.chip in ['FDS']:
+			self.id = int(i_list[0])
+			self.fds_mod_enable = int(i_list[1])
+			self.fds_mod_speed = int(i_list[2])
+			self.fds_mod_depth = int(i_list[3])
+			self.fds_mod_delay = int(i_list[4])
+			self.name = i_list[5]
+		if self.chip in ['N163']:
+			self.id = int(i_list[0])
+			self.macro_vol = int(i_list[1])
+			self.macro_arp = int(i_list[2])
+			self.macro_pitch = int(i_list[3])
+			self.macro_hipitch = int(i_list[4])
+			self.macro_duty = int(i_list[5])
+			self.n163_size = int(i_list[6])
+			self.n163_pos = int(i_list[7])
+			self.n163_count = int(i_list[8])
+			self.name = i_list[9]
+		if self.chip in ['VRC7']:
+			self.id = int(i_list[0])
+			self.vrc7_patch = int(i_list[1])
+			self.vrc7_regs = [int(x, 16) for x in i_list[2:10]]
+			self.name = i_list[10]
 
 # ============================================= pattern ============================================= 
 
@@ -182,6 +200,7 @@ class famitracker_song:
 		self.tempo = 120
 		self.orders = {}
 		self.patterns = {}
+		self.columns = []
 
 class famitracker_project:
 	def __init__(self):
@@ -196,10 +215,10 @@ class famitracker_project:
 		self.split = 0
 		self.n163channels = 1
 		self.dpcm = {}
-		self.macros = {}
-		self.macros_vrc6 = {}
-		self.macros_n163 = {}
-		self.macros_s5b = {}
+		self.macros = []
+		self.macros_vrc6 = []
+		self.macros_n163 = []
+		self.macros_s5b = []
 		self.inst = {}
 		self.song = []
 
@@ -227,17 +246,21 @@ class famitracker_project:
 
 
 					elif linetype == 'MACRO': 
-						ft_macro = famitracker_macro('2A03', linespl[1])
-						self.macros[ft_macro.id] = ft_macro
+						ft_macro = famitracker_macro('2A03')
+						ft_macro.read(linespl[1])
+						self.macros.append(ft_macro)
 					elif linetype == 'MACROVRC6': 
-						ft_macro = famitracker_macro('2A03', linespl[1])
-						self.macros_vrc6[ft_macro.id] = ft_macro
+						ft_macro = famitracker_macro('2A03')
+						ft_macro.read(linespl[1])
+						self.macros_vrc6.append(ft_macro)
 					elif linetype == 'MACRON163': 
-						ft_macro = famitracker_macro('N163', linespl[1])
-						self.macros_n163[ft_macro.id] = ft_macro
+						ft_macro = famitracker_macro('N163')
+						ft_macro.read(linespl[1])
+						self.macros_n163.append(ft_macro)
 					elif linetype == 'MACROS5B': 
-						ft_macro = famitracker_macro('S5B', linespl[1])
-						self.macros_s5b[ft_macro.id] = ft_macro
+						ft_macro = famitracker_macro('S5B')
+						ft_macro.read(linespl[1])
+						self.macros_s5b.append(ft_macro)
 
 
 					elif linetype == 'DPCMDEF':
@@ -252,7 +275,8 @@ class famitracker_project:
 
 
 					elif linetype == 'KEYDPCM':
-						dpcmkey = famitracker_dpcmkey(linedata)
+						dpcmkey = famitracker_dpcmkey()
+						dpcmkey.read(linedata)
 						self.inst[dpcmkey.inst].dpcm_keys[dpcmkey.id] = dpcmkey
 					elif linetype == 'N163WAVE':
 						fds_idwav = linespl[1].split(': ')
@@ -269,27 +293,34 @@ class famitracker_project:
 						fds_id = int(fds_id)
 						self.inst[fds_id].fds_mod = [int(x) for x in fds_wave.split()]
 					elif linetype == 'FDSMACRO':
-						macro_data = famitracker_fds_macro(linespl[1])
+						macro_data = famitracker_fds_macro()
+						macro_data.read(linespl[1])
 						self.inst[macro_data.inst].fds_macros.append(macro_data)
 
 
 					elif linetype == 'INST2A03':
-						ft_inst = famitracker_inst('2A03', linedata)
+						ft_inst = famitracker_inst('2A03')
+						ft_inst.read(linedata)
 						self.inst[ft_inst.id] = ft_inst
 					elif linetype == 'INSTVRC6':
-						ft_inst = famitracker_inst('VRC6', linedata)
+						ft_inst = famitracker_inst('VRC6')
+						ft_inst.read(linedata)
 						self.inst[ft_inst.id] = ft_inst
 					elif linetype == 'INSTS5B':
-						ft_inst = famitracker_inst('S5B', linedata)
+						ft_inst = famitracker_inst('S5B')
+						ft_inst.read(linedata)
 						self.inst[ft_inst.id] = ft_inst
 					elif linetype == 'INSTN163':
-						ft_inst = famitracker_inst('N163', linedata)
+						ft_inst = famitracker_inst('N163')
+						ft_inst.read(linedata)
 						self.inst[ft_inst.id] = ft_inst
 					elif linetype == 'INSTFDS':
-						ft_inst = famitracker_inst('FDS', linedata)
+						ft_inst = famitracker_inst('FDS')
+						ft_inst.read(linedata)
 						self.inst[ft_inst.id] = ft_inst
 					elif linetype == 'INSTVRC7':
-						ft_inst = famitracker_inst('VRC7', linedata)
+						ft_inst = famitracker_inst('VRC7')
+						ft_inst.read(linedata)
 						self.inst[ft_inst.id] = ft_inst
 
 
@@ -318,11 +349,149 @@ class famitracker_project:
 						for channum, rowdata in enumerate(rowsplit[1:]):
 							self.current_patdata.add_data(rownum, channum, rowdata)
 
-					elif linetype == 'COLUMNS': pass
+					elif linetype == 'COLUMNS': 
+						self.current_song.columns = [int(x) for x in linedata[1:]]
 					elif linetype == '#': pass
 					else:
 						#print(linetype, linespl[1])
 						return False
 		except UnicodeDecodeError:
 			raise ProjectFileParserException('famistudio_txt: File is not text')
+
+		if DEBUG_IN_OUT:
+			import shutil
+			shutil.copy(input_file, 'debug_in.txt')
+			self.save_to_file('debug_out.txt')
+
 		return True
+
+	def save_to_file(self, output_file):
+		f = open(output_file, 'w')
+		f.write('# FamiTracker text export 0.4.2\n')
+		f.write('\n')
+		f.write('# Song information\n')
+		f.write('TITLE           "%s"\n' % (self.title))
+		f.write('AUTHOR          "%s"\n' % (self.author))
+		f.write('COPYRIGHT       "%s"\n' % (self.copyright))
+		f.write('\n')
+		f.write('# Song comment\n')
+		for c in self.comment: f.write('COMMENT "%s"\n' % (c))
+		f.write('\n')
+		f.write('# Global settings\n')
+		f.write('MACHINE         %i\n' % (self.machine))
+		f.write('FRAMERATE       %i\n' % (self.framerate))
+		f.write('EXPANSION       %i\n' % (self.expansion))
+		f.write('VIBRATO         %i\n' % (self.vibrato))
+		f.write('SPLIT           %i\n' % (self.split))
+		f.write('\n')
+		f.write('# Macros\n')
+		for m in self.macros: f.write(m.make()+'\n')
+		f.write('\n')
+		f.write('# DPCM samples\n')
+		for n, d in self.dpcm.items():
+			datasize = len(d.data) 
+			f.write('DPCMDEF')
+			f.write(str(n).rjust(4))
+			f.write('  ')
+			f.write(str(datasize).rjust(4))
+			f.write(' "%s"' % (d.name))
+			f.write('\n')
+			numblocks = (datasize/32).__ceil__()
+			for x in range(numblocks):
+				h = d.data[x*32:(x+1)*32]
+				f.write('DPCM : '+(h.hex(sep=' ').upper()))
+				f.write('\n')
+
+		f.write('\n')
+		f.write('# Instruments\n')
+		for n, i in self.inst.items():
+			if i.chip == "2A03": f.write('INST2A03')
+			if i.chip == "VRC6": f.write('INSTVRC6')
+			if i.chip == "S5B": f.write('INSTS5B')
+			if i.chip == "FDS": f.write('INSTFDS')
+
+			if i.chip in ['2A03','VRC6','S5B']:
+				f.write( str(n).rjust(4) )
+				f.write( '  ' )
+				f.write( str(i.macro_vol).rjust(4) )
+				f.write( str(i.macro_arp).rjust(4) )
+				f.write( str(i.macro_pitch).rjust(4) )
+				f.write( str(i.macro_hipitch).rjust(4) )
+				f.write( str(i.macro_duty).rjust(4) )
+				f.write(' "%s"' % (i.name))
+				f.write('\n')
+
+			elif i.chip == 'FDS':
+				f.write( '    ' )
+				f.write( str(n) )
+				f.write( '  ' )
+				f.write( str(i.fds_mod_enable).rjust(4) )
+				f.write( str(i.fds_mod_speed).rjust(4) )
+				f.write( str(i.fds_mod_depth).rjust(4) )
+				f.write( str(i.fds_mod_delay).rjust(4) )
+				f.write(' "%s"' % (i.name))
+				f.write('\n')
+				if i.fds_wave:
+					f.write('FDSWAVE    '+str(n)+' : ')
+					f.write( ' '.join([str(x).rjust(2) for x in i.fds_wave]) )
+					f.write('\n')
+				if i.fds_mod:
+					f.write('FDSMOD     '+str(n)+' : ')
+					f.write( ' '.join([str(x).rjust(2) for x in i.fds_mod]) )
+					f.write('\n')
+				if i.fds_macros:
+					for m in i.fds_macros:
+						f.write('FDSMACRO   '+str(n)+' ')
+						f.write( str(m.type).rjust(3) )
+						f.write( str(m.id).rjust(4) )
+						f.write( str(m.loop).rjust(4) )
+						f.write( str(m.release).rjust(4) )
+						f.write(' : ')
+						f.write( ' '.join([str(x) for x in m.data]) )
+						f.write('\n')
+
+			else:
+				f.write('\n')
+
+			for dn, dk in i.dpcm_keys.items():
+				f.write('KEYDPCM')
+				f.write( str(dk.inst).rjust(4) )
+				f.write( str(dk.octave).rjust(4) )
+				f.write( str(dk.note).rjust(4) )
+				f.write( str(dk.id).rjust(6) )
+				f.write( str(dk.pitch).rjust(4) )
+				f.write( str(dk.loop).rjust(4) )
+				f.write('     0  -1\n')
+
+		f.write('\n')
+		f.write('# Tracks\n')
+		f.write('\n')
+		for song in self.song:
+			f.write('TRACK ')
+			f.write(str(song.patlen).rjust(3))
+			f.write(str(song.speed).rjust(4))
+			f.write(str(song.tempo).rjust(4))
+			f.write(' "%s"\n' % (song.name))
+
+			numchans = len(song.columns)
+			f.write('COLUMNS : ')
+			f.write( ' '.join([str(x) for x in song.columns]) )
+			f.write('\n')
+
+			f.write('\n')
+			firstlen = len(song.orders[0])
+			for on in range(firstlen):
+				f.write('ORDER %0.2X :' % on )
+				for x in range(numchans):
+					f.write(' %0.2X' % (song.orders[x][on] if on<len(song.orders[x]) else 0) )
+				f.write('\n')
+			f.write('\n')
+
+			#"0x%0.2X" % integerVariable
+
+			print(song.orders[0])
+
+
+			
+
+		# FamiTracker text export 0.4.2

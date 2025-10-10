@@ -30,7 +30,7 @@ def utf16encode(text):
 	out_text = text if text != None else ''
 	return out_text.encode('utf-16le') + b'\x00\x00'
 
-DEBUG_IN_OUT = True
+DEBUG_IN_OUT = False
 
 #FL_OUTPUT_MODE = 12
 

@@ -8,6 +8,9 @@ import numpy as np
 import struct
 import logging
 
+VERBOSE = False
+DEBUG_IN_OUT = False
+
 logger_projparse = logging.getLogger('projparse')
 
 class ptcop_delay:
@@ -83,6 +86,7 @@ class ptcop_song:
 				self.beattempo = struct.unpack(">f", struct.pack("I", int.from_bytes(ebrw_readstr.read(2), "big")))[0]
 				self.repeat = ebrw_readstr.int_u32()
 				self.last = ebrw_readstr.int_u32()
+
 			elif chunk_id == b'Event V5':
 				ev_cur = self.events.create_cursor()
 				for _ in range(ebrw_readstr.int_u32()):
@@ -91,6 +95,7 @@ class ptcop_song:
 					ev_cur['unitnum'] = ebrw_readstr.int_u8()
 					ev_cur['eventnum'] = ebrw_readstr.int_u8()
 					ev_cur['value'] = ebrw_readstr.varint()
+
 			elif chunk_id == b'effeDELA':
 				ebrw_readstr.skip(2)
 				delay_obj = ptcop_delay()
@@ -99,6 +104,8 @@ class ptcop_song:
 				delay_obj.rate = ebrw_readstr.int_u16()
 				delay_obj.freq = ebrw_readstr.float()
 				self.delays.append(delay_obj)
+				if VERBOSE: print('effeDELA:', delay_obj.unit, delay_obj.group)
+
 			elif chunk_id == b'effeOVER':
 				overdrive_obj = ptcop_overdrive()
 				overdrive_obj.xxx = ebrw_readstr.int_u16()
@@ -107,6 +114,8 @@ class ptcop_song:
 				overdrive_obj.amp = ebrw_readstr.float()
 				overdrive_obj.yyy = ebrw_readstr.float()
 				self.overdrives.append(overdrive_obj)
+				if VERBOSE: print('effeOVER:', overdrive_obj.group)
+
 			elif chunk_id == b'mateOGGV':
 				voice_obj = ptcop_voice()
 				ebrw_readstr.skip(3)
@@ -119,7 +128,9 @@ class ptcop_song:
 				voice_obj.samples = ebrw_readstr.int_u32()
 				voice_obj.data = ebrw_readstr.raw(ebrw_readstr.int_u32())
 				self.voices[voicenum] = voice_obj
+				if VERBOSE: print('mateOGGV:', voicenum)
 				voicenum += 1
+
 			elif chunk_id == b'matePCM ':
 				voice_obj = ptcop_voice()
 				ebrw_readstr.skip(3)
@@ -133,7 +144,9 @@ class ptcop_song:
 				voice_obj.samples = ebrw_readstr.int_u32()//(voice_obj.bits//8)
 				voice_obj.data = ebrw_readstr.raw((voice_obj.bits//8) * voice_obj.samples)
 				self.voices[voicenum] = voice_obj
+				if VERBOSE: print('mate PCM:', voicenum)
 				voicenum += 1
+
 			elif chunk_id == b'matePTV ':
 				voice_obj = ptcop_voice()
 				voice_obj.type = 'ptvoice'
@@ -142,7 +155,9 @@ class ptcop_song:
 				datasize = ebrw_readstr.int_u32()
 				voice_obj.data = ebrw_readstr.raw(datasize)
 				self.voices[voicenum] = voice_obj
+				if VERBOSE: print('mate PTV:', voicenum)
 				voicenum += 1
+
 			elif chunk_id == b'matePTN ':
 				voice_obj = ptcop_voice()
 				voice_obj.type = 'ptnoise'
@@ -151,21 +166,34 @@ class ptcop_song:
 				ebrw_readstr.skip(4)
 				voice_obj.data = ebrw_readstr.raw(chunk_size-16)
 				self.voices[voicenum] = voice_obj
+				if VERBOSE: print('mate PTN:', voicenum)
 				voicenum += 1
+
 			elif chunk_id == b'assiWOIC':
 				voice_num = ebrw_readstr.int_u32()
 				self.voices[voice_num].name = ebrw_readstr.string(chunk_size-4, encoding="shift-jis")
+				if VERBOSE: print('assiWOIC:', voice_num, self.voices[voice_num].name)
+
 			elif chunk_id == b'assiUNIT':
 				unit_num = ebrw_readstr.int_u32()
 				self.units[unit_num].name = ebrw_readstr.string(chunk_size-4, encoding="shift-jis")
+				if VERBOSE: print('assiUNIT:', unit_num, self.units[unit_num].name)
+
 			elif chunk_id == b'num UNIT':
 				self.units = [ptcop_unit() for _ in range(ebrw_readstr.int_u32())]
+				if VERBOSE: print('num UNIT:', self.voices[voice_num].name)
+
 			elif chunk_id == b'textCOMM':
 				self.comment = ebrw_readstr.string(chunk_size, encoding="shift-jis")
+				if VERBOSE: print('textCOMM:', self.comment)
+
 			elif chunk_id == b'textNAME':
 				self.title = ebrw_readstr.string(chunk_size, encoding="shift-jis")
+				if VERBOSE: print('textNAME:', self.title)
+
 			elif chunk_id == b'pxtoneND':
 				break
+
 			else: raise ProjectFileParserException('pxtone: unknown chunk: '+str(chunk_id))
 
 		self.events.clean()

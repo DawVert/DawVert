@@ -160,12 +160,12 @@ class s3m_song:
 		self.type = ebrw_readstr.int_u8()
 		self.reserved = ebrw_readstr.int_u16()
 		self.num_orders = ebrw_readstr.int_u16()
-		self.num_instruments = ebrw_readstr.int_u16()
-		if self.num_instruments > 255: raise ProjectFileParserException('s3m: # of Instruments is over 255')
-		logger_projparse.info("s3m: # of Instruments: " + str(self.num_instruments))
-		self.num_patterns = ebrw_readstr.int_u16()
-		if self.num_patterns > 255: raise ProjectFileParserException('s3m: # of Patterns is over 255')
-		logger_projparse.info("s3m: # of Patterns: " + str(self.num_patterns))
+		num_instruments = ebrw_readstr.int_u16()
+		if num_instruments > 255: raise ProjectFileParserException('s3m: # of Instruments is over 255')
+		logger_projparse.info("s3m: # of Instruments: " + str(num_instruments))
+		num_patterns = ebrw_readstr.int_u16()
+		if num_patterns > 255: raise ProjectFileParserException('s3m: # of Patterns is over 255')
+		logger_projparse.info("s3m: # of Patterns: " + str(num_patterns))
 		self.flags = ebrw_readstr.flags_i16()
 		self.trkrvers = ebrw_readstr.raw(2)
 		self.samptype = ebrw_readstr.int_u16()
@@ -182,8 +182,8 @@ class s3m_song:
 		self.channel_settings = ebrw_readstr.list_int_u8(32)
 		self.l_order = ebrw_readstr.list_int_u8(self.num_orders)
 		logger_projparse.info("s3m: Order List: " + str(self.l_order))
-		self.ptrs_insts = [ebrw_readstr.int_u16()*16 for _ in range(self.num_instruments)]
-		self.ptrs_patterns = [ebrw_readstr.int_u16()*16 for _ in range(self.num_patterns)]
+		self.ptrs_insts = [ebrw_readstr.int_u16()*16 for _ in range(num_instruments)]
+		self.ptrs_patterns = [ebrw_readstr.int_u16()*16 for _ in range(num_patterns)]
 
 		self.instruments = [s3m_instrument(ebrw_readstr, x) for n, x in enumerate(self.ptrs_insts)]
 		self.patterns = [s3m_pattern(ebrw_readstr, x) for n, x in enumerate(self.ptrs_patterns)]

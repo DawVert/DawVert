@@ -16,7 +16,7 @@ dtype_patdata = np.dtype([
 # ============================================= instrument ============================================= 
 
 class trackerboy_instrument:
-	def __init__(self, ebrw_readstr):
+	def __init__(self):
 		self.id = 0
 		self.name = ''
 		self.channel = 0
@@ -26,13 +26,16 @@ class trackerboy_instrument:
 		self.param2 = 0
 		self.envs = []
 
-		if ebrw_readstr:
-			self.id = ebrw_readstr.int_u8()+1
-			self.name = ebrw_readstr.raw_i16()
-			self.channel = ebrw_readstr.int_u8()
-			self.envelopeEnabled = ebrw_readstr.int_u8()
-			self.param1, self.param2 = ebrw_readstr.int_u4_2()
-			self.envs = [trackerboy_env(ebrw_readstr) for _ in range(4)]
+	def read(self, ebrw_readstr):
+		self.id = ebrw_readstr.int_u8()+1
+		self.name = ebrw_readstr.raw_i16()
+		self.channel = ebrw_readstr.int_u8()
+		self.envelopeEnabled = ebrw_readstr.int_u8()
+		self.param1, self.param2 = ebrw_readstr.int_u4_2()
+		for _ in range(4):
+			o = trackerboy_env()
+			o.read(ebrw_readstr)
+			self.envs.append(o)
 
 class trackerboy_env:
 	def __init__(self, ebrw_readstr):
@@ -40,21 +43,25 @@ class trackerboy_env:
 		self.loopIndex = 0
 		self.values = []
 
-		if ebrw_readstr:
-			envlength = ebrw_readstr.int_u16()
-			self.loopEnabled = ebrw_readstr.int_u8()
-			self.loopIndex = ebrw_readstr.int_u8()
-			self.values = list(ebrw_readstr.list_int_u8(envlength))
+	def read(self, ebrw_readstr):
+		envlength = ebrw_readstr.int_u16()
+		self.loopEnabled = ebrw_readstr.int_u8()
+		self.loopIndex = ebrw_readstr.int_u8()
+		self.values = list(ebrw_readstr.list_int_u8(envlength))
 
 	def __bool__(self):
 		return bool(len(self.values))
 
 class trackerboy_wave:
 	def __init__(self, ebrw_readstr):
-		if ebrw_readstr:
-			self.id = ebrw_readstr.int_u8()+1
-			self.name = ebrw_readstr.raw_i16()
-			self.wave = ebrw_readstr.list_int_u4(16)
+		self.id = 0
+		self.name = b''
+		self.wave = []
+
+	def read(self, ebrw_readstr):
+		self.id = ebrw_readstr.int_u8()+1
+		self.name = ebrw_readstr.raw_i16()
+		self.wave = ebrw_readstr.list_int_u4(16)
 
 # ============================================= song ============================================= 
 
@@ -118,12 +125,14 @@ class trackerboy_project:
 		ebrw_readstr.seek(160)
 		for part_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
 			if part_obj.id == b'INST':
-				inst_obj = trackerboy_instrument(ebrw_readstr)
+				inst_obj = trackerboy_instrument()
+				inst_obj.read(ebrw_readstr)
 				self.insts[inst_obj.id] = inst_obj
 			if part_obj.id == b'SONG':
 				song_obj = trackerboy_song(ebrw_readstr)
 				self.songs.append(song_obj)
 			if part_obj.id == b'WAVE':
-				wave_obj = trackerboy_wave(ebrw_readstr)
+				wave_obj = trackerboy_wave()
+				wave_obj.read(ebrw_readstr)
 				self.waves[wave_obj.id] = wave_obj
 		return True
