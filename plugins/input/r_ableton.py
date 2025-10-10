@@ -451,7 +451,7 @@ class input_ableton(plugins.base):
 		convproj_obj.track_master.latency_offset = calc_lattime(project_obj.MasterTrack.TrackDelay)
 		do_devices(project_obj.MasterTrack.DeviceChain.devices, None, convproj_obj.track_master, convproj_obj, dawvert_intent)
 
-		returnid = 1
+		returnid = 0
 
 		if AUDCLIPVERBOSE:
 			for x in ['cut_type', 'cut_type', 'IsWarped', "Duration",
@@ -660,11 +660,14 @@ class input_ableton(plugins.base):
 							print()
 
 			elif tracktype == 'return':
+
 				cvpj_returntrackid = 'return_'+str(returnid)
 				fxloc = ['return', cvpj_returntrackid]
 				track_vol = doparam(track_mixer.Volume, 'Volume', 'float', 0, fxloc+['vol'], None)
 				track_pan = doparam(track_mixer.Pan, 'Pan', 'float', 0, fxloc+['pan'], None)
 				track_on = doparam(track_mixer.On, 'On', 'bool', 0, fxloc+['enabled'], None)
+				if returnid in project_obj.SendsPre: 
+					track_obj.params.add('pre', project_obj.SendsPre[returnid], 'bool')
 
 				track_obj = convproj_obj.track_master.fx__return__add(cvpj_returntrackid)
 				track_obj.visual.name = track_name
@@ -717,7 +720,7 @@ class input_ableton(plugins.base):
 			if als_track.DeviceChain.AudioOutputRouting.UpperDisplayString == 'Sends Only':
 				track_obj.sends.to_master_active = False
 
-			sendcount = 1
+			sendcount = 0
 			if fxloc != None:
 				for _, track_sendholder in track_sendholders.items():
 					sendid = sendcount

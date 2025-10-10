@@ -113,6 +113,18 @@ def soundlayer_samplepart(plugin_obj, gpitch, programdata, lowNote, highNote, ro
 		if 'vel_sens' in sp_obj.data: soundparameters['sensParam'] = float(sp_obj.data['vel_sens'])
 		return soundlayer
 
+def make_send_plugin(convproj_obj, wf_track, returnid, send_obj, auxnums):
+	from objects.file_proj import tracktion_edit as proj_tracktion_edit
+	wf_plugin = proj_tracktion_edit.tracktion_plugin()
+	wf_plugin.plugtype = 'auxsend'
+	wf_plugin.enabled = 1
+	wf_plugin.presetDirty = 1
+	wf_plugin.params['auxSendSliderPos'] = send_obj.params.get('amount', 0).value
+	wf_plugin.params['busNum'] = auxnums[returnid]
+	# add_auto_curves(convproj_obj, [startn, iddat, 'vol'], wf_plugin, 'volume')
+	wf_track.plugins.append(wf_plugin)
+	return wf_plugin
+
 def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, cvpj_fxid, isinstrument):
 	from objects.file_proj import tracktion_edit as proj_tracktion_edit
 	from objects.file_proj._waveform import sampler
@@ -502,8 +514,12 @@ class output_tracktion_edit(plugins.base):
 
 		get_plugins(convproj_obj, convproj_obj.params, sampleref_assoc, sampleref_obj_assoc, project_obj.masterplugins, convproj_obj.track_master.plugslots.slots_audio)
 
-		groups_data = {}
+		auxnums = {}
+		master_returns = convproj_obj.track_master.returns
+		for returnid, x in master_returns.items():
+			auxnums[returnid] = len(auxnums)
 
+		groups_data = {}
 		for groupid, insidegroup in convproj_obj.group__iter_inside():
 			wf_tracks = project_obj.tracks
 
@@ -525,7 +541,6 @@ class output_tracktion_edit(plugins.base):
 			wf_track.height = track_obj.visual_ui.height*35.41053828354546
 			wf_track.mute = int(not bool(track_obj.params.get('enabled', True).value))
 			wf_track.solo = int(track_obj.params.get('solo', False).value)
-
 			if track_obj.visual.name: wf_track.name = track_obj.visual.name
 			if track_obj.visual.color: wf_track.colour = 'ff'+track_obj.visual.color.get_hex()
 			
@@ -745,29 +760,57 @@ class output_tracktion_edit(plugins.base):
 
 				wf_track.audioclips.append(wf_audioclip)
 
+			sends_pre = []
+			sends_post = []
+
+			for sendid, send_obj in track_obj.sends.data.items():
+				if master_returns[sendid].params.get('pre', False).value:
+					sends_pre.append([sendid, send_obj])
+				else:
+					sends_post.append([sendid, send_obj])
+
+			for sendid, send_obj in sends_pre:
+				vol = send_obj.params.get('amount', 0).value
+				if vol>0.001: make_send_plugin(convproj_obj, wf_track, sendid, send_obj, auxnums)
+
 			make_volpan_plugin(convproj_obj, track_obj, trackid, wf_track, 'track')
+
+			for sendid, send_obj in sends_post:
+				vol = send_obj.params.get('amount', 0).value
+				if vol>0.001: make_send_plugin(convproj_obj, wf_track, sendid, send_obj, auxnums)
+
 			make_level_plugin(wf_track)
 
 			wf_tracks.append(wf_track)
 
-			#for videopl_obj in track_obj.placements.pl_video:
-			#	time_obj = audiopl_obj.time
-			#	wf_videoclip = proj_tracktion_edit.tracktion_audioclip()
-			#	wf_videoclip.id_num = counter_id.get()
-#
-			#	wf_videoclip.start, wf_videoclip.length = time_obj.get_posdur_real()
-#
-			#	wf_videoclip.fadeIn = videopl_obj.fade_in.get_dur_seconds(bpm)
-			#	wf_videoclip.fadeOut = videopl_obj.fade_out.get_dur_seconds(bpm)
-#
-			#	if videopl_obj.visual.name: wf_videoclip.name = videopl_obj.visual.name
-			#	if videopl_obj.visual.color: wf_videoclip.colour = 'ff'+videopl_obj.visual.color.get_hex()
-			#	wf_videoclip.mute = int(videopl_obj.muted)
-#
-			#	if videopl_obj.videoref in videoref_assoc:
-			#		wf_videoclip.Video = videoref_assoc[videopl_obj.videoref]
-			#		wf_videoclip.videoEnabled = 1
-			#	wf_track.audioclips.append(wf_videoclip)
+		for returnid, return_obj in master_returns.items():
+			auxnum = auxnums[returnid]
+
+			wf_tracks = project_obj.tracks
+			wf_track = proj_tracktion_edit.tracktion_track()
+			wf_track.id_num = counter_id.get()
+			wf_track.height = return_obj.visual_ui.height*35.41053828354546
+			wf_track.mute = int(not bool(return_obj.params.get('enabled', True).value))
+			wf_track.solo = int(return_obj.params.get('solo', False).value)
+			if return_obj.visual.name: 
+				wf_track.name = '[R] '+return_obj.visual.name
+				name_obj = proj_tracktion_edit.tracktion_auxbusname()
+				name_obj.bus = auxnum
+				name_obj.name = return_obj.visual.name
+				project_obj.auxbusnames.append(name_obj)
+			else: wf_track.name = '[R] Return #'+str(auxnum+1)
+			if return_obj.visual.color: wf_track.colour = 'ff'+return_obj.visual.color.get_hex()
+
+			wf_plugin = proj_tracktion_edit.tracktion_plugin()
+			wf_plugin.plugtype = 'auxreturn'
+			wf_plugin.enabled = 1
+			wf_plugin.presetDirty = 1
+			wf_plugin.params['busNum'] = auxnum
+			wf_track.plugins.append(wf_plugin)
+
+			make_volpan_plugin(convproj_obj, return_obj, returnid, wf_track, 'return')
+			make_level_plugin(wf_track)
+			wf_tracks.append(wf_track)
 
 		if dawvert_intent.output_mode == 'file':
 			project_obj.save_to_file(dawvert_intent.output_file)
