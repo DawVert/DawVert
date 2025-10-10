@@ -350,29 +350,29 @@ def make_clips(starttxt, convproj_obj, track_obj, lane_obj, trackid):
 				ompetype, dp_points = do_auto_notes(mpetype, autodata)
 				if dp_points: clippoints.append(dp_points)
 
-		for t_pos, t_dur, t_keys, t_vol, t_vol_off, t_chan, t_inst, t_extra, t_autopack in notespl_obj.notelist.iter_midispec():
-			if t_autopack: t_autopack.convert_to('auto', t_keys, t_vol)
-			for t_key in t_keys:
-				note_obj = clips.dawproject_note()
-				note_obj.time = t_pos
-				note_obj.duration = t_dur
-				note_obj.key = t_key+60
-				note_obj.vel = t_vol
-				note_obj.rel = t_vol_off
-				note_obj.channel = t_chan
-				if t_autopack is not None:
-					t_auto = t_autopack.auto
-					if len(t_auto) == 1:
-						mpetype = list(t_auto)[0]
-						note_obj.points = points.dawproject_points()
-						do_auto_mpe(t_auto[mpetype], mpetype, note_obj.points)
-					if len(t_auto) > 1:
-						note_obj.lanes = clips.dawproject_lane()
-						for mpetype, a in t_auto.items():
-							dp_points = points.dawproject_points()
-							do_auto_mpe(a, mpetype, dp_points)
-							note_obj.lanes.points.append(dp_points)
-				clipnotes.notes.append(note_obj)
+		for cnote in notespl_obj.notelist.iter_notes():
+			t_autopack = cnote.auto
+			if t_autopack: t_autopack.convert_to('auto', cnote.keys, cnote.vol)
+			note_obj = clips.dawproject_note()
+			note_obj.time = cnote.pos
+			note_obj.duration = cnote.dur
+			note_obj.key = cnote.key+60
+			note_obj.vel = cnote.vol
+			note_obj.rel = cnote.vol_off
+			note_obj.channel = cnote.chan
+			if t_autopack is not None:
+				t_auto = t_autopack.auto
+				if len(t_auto) == 1:
+					mpetype = list(t_auto)[0]
+					note_obj.points = points.dawproject_points()
+					do_auto_mpe(t_auto[mpetype], mpetype, note_obj.points)
+				if len(t_auto) > 1:
+					note_obj.lanes = clips.dawproject_lane()
+					for mpetype, a in t_auto.items():
+						dp_points = points.dawproject_points()
+						do_auto_mpe(a, mpetype, dp_points)
+						note_obj.lanes.points.append(dp_points)
+			clipnotes.notes.append(note_obj)
 		lane_obj.clips.clips.append(clip_obj)
 
 	for audiopl_obj in track_obj.placements.pl_audio:

@@ -102,10 +102,9 @@ class output_onlineseq(plugins.base):
 
 			if track_obj.visual.name: iparams.name = track_obj.visual.name
 
-			for t_pos, t_dur, t_keys, t_vol, t_inst, t_extra, t_autopack in track_obj.placements.notelist.iter():
-				for t_key in t_keys:
-					onlineseq_note = [int(t_key+60-middlenote),t_pos,t_dur,onlineseqnum,t_vol]
-					project_obj.notes.append(onlineseq_note)
+			for cnote in notespl_obj.notelist.iter_notes():
+				onlineseq_note = [int(cnote.key+60-middlenote),cnote.pos,cnote.dur,onlineseqnum,cnote.vol]
+				project_obj.notes.append(onlineseq_note)
 
 			project_obj.params[onlineseqnum] = iparams
 

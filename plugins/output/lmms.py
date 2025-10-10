@@ -565,24 +565,24 @@ class output_lmms(plugins.base):
 						lmms_pattern.name = notespl_obj.visual.name if notespl_obj.visual.name else ""
 						if notespl_obj.visual.color: lmms_pattern.color = '#' + notespl_obj.visual.color.get_hex()
 						notespl_obj.notelist.sort()
-						for t_pos, t_dur, t_keys, t_vol, t_inst, t_extra, t_autopack in notespl_obj.notelist.iter():
-							if t_autopack: t_autopack.convert_to('auto', t_keys, t_vol)
-							for t_key in t_keys:
-								lmms_note = proj_lmms.lmms_note()
-								lmms_note.key = int(t_key)+60
-								lmms_note.pos = int(t_pos)
-								if t_autopack:
-									lmms_note.pan = oneto100(t_autopack.mod_pan)
-								lmms_note.len = int(max(1,t_dur))
-								lmms_note.vol = int(oneto100(t_vol))
-								lmms_pattern.notes.append(lmms_note)
-								if t_autopack:
-									t_auto = t_autopack.auto
-									if 'pitch' in t_auto: 
-										detuneauto = proj_lmms.lmms_automationpattern()
-										detuneauto.prog = 1
-										parse_auto(detuneauto.auto_points, t_auto['pitch'])
-										lmms_note.auto['detuning'] = detuneauto
+
+						for cnote in notespl_obj.notelist.iter_notes():
+							autopack = cnote.auto
+							lmms_note = proj_lmms.lmms_note()
+							lmms_note.key = int(cnote.key)+60
+							lmms_note.pos = int(cnote.pos)
+							if autopack:
+								lmms_note.pan = oneto100(autopack.mod_pan)
+								autopack.convert_to('auto', cnote.keys, cnote.vol)
+								t_auto = autopack.auto
+								if 'pitch' in t_auto: 
+									detuneauto = proj_lmms.lmms_automationpattern()
+									detuneauto.prog = 1
+									parse_auto(detuneauto.auto_points, t_auto['pitch'])
+									lmms_note.auto['detuning'] = detuneauto
+							lmms_note.len = int(max(1,cnote.dur))
+							lmms_note.vol = int(oneto100(cnote.vol))
+							lmms_pattern.notes.append(lmms_note)
 
 						lmms_track.patterns.append(lmms_pattern)
 

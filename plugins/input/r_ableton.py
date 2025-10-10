@@ -789,7 +789,7 @@ class input_ableton(plugins.base):
 								t_note_extra = {}
 								t_note_extra['probability'] = event.Probability
 								t_note_extra['velocity_range'] = event.VelocityDeviation
-								if not event.IsEnabled: t_note_extra['disabled'] = not event.IsEnabled
+								if not event.IsEnabled: cvpj_notelist.last_flag('disabled')
 								notevol = (event.Velocity/127)
 								#if issampler: notevol = notevol**3
 								cvpj_notelist.add_r(event.Time*4, event.Duration*4, kt.MidiKey-60, notevol, t_note_extra)

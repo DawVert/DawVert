@@ -832,13 +832,21 @@ def add_track(convproj_obj, project_obj, trackid, track_obj):
 	
 				t_keydata = {}
 				
-				for t_pos, t_dur, t_keys, t_vol, t_vol_off, t_chan, t_inst, t_extra, t_autopack in notespl_obj.notelist.iter_midispec():
-					if t_autopack: t_autopack.convert_to('auto', t_keys, t_vol)
-					for t_key in t_keys:
-						if t_key not in t_keydata: t_keydata[t_key] = []
-						notevol = t_vol
-						#notevol = t_vol**(1/3) if issampler else t_vol
-						t_keydata[t_key].append([counter_note.get(), t_pos, t_dur, notevol, t_inst, t_extra, t_autopack, t_vol_off])
+				for cnote in notespl_obj.notelist.iter_notes():
+					t_key = cnote.key
+					if cnote.auto: cnote.auto.convert_to('auto', cnote.keys, cnote.vol)
+					if t_key not in t_keydata: t_keydata[t_key] = []
+					t_keydata[t_key].append([
+						counter_note.get(),
+						cnote.pos,
+						cnote.dur,
+						cnote.vol,
+						cnote.inst,
+						cnote.extra,
+						cnote.auto,
+						cnote.vol_off,
+						cnote.get_flag('disabled')
+						])
 	
 				t_keydata = dict(sorted(t_keydata.items(), key=lambda item: item[0]))
 	
@@ -846,16 +854,16 @@ def add_track(convproj_obj, project_obj, trackid, track_obj):
 				for key, notedata in t_keydata.items():
 					KeyTrack_obj = proj_ableton.ableton_KeyTrack(None)
 	
-					for t_id, t_pos, t_dur, t_vol, t_inst, t_extra, t_autopack, t_vol_off in notedata:
+					for t_id, t_pos, t_dur, t_vol, t_inst, t_extra, t_autopack, t_vol_off, t_disabled in notedata:
 						MidiNoteEvent_obj = proj_ableton.ableton_x_MidiNoteEvent(None)
 						MidiNoteEvent_obj.NoteId = t_id
 						MidiNoteEvent_obj.Time = t_pos
 						MidiNoteEvent_obj.Duration = t_dur
 						MidiNoteEvent_obj.Velocity = t_vol*127
 						MidiNoteEvent_obj.OffVelocity = t_vol_off*127
+						if t_disabled: MidiNoteEvent_obj.IsEnabled = False
 						if t_extra:
 							if 'probability' in t_extra: MidiNoteEvent_obj.Probability = t_extra['probability']
-							if 'disabled' in t_extra: MidiNoteEvent_obj.IsEnabled = not bool(t_extra['disabled'])
 							if 'velocity_range' in t_extra: MidiNoteEvent_obj.VelocityDeviation = t_extra['velocity_range']
 						
 						if t_autopack:

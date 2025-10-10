@@ -574,11 +574,11 @@ class input_zenbeats(plugins.base):
 							if zb_note.pan_jitter is not None: extradata['pan_jitter'] = zb_note.pan_jitter
 							if zb_note.reverse: extradata['reverse'] = bool(zb_note.reverse)
 							if zb_note.probability != 1: extradata['probability'] = zb_note.probability
-							if not zb_note.active: t_note_extra['disabled'] = not event.active
 
 							cvpj_notelist.add_r(zb_note.start, note_dur, zb_note.semitone-60, zb_note.velocity/127, extradata if extradata else None)
 							cvpj_notelist.last_add_pan((zb_note.pan_linear-0.5)*2)
 							cvpj_notelist.last_add_finepitch(zb_note.pitch_offset)
+							if not zb_note.active: cvpj_notelist.last_flag('disabled')
 
 				if zb_track.type == 2:
 					track_obj = convproj_obj.track__add(zb_track.uid, 'audio', 1, False)

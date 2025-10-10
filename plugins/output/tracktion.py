@@ -583,21 +583,17 @@ class output_tracktion_edit(plugins.base):
 					wf_midiclip.groupID = groupassoc[groupidtr]
 
 				notespl_obj.notelist.sort()
-				for t_pos, t_dur, t_keys, t_vol, t_inst, t_extra, t_autopack in notespl_obj.notelist.iter():
-					for t_key in t_keys:
-						notepitch = 0
-						if t_extra:
-							if 'finepitch' in t_extra:
-								notepitch = t_extra['finepitch']
-						wf_note = proj_tracktion_edit.tracktion_note()
-						wf_note.key = t_key+60
-						wf_note.pos = t_pos/4
-						wf_note.dur = max(t_dur/4, 0.01)
-						wf_note.vel = int(xtramath.clamp(t_vol*127, 0, 127))
-						if notepitch:
-							nautop = wf_note.auto['PITCHBEND'] = {}
-							nautop[0] = notepitch/100
-						wf_midiclip.sequence.notes.append(wf_note)
+				for cnote in notespl_obj.notelist.iter_notes():
+					wf_note = proj_tracktion_edit.tracktion_note()
+					wf_note.key = cnote.key+60
+					wf_note.pos = cnote.pos/4
+					wf_note.dur = max(cnote.dur/4, 0.01)
+					wf_note.vel = int(xtramath.clamp(cnote.vol*127, 0, 127))
+					wf_note.mute = cnote.get_flag('disabled')
+					if cnote.auto:
+						nautop = wf_note.auto['PITCHBEND'] = {}
+						nautop[0] = cnote.auto.mod_pitch/100
+					wf_midiclip.sequence.notes.append(wf_note)
 
 				for autoid, autodata in notespl_obj.auto_ticks.items():
 					if autoid.startswith('midi_cc_'):

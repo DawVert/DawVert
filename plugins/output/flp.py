@@ -292,57 +292,61 @@ class output_cvpjs(plugins.base):
 
 			if not DEBUG_IGNORE_PATTERNS:
 				nle_obj.notelist.sort()
-				for t_pos, t_dur, t_keys, t_vol, t_vol_off, t_chan, t_inst, t_extra, t_autopack in nle_obj.notelist.iter_midispec():
-					if t_autopack: t_autopack.convert_to('slide', t_keys, t_vol)
+				for cnote in nle_obj.notelist.iter_notes():
+					if cnote.inst in g_inst_id:
+						t_autopack = cnote.auto
+						if t_autopack: t_autopack.convert_to('slide', t_keys, t_vol)
 
-					if t_inst in g_inst_id:
-						for t_key in t_keys:
-							fl_note_obj = proj_flp.flp_note()
-							fl_note_obj.rack = g_inst_id[t_inst]
-							fl_note_obj.pos = int(t_pos)
-							fl_note_obj.dur = int(t_dur)
-							fl_note_obj.key = int(t_key)+60
-							fl_note_obj.velocity = int(xtramath.clamp(t_vol,0,1)*127)
-							fl_note_obj.rel = int(xtramath.clamp(t_vol_off,0,1)*127)
+						fl_note_obj = proj_flp.flp_note()
+						fl_note_obj.rack = g_inst_id[cnote.inst]
+						fl_note_obj.pos = int(cnote.pos)
+						fl_note_obj.dur = int(cnote.dur)
+						fl_note_obj.key = int(cnote.key)+60
+						fl_note_obj.velocity = int(xtramath.clamp(cnote.vol,0,1)*127)
+						fl_note_obj.rel = int(xtramath.clamp(cnote.vol_off,0,1)*127)
 
-							if t_autopack:
-								fl_note_obj.finep = int((t_autopack.mod_pitch/10)+120)
-								fl_note_obj.pan = int((xtramath.clamp(float(t_autopack.mod_pan),-1,1)*64)+64)
-							else:
-								fl_note_obj.finep = 120
-								fl_note_obj.pan = 64
+						fl_note_obj.midich = cnote.chan%16
+						if cnote.get_flag('disabled'): fl_note_obj.midich += 32
 
-							if t_extra:
-								if 'mod_x' in t_extra: fl_note_obj.mod_x = int(xtramath.clamp(t_extra['mod_x'],0,1)*255)
-								if 'mod_y' in t_extra: fl_note_obj.mod_y = int(xtramath.clamp(t_extra['mod_y'],0,1)*255)
-							else:
-								fl_note_obj.mod_x = 128
-								fl_note_obj.mod_y = 128
+						if t_autopack:
+							fl_note_obj.finep = int((t_autopack.mod_pitch/10)+120)
+							fl_note_obj.pan = int((xtramath.clamp(float(t_autopack.mod_pan),-1,1)*64)+64)
+						else:
+							fl_note_obj.finep = 120
+							fl_note_obj.pan = 64
+
+						t_extra = cnote.extra
+						if t_extra:
+							if 'mod_x' in t_extra: fl_note_obj.mod_x = int(xtramath.clamp(t_extra['mod_x'],0,1)*255)
+							if 'mod_y' in t_extra: fl_note_obj.mod_y = int(xtramath.clamp(t_extra['mod_y'],0,1)*255)
+						else:
+							fl_note_obj.mod_x = 128
+							fl_note_obj.mod_y = 128
 		
-							if fl_note_obj.pos not in fl_notes: fl_notes[fl_note_obj.pos] = []
-							fl_notes[fl_note_obj.pos].append(fl_note_obj)
+						if fl_note_obj.pos not in fl_notes: fl_notes[fl_note_obj.pos] = []
+						fl_notes[fl_note_obj.pos].append(fl_note_obj)
 
-							if t_autopack:
-								t_slide = t_autopack.slide
-								for s_pos, s_dur, s_key, s_vol, s_extra in t_slide:
-									fl_note_obj = proj_flp.flp_note()
-									fl_note_obj.rack = g_inst_id[t_inst]
-									fl_note_obj.pos = int(t_pos + s_pos)
-									fl_note_obj.dur = int(s_dur)
-									fl_note_obj.key = int(s_key)+60
-									fl_note_obj.velocity = int(xtramath.clamp(s_vol,0,1)*100)
-									fl_note_obj.flags = 16392
-									if s_extra:
-										if 'finepitch' in s_extra: fl_note_obj.finep = int((s_extra['finepitch']/10)+120)
-										if 'release' in s_extra: fl_note_obj.rel = int(xtramath.clamp(s_extra['release'],0,1)*128)
-										if 'cutoff' in s_extra: fl_note_obj.mod_x = int(xtramath.clamp(s_extra['cutoff'],0,1)*255)
-										if 'reso' in s_extra: fl_note_obj.mod_y = int(xtramath.clamp(s_extra['reso'],0,1)*255)
-										if 'pan' in s_extra: fl_note_obj.pan = int((xtramath.clamp(float(s_extra['pan']),-1,1)*64)+64)
-									if fl_note_obj.pos not in fl_notes: fl_notes[fl_note_obj.pos] = []
-									fl_notes[fl_note_obj.pos].append(fl_note_obj)
+						if t_autopack:
+							t_slide = t_autopack.slide
+							for s_pos, s_dur, s_key, s_vol, s_extra in t_slide:
+								fl_note_obj = proj_flp.flp_note()
+								fl_note_obj.rack = g_inst_id[cnote.inst]
+								fl_note_obj.pos = int(t_pos + s_pos)
+								fl_note_obj.dur = int(s_dur)
+								fl_note_obj.key = int(s_key)+60
+								fl_note_obj.velocity = int(xtramath.clamp(s_vol,0,1)*100)
+								fl_note_obj.flags = 16392
+								if s_extra:
+									if 'finepitch' in s_extra: fl_note_obj.finep = int((s_extra['finepitch']/10)+120)
+									if 'release' in s_extra: fl_note_obj.rel = int(xtramath.clamp(s_extra['release'],0,1)*128)
+									if 'cutoff' in s_extra: fl_note_obj.mod_x = int(xtramath.clamp(s_extra['cutoff'],0,1)*255)
+									if 'reso' in s_extra: fl_note_obj.mod_y = int(xtramath.clamp(s_extra['reso'],0,1)*255)
+									if 'pan' in s_extra: fl_note_obj.pan = int((xtramath.clamp(float(s_extra['pan']),-1,1)*64)+64)
+								if fl_note_obj.pos not in fl_notes: fl_notes[fl_note_obj.pos] = []
+								fl_notes[fl_note_obj.pos].append(fl_note_obj)
 					else:
-						if t_inst:
-							logger_output.warning('Instrument "'+t_inst+'" is missing, not placing note')
+						if cnote.inst:
+							logger_output.warning('Instrument "'+cnote.inst+'" is missing, not placing note')
 
 			for poslist in sorted(fl_notes):
 				for fl_note in fl_notes[poslist]:

@@ -336,22 +336,19 @@ class output_amped(plugins.base):
 				amped_region.mute = int(notespl_obj.muted)
 
 				notespl_obj.notelist.sort()
-				for t_pos, t_dur, t_keys, t_vol, t_inst, t_extra, t_auto in notespl_obj.notelist.iter():
-					for t_key in t_keys:
-						if 0 <= t_key+60 <= 128:
-							notedata = {
-								"position": float(t_pos)/4, 
-								"length": float(t_dur)/4, 
-								"key": int(t_key+60),
-								"velocity": float(t_vol)*100, 
-								"channel": 0
-								}
+				for cnote in nle_obj.notelist.iter_notes():
+					if 0 <= cnote.key+60 <= 128:
+						notedata = {
+							"position": float(cnote.pos)/4, 
+							"length": float(cnote.dur)/4, 
+							"key": int(cnote.key+60),
+							"velocity": float(cnote.vol)*100, 
+							"channel": 0
+							}
 
-							if t_extra:
-								if 'disabled' in t_extra: 
-									notedata['mute'] = t_extra['disabled']
+						if cnote.get_flag('disabled'): notedata['mute'] = True
 
-							amped_region.midi_notes.append(notedata)
+						amped_region.midi_notes.append(notedata)
 
 			for audiopl_obj in track_obj.placements.pl_audio:
 				time_obj = audiopl_obj.time

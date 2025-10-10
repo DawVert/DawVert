@@ -452,11 +452,9 @@ class input_amped(plugins.base):
 					cvpj_notelist = placement_obj.notelist
 					for amped_note in amped_region.midi_notes:
 						if amped_note['position'] >= 0:
-							extranote = {}
+							cvpj_notelist.add_r(amped_note['position'], amped_note['length'], amped_note['key']-60, amped_note['velocity']/127, None)
 							if 'mute' in amped_note:
-								if amped_note['mute']:
-									extranote['disabled'] = True
-							cvpj_notelist.add_r(amped_note['position'], amped_note['length'], amped_note['key']-60, amped_note['velocity']/127, extranote if extranote else None)
+								if amped_note['mute']: cvpj_notelist.last_flag('disabled')
 
 				if amped_region.clips != []: 
 					placement_obj = track_obj.placements.add_nested_audio()

@@ -377,15 +377,14 @@ class output_soundation(plugins.base):
 
 					notespl_obj.notelist.sort()
 
-					for t_pos, t_dur, t_keys, t_vol, t_inst, t_extra, t_autopack in notespl_obj.notelist.iter():
-						for t_key in t_keys:
-							if 0 <= t_key+60 <= 128:
-								sng_note = {}
-								sng_note["note"] = int(t_key+60)
-								sng_note["velocity"] = float(t_vol)
-								sng_note["position"] = int(t_pos)
-								sng_note["length"] = int(t_dur)
-								soundation_region.notes.append(sng_note)
+					for cnote in notespl_obj.notelist.iter_notes():
+						if 0 <= cnote.key+60 <= 128:
+							sng_note = {}
+							sng_note["note"] = int(cnote.key+60)
+							sng_note["velocity"] = float(cnote.vol)
+							sng_note["position"] = int(cnote.pos)
+							sng_note["length"] = int(cnote.dur)
+							soundation_region.notes.append(sng_note)
 
 					soundation_channel.regions.append(soundation_region)
 

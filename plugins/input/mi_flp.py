@@ -551,8 +551,7 @@ class input_flp(plugins.base):
 					note_extra = {}
 					if fl_note.mod_x != 128: note_extra['mod_x'] = fl_note.mod_x/255
 					if fl_note.mod_y != 128: note_extra['mod_y'] = fl_note.mod_y/255
-					notechan = data_bytes.splitbyte(fl_note.midich)[1]
-					if notechan: note_extra['channel'] = notechan+1
+					flagc, notechan = data_bytes.splitbyte(fl_note.midich)
 
 					is_slide = bool(fl_note.flags & 0b000000000001000)
 
@@ -566,6 +565,7 @@ class input_flp(plugins.base):
 						cvpj_notelist.last_add_vol_off(note_rel)
 						if fl_note.finep != 120: cvpj_notelist.last_add_finepitch((fl_note.finep-120)*10)
 						if fl_note.pan != 64: cvpj_notelist.last_add_pan((fl_note.pan-64)/64)
+						if flagc&0b10: cvpj_notelist.last_flag('disabled')
 
 				for sn in slidenotes: 
 					cvpj_notelist.auto_add_slide(sn[0], sn[1], sn[2], sn[3], sn[4], sn[5])

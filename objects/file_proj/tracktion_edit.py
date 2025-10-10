@@ -449,6 +449,7 @@ class tracktion_note:
 		self.dur = 0
 		self.vel = 0
 		self.chan = 0
+		self.mute = 0
 		self.auto = {}
 
 	def load(self, xmldata):
@@ -458,13 +459,13 @@ class tracktion_note:
 			if n == 'l': self.dur = float(v)
 			if n == 'v': self.vel = int(v)
 			if n == 'c': self.chan = int(v)
+			if n == 'm': self.mute = int(v)
 
 		for subxml in xmldata:
 			if subxml.tag not in self.auto:
 				self.auto[subxml.tag] = {}
 			if subxml.attrib:
 				self.auto[subxml.tag][float(subxml.attrib['b'])] = float(subxml.attrib['v'])
-
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "NOTE")
@@ -473,6 +474,7 @@ class tracktion_note:
 		tempxml.set('l', str(self.dur))
 		tempxml.set('v', str(self.vel))
 		tempxml.set('c', str(self.chan))
+		if self.mute: tempxml.set('m', '1')
 
 		for a_name, a_val in self.auto.items():
 			for c_pos, c_val in a_val.items():

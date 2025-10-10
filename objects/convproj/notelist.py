@@ -9,6 +9,8 @@ import copy
 import hashlib
 import os
 
+flagnames = ['disabled', 'selected']
+
 class notelist_cursor:
 	def __init__(self, base_nl):
 		self.base_nl = base_nl
@@ -161,8 +163,40 @@ class notelist_cursor:
 
 verbose_copy = False
 
+class current_note:
+	__slots__ = [
+		'pos', 'dur', 'key', 'keys', 'vol', 'vol_off', 'chan', 'inst', 'extra', 'auto', 'flags'
+		]
 
+	def __init__(self):
+		self.pos = 0
+		self.dur = 0
+		self.key = 0
+		self.keys = [0]
+		self.vol = 1.0
+		self.vol_off = 1.0
+		self.chan = 0
+		self.inst = None
+		self.extra = None
+		self.auto = None
+		self.flags = 0
 
+	def set_data(self, note, cursor_obj):
+		self.pos = note['pos']
+		self.dur = note['dur']
+		self.key = 0
+		self.keys = cursor_obj.assoc_multikey_get()
+		self.vol = note['vol']
+		self.vol_off = note['vol_off']
+		self.chan = note['chan']
+		self.inst = cursor_obj.assoc_inst_get()
+		self.extra = cursor_obj.assoc_extra_get()
+		self.auto = cursor_obj.assoc_auto_get()
+		self.flags = note['flags']
+
+	def get_flag(self, flag):
+		if flag in flagnames: return bool(self.flags&(1<<flagnames.index(flag)))
+		else: return False
 
 class notelist_data:
 	dt = np.dtype([
@@ -173,6 +207,7 @@ class notelist_data:
 		('vol', np.float32),
 		('vol_off', np.float32),
 		('chan', np.int8),
+		('flags', np.uint8), 
 		('is_inst', np.int8), 
 		('is_extra', np.int8), 
 		('is_auto', np.int8), 
@@ -447,6 +482,12 @@ class cvpj_notelist:
 			note = self.cursor.getcur()
 			note['dur'] += dur
 
+	def last_flag(self, flag):
+		if self.count() and flag in flagnames:
+			flagnum = 1<<flagnames.index(flag)
+			note = self.cursor.getcur()
+			if not note['flags']&flagnum: note['flags'] += flagnum
+
 	def auto_add_slide(self, t_inst, t_pos, t_dur, t_key, t_vol, t_extra):
 		for note in self.cursor:
 			n_inst = note['assoc_inst'] if note['is_inst'] else None
@@ -645,9 +686,26 @@ class cvpj_notelist:
 	def count(self):
 		return self.data.count()
 
+	def iter_notes_multi(self):
+		cursor_obj = self.create_cursor()
+		cnote = current_note()
+		for note in cursor_obj:
+			if note['used']:
+				cnote.set_data(note, cursor_obj)
+				yield cnote
+
+	def iter_notes(self):
+		cursor_obj = self.create_cursor()
+		cnote = current_note()
+		for note in cursor_obj:
+			if note['used']:
+				cnote.set_data(note, cursor_obj)
+				for key in cnote.keys:
+					cnote.key = key
+					yield cnote
+
 	def iter(self):
 		cursor_obj = self.create_cursor()
-
 		for note in cursor_obj:
 			if note['used']:
 				t_pos = note['pos']
