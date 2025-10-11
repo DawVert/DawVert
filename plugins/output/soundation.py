@@ -164,7 +164,9 @@ class output_soundation(plugins.base):
 			if track_obj.type == 'audio': soundation_channel.type = 'audio'
 
 			trackcolor = track_obj.visual.color.get_hex_fb(128,128,128)
-			if track_obj.visual.name: soundation_channel.userSetName = track_obj.visual.name
+			if track_obj.visual.name: 
+				soundation_channel.userSetName = track_obj.visual.name
+				soundation_channel.name = track_obj.visual.name
 			soundation_channel.color = '#'+trackcolor.upper()
 			soundation_channel.volume = track_obj.params.get('vol', 1).value
 			soundation_channel.pan = 0.5 + track_obj.params.get('pan', 0).value/2
@@ -451,33 +453,43 @@ class output_soundation(plugins.base):
 		soundation_obj.loopStart = int(convproj_obj.transport.loop_start)
 		soundation_obj.loopEnd = int(convproj_obj.transport.loop_end)
 
-		#iseffectexists = 'fx' in [convproj_obj.track_data[x].type for x in convproj_obj.track_order]
-#
-		#if iseffectexists:
-#
-		#	for trackid, sends_obj in convproj_obj.trackroute.items():
-		#		tracksendnum = convproj_obj.track_order.index(trackid)
-	#
-		#		isallfx = True
-		#		for target, send_obj in sends_obj.iter():
-		#			amount = send_obj.params.get('amount', 1).value
-		#			pan = send_obj.params.get('pan', 0).value
-		#			trackrecnum = convproj_obj.track_order.index(target)
-		#			soundation_effect = proj_soundation.soundation_device(None)
-		#			soundation_effect.identifier = 'com.soundation.send'
-		#			soundation_effect.params.add('send', amount, [])
-		#			soundation_effect.params.add('pan', (pan/2+0.5), [])
-		#			soundation_effect.params.add('output', 1, [])
-		#			soundation_effect.data['channelIndex'] = trackrecnum
-		#			sng_channels[tracksendnum].effects.append(soundation_effect)
-#
-		#		if not sends_obj.to_master_active:
-		#			soundation_effect = proj_soundation.soundation_device(None)
-		#			soundation_effect.identifier = 'com.soundation.send'
-		#			soundation_effect.params.add('send', 1, [])
-		#			soundation_effect.params.add('pan', 0.5, [])
-		#			soundation_effect.params.add('output', int(sends_obj.to_master_active), [])
-		#			sng_channels[tracksendnum].effects.append(soundation_effect)
+		iseffectexists = 'fx' in [convproj_obj.track_data[x].type for x in convproj_obj.track_order]
+
+		if iseffectexists:
+			for trackid, sends_obj in convproj_obj.trackroute.items():
+				tracksendnum = convproj_obj.track_order.index(trackid)
+	
+				for target, send_obj in sends_obj.iter():
+
+					amount = send_obj.params.get('amount', 0).value
+
+					exists_1 = amount>0.001
+					exists_2 = False
+					if send_obj.sendautoid:
+						autoloc = ['send', send_obj.sendautoid, 'amount']
+						autodata = convproj_obj.automation.get_opt(autoloc)
+						if autodata:
+							if autodata.u_nopl_points:
+								if len(autodata.nopl_points): exists_2 = True
+
+					if (exists_1 or exists_2) and iseffectexists != 'fx': 
+						pan = send_obj.params.get('pan', 0).value
+						trackrecnum = convproj_obj.track_order.index(target)
+						soundation_effect = proj_soundation.soundation_device(None)
+						soundation_effect.identifier = 'com.soundation.send'
+						soundation_effect.params.add('send', amount, [])
+						soundation_effect.params.add('pan', (pan/2+0.5), [])
+						soundation_effect.params.add('output', 1, [])
+						soundation_effect.data['channelIndex'] = trackrecnum
+						sng_channels[tracksendnum].effects.append(soundation_effect)
+
+				#if not sends_obj.to_master_active:
+				#	soundation_effect = proj_soundation.soundation_device(None)
+				#	soundation_effect.identifier = 'com.soundation.send'
+				#	soundation_effect.params.add('send', 1, [])
+				#	soundation_effect.params.add('pan', 0.5, [])
+				#	soundation_effect.params.add('output', int(sends_obj.to_master_active), [])
+				#	sng_channels[tracksendnum].effects.append(soundation_effect)
 
 		for x in sng_channels: soundation_obj.channels.append(x)
 

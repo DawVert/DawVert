@@ -4,6 +4,7 @@
 import os
 import sqlite3
 import platform
+from functions.juce import pluginid_gen
 
 class pluginfo:
 	def __init__(self):
@@ -27,6 +28,7 @@ class pluginfo:
 		self.path_32bit = None
 		self.path_64bit = None
 		self.path = None
+		self.juce_uniqueid = None
 
 	def find_locpath(self, cpu_arch_list):
 		vst_cpuarch = None
@@ -62,7 +64,7 @@ class pluginfo:
 			self.path_64bit = p_path_64bit_unix
 
 	def from_sql_vst3(self, indata, platformtxt):
-		p_name, p_id, p_type, p_creator, p_category, p_version, p_sdk_version, p_url, p_email, p_audio_num_inputs, p_audio_num_outputs, p_midi_num_inputs, p_midi_num_outputs, p_num_params, p_path_32bit_win, p_path_64bit_win, p_path_32bit_unix, p_path_64bit_unix = indata
+		p_name, p_id, p_type, p_creator, p_category, p_version, p_sdk_version, p_url, p_email, p_audio_num_inputs, p_audio_num_outputs, p_midi_num_inputs, p_midi_num_outputs, p_num_params, p_path_32bit_win, p_path_64bit_win, p_path_32bit_unix, p_path_64bit_unix, p_juce_uniqueid = indata
 		self.out_exists = True
 		self.plugtype = 'vst3'
 		self.name = p_name
@@ -85,6 +87,7 @@ class pluginfo:
 		if platformtxt == 'lin': 
 			self.path_32bit = p_path_32bit_unix
 			self.path_64bit = p_path_64bit_unix
+		self.juce_uniqueid = p_juce_uniqueid
 
 	def from_sql_clap(self, indata, platformtxt):
 		p_name, p_id, p_creator, p_category, p_version, p_audio_num_inputs, p_audio_num_outputs, p_midi_num_inputs, p_midi_num_outputs, p_path_32bit_win, p_path_64bit_win, p_path_32bit_unix, p_path_64bit_unix = indata
@@ -167,6 +170,7 @@ class extplug_db:
 				path_64bit_win text,
 				path_32bit_unix text,
 				path_64bit_unix text,
+				juce_uniqueid integer,
 				UNIQUE(id)
 			)''')
 		
@@ -306,13 +310,16 @@ class vst2:
 			return 0
 
 class vst3:
-	exe_txt_start = "SELECT name, id, type, creator, category, version, sdk_version, url, email, audio_num_inputs, audio_num_outputs, midi_num_inputs, midi_num_outputs, num_params, path_32bit_win, path_64bit_win, path_32bit_unix, path_64bit_unix FROM vst3"
+	exe_txt_start = "SELECT name, id, type, creator, category, version, sdk_version, url, email, audio_num_inputs, audio_num_outputs, midi_num_inputs, midi_num_outputs, num_params, path_32bit_win, path_64bit_win, path_32bit_unix, path_64bit_unix, juce_uniqueid FROM vst3"
 
 	def add(pluginfo_obj, platformtxt):
 	
 		if pluginfo_obj.id and extplug_db.db_plugins:
 			extplug_db.db_plugins.execute("INSERT OR IGNORE INTO vst3 (id) VALUES (?)", (pluginfo_obj.id,))
 	
+			pluginfo_obj.juce_uniqueid = pluginid_gen.vst3_make_uniqueid(pluginfo_obj.id)
+			extplug_db.db_plugins.execute("UPDATE vst3 SET juce_uniqueid = ? WHERE id = ?", (pluginfo_obj.juce_uniqueid, pluginfo_obj.id,))
+
 			if not pluginfo_obj.type and pluginfo_obj.category:
 				splitcat = pluginfo_obj.category.split('|')
 				if splitcat[0] == 'Fx': pluginfo_obj.type = 'effect'
@@ -342,13 +349,15 @@ class vst3:
 			if pluginfo_obj.num_params: extplug_db.db_plugins.execute("UPDATE vst3 SET num_params = ? WHERE id = ?", (pluginfo_obj.num_params, pluginfo_obj.id,))
 			if pluginfo_obj.type: extplug_db.db_plugins.execute("UPDATE vst3 SET type = ? WHERE id = ?", (pluginfo_obj.type, pluginfo_obj.id,))
 			if pluginfo_obj.category: extplug_db.db_plugins.execute("UPDATE vst3 SET category = ? WHERE id = ?", (pluginfo_obj.category, pluginfo_obj.id,))
-	
+
 	def check(bycat, in_val):
 		if extplug_db.db_plugins:
 			if bycat == 'name':
 				return bool(extplug_db.db_plugins.execute("SELECT count(*) FROM vst3 WHERE name = ?", (in_val,)).fetchone())
 			elif bycat == 'id':
 				return bool(extplug_db.db_plugins.execute("SELECT count(*) FROM vst3 WHERE id = ?", (in_val,)).fetchone())
+			elif bycat == 'juce_uniqueid':
+				return bool(extplug_db.db_plugins.execute("SELECT count(*) FROM vst3 WHERE juce_uniqueid = ?", (in_val,)).fetchone())
 		else:
 			return False
 
@@ -360,7 +369,10 @@ class vst3:
 		if extplug_db.db_plugins:
 			if bycat == 'id':
 				founddata = extplug_db.db_plugins.execute(vst3.exe_txt_start+" WHERE id = ?", (in_val,)).fetchone()
-	
+
+			if bycat == 'juce_uniqueid':
+				founddata = extplug_db.db_plugins.execute(vst3.exe_txt_start+" WHERE juce_uniqueid = ?", (in_val,)).fetchone()
+
 			if bycat == 'name':
 				founddata = extplug_db.db_plugins.execute(vst3.exe_txt_start+" WHERE name = ?", (in_val,)).fetchone()
 	

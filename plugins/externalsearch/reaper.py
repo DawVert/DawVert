@@ -84,31 +84,32 @@ class plugsearch(plugins.base):
 								vst_name = vst_name.replace(' (x86)', '')
 								del namesplit[1]
 
-						vst_mani = namesplit[0]
-						vst_name = vst_name.replace(' ('+vst_mani+')', '')
-
-						for p in vstpath:
-							fullfilename = os.path.join(p, filename)
-							if os.path.exists(fullfilename): break
-							fullfilename = None
-
-						if not is_vst3:
-							with globalstore.extplug.add('vst2', globalstore.os_platform) as pluginfo_obj:
-								pluginfo_obj.id = int(vst_id)
-								pluginfo_obj.type = 'synth' if is_inst else 'fx'
-								pluginfo_obj.creator = vst_mani
-								pluginfo_obj.audio_num_inputs = audioinports
-								pluginfo_obj.audio_num_outputs = audiooutports
-							vst2count += 1
-						else:
-							with globalstore.extplug.add('vst3', globalstore.os_platform) as pluginfo_obj:
-								pluginfo_obj.id = vst_id
-								pluginfo_obj.type = 'synth' if is_inst else 'fx'
-								pluginfo_obj.creator = vst_mani
-								pluginfo_obj.audio_num_inputs = audioinports
-								pluginfo_obj.audio_num_outputs = audiooutports
-								pluginfo_obj.name = vst_name
-							vst3count += 1
+						if namesplit:
+							vst_mani = namesplit[0]
+							vst_name = vst_name.replace(' ('+vst_mani+')', '')
+	
+							for p in vstpath:
+								fullfilename = os.path.join(p, filename)
+								if os.path.exists(fullfilename): break
+								fullfilename = None
+	
+							if not is_vst3:
+								with globalstore.extplug.add('vst2', globalstore.os_platform) as pluginfo_obj:
+									pluginfo_obj.id = int(vst_id)
+									pluginfo_obj.type = 'synth' if is_inst else 'fx'
+									pluginfo_obj.creator = vst_mani
+									pluginfo_obj.audio_num_inputs = audioinports
+									pluginfo_obj.audio_num_outputs = audiooutports
+								vst2count += 1
+							else:
+								with globalstore.extplug.add('vst3', globalstore.os_platform) as pluginfo_obj:
+									pluginfo_obj.id = vst_id
+									pluginfo_obj.type = 'synth' if is_inst else 'fx'
+									pluginfo_obj.creator = vst_mani
+									pluginfo_obj.audio_num_inputs = audioinports
+									pluginfo_obj.audio_num_outputs = audiooutports
+									pluginfo_obj.name = vst_name
+								vst3count += 1
 
 			print('[reaper] VST2: '+str(vst2count)+', VST3: '+str(vst3count))
 			return True

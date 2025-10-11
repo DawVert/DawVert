@@ -256,19 +256,17 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj):
 				ebrw_writestr = easybinrw.binwrite()
 				ebrw_writestr.int_u32(vst_fx_fourid)
 				ebrw_writestr.int_u32(4276969198)
-				ebrw_writestr.int_u32(2)
-				ebrw_writestr.int_u32(1)
-				for _ in range(pluginfo_obj.audio_num_inputs if pluginfo_obj.audio_num_inputs else 2):
-					ebrw_writestr.flags_i64([33])
-				for n in range(pluginfo_obj.audio_num_outputs if pluginfo_obj.audio_num_inputs else 2):
-					ebrw_writestr.flags_i64([n])
+				ebrw_writestr.int_u32(len(plugin_obj.audioports.in_ports))
+				for x in plugin_obj.audioports.in_ports: ebrw_writestr.flags_i64(x)
+				ebrw_writestr.int_u32(len(plugin_obj.audioports.out_ports))
+				for x in plugin_obj.audioports.out_ports: ebrw_writestr.flags_i64(x)
 				ebrw_writestr.int_u32(vstparamsnum)
 				ebrw_writestr.int_u32(vst_fx_datatype == 'chunk')
 				ebrw_writestr.int_s16(plugin_obj.current_program)
 				ebrw_writestr.int_u8(16)
 				ebrw_writestr.int_u8(0)
-
 				rpp_vst_obj.data_con = ebrw_writestr.getvalue()
+
 				if vstparams: rpp_vst_obj.data_chunk = vstparams
 				rpp_plug_obj.bypass['bypass'] = not fx_on
 				rpp_plug_obj.wet['wet'] = fx_wet
@@ -311,19 +309,31 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj):
 				vst_fx_version = plugin_obj.external_info.version
 
 				chunkdata = plugin_obj.rawdata_get('chunk')
-				vstparams = struct.pack('II', len(chunkdata), 1)+chunkdata+b'\x00\x00\x00\x00\x00\x00\x00\x00'
-				vstheader = b':\xfbA+\xee^\xed\xfe'
-				vstheader += struct.pack('II', 0, plugin_obj.audioports.num_outputs)
-				for n in range(plugin_obj.audioports.num_outputs): 
-					if n < len(plugin_obj.audioports.ports): vstheader += data_bytes.set_bitnums(plugin_obj.audioports.ports[n], 8)
-					else: vstheader += b'\x00\x00\x00\x00\x00\x00\x00\x00'
-				vstheader_end = (len(chunkdata)+16).to_bytes(4, 'little')+b'\x01\x00\x00\x00\xff\xff\x10\x00'
+
+				ebrw_writestr = easybinrw.binwrite()
+				ebrw_writestr.int_u32(0)
+				ebrw_writestr.int_u32(4276969198)
+				ebrw_writestr.int_u32(len(plugin_obj.audioports.in_ports))
+				for x in plugin_obj.audioports.in_ports: ebrw_writestr.flags_i64(x)
+				ebrw_writestr.int_u32(len(plugin_obj.audioports.out_ports))
+				for x in plugin_obj.audioports.out_ports: ebrw_writestr.flags_i64(x)
+				ebrw_writestr.int_u32(len(chunkdata)+16)
+				ebrw_writestr.int_u32(1)
+				ebrw_writestr.int_s16(plugin_obj.current_program)
+				ebrw_writestr.int_u8(16)
+				ebrw_writestr.int_u8(0)
+				rpp_vst_obj.data_con = ebrw_writestr.getvalue()
 
 				rpp_vst_obj.vst_name = plugin_obj.external_info.name
 				rpp_vst_obj.vst_fourid = 0
 				rpp_vst_obj.vst3_uuid = vst_fx_id
-				rpp_vst_obj.data_con = vstheader+vstheader_end
-				rpp_vst_obj.data_chunk = vstparams
+
+				ebrw_writestr = easybinrw.binwrite()
+				ebrw_writestr.int_u32(len(chunkdata))
+				ebrw_writestr.int_u32(1)
+				ebrw_writestr.raw(chunkdata)
+				rpp_vst_obj.data_chunk = ebrw_writestr.getvalue()
+
 				rpp_plug_obj.bypass['bypass'] = not fx_on
 				rpp_plug_obj.wet['wet'] = fx_wet
 				if fx_wet != 1: rpp_plug_obj.wet.used = True
@@ -505,6 +515,17 @@ class output_reaper(plugins.base):
 				outmarker = [num+1, timemarker_obj.position+timemarker_obj.duration, '', 1]
 				rpp_project.markers.append(outmarker)
 
+		track_obj = convproj_obj.track_master
+		rpp_project.master_volume['vol'] = track_obj.params.get('vol', 1.0).value
+		rpp_project.master_volume['pan'] = track_obj.params.get('pan', 0).value
+		pan_mode = track_obj.datavals.get('pan_mode', '')
+		if pan_mode == 'mono': rpp_project.master_panmode.set(3)
+		if pan_mode == 'stereo': rpp_project.master_panmode.set(5)
+		if pan_mode == 'split': 
+			rpp_project.master_panmode.set(6)
+			rpp_project.master_volume['left'] = track_obj.params.get('splitpan_left', -1).value
+			rpp_project.master_volume['right'] = track_obj.params.get('splitpan_right', 1).value
+
 		trackdata = []
 
 		tracknum = 0
@@ -517,11 +538,11 @@ class output_reaper(plugins.base):
 			if track_obj.visual.name: rpp_track_obj.name.set(track_obj.visual.name)
 			if track_obj.visual.color: 
 				rpp_track_obj.peakcol.set(cvpj_color_to_reaper_color(track_obj.visual.color))
-			rpp_track_obj.volpan['vol'] = track_obj.params.get('vol', 1.0).value
-			rpp_track_obj.volpan['pan'] = track_obj.params.get('pan', 0).value
 			rpp_track_obj.mutesolo['mute'] = int(not track_obj.params.get('enabled', 1).value)
 			rpp_track_obj.mutesolo['solo'] = int(track_obj.params.get('solo', 0).value)
 
+			rpp_track_obj.volpan['vol'] = track_obj.params.get('vol', 1.0).value
+			rpp_track_obj.volpan['pan'] = track_obj.params.get('pan', 0).value
 			pan_mode = track_obj.datavals.get('pan_mode', '')
 			if pan_mode == 'mono': rpp_track_obj.panmode.set(3)
 			if pan_mode == 'stereo': rpp_track_obj.panmode.set(5)

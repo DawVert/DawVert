@@ -552,3 +552,11 @@ class cvpj_visual_keynote:
 		visual_obj = cvpj_visual()
 		self.data[k] = visual_obj
 		return visual_obj
+
+
+class cvpj_visual_track:
+	__slots__ = ['param_quick_access','param_auto_track','param_auto_sep']
+	def __init__(self):
+		self.param_quick_access = None
+		self.param_auto_track = None
+		self.param_auto_sep = None

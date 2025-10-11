@@ -255,6 +255,17 @@ class input_reaper(plugins.base):
 				if marker[1]: timemarker_obj.visual.name = marker[1]
 				if marker[3]: timemarker_obj.visual.color.set_int(reaper_color_to_cvpj_color(marker[3], True))
 
+		track_obj = convproj_obj.track_master
+		track_obj.params.add('vol', rpp_project.master_volume['vol'], 'float')
+		track_obj.params.add('pan', rpp_project.master_volume['pan'], 'float')
+		panmode = rpp_project.master_panmode.get()
+		if panmode == 3: track_obj.datavals.add('pan_mode', 'mono')
+		if panmode == 5: track_obj.datavals.add('pan_mode', 'stereo')
+		if panmode == 6: 
+			track_obj.datavals.add('pan_mode', 'split')
+			track_obj.params.add('splitpan_left', rpp_project.master_volume['left'], 'float')
+			track_obj.params.add('splitpan_right', rpp_project.master_volume['right'], 'float')
+
 		for tracknum, rpp_track in enumerate(rpp_project.tracks):
 			cvpj_trackid = rpp_track.trackid.get()
 			used_trackids.append(cvpj_trackid)
@@ -268,17 +279,11 @@ class input_reaper(plugins.base):
 
 			trackcolor = rpp_track.peakcol.get()
 			track_obj.visual.color.set_int(reaper_color_to_cvpj_color(trackcolor, True))
-			track_obj.params.add('vol', rpp_track.volpan['vol'], 'float')
-			track_obj.params.add('pan', rpp_track.volpan['pan'], 'float')
 			track_obj.params.add('enabled', not bool(rpp_track.mutesolo['mute']), 'bool')
 			track_obj.params.add('solo', bool(rpp_track.mutesolo['solo']), 'bool')
 
-			iphase = rpp_track.iphase.get()
-			if bool(iphase):
-				inverse_fxid = cvpj_trackid+'_inverse'
-				plugin_obj = convproj_obj.plugin__add(inverse_fxid, 'universal', 'invert', None)
-				track_obj.plugslots.slots_mixer.append(inverse_fxid)
-
+			track_obj.params.add('vol', rpp_track.volpan['vol'], 'float')
+			track_obj.params.add('pan', rpp_track.volpan['pan'], 'float')
 			panmode = rpp_track.panmode.get()
 			if panmode == 3: track_obj.datavals.add('pan_mode', 'mono')
 			if panmode == 5: track_obj.datavals.add('pan_mode', 'stereo')
@@ -286,6 +291,12 @@ class input_reaper(plugins.base):
 				track_obj.datavals.add('pan_mode', 'split')
 				track_obj.params.add('splitpan_left', rpp_track.volpan['left'], 'float')
 				track_obj.params.add('splitpan_right', rpp_track.volpan['right'], 'float')
+
+			iphase = rpp_track.iphase.get()
+			if bool(iphase):
+				inverse_fxid = cvpj_trackid+'_inverse'
+				plugin_obj = convproj_obj.plugin__add(inverse_fxid, 'universal', 'invert', None)
+				track_obj.plugslots.slots_mixer.append(inverse_fxid)
 
 			do_auto(pooledenvs, convproj_obj, rpp_track.volenv2, ['track', cvpj_trackid, 'vol'], False, 'float', False)
 			do_auto(pooledenvs, convproj_obj, rpp_track.panenv2, ['track', cvpj_trackid, 'pan'], False, 'float', False)
@@ -323,10 +334,27 @@ class input_reaper(plugins.base):
 					pluginids.append(pluginid)
 
 					if rpp_plugin.type == 'VST':
+						aud_in_chan = [0, 1]
+						aud_out_chan = [0, 1]
+						chunk_size = 0
+						uses_chunk = 0
+						programnum = 0
+
+						try:
+							ebrw_readstr = easybinrw.binread()
+							ebrw_readstr.load_data(rpp_extplug.data_con)
+							if ebrw_readstr.remaining(): ebrw_readstr.skip(4) # id
+							if ebrw_readstr.remaining(): ebrw_readstr.skip(4) # unknown 2
+							if ebrw_readstr.remaining(): aud_in_chan = [ebrw_readstr.flags_i64() for x in range(ebrw_readstr.int_u32())]
+							if ebrw_readstr.remaining(): aud_out_chan = [ebrw_readstr.flags_i64() for x in range(ebrw_readstr.int_u32())]
+							if ebrw_readstr.remaining(): chunk_size = ebrw_readstr.int_u32() # chunk size
+							if ebrw_readstr.remaining(): uses_chunk = ebrw_readstr.int_u32() # uses chunk
+							if ebrw_readstr.remaining(): programnum = ebrw_readstr.int_s16() # program
+						except:
+							pass
+
 						if rpp_extplug.vst3_uuid == None:
 							fourid = rpp_extplug.vst_fourid
-
-							#print(fourid)
 
 							if fourid == 1920167789:
 								if datadef_obj:
@@ -336,102 +364,50 @@ class input_reaper(plugins.base):
 										if 'filename' in dfdict: filenames = dfdict['filename'].split('>0 YOU NEED A NEWER REASAMPLOMATIC, HIT LEAVE OFFLINE!')[0].split('|')
 										samplers.append([filenames, dfdict])
 
-							#elif fourid in nativeids:
-							#	plugname = nativeids[fourid]
-#
-							#	fldso = globalstore.dataset.get_obj('reaper', 'plugin', plugname)
-							#	data_chunk = rpp_extplug.data_chunk
-#
-							#	print(data_chunk)
-#
-							#	print(  datadef_obj.parse(plugname, data_chunk)  )
-
-							#elif fourid in nativeids_adv:
-							#	plugname = nativeids_adv[fourid]
-							#	plugdata = datadef_obj.parse(plugname, rpp_extplug.data_chunk)
-							#	fldso = globalstore.dataset.get_obj('reaper', 'plugin', plugname)
-							#	plugin_obj = None
-#
-							#	print(plugname)
-#
-							#	if plugname == 'reacomp':
-							#		plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'native', 'reacomp')
-							#		plugin_obj.role = 'fx'
-							#		for name, dset_param in fldso.params.iter():
-							#			if name in plugdata:
-							#				plugin_obj.dset_param__add(name, plugdata[name], dset_param)
-							#	if plugname == 'reaeq':
-							#		if 'bands' in plugdata:
-							#			for band in plugdata['bands']:
-							#				print(band)
-#
-#
-							#	if plugin_obj is not None: track_obj.plugin_autoplace(plugin_obj, pluginid)
-
 							else:
 								pluginfo_obj = globalstore.extplug.get('vst2', 'id', fourid, None, [64, 32])
+								plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst2', None)
+								plugin_obj.fxdata_add(not rpp_plugin.bypass['bypass'], rpp_plugin.wet['wet'])
+								extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
+								if uses_chunk:
+									extmanu_obj.vst2__replace_data('id', fourid, rpp_extplug.data_chunk, None, False)
+								else:
+									numparams = (len(rpp_extplug.data_chunk)//4)-2
+									vstparams = struct.unpack('f'*numparams, rpp_extplug.data_chunk[8:])
+									extmanu_obj.vst2__setup_params('id', fourid, numparams, None, False)
+									for n, v in enumerate(vstparams): extmanu_obj.vst2__set_param(n, v)
+									extmanu_obj.vst2__params_output()
 
-								try:
-									ebrw_readstr = easybinrw.binread()
-									ebrw_readstr.load_data(rpp_extplug.data_con)
-									ebrw_readstr.skip(4) # id
-									ebrw_readstr.skip(4) # unknown 2
-									num_inchannels = ebrw_readstr.int_u32()
-									ebrw_readstr.skip(4) # 1
-									aud_in_chan = [ebrw_readstr.flags_i64() for x in range(num_inchannels)]
-									aud_out_chan = [ebrw_readstr.flags_i64() for x in range(pluginfo_obj.audio_num_outputs)]
-									chunk_size = ebrw_readstr.int_u32() # chunk size
-									uses_chunk = ebrw_readstr.int_u32() # uses chunk
-									programnum = ebrw_readstr.int_s16() # program
-									ebrw_readstr.skip(1) # 16
-									ebrw_readstr.skip(1) # 16
-
-									plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst2', None)
-									plugin_obj.fxdata_add(not rpp_plugin.bypass['bypass'], rpp_plugin.wet['wet'])
-									extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
-									if uses_chunk:
-										extmanu_obj.vst2__replace_data('id', fourid, rpp_extplug.data_chunk, None, False)
-									else:
-										numparams = (len(rpp_extplug.data_chunk)//4)-2
-										vstparams = struct.unpack('f'*numparams, rpp_extplug.data_chunk[8:])
-										extmanu_obj.vst2__setup_params('id', fourid, numparams, None, False)
-										for n, v in enumerate(vstparams): extmanu_obj.vst2__set_param(n, v)
-										extmanu_obj.vst2__params_output()
-
-									for parmenv in rpp_plugin.parmenv:
-										if parmenv.is_param:
-											do_auto(pooledenvs, convproj_obj, parmenv, ['plugin', pluginid, 'ext_param_'+str(parmenv.param_id)], False, 'float', False)
+								for parmenv in rpp_plugin.parmenv:
+									if parmenv.is_param:
+										do_auto(pooledenvs, convproj_obj, parmenv, ['plugin', pluginid, 'ext_param_'+str(parmenv.param_id)], False, 'float', False)
 	
-									if fourid == 1919118692: track_obj.plugslots.slots_notes.append(pluginid)
-									else: track_obj.plugin_autoplace(plugin_obj, pluginid)
-
-									plugin_obj.current_program = programnum
-								except:
-									#import traceback
-									#print(traceback.format_exc())
-									pass
+								if fourid == 1919118692: track_obj.plugslots.slots_notes.append(pluginid)
+								else: track_obj.plugin_autoplace(plugin_obj, pluginid)
 
 						else:
 							plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst3', None)
 							plugin_obj.fxdata_add(not rpp_plugin.bypass['bypass'], rpp_plugin.wet['wet'])
 							if len(rpp_extplug.data_chunk)>8:
-								try:
-									preset_data = bytereader.bytereader()
-									preset_data.load_raw(rpp_extplug.data_chunk)
-									chunk_size = preset_data.int32()
-									unk = preset_data.int32()
+								if True:
+								#try:
+									preset_data = easybinrw.binread()
+									preset_data.load_data(rpp_extplug.data_chunk)
+									chunk_size = preset_data.int_u32()
+									unk = preset_data.int_u32()
 									chunk = preset_data.raw(chunk_size)
-
 									extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 									extmanu_obj.vst3__replace_data('id', rpp_extplug.vst3_uuid, chunk, None)
-
 									track_obj.plugin_autoplace(plugin_obj, pluginid)
 								except:
 									pass
 
 							for parmenv in rpp_plugin.parmenv:
-								if parmenv.is_param:
-									do_auto(pooledenvs, convproj_obj, parmenv, ['plugin', pluginid, 'ext_param_'+str(parmenv.param_id)], False, 'float', False)
+								if parmenv.is_param: do_auto(pooledenvs, convproj_obj, parmenv, ['plugin', pluginid, 'ext_param_'+str(parmenv.param_id)], False, 'float', False)
+
+						plugin_obj.audioports.in_ports = aud_in_chan
+						plugin_obj.audioports.out_ports = aud_out_chan
+						plugin_obj.current_program = programnum
 
 					if rpp_plugin.type == 'CLAP':
 						plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'clap', None)

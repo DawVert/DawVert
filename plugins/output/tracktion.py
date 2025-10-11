@@ -48,7 +48,7 @@ def add_auto_curves(convproj_obj, autoloc, wf_plugin, param_id):
 		autopoints.remove_instant()
 		autocurve_obj = proj_tracktion_edit.tracktion_automationcurve()
 		autocurve_obj.paramid = param_id
-		autocurve_obj.points = [[x.pos*4, x.value, None] for x in autopoints]
+		autocurve_obj.points = [[x.pos*4, x.value, None] for x in autopoints if x.pos>=0]
 		wf_plugin.automationcurves.append(autocurve_obj)
 
 def sampler_do_filter(soundlayer, filter_obj):
@@ -113,6 +113,20 @@ def soundlayer_samplepart(plugin_obj, gpitch, programdata, lowNote, highNote, ro
 		if 'vel_sens' in sp_obj.data: soundparameters['sensParam'] = float(sp_obj.data['vel_sens'])
 		return soundlayer
 
+def do_sends(convproj_obj, sends_data, wf_track, auxnums):
+	for sendid, send_obj in sends_data:
+		vol = send_obj.params.get('amount', 0).value
+		exists_1 = vol>0.001
+		exists_2 = False
+		if send_obj.sendautoid:
+			autoloc = ['send', send_obj.sendautoid, 'amount']
+			autodata = convproj_obj.automation.get_opt(autoloc)
+			if autodata:
+				if autodata.u_nopl_points:
+					if len(autodata.nopl_points): esists_2 = True
+						
+		if exists_1 or exists_2: make_send_plugin(convproj_obj, wf_track, sendid, send_obj, auxnums)
+
 def make_send_plugin(convproj_obj, wf_track, returnid, send_obj, auxnums):
 	from objects.file_proj import tracktion_edit as proj_tracktion_edit
 	wf_plugin = proj_tracktion_edit.tracktion_plugin()
@@ -121,7 +135,8 @@ def make_send_plugin(convproj_obj, wf_track, returnid, send_obj, auxnums):
 	wf_plugin.presetDirty = 1
 	wf_plugin.params['auxSendSliderPos'] = send_obj.params.get('amount', 0).value
 	wf_plugin.params['busNum'] = auxnums[returnid]
-	# add_auto_curves(convproj_obj, [startn, iddat, 'vol'], wf_plugin, 'volume')
+	if send_obj.sendautoid:
+		add_auto_curves(convproj_obj, ['send', send_obj.sendautoid, 'amount'], wf_plugin, 'send level')
 	wf_track.plugins.append(wf_plugin)
 	return wf_plugin
 
@@ -769,15 +784,11 @@ class output_tracktion_edit(plugins.base):
 				else:
 					sends_post.append([sendid, send_obj])
 
-			for sendid, send_obj in sends_pre:
-				vol = send_obj.params.get('amount', 0).value
-				if vol>0.001: make_send_plugin(convproj_obj, wf_track, sendid, send_obj, auxnums)
+			do_sends(convproj_obj, sends_pre, wf_track, auxnums)
 
 			make_volpan_plugin(convproj_obj, track_obj, trackid, wf_track, 'track')
 
-			for sendid, send_obj in sends_post:
-				vol = send_obj.params.get('amount', 0).value
-				if vol>0.001: make_send_plugin(convproj_obj, wf_track, sendid, send_obj, auxnums)
+			do_sends(convproj_obj, sends_post, wf_track, auxnums)
 
 			make_level_plugin(wf_track)
 

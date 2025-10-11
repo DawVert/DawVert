@@ -34,20 +34,21 @@ class cvpj_audioports:
 	def __init__(self):
 		self.num_inputs = 2
 		self.num_outputs = 2
-		self.ports = [[0],[1]]
+		self.in_ports = []
+		self.out_ports = []
 
 	def __getitem__(self, index):
 		return self.ports[index]
 
-	def append(self, val):
-		self.ports.append(val)
-
 	def setnums_auto(self, i_in, i_out):
 		self.num_inputs = i_in if i_in != None else 2
 		self.num_outputs = i_out if i_out != None else 2
-		self.ports = []
+		self.in_ports = []
+		self.out_ports = []
 		for x in range(max(self.num_inputs, self.num_outputs)):
-			self.ports.append([x])
+			self.in_ports.append([x])
+		for x in range(max(self.num_inputs, self.num_outputs)):
+			self.out_ports.append([x])
 
 class cvpj_plugin_external:
 	def __init__(self):

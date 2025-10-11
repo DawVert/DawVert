@@ -12,6 +12,31 @@ logger_input = logging.getLogger('input')
 def calcsec(val, ppq):
 	return (val/ppq)/50
 
+def do_plugins(convproj_obj, plugins, track_obj):
+	for qplug in plugins:
+		if qplug.type == 'VST2':
+			plugfilename = qplug.filename
+			chunkdata = None
+
+			for config in qplug.configs:
+				if config[0] == 'chunk':
+					try: chunkdata = config[2].replace('\n', '').replace(' ', '')
+					except: pass
+
+			if plugfilename and chunkdata:
+				plugfilename = plugfilename.replace('/', '\\')
+				plugin_obj, pluginid = convproj_obj.plugin__add__genid('external', 'vst2', 'unix')
+				extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
+				extmanu_obj.vst2__replace_data('path_unix', plugfilename, None, None, False)
+				plugin_obj.external_info.datatype = 'chunk'
+				try: plugin_obj.rawdata_add_b64('chunk', chunkdata)
+				except: pass
+
+				for param in qplug.params:
+					extmanu_obj.add_param(param.index, param.value, param.name)
+
+				track_obj.plugslots.plugin_autoplace(plugin_obj, pluginid)
+
 class input_midi(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -58,6 +83,14 @@ class input_midi(plugins.base):
 		#for audioid, filename in project_obj.files.audio_list.items():
 		#	sampleref_obj = convproj_obj.sampleref__add(audioid, filename, None)
 
+		for device_obj in project_obj.devices:
+			if isinstance(device_obj, proj_qtractor.qtractor_audio_engine):
+				audio_bus = device_obj.audio_bus
+				track_obj = convproj_obj.track_master
+				track_obj.params.add('vol', audio_bus.output_gain, 'float')
+				track_obj.params.add('pan', audio_bus.output_panning, 'float')
+				do_plugins(convproj_obj, audio_bus.output_plugins, track_obj)
+
 		for tracknum, qtrack in enumerate(project_obj.tracks):
 			cvpj_trackid = str(tracknum)
 
@@ -99,33 +132,8 @@ class input_midi(plugins.base):
 				midiauto_obj.do_midi_file(midipath, 4, True, tempomul)
 			#print(midiauto_obj)
 
-			for qplug in qtrack.plugins:
-				if qplug.type == 'VST2':
-					plugfilename = qplug.filename
-					chunkdata = None
-
-					for config in qplug.configs:
-						if config[0] == 'chunk':
-							try:
-								chunkdata = config[2].replace('\n', '').replace(' ', '')
-							except:
-								pass
-
-					if plugfilename and chunkdata:
-						plugfilename = plugfilename.replace('/', '\\')
-						plugin_obj, pluginid = convproj_obj.plugin__add__genid('external', 'vst2', 'unix')
-						extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
-						extmanu_obj.vst2__replace_data('path_unix', plugfilename, None, None, False)
-						plugin_obj.external_info.datatype = 'chunk'
-						try: plugin_obj.rawdata_add_b64('chunk', chunkdata)
-						except: pass
-
-						for param in qplug.params:
-							extmanu_obj.add_param(param.index, param.value, param.name)
-
-						track_obj.plugslots.plugin_autoplace(plugin_obj, pluginid)
+			do_plugins(convproj_obj, qtrack.plugins, track_obj)
 						
-
 			clipcolor = qtrack.view.background_color
 			
 			if qtrack.type == 'audio':
@@ -137,6 +145,7 @@ class input_midi(plugins.base):
 						calcsec(clip.properties.length, ppq)
 						)
 					placement_obj.visual.name = clip.name
+					placement_obj.muted = bool(clip.properties.mute)
 
 					if clipcolor: placement_obj.visual.color.set_hex(clipcolor)
 					filepath = clip.audioclip.filename

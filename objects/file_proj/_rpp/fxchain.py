@@ -32,7 +32,8 @@ class rpp_vst:
 					self.vst_fourid = int(v.split('<')[0])
 					self.vst_uuid = v.split('<')[1].split('>')[0]
 				elif '{' in v:
-					self.vst_fourid = int(v.split('{')[0])
+					fourid = v.split('{')[0]
+					if fourid: self.vst_fourid = int(fourid)
 					self.vst3_uuid = v.split('{')[1].split('}')[0]
 				else:
 					self.vst_fourid = int(v.split('<')[0])
@@ -85,23 +86,7 @@ class rpp_js:
 		self.data = []
 		self.js_id = ''
 		self.js_unk = ''
-
-	def load(self, values, inside_dat):
-		if inside_dat: self.data = inside_dat[0]
-		for n, v in enumerate(values):
-			if n == 0: self.js_id = v
-			if n == 1: self.js_unk = v
-
-	def write(self, rpp_data):
-		rpp_jsdata = robj('JS',[self.js_id, self.js_unk])
-		rpp_jsdata.children.append(self.data)
-		rpp_data.children.append(rpp_jsdata)
-
-class rpp_js:
-	def __init__(self):
-		self.data = []
-		self.js_id = ''
-		self.js_unk = ''
+		self.pinmap = None
 
 	def load(self, values, inside_dat):
 		if inside_dat: self.data = inside_dat[0]
@@ -298,6 +283,9 @@ class rpp_fxchain:
 					plug_obj.plugin = js_obj
 					plug_obj.bypass.read(bypassval)
 					self.plugins.append(plug_obj)
+				elif name in 'JS_PINMAP': 
+					for n, x in enumerate(reaper_func.getbin_multi(inside_dat)):
+						if n == 0: js_obj.pinmap = x
 				elif name in 'REWIRE': 
 					rewire_obj = rpp_rewire()
 					rewire_obj.load(values, inside_dat)
@@ -330,7 +318,6 @@ class rpp_fxchain:
 				#	plug_obj = rpp_plugin()
 				#	plug_obj.type = 'UNKNOWN'
 				#	self.plugins.append(plug_obj)
-
 
 	def write(self, rpp_data):
 		self.wndrect.write('WNDRECT', rpp_data)

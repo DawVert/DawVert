@@ -1429,7 +1429,7 @@ class output_ableton(plugins.base):
 
 		for num, alsdata in enumerate(convproj_obj.track_master.iter_return()):
 			returnid, return_obj = alsdata
-			project_obj.SendsPre[num] = False
+			project_obj.SendsPre[num] = return_obj.params.get('pre', False).value
 
 		if dawvert_intent.output_mode == 'file':
 			project_obj.save_to_file(dawvert_intent.output_file)

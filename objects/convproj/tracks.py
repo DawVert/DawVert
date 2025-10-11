@@ -281,7 +281,7 @@ class cvpj_instrument:
 		return plugin_obj
 
 class cvpj_return_track:
-	__slots__ = ['visual','visual_ui','params','datavals','sends','plugslots','latency_offset']
+	__slots__ = ['visual','visual_ui','params','datavals','sends','plugslots','latency_offset','visual_track']
 	def __init__(self):
 		self.visual = visual.cvpj_visual()
 		self.visual_ui = visual.cvpj_visual_ui()
@@ -290,6 +290,7 @@ class cvpj_return_track:
 		self.plugslots = cvpj_plugslots()
 		self.sends = sends.cvpj_sends()
 		self.latency_offset = 0
+		self.visual_track = visual.cvpj_visual_track()
 
 	def json__make(self):
 		outjson = {}
@@ -366,7 +367,7 @@ class cvpj_armstate:
 		return cls
 
 class cvpj_track:
-	__slots__ = ['time_ppq','uses_placements','lanes','is_indexed','type','is_laned','datavals','visual','visual_ui','visual_inst','params','midi','fxrack_channel','placements','sends','group','returns','notelist_index','scenes','audio_channels','is_drum','timemarkers','armed','plugslots','latency_offset','visual_keynotes']
+	__slots__ = ['time_ppq','uses_placements','lanes','is_indexed','type','is_laned','datavals','visual','visual_ui','visual_inst','params','midi','fxrack_channel','placements','sends','group','returns','notelist_index','scenes','audio_channels','is_drum','timemarkers','armed','plugslots','latency_offset','visual_keynotes','visual_track']
 	def __init__(self, track_type, time_ppq, uses_placements, is_indexed):
 		self.time_ppq = time_ppq
 		self.uses_placements = uses_placements
@@ -394,6 +395,7 @@ class cvpj_track:
 		self.armed = cvpj_armstate()
 		self.latency_offset = 0
 		self.visual_keynotes = visual.cvpj_visual_keynote()
+		self.visual_track = visual.cvpj_visual_track()
 
 	def json__make(self):
 		outjson = {}

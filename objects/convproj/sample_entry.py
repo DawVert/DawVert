@@ -113,7 +113,8 @@ class cvpj_sample_entry:
 		slice_obj = cvpj_sample_slice()
 		for num in range(len(self.slicer_slices)-1):
 			self.slicer_slices[num].end = self.slicer_slices[num+1].start
-		self.slicer_slices[-1].end = self.end
+		if self.slicer_slices:
+			self.slicer_slices[-1].end = self.end
 
 		return slice_obj
 

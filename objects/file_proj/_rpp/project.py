@@ -37,7 +37,7 @@ class rpp_project:
 		self.mastertrackview = rvd([0,0.6667,0.5,0.5,0,0,0,0,0,0,0,0,0,0], None, None, True)
 		self.masterhwout = rvd([0,0,1,0,0,0,0,-1], None, None, True)
 		self.master_nch = rvd([2,2], None, None, True)
-		self.master_volume = rvd([1,0,-1,-1,1], None, None, True)
+		self.master_volume = rvd([1,0,-1,-1,1], ['vol','pan','panlaw','left','right'], None, True)
 		self.notes_vals = rvd([0,2], None, [int, int], True)
 		self.notes_data = []
 		self.record_cfg = b''

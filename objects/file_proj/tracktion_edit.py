@@ -1184,6 +1184,9 @@ class tracktion_track:
 		self.stepclips = []
 		self.clipslots = []
 		self.modifiers = tracktion_modifiers()
+		self.currentAutoParamPluginID = 0
+		self.currentAutoParamTag = ''
+		self.automation_tracks = []
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -1195,6 +1198,8 @@ class tracktion_track:
 			elif n == 'height': self.height = float(v)
 			elif n == 'mute': self.mute = int(v)
 			elif n == 'solo': self.solo = int(v)
+			elif n == 'currentAutoParamPluginID': self.currentAutoParamPluginID = int(v)
+			elif n == 'currentAutoParamTag': self.currentAutoParamTag = v
 
 		for subxml in xmldata:
 			if subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
@@ -1229,6 +1234,10 @@ class tracktion_track:
 					clipslot.load(subinxml)
 					self.clipslots.append(clipslot)
 			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
+			elif subxml.tag == 'AUTOMATIONTRACK': 
+				auto_track = tracktion_automationtrack()
+				auto_track.load(subxml)
+				self.automation_tracks.append(auto_track)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "TRACK")
@@ -1240,8 +1249,11 @@ class tracktion_track:
 		if self.name: tempxml.set('name', str(self.name))
 		if self.mute: tempxml.set('mute', str(self.mute))
 		if self.solo: tempxml.set('solo', str(self.solo))
+		if self.currentAutoParamPluginID: tempxml.set('currentAutoParamPluginID', str(self.currentAutoParamPluginID))
+		if self.currentAutoParamTag: tempxml.set('currentAutoParamTag', str(self.currentAutoParamTag))
 		self.macroparameters.write(tempxml)
 		self.modifiers.write(tempxml)
+		for automationtracks_obj in self.automation_tracks: automationtracks_obj.write(tempxml)
 		if self.clipslots is not None:
 			x_clipslots = ET.SubElement(tempxml, "CLIPSLOTS")
 			for clipslot in self.clipslots: clipslot.write(x_clipslots)
@@ -1491,6 +1503,40 @@ class tracktion_chordtrack:
 		self.modifiers.write(tempxml)
 		for clip_obj in self.clips:
 			clip_obj.write(tempxml)
+
+
+
+class tracktion_automationtrack:
+	def __init__(self):
+		self.colour = ''
+		self.id_num = 0
+		self.height = 0
+		self.macroparameters = tracktion_macroparameters()
+		self.modifiers = tracktion_modifiers()
+		self.currentAutoParamPluginID = 0
+		self.currentAutoParamTag = ''
+
+	def load(self, xmldata):
+		for n, v in xmldata.attrib.items():
+			if n == 'id': self.id_num = v
+			elif n == 'colour': self.colour = v
+			elif n == 'height': self.height = float(v)
+			elif n == 'currentAutoParamPluginID': self.currentAutoParamPluginID = int(v)
+			elif n == 'currentAutoParamTag': self.currentAutoParamTag = v
+
+		for subxml in xmldata:
+			if subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
+			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
+
+	def write(self, xmldata):
+		tempxml = ET.SubElement(xmldata, "AUTOMATIONTRACK")
+		tempxml.set('id', str(self.id_num))
+		if self.colour: tempxml.set('colour', str(self.colour))
+		if self.currentAutoParamPluginID: tempxml.set('currentAutoParamPluginID', str(self.currentAutoParamPluginID))
+		if self.currentAutoParamTag: tempxml.set('currentAutoParamTag', str(self.currentAutoParamTag))
+		if self.height: tempxml.set('height', str(self.height))
+		self.macroparameters.write(tempxml)
+		self.modifiers.write(tempxml)
 
 class tracktion_tempotrack:
 	def __init__(self):
