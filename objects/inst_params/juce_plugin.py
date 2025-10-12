@@ -4,6 +4,7 @@
 import os
 from functions.juce import data_vc2xml
 from functions.juce import juce_memoryblock
+from functions.juce import pluginid_gen
 from functions import data_xml
 
 class juce_plugin:
@@ -14,20 +15,27 @@ class juce_plugin:
 		self.name = None
 		self.filename = None
 		self.manufacturer = None
-		self.fourid = None
+		self.uniqueId = None
 		self.program_num = None
 
 	def from_cvpj(self, convproj_obj, plugin_obj, pluginid):
-
 		if plugin_obj.type.type == 'vst2':
 			extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 			chunkdata = extmanu_obj.vst2__export_presetdata(None)
-
 			self.plugtype = 'vst2'
 			self.name = plugin_obj.external_info.basename
 			self.manufacturer = plugin_obj.external_info.creator
 			self.filename = plugin_obj.getpath_fileref(convproj_obj, 'file', None, True)
-			self.fourid = plugin_obj.external_info.fourid
+			self.uniqueId = plugin_obj.external_info.fourid
+			self.memoryblock = juce_memoryblock.toJuceBase64Encoding(chunkdata)
+		elif plugin_obj.type.type == 'vst3':
+			extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
+			chunkdata = extmanu_obj.vst3__exportstate_juce()
+			self.uniqueId = pluginid_gen.vst3_make_uniqueid(plugin_obj.external_info.id)
+			self.plugtype = 'vst3'
+			self.name = plugin_obj.external_info.name
+			self.manufacturer = plugin_obj.external_info.creator
+			self.filename = plugin_obj.getpath_fileref(convproj_obj, 'file', None, True)
 			self.memoryblock = juce_memoryblock.toJuceBase64Encoding(chunkdata)
 
 	def to_cvpj(self, convproj_obj, pluginid):
@@ -47,8 +55,8 @@ class juce_plugin:
 		extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 
 		if chunkdata:
-
 			if self.plugtype == 'vst2':
+				#convproj_obj.fileref__add(vst_path, vst_path, None)
 				extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 				if chunkdata[0:4] != b'CcnK':
 					extmanu_obj.vst2__replace_data('basename', self.name, chunkdata, None, True)
@@ -67,18 +75,18 @@ class juce_plugin:
 				if self.program_num is not None:
 					plugin_obj.current_program = self.program_num
 
-			if self.plugtype == 'vst3':
+			elif self.plugtype == 'vst3':
 				pluginstate_x = data_vc2xml.get(chunkdata)
 				IComponent = data_xml.find_first(pluginstate_x, 'IComponent')
 				if IComponent != None and self.name:
 					chunkdata = juce_memoryblock.fromJuceBase64Encoding(IComponent.text)
 					out_exists = extmanu_obj.vst3__replace_data('name', self.name, chunkdata, None)
-	
+
 					if not out_exists: 
 						if self.filename:
 							if os.path.exists(self.filename):
 								vst3_pathid = pluginid+'_vstpath'
-								convproj_obj.fileref__add(vst3_pathid, self.filename)
+								convproj_obj.fileref__add(vst3_pathid, self.filename, None)
 								plugin_obj.filerefs_global['plugin'] = vst3_pathid
 
 		return plugin_obj, pluginid

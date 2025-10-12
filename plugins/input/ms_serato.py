@@ -53,6 +53,7 @@ def add_vst_data(vstdata, pluginid, convproj_obj, state, params):
 		if 'descriptive_name' in vstdata: juceobj.name = vstdata['descriptive_name']
 		if 'manufacturer_name' in vstdata: juceobj.manufacturer = vstdata['manufacturer_name']
 		if 'file_or_identifier' in vstdata: juceobj.filename = vstdata['file_or_identifier']
+		if 'unique_id' in vstdata: juceobj.uniqueId = vstdata['unique_id']
 		if vsttype == 'VST': juceobj.plugtype = 'vst2'
 		if vsttype == 'VST3': juceobj.plugtype = 'vst3'
 		juceobj.memoryblock = state
@@ -103,7 +104,6 @@ def do_chan_strip(eq_defined, convproj_obj, trackid, channel_strip, fxslots_audi
 						fxslots_audio.append(fxplugid)
 					except:
 						pass
-
 
 class input_serato(plugins.base):
 	def is_dawvert_plugin(self):
@@ -226,7 +226,7 @@ class input_serato(plugins.base):
 				inst_obj.visual.color.set_float([0.3,0.3,0.3])
 				plugin_obj = add_vst_data(json.loads(scene_deck.plugin_description), cvpj_instid, convproj_obj, scene_deck.state, scene_deck.parameters)
 				inst_obj.plugslots.set_synth(cvpj_instid)
-				eq_track[cvpj_trackid] = group_obj.plugslots.slots_audio
+				eq_track[cvpj_trackid] = track_obj.plugslots.slots_audio
 
 				vol = (scene_strip.gain if scene_strip.gain is not None else 1)
 				vol *= (scene_strip.volume if scene_strip.volume is not None else 1)

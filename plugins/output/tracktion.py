@@ -10,6 +10,7 @@ from objects import counter
 import math
 import logging
 import os
+import struct
 from random import randbytes
 
 logger_output = logging.getLogger('output')
@@ -315,9 +316,8 @@ def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, 
 		if plugin_obj.check_wildmatch('external', 'vst2', None):
 			juceobj = juce_plugin.juce_plugin()
 			juceobj.from_cvpj(convproj_obj, plugin_obj, cvpj_fxid)
-			fourid = plugin_obj.external_info.fourid
 
-			if fourid: 
+			if juceobj.uniqueId: 
 				fx_on, fx_wet = plugin_obj.fxdata_get()
 				wf_plugin = proj_tracktion_edit.tracktion_plugin()
 				wf_plugin.enabled = int(fx_on)
@@ -325,18 +325,32 @@ def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, 
 				if juceobj.name: wf_plugin.params['name'] = juceobj.name
 				if juceobj.filename: wf_plugin.params['filename'] = juceobj.filename
 				if juceobj.manufacturer: wf_plugin.params['manufacturer'] = juceobj.manufacturer
-				if juceobj.fourid: 
-					wf_plugin.params['uniqueId'] = f'{juceobj.fourid:x}'
-					wf_plugin.params['uid'] = f'{juceobj.fourid:x}'
+				wf_plugin.params['uniqueId'] = f'{juceobj.uniqueId:x}'
+				wf_plugin.params['uid'] = f'{juceobj.uniqueId:x}'
 				wf_plugin.params['state'] = juceobj.memoryblock
 
 				for _, _, paramnum in convproj_obj.automation.iter_nopl_points_external(cvpj_fxid):
 					add_auto_curves(convproj_obj, ['plugin', cvpj_fxid, 'ext_param_'+str(paramnum)], wf_plugin, str(paramnum))
-					
 				return wf_plugin
+			else: logger_output.warning('VST2 plugin not placed: no ID found.')
 
-			else:
-				logger_output.warning('VST2 plugin not placed: no ID found.')
+		if plugin_obj.check_wildmatch('external', 'vst3', None):
+			juceobj = juce_plugin.juce_plugin()
+			juceobj.from_cvpj(convproj_obj, plugin_obj, cvpj_fxid)
+			if juceobj.uniqueId: 
+				fx_on, fx_wet = plugin_obj.fxdata_get()
+				wf_plugin = proj_tracktion_edit.tracktion_plugin()
+				wf_plugin.enabled = int(fx_on)
+				wf_plugin.params['type'] = 'vst'
+				wf_plugin.params['uniqueId'] = struct.pack('>i', juceobj.uniqueId).hex()
+				if juceobj.name: wf_plugin.params['name'] = juceobj.name
+				if juceobj.filename: wf_plugin.params['filename'] = juceobj.filename
+				if juceobj.manufacturer: wf_plugin.params['manufacturer'] = juceobj.manufacturer
+				wf_plugin.params['state'] = juceobj.memoryblock
+				for _, _, paramnum in convproj_obj.automation.iter_nopl_points_external(cvpj_fxid):
+					add_auto_curves(convproj_obj, ['plugin', cvpj_fxid, 'ext_param_'+str(paramnum)], wf_plugin, str(paramnum))
+				return wf_plugin
+			else: logger_output.warning('VST2 plugin not placed: no ID found.')
 
 		if plugin_obj.check_wildmatch('native', 'tracktion', None):
 			wf_plugin = proj_tracktion_edit.tracktion_plugin()

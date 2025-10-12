@@ -62,7 +62,9 @@ class info_daw:
 		if 'fxrack_params' in indict: self.fxrack_params = indict['fxrack_params']
 		if 'auto_types' in indict: self.auto_types = indict['auto_types']
 		if 'fxchain_mixer' in indict: self.fxchain_mixer = indict['fxchain_mixer']
-		if 'fxtype' in indict: self.fxtype = indict['fxtype']
+		if 'fxtype' in indict: 
+			self.fxtype = indict['fxtype']
+			if isinstance(self.fxtype, str): self.fxtype = [self.fxtype]
 		if 'projtype' in indict: self.projtype = indict['projtype']
 		if 'notes_midi' in indict: self.notes_midi = indict['notes_midi']
 		if 'notepl_pitch' in indict: self.notepl_pitch = indict['notepl_pitch']

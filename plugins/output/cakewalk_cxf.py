@@ -41,8 +41,8 @@ def plugin_supported(plugin_obj):
 	if plugin_obj.check_wildmatch('native', 'bandlab', None): return True
 	if plugin_obj.check_wildmatch('external', 'vst2', None):
 		if plugin_obj.external_info.fourid: return True
-	#if plugin_obj.check_wildmatch('external', 'vst3', None): 
-	#	if plugin_obj.external_info.id: return True
+	if plugin_obj.check_wildmatch('external', 'vst3', None): 
+		if plugin_obj.external_info.id: return True
 
 def get_pluginfileid(startid, uniqueId, num):
 	filename = '%s-%i-%s.bin' % (startid.replace('-', ''), uniqueId, num)
@@ -87,15 +87,18 @@ def do_plugin(convproj_obj, plugin_obj, pluginid, cxf_fx, ids_obj, trackid, num)
 		for _, _, paramnum in convproj_obj.automation.iter_nopl_points_external(pluginid):
 			do_automation(convproj_obj, ['plugin', pluginid, 'ext_param_'+str(paramnum)], str(paramnum), cxf_fx.automation, ids_obj)
 
-	#if plugin_obj.check_wildmatch('external', 'vst3', None): 
-	#	cxf_fx.format = "VST"
-	#	cxf_fx.uniqueId = 3
-	#	if plugin_obj.external_info.name: cxf_fx.name = plugin_obj.external_info.name
-	#	extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
-	#	fxpdata = extmanu_obj.vst3__exportstate_juce()
-	#	ids_obj.zipfile.writestr(get_pluginfileid(trackid, cxf_fx.uniqueId, num), fxpdata)
-	#	for _, _, paramnum in convproj_obj.automation.iter_nopl_points_external(pluginid):
-	#		do_automation(convproj_obj, ['plugin', pluginid, 'ext_param_'+str(paramnum)], param_id, cxf_fx.automation, ids_obj)
+	if plugin_obj.check_wildmatch('external', 'vst3', None): 
+		from objects.inst_params import juce_plugin
+		juceobj = juce_plugin.juce_plugin()
+		juceobj.from_cvpj(convproj_obj, plugin_obj, pluginid)
+		cxf_fx.format = "VST3"
+		cxf_fx.uniqueId = juceobj.uniqueId
+		if plugin_obj.external_info.name: cxf_fx.name = plugin_obj.external_info.name
+		extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
+		fxpdata = extmanu_obj.vst3__exportstate_juce()
+		ids_obj.zipfile.writestr(get_pluginfileid(trackid, cxf_fx.uniqueId, num), fxpdata)
+		for _, _, paramnum in convproj_obj.automation.iter_nopl_points_external(pluginid):
+			do_automation(convproj_obj, ['plugin', pluginid, 'ext_param_'+str(paramnum)], param_id, cxf_fx.automation, ids_obj)
 
 def do_track_effects(btrack_obj, plugslots, convproj_obj, ids_obj):
 	fx_num = 0

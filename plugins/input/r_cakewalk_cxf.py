@@ -306,7 +306,7 @@ def get_pluginid(startid, uniqueId, num):
 
 def get_pluginfile(startid, uniqueId, num, dawvert_intent):
 	filename = get_pluginid(startid, uniqueId, num)
-	filepath = os.path.join(stored_vals_obj.dawvert_intent.input_folder, 'Assets', 'Plugins', filename)
+	filepath = os.path.join(dawvert_intent.input_folder, 'Assets', 'Plugins', filename)
 	if os.path.exists(filepath):
 		binplug = open(filepath, 'rb')
 		return binplug.read()
@@ -346,84 +346,99 @@ def do_plugin(convproj_obj, startid, cxf_effect, num, fxid, stored_vals_obj):
 				else:
 					plugin_obj.datavals.add(n, v)
 
-	elif uniqueId:
-
+	elif uniqueId == -1273960264:
 		plugdata = None
-		if stored_vals_obj.zip_data is None:
-			plugdata = get_pluginfile(startid, uniqueId, num, stored_vals_obj.dawvert_intent)
-		else: 
-			plugdata = stored_vals_obj.zip_getdata('Plugins', get_pluginid(startid, uniqueId, num))
-
-		if uniqueId == -1273960264:
-			from functions.juce import data_vc2xml
-			if plugdata is not None:
-				xamplerdata = data_vc2xml.get(plugdata)
-				if xamplerdata.tag == 'XSamplerPersistData':
-					sampler_file = None
-					sampler_params = {}
-					for x in xamplerdata:
-						if x.tag == 'SampleInformation': sampler_file = x.get('File')
-						if x.tag == 'xsmpparameters': sampler_params = dict([(i.get('id'), i.get('value')) for i in x if i.tag == 'PARAM'])
+		if stored_vals_obj.zip_data is None: plugdata = get_pluginfile(startid, uniqueId, num, stored_vals_obj.dawvert_intent)
+		else: plugdata = stored_vals_obj.zip_getdata('Plugins', get_pluginid(startid, uniqueId, num))
+		if plugdata is not None:
+			xamplerdata = data_vc2xml.get(plugdata)
+			if xamplerdata.tag == 'XSamplerPersistData':
+				sampler_file = None
+				sampler_params = {}
+				for x in xamplerdata:
+					if x.tag == 'SampleInformation': sampler_file = x.get('File')
+					if x.tag == 'xsmpparameters': sampler_params = dict([(i.get('id'), i.get('value')) for i in x if i.tag == 'PARAM'])
 	
-					x_root = 60
-					x_shift = 0
-					x_fine = 0
+				x_root = 60
+				x_shift = 0
+				x_fine = 0
 
-					if sampler_file:
-						plugin_obj, sampleref_obj, sp_obj = convproj_obj.plugin__addspec__sampler(fxid, sampler_file, 'win')
-						plugin_obj.role = 'synth'
-						sp_obj.point_value_type = "percent"
+				if sampler_file:
+					plugin_obj, sampleref_obj, sp_obj = convproj_obj.plugin__addspec__sampler(fxid, sampler_file, 'win')
+					plugin_obj.role = 'synth'
+					sp_obj.point_value_type = "percent"
 
-						filter_obj = plugin_obj.filter
-						for paramid, val in sampler_params.items():
-							val = float(val)
+					filter_obj = plugin_obj.filter
+					for paramid, val in sampler_params.items():
+						val = float(val)
 
-							if paramid == 'xsmpgain': sp_obj.vol = val/0.7876096963882446
-							elif paramid == 'xsmppan': sp_obj.pan = (val-0.5)*2
-							elif paramid == 'xsmpsamplestart': sp_obj.start = val
-							elif paramid == 'xsmploopstart': sp_obj.loop_start = val
-							elif paramid == 'xsmploopend': sp_obj.loop_end = val
-							elif paramid == 'xsmpsampleend': sp_obj.end = val
-							elif paramid == 'xsmproot': x_root = round(val*127)
-							elif paramid == 'xsmpstshift': x_shift = (val-0.5)*24
-							elif paramid == 'xsmpfineshift': x_fine = (val-0.5)*100
-							elif paramid == 'xsmpplaymode': 
-								sp_obj.loop_active = val==1.0
-								sp_obj.trigger = 'oneshot' if val==0.5 else 'normal'
-							elif paramid == 'xsmpfiltercutoff': 
-								filter_obj.freq = 20 * 1000**val
-							elif paramid == 'xsmpfilterres': 
-								filter_obj.q = xtramath.between_from_one(0.1, 10.0, val)
-							elif paramid == 'xsmpfiltertype': 
-								filttypenum = round(val*3)
-								filter_obj.on = filttypenum==0
-								if filttypenum==1: filter_obj.type.set_list(['low_pass', None])
-								if filttypenum==2: filter_obj.type.set_list(['band_pass', None])
-								if filttypenum==3: filter_obj.type.set_list(['high_pass', None])
-							else: 
-								plugin_obj.params.add(paramid, val, 'float')
+						if paramid == 'xsmpgain': sp_obj.vol = val/0.7876096963882446
+						elif paramid == 'xsmppan': sp_obj.pan = (val-0.5)*2
+						elif paramid == 'xsmpsamplestart': sp_obj.start = val
+						elif paramid == 'xsmploopstart': sp_obj.loop_start = val
+						elif paramid == 'xsmploopend': sp_obj.loop_end = val
+						elif paramid == 'xsmpsampleend': sp_obj.end = val
+						elif paramid == 'xsmproot': x_root = round(val*127)
+						elif paramid == 'xsmpstshift': x_shift = (val-0.5)*24
+						elif paramid == 'xsmpfineshift': x_fine = (val-0.5)*100
+						elif paramid == 'xsmpplaymode': 
+							sp_obj.loop_active = val==1.0
+							sp_obj.trigger = 'oneshot' if val==0.5 else 'normal'
+						elif paramid == 'xsmpfiltercutoff': 
+							filter_obj.freq = 20 * 1000**val
+						elif paramid == 'xsmpfilterres': 
+							filter_obj.q = xtramath.between_from_one(0.1, 10.0, val)
+						elif paramid == 'xsmpfiltertype': 
+							filttypenum = round(val*3)
+							filter_obj.on = filttypenum==0
+							if filttypenum==1: filter_obj.type.set_list(['low_pass', None])
+							if filttypenum==2: filter_obj.type.set_list(['band_pass', None])
+							if filttypenum==3: filter_obj.type.set_list(['high_pass', None])
+						else: 
+							plugin_obj.params.add(paramid, val, 'float')
 
-					pitch = x_shift+x_fine
-					middlenote = x_root-60
+				pitch = x_shift+x_fine
+				middlenote = x_root-60
 
-		else:
-			from objects.inst_params import juce_plugin
+	elif cxf_effect.format == 'VST':
+		plugdata = None
+		if stored_vals_obj.zip_data is None: plugdata = get_pluginfile(startid, uniqueId, num, stored_vals_obj.dawvert_intent)
+		else: plugdata = stored_vals_obj.zip_getdata('Plugins', get_pluginid(startid, uniqueId, num))
 
-			if plugdata is not None:
-				try:
+		from objects.inst_params import juce_plugin
+		if plugdata is not None:
+			try:
+				if plugdata[0:4] == b'CcnK':
 					juceobj = juce_plugin.juce_plugin()
+					juceobj.plugtype = 'vst2'
 					juceobj.name = cxf_effect.name
-					if plugdata[0:4] == b'CcnK': juceobj.plugtype = 'vst2'
-					if plugdata[0:4] == b'VC2!': juceobj.plugtype = 'vst3'
 					juceobj.rawdata = plugdata
+					juceobj.uniqueId = uniqueId
 					plugin_obj, _ = juceobj.to_cvpj(convproj_obj, fxid)
-
 					for param_id in cxf_effect.automation:
 						do_automation(convproj_obj, cxf_effect.automation[param_id], ['plugin', fxid, 'ext_param_'+param_id], stored_vals_obj)
+			except:
+				pass
 
-				except:
-					pass
+	elif cxf_effect.format == 'VST3':
+		plugdata = None
+		if stored_vals_obj.zip_data is None: plugdata = get_pluginfile(startid, uniqueId, num, stored_vals_obj.dawvert_intent)
+		else: plugdata = stored_vals_obj.zip_getdata('Plugins', get_pluginid(startid, uniqueId, num))
 
+		from objects.inst_params import juce_plugin
+		if plugdata is not None:
+			try:
+				if plugdata[0:4] == b'VC2!':
+					juceobj = juce_plugin.juce_plugin()
+					juceobj.plugtype = 'vst3'
+					juceobj.name = cxf_effect.name
+					juceobj.rawdata = plugdata
+					juceobj.uniqueId = uniqueId
+					plugin_obj, _ = juceobj.to_cvpj(convproj_obj, fxid)
+					for param_id in cxf_effect.automation:
+						do_automation(convproj_obj, cxf_effect.automation[param_id], ['plugin', fxid, 'ext_param_'+param_id], stored_vals_obj)
+			except:
+				pass
 	return plugin_obj, middlenote, pitch
 
 def do_effects(convproj_obj, cxf_effects, startid, plugslots, stored_vals_obj):

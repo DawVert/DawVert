@@ -13,6 +13,6 @@ def get(vstdata):
 		return None
 
 def make(xmldata):
-	xmlout = ET.tostring(xmldata, encoding='utf-8')
+	xmlout = ET.tostring(xmldata, encoding='utf-8', xml_declaration=True)
 	vst2data = b'VC2!' + len(xmlout).to_bytes(4, "little") + xmlout
 	return vst2data

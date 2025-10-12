@@ -175,7 +175,7 @@ class extplug_manu:
 		ebrw_readstr = easybinrw.binread()
 		preset_obj = preset_vst3.vst3_main()
 		if datatype == 'raw': 
-			ebrw_readstr.load_raw(indata)
+			ebrw_readstr.load_data(indata)
 			preset_obj.parse(ebrw_readstr)
 		if datatype == 'file': 
 			ebrw_readstr.load_file(indata)
@@ -210,7 +210,7 @@ class extplug_manu:
 		from functions.juce import data_vc2xml
 		from functions.juce import juce_memoryblock
 		import xml.etree.ElementTree as ET
-		x_root = ET.Element("VST3PluginState>")
+		x_root = ET.Element("VST3PluginState")
 		icomp = ET.SubElement(x_root, 'IComponent')
 		rawdata = self.plugin_obj.rawdata_get('chunk')
 		icomp.text = juce_memoryblock.toJuceBase64Encoding(rawdata)
@@ -223,7 +223,7 @@ class extplug_manu:
 		ebrw_readstr = easybinrw.binread()
 		preset_obj = preset_dx.dx_preset()
 		if datatype == 'raw': 
-			ebrw_readstr.load_raw(indata)
+			ebrw_readstr.load_data(indata)
 			preset_obj.parse(ebrw_readstr)
 		if datatype == 'file': 
 			ebrw_readstr.load_file(indata)
@@ -277,7 +277,7 @@ class extplug_manu:
 		ebrw_readstr = easybinrw.binread()
 		preset_obj = preset_clap.clap_preset()
 		if datatype == 'raw': 
-			ebrw_readstr.load_raw(indata)
+			ebrw_readstr.load_data(indata)
 			preset_obj.parse(ebrw_readstr)
 		if datatype == 'file': 
 			ebrw_readstr.load_file(indata)
@@ -339,7 +339,7 @@ class extplug_manu:
 		ebrw_readstr = easybinrw.binread()
 		fxp_obj = preset_vst2.vst2_main()
 		if datatype == 'raw': 
-			ebrw_readstr.load_raw(indata)
+			ebrw_readstr.load_data(indata)
 			fxp_obj.parse(ebrw_readstr)
 		if datatype == 'file': 
 			ebrw_readstr.load_file(indata)

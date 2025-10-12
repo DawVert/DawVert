@@ -60,13 +60,16 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 	in_fxtype = convproj_obj.fxtype
 	out_fxtype = out_dawinfo.fxtype
 	#print('fxchange: '+in_fxtype+' > '+out_fxtype+' - Proj Type: '+convproj_obj.type)
-	logger_compat.info('fxchange: '+in_fxtype+' > '+out_fxtype+' - Proj Type: '+convproj_obj.type)
+	logger_compat.info('fxchange: '+in_fxtype+' > '+str(out_fxtype)+' - Proj Type: '+convproj_obj.type)
 
 	paramchange = in_dawinfo.fxrack_params.copy()
 	for x in out_dawinfo.fxrack_params:
 		if x in paramchange: paramchange.remove(x)
 
-	if in_fxtype == 'rack' and out_fxtype == 'rack' and convproj_obj.type in ['r', 'ri']:
+	if in_fxtype in out_fxtype:
+		return False
+
+	if in_fxtype == 'rack' and 'rack' in out_fxtype and convproj_obj.type in ['r', 'ri']:
 		for trackid, track_obj in convproj_obj.track__iter():
 			if track_obj.fxrack_channel > 0:
 				fxrack_obj = convproj_obj.fxrack[track_obj.fxrack_channel]
@@ -74,7 +77,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 					convproj_obj.automation.copy(['fxmixer',str(track_obj.fxrack_channel),paramid], ['track',trackid,paramid])
 					fxrack_obj.params.copy(track_obj.params, paramid)
 
-	if out_fxtype == 'none':
+	if ('none' in out_fxtype) or (not out_fxtype):
 		if DEBUGTXT: print('FX CHANGE PROCESS 1')
 		convproj_obj.fx__chan__clear()
 		convproj_obj.fx__group__clear()
@@ -84,7 +87,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 			track_obj.fxrack_channel = 0
 			track_obj.group = None
 
-	elif in_fxtype in ['groupreturn', 'none'] and out_fxtype == 'rack' and convproj_obj.type in ['m', 'mi']:
+	elif in_fxtype in ['groupreturn', 'none'] and 'rack' in out_fxtype and convproj_obj.type in ['m', 'mi']:
 		if DEBUGTXT: print('FX CHANGE PROCESS 2')
 		logger_compat.info('fxchange: Master to FX 0')
 		fxchannel_obj = convproj_obj.fx__chan__add(0)
@@ -116,7 +119,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 			logger_compat.info('fxchange: Instrument to FX '+str(fxnum)+(' ('+fxchannel_obj.visual.name+')' if fxchannel_obj.visual.name else ''))
 		return True
 
-	elif in_fxtype == 'none' and out_fxtype == 'rack' and convproj_obj.type in ['r', 'ri', 'rm', 'ms', 'rs']:
+	elif in_fxtype == 'none' and 'rack' in out_fxtype and convproj_obj.type in ['r', 'ri', 'rm', 'ms', 'rs']:
 		if DEBUGTXT: print('FX CHANGE PROCESS 3')
 		tracknum = 1
 		
@@ -129,7 +132,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 			tracknum += 1
 		return True
 
-	elif in_fxtype == 'groupreturn' and out_fxtype == 'rack' and convproj_obj.type in ['r', 'ri', 'rm', 'ms', 'rs']:
+	elif in_fxtype == 'groupreturn' and 'rack' in out_fxtype and convproj_obj.type in ['r', 'ri', 'rm', 'ms', 'rs']:
 		if DEBUGTXT: print('FX CHANGE PROCESS 4')
 		t2m = trackfx_to_numdata.to_numdata()
 		output_ids = t2m.trackfx_to_numdata(convproj_obj, 1)
@@ -167,7 +170,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 
 		return True
 
-	elif in_fxtype == 'rack' and out_fxtype == 'groupreturn' and convproj_obj.type in ['r', 'ri']:
+	elif in_fxtype == 'rack' and 'groupreturn' in out_fxtype and convproj_obj.type in ['r', 'ri']:
 		if DEBUGTXT: print('FX CHANGE PROCESS 5')
 		move_fx0_to_mastertrack(convproj_obj)
 
@@ -249,7 +252,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		convproj_obj.fxrack = {}
 		return True
 
-	elif in_fxtype == 'rack' and out_fxtype == 'route' and convproj_obj.type in ['r', 'ri']:
+	elif in_fxtype == 'rack' and 'route' in out_fxtype and convproj_obj.type in ['r', 'ri']:
 		if DEBUGTXT: print('FX CHANGE PROCESS 6')
 		convproj_obj.fx__chan__remove_unused()
 
@@ -320,7 +323,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		for fxnum in used_fxchans: convproj_obj.track_order.append('fxrack_'+str(fxnum))
 		return True
 
-	elif in_fxtype == 'route' and out_fxtype == 'groupreturn' and convproj_obj.type in ['r', 'ri']:
+	elif in_fxtype == 'route' and 'groupreturn' in out_fxtype and convproj_obj.type in ['r', 'ri']:
 		if DEBUGTXT: print('FX CHANGE PROCESS 7')
 
 		if not convproj_obj.trackroute:
@@ -346,7 +349,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 
 		return True
 
-	elif in_fxtype == 'route' and out_fxtype == 'rack' and convproj_obj.type in ['r', 'ri']:
+	elif in_fxtype == 'route' and 'rack' in out_fxtype and convproj_obj.type in ['r', 'ri']:
 		if DEBUGTXT: print('FX CHANGE PROCESS 8')
 		tracknums = {}
 
@@ -373,7 +376,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 
 		return True
 
-	elif in_fxtype == 'groupreturn' and out_fxtype == 'route' and convproj_obj.type in ['r', 'ri', 'rs']:
+	elif in_fxtype == 'groupreturn' and 'route' in out_fxtype and convproj_obj.type in ['r', 'ri', 'rs']:
 		if DEBUGTXT: print('FX CHANGE PROCESS 9')
 
 		convproj_obj.fx__route__clear()

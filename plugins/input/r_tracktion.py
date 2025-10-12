@@ -218,7 +218,8 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 					pass
 
 		if not internal_vst:
-			try:
+			#try:
+			if True:
 				from objects.inst_params import juce_plugin
 				juceobj = juce_plugin.juce_plugin()
 				juceobj.uniqueId = wf_plugin.params['uniqueId'] if "uniqueId" in wf_plugin.params else ''
@@ -239,10 +240,10 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 						if autocurves.paramid: 
 							do_auto(convproj_obj, autocurves.points, ['plugin',pluginid,'ext_param_'+autocurves.paramid])
 
-			except:
+			#except:
 				#import traceback
 				#print(traceback.format_exc())
-				pass
+			#	pass
 
 	elif software_mode == 'waveform':
 		if plugtype not in ['volume', 'level'] and plugtype != '':

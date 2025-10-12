@@ -106,7 +106,7 @@ def do_samplepart_adsr(samplerj, plugin_obj, sampleref_obj, asdrname):
 			plugin_obj.env_asdr_add(asdrname, 0, env_attack*dur_sec, 0, env_decay*15, env_sustain, env_release*dur_sec, 1)
 	else: plugin_obj.env_asdr_add(asdrname, 0, env_attack*2, 0, env_decay*15, env_sustain, env_release*2, 1)
 
-def do_fade(fade_data, fadevals, tempomul): 
+def do_fade(fade_data, fadevals): 
 	fade_data.set_dur(fadevals['fade_time'], 'seconds')
 	if fadevals['fade_type'] == 3: fade_data.slope = 1
 	if fadevals['fade_type'] == 1: fade_data.slope = 0.5
@@ -272,6 +272,8 @@ class input_reaper(plugins.base):
 
 			if not cvpj_trackid or cvpj_trackid in used_trackids: cvpj_trackid = 'track'+str(tracknum)
 
+			print(rpp_track.isbus.values)
+
 			trackroute = [rpp_track.mainsend['tracknum'], rpp_track.auxrecv]
 
 			track_obj = convproj_obj.track__add(cvpj_trackid, 'hybrid', 1, False)
@@ -389,8 +391,7 @@ class input_reaper(plugins.base):
 							plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst3', None)
 							plugin_obj.fxdata_add(not rpp_plugin.bypass['bypass'], rpp_plugin.wet['wet'])
 							if len(rpp_extplug.data_chunk)>8:
-								if True:
-								#try:
+								try:
 									preset_data = easybinrw.binread()
 									preset_data.load_data(rpp_extplug.data_chunk)
 									chunk_size = preset_data.int_u32()
@@ -669,8 +670,8 @@ class input_reaper(plugins.base):
 					do_auto_clip(placement_obj, rpp_trackitem.muteenv, 'mute', 'bool', False, True)
 					do_auto_clip(placement_obj, rpp_trackitem.pitchenv, 'pitch', 'float', False, False)
 
-					do_fade(placement_obj.fade_in, rpp_trackitem.fadein, tempomul)
-					do_fade(placement_obj.fade_out, rpp_trackitem.fadeout, tempomul)
+					do_fade(placement_obj.fade_in, rpp_trackitem.fadein)
+					do_fade(placement_obj.fade_out, rpp_trackitem.fadeout)
 
 					sampleref_obj = convproj_obj.sampleref__add(cvpj_audio_file, cvpj_audio_file, None)
 					sampleref_obj.search_local(dawvert_intent.input_folder)
