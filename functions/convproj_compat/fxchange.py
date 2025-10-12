@@ -74,6 +74,9 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 					convproj_obj.automation.copy(['fxmixer',str(track_obj.fxrack_channel),paramid], ['track',trackid,paramid])
 					fxrack_obj.params.copy(track_obj.params, paramid)
 
+	if in_fxtype in out_fxtype:
+		return False
+
 	if ('none' in out_fxtype) or (not out_fxtype):
 		if DEBUGTXT: print('FX CHANGE PROCESS 1')
 		convproj_obj.fx__chan__clear()
