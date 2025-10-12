@@ -176,7 +176,6 @@ class input_reaper(plugins.base):
 		globalstore.datadef.load('reaper', './data_main/datadef/reaper.ddef')
 		datadef_obj = globalstore.datadef.get('reaper')
 
-		convproj_obj.fxtype = 'route'
 		convproj_obj.type = 'r'
 
 		traits_obj = convproj_obj.traits
@@ -230,9 +229,6 @@ class input_reaper(plugins.base):
 			convproj_obj.transport.loop_start = loop_start
 			convproj_obj.transport.loop_end = loop_size
 
-		trackdata = []
-
-		used_trackids = []
 
 		markerdatas = {}
 		regiondatas = {}
@@ -269,16 +265,20 @@ class input_reaper(plugins.base):
 			track_obj.params.add('splitpan_left', rpp_project.master_volume['left'], 'float')
 			track_obj.params.add('splitpan_right', rpp_project.master_volume['right'], 'float')
 
+		used_trackids = []
+		track_cvpjids = []
+		track_cvpjdata = []
+
 		for tracknum, rpp_track in enumerate(rpp_project.tracks):
 			cvpj_trackid = rpp_track.trackid.get()
 			used_trackids.append(cvpj_trackid)
 
 			if not cvpj_trackid or cvpj_trackid in used_trackids: cvpj_trackid = 'track'+str(tracknum)
-
-			trackroute = [rpp_track.mainsend['tracknum'], rpp_track.auxrecv]
+			track_cvpjids.append(cvpj_trackid)
 
 			track_obj = convproj_obj.track__add(cvpj_trackid, 'hybrid', 1, False)
 			track_obj.visual.name = rpp_track.name.get()
+			track_cvpjdata.append(track_obj)
 
 			trackcolor = rpp_track.peakcol.get()
 			track_obj.visual.color.set_int(reaper_color_to_cvpj_color(trackcolor, True))
@@ -776,15 +776,85 @@ class input_reaper(plugins.base):
 					placement_obj.videoref = cvpj_audio_file
 
 			track_obj.placements.sort()
-			convproj_obj.fx__route__add(cvpj_trackid)
-			trackdata.append([cvpj_trackid, trackroute])
 
-		for to_track, trackroute in trackdata:
-			convproj_obj.trackroute[to_track].to_master_active = bool(trackroute[0])
-			for rpp_auxrecv_obj in trackroute[1]:
-				from_track = trackdata[rpp_auxrecv_obj['tracknum']][0]
-				sends_obj = convproj_obj.trackroute[from_track]
-				send_obj = sends_obj.add(to_track, None, rpp_auxrecv_obj['vol'])
-				send_obj.params.add('pan', rpp_auxrecv_obj['pan'], 'float')
+		groups_valid = True
+		groups_returns = {}
+		sends_data = {}
+
+		for tracknum, rpp_track_obj in enumerate(rpp_project.tracks):
+			cvpj_trackid = track_cvpjids[tracknum]
+			track_obj = track_cvpjdata[tracknum]
+			if rpp_track_obj.isbus['state']==1 and len(rpp_track_obj.items):
+				groups_valid = False
+				#print('groups_valid invalid: items in group,',rpp_track_obj.name.get())
+				break
+			if (rpp_track_obj.isbus['state'] in [0, 2]) and len(rpp_track_obj.auxrecv):
+				if (not len(rpp_track_obj.items)):
+					groups_returns[tracknum] = [cvpj_trackid, track_obj]
+					for x in rpp_track_obj.auxrecv:
+						source_trackid = track_cvpjids[x['tracknum']]
+						if source_trackid not in sends_data: sends_data[source_trackid] = {}
+						sends_data[source_trackid][cvpj_trackid] = [x]
+				else:
+					groups_valid = False
+					#print('groups_valid invalid: items in return,',rpp_track_obj.name.get())
+
+		if groups_valid:
+			convproj_obj.fxtype = 'groupreturn'
+			for n, d in groups_returns.items():
+				returnid, track_obj = d
+				return_obj = convproj_obj.track_master.fx__return__add(returnid)
+				return_obj.visual = track_obj.visual
+				return_obj.params = track_obj.params
+				return_obj.plugslots = track_obj.plugslots
+				convproj_obj.automation.move_everything(['track', returnid], ['return', returnid])
+				convproj_obj.track__del(returnid)
+
+			cur_groups = []
+			for tracknum, rpp_track_obj in enumerate(rpp_project.tracks):
+				cvpj_trackid = track_cvpjids[tracknum]
+				out_track_obj = track_obj = track_cvpjdata[tracknum]
+				bus_state = rpp_track_obj.isbus['state']
+				bus_depth = rpp_track_obj.isbus['depth']
+				if bus_state == 1:
+					#print('group add:', cvpj_trackid)
+					out_track_obj = convproj_obj.fx__group__add(cvpj_trackid)
+					out_track_obj.visual = track_obj.visual
+					out_track_obj.params = track_obj.params
+					out_track_obj.plugslots = track_obj.plugslots
+					convproj_obj.automation.move_everything(['track', cvpj_trackid], ['group', cvpj_trackid])
+					convproj_obj.track__del(cvpj_trackid)
+					cur_groups.append(cvpj_trackid)
+				else:
+					if cur_groups:
+						track_obj.group = cur_groups[-1]
+						#print('group use:', track_obj.group)
+
+				if cvpj_trackid in sends_data:
+					for returnid, auxdata in sends_data[cvpj_trackid].items():
+						rpp_auxrecv_obj = auxdata[0]
+						send_obj = out_track_obj.sends.add(returnid, None, rpp_auxrecv_obj['vol'])
+						send_obj.params.add('pan', rpp_auxrecv_obj['pan'], 'float')
+
+				if bus_state == 2:
+					cur_groups = cur_groups[:bus_depth]
+
+		else:
+			convproj_obj.fxtype = 'route'
+	
+			trackroutedata = []
+			for tracknum, rpp_track in enumerate(rpp_project.tracks):
+				trackroute = [rpp_track.mainsend['tracknum'], rpp_track.auxrecv]
+				cvpj_trackid = track_cvpjids[tracknum]
+				convproj_obj.fx__route__add(cvpj_trackid)
+				trackroutedata.append([cvpj_trackid, trackroute])
+	
+			for to_track, trackroute in trackroutedata:
+				convproj_obj.trackroute[to_track].to_master_active = bool(trackroute[0])
+				for rpp_auxrecv_obj in trackroute[1]:
+					from_track = trackroutedata[rpp_auxrecv_obj['tracknum']][0]
+					sends_obj = convproj_obj.trackroute[from_track]
+					send_obj = sends_obj.add(to_track, None, rpp_auxrecv_obj['vol'])
+					send_obj.params.add('pan', rpp_auxrecv_obj['pan'], 'float')
 
 		convproj_obj.automation.set_persist_all(False)

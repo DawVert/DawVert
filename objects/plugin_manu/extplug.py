@@ -37,8 +37,9 @@ class extplug_vst2_params:
 		if VERBOSE: print('extplug_vst2_params: set_program_name', program_name)
 
 	def set_param(self, num, val):
-		self.programs_data['params'][num] = val
-		#if VERBOSE: print('extplug_vst2_params: set_param', num, val)
+		if num<len(self.programs_data['params']):
+			self.programs_data['params'][num] = val
+			#if VERBOSE: print('extplug_vst2_params: set_param', num, val)
 
 	def set_param_name(self, num, val):
 		self.param_names[num] = val

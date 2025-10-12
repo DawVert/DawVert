@@ -928,12 +928,14 @@ class output_reaper(plugins.base):
 
 			for b1, b2, t, i, g in outisbus:
 				if t == 'TRACK': 
-					rpp_track_obj = do_track(rpp_project, convproj_obj, convproj_obj.track__get(i), ['track', i], track_uuids[i])
+					track_obj = convproj_obj.track__get(i)
+					rpp_track_obj = do_track(rpp_project, convproj_obj, track_obj, ['track', i], track_uuids[i])
 					track_nums[i] = tracknum
 					track_data[i] = rpp_track_obj
 
 				if t == 'GROUP': 
-					rpp_track_obj = do_track(rpp_project, convproj_obj, convproj_obj.fx__group__get(i), ['group', i], group_uuids[i])
+					track_obj = convproj_obj.fx__group__get(i)
+					rpp_track_obj = do_track(rpp_project, convproj_obj, track_obj, ['group', i], group_uuids[i])
 					group_nums[i] = tracknum
 					group_data[i] = rpp_track_obj
 
@@ -952,11 +954,11 @@ class output_reaper(plugins.base):
 						aux_env = rpp_return_track_obj.add_aux_env('pan', tracknum)
 						add_auto_all(rpp_project, convproj_obj, aux_env, ['send', send_obj.sendautoid, 'pan'], 'float', False)
 
-				if g:
-					rpp_track_obj.mainsend['tracknum'] = 0
-					auxrecv_obj = group_data[g].add_auxrecv()
-					auxrecv_obj['tracknum'] = tracknum
-					auxrecv_obj['vol'] = 1
+				#if g:
+				#	rpp_track_obj.mainsend['tracknum'] = 0
+				#	auxrecv_obj = group_data[g].add_auxrecv()
+				#	auxrecv_obj['tracknum'] = tracknum
+				#	auxrecv_obj['vol'] = 1
 				tracknum += 1
 
 		if dawvert_intent.output_mode == 'file':
