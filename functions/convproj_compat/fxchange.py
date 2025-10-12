@@ -66,9 +66,6 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 	for x in out_dawinfo.fxrack_params:
 		if x in paramchange: paramchange.remove(x)
 
-	if in_fxtype in out_fxtype:
-		return False
-
 	if in_fxtype == 'rack' and 'rack' in out_fxtype and convproj_obj.type in ['r', 'ri']:
 		for trackid, track_obj in convproj_obj.track__iter():
 			if track_obj.fxrack_channel > 0:
@@ -323,7 +320,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		for fxnum in used_fxchans: convproj_obj.track_order.append('fxrack_'+str(fxnum))
 		return True
 
-	elif in_fxtype == 'route' and 'groupreturn' in out_fxtype and convproj_obj.type in ['r', 'ri']:
+	elif in_fxtype == 'route' and ('groupreturn' in out_fxtype or 'route' in out_fxtype) and convproj_obj.type in ['r', 'ri']:
 		if DEBUGTXT: print('FX CHANGE PROCESS 7')
 
 		if not convproj_obj.trackroute:

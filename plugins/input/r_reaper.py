@@ -130,20 +130,23 @@ def do_auto_clip_notes(placement_obj, clip_env, mpetype, paramtype, invert, inst
 				if isbool: val = bool(val)
 				autopoints_obj.points__add_normal(point[0], val, 0, None)
 
-def do_auto_clip(placement_obj, clip_env, mpetype, paramtype, invert, instant): 
+def do_auto_clip(placement_obj, clip_env, mpetype, paramtype, invert, instant, speedd): 
 	isbool = paramtype=='bool'
 	if clip_env.used:
-		autopoints_obj = placement_obj.add_autopoints(mpetype, 4, True)
+		autopoints_obj = placement_obj.add_autopoints(mpetype, 4.0)
+		autopoints_obj.is_seconds = True
 		if instant:
 			for point in clip_env.points:
+				pos = point[0]/speedd
 				val = point[1] if not invert else 1-point[1]
 				if isbool: val = bool(val)
-				autopoints_obj.points__add_instant(point[0], val)
+				autopoints_obj.points__add_instant(pos, val)
 		else:
 			for point in clip_env.points:
+				pos = point[0]/speedd
 				val = point[1] if not invert else 1-point[1]
 				if isbool: val = bool(val)
-				autopoints_obj.points__add_normal(point[0], val, 0, None)
+				autopoints_obj.points__add_normal(pos, val, 0, None)
 
 class input_reaper(plugins.base):
 	def is_dawvert_plugin(self):
@@ -186,7 +189,7 @@ class input_reaper(plugins.base):
 		traits_obj.plugin_ext = ['vst2', 'vst3', 'clap']
 		traits_obj.plugin_ext_arch = [32, 64]
 		traits_obj.plugin_ext_platforms = ['win', 'unix']
-		traits_obj.time_seconds = True
+		traits_obj.set_time_seconds(True)
 		traits_obj.track_hybrid = True
 		traits_obj.notepl_pitch = True
 
@@ -271,8 +274,6 @@ class input_reaper(plugins.base):
 			used_trackids.append(cvpj_trackid)
 
 			if not cvpj_trackid or cvpj_trackid in used_trackids: cvpj_trackid = 'track'+str(tracknum)
-
-			print(rpp_track.isbus.values)
 
 			trackroute = [rpp_track.mainsend['tracknum'], rpp_track.auxrecv]
 
@@ -665,11 +666,6 @@ class input_reaper(plugins.base):
 
 					placement_obj.muted = bool(cvpj_muted)
 
-					do_auto_clip(placement_obj, rpp_trackitem.volenv, 'gain', 'float', False, False)
-					do_auto_clip(placement_obj, rpp_trackitem.panenv, 'pan', 'float', False, False)
-					do_auto_clip(placement_obj, rpp_trackitem.muteenv, 'mute', 'bool', False, True)
-					do_auto_clip(placement_obj, rpp_trackitem.pitchenv, 'pitch', 'float', False, False)
-
 					do_fade(placement_obj.fade_in, rpp_trackitem.fadein)
 					do_fade(placement_obj.fade_out, rpp_trackitem.fadeout)
 
@@ -737,6 +733,11 @@ class input_reaper(plugins.base):
 						s_timing_obj.warp.manp__speed_mul(1/rate)
 					else: 
 						s_timing_obj.set__real_rate(bpm, cvpj_audio_rate)
+
+					do_auto_clip(placement_obj, rpp_trackitem.volenv, 'gain', 'float', False, False, cvpj_audio_rate)
+					do_auto_clip(placement_obj, rpp_trackitem.panenv, 'pan', 'float', False, False, cvpj_audio_rate)
+					do_auto_clip(placement_obj, rpp_trackitem.muteenv, 'mute', 'bool', False, True, cvpj_audio_rate)
+					do_auto_clip(placement_obj, rpp_trackitem.pitchenv, 'pitch', 'float', False, False, cvpj_audio_rate)
 
 					time_obj.set_offset_real(cvpj_offset/cvpj_audio_rate)
 

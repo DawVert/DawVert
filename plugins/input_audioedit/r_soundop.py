@@ -95,7 +95,7 @@ class input_soundop(plugins.base):
 		traits_obj = convproj_obj.traits
 		traits_obj.auto_types = ['nopl_points']
 		traits_obj.placement_loop = ['loop']
-		traits_obj.time_seconds = True
+		traits_obj.set_time_seconds(True)
 
 		globalstore.dataset.load('soundop', './data_main/dataset/soundop.dset')
 

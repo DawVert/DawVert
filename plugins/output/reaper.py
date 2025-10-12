@@ -384,16 +384,17 @@ def do_fade(fade_data, fadevals, bpm):
 	fadevals['fade_type'] = 2
 	fadevals['curve'] = 0
 
-def do_auto_clip(placement_obj, rpp_env, mpetype, paramtype, invert, instant): 
+def do_auto_clip(placement_obj, rpp_env, mpetype, paramtype, invert, instant, speed): 
 	if mpetype in placement_obj.auto:
 		autopoints_obj = placement_obj.auto[mpetype]
 		autopoints_obj.remove_instant()
 		rpp_env.used = True
 		rpp_env.act['bypass'] = 1
 		for x in autopoints_obj:
+			pos = x.pos*speed*autopoints_obj.time_ppq
 			out = float(x.value)
 			if invert: out = 1-out
-			rpp_env.points.append([x.pos, out])
+			rpp_env.points.append([pos, out])
 
 def do_track_params(rpp_project, convproj_obj, rpp_track_obj, params_obj, datavals_obj, startauto): 
 	rpp_track_obj.mutesolo['mute'] = int(not params_obj.get('enabled', 1).value)
@@ -486,10 +487,10 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 		rpp_source_obj.hasdata['ppq'] = midievents_obj.ppq
 		rpp_source_obj.transpose.set(int(midipl_obj.pitch))
 
-		do_auto_clip(midipl_obj, rpp_item_obj.volenv, 'gain', 'float', False, False)
-		do_auto_clip(midipl_obj, rpp_item_obj.panenv, 'pan', 'float', False, False)
-		do_auto_clip(midipl_obj, rpp_item_obj.muteenv, 'mute', 'bool', False, True)
-		do_auto_clip(midipl_obj, rpp_item_obj.pitchenv, 'pitch', 'float', False, False)
+		do_auto_clip(midipl_obj, rpp_item_obj.volenv, 'gain', 'float', False, False, 1)
+		do_auto_clip(midipl_obj, rpp_item_obj.panenv, 'pan', 'float', False, False, 1)
+		do_auto_clip(midipl_obj, rpp_item_obj.muteenv, 'mute', 'bool', False, True, 1)
+		do_auto_clip(midipl_obj, rpp_item_obj.pitchenv, 'pitch', 'float', False, False, 1)
 
 		midievents_obj.sort()
 		midievents_obj.del_note_durs()
@@ -558,11 +559,6 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 		if audiopl_obj.visual.name: rpp_item_obj.name.set(audiopl_obj.visual.name)
 		rpp_item_obj.volpan['vol'] = audiopl_obj.sample.vol
 		rpp_item_obj.volpan['pan'] = audiopl_obj.sample.pan
-
-		do_auto_clip(audiopl_obj, rpp_item_obj.volenv, 'gain', 'float', False, False)
-		do_auto_clip(audiopl_obj, rpp_item_obj.panenv, 'pan', 'float', False, False)
-		do_auto_clip(audiopl_obj, rpp_item_obj.muteenv, 'mute', 'bool', False, True)
-		do_auto_clip(audiopl_obj, rpp_item_obj.pitchenv, 'pitch', 'float', False, False)
 
 		do_fade(audiopl_obj.fade_in, rpp_item_obj.fadein, reaper_tempo)
 		do_fade(audiopl_obj.fade_out, rpp_item_obj.fadeout, reaper_tempo)
@@ -634,6 +630,11 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 				m_second = warp_point_obj.second
 				m_beat -= offmod
 				rpp_item_obj.stretchmarks.append([m_beat, m_second])
+
+		do_auto_clip(audiopl_obj, rpp_item_obj.volenv, 'gain', 'float', False, False, audiorate)
+		do_auto_clip(audiopl_obj, rpp_item_obj.panenv, 'pan', 'float', False, False, audiorate)
+		do_auto_clip(audiopl_obj, rpp_item_obj.muteenv, 'mute', 'bool', False, True, audiorate)
+		do_auto_clip(audiopl_obj, rpp_item_obj.pitchenv, 'pitch', 'float', False, False, audiorate)
 
 		if time_obj.cut_type == 'cut': 
 			if time_obj.cut_start.timemode == 'ppq':

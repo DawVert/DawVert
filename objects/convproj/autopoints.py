@@ -242,11 +242,15 @@ class cvpj_autopoints:
 
 	def change_seconds(self, is_seconds, bpm, ppq):
 		if is_seconds and not self.is_seconds:
-			self.points.data['pos'] = xtramath.step2sec(self.points.data['pos']/(ppq), bpm)
+			#print('SEC Bef', self.is_seconds, is_seconds, bpm, ppq, self.points.get_used()['pos'].tolist()  )
+			self.points.data['pos'] = xtramath.step2sec(self.points.data['pos']/(ppq/4), bpm)
 			self.is_seconds = True
+			#print('SEC Aft', self.is_seconds, is_seconds, bpm, ppq, self.points.get_used()['pos'].tolist()  )
 		elif not is_seconds and self.is_seconds:
-			self.points.data['pos'] = xtramath.sec2step(self.points.data['pos'], bpm)*(ppq)
+			#print('SEC Bef', self.is_seconds, is_seconds, bpm, ppq, self.points.get_used()['pos'].tolist()  )
+			self.points.data['pos'] = xtramath.sec2step(self.points.data['pos'], bpm)*(ppq/4)
 			self.is_seconds = False
+			#print('SEC Aft', self.is_seconds, is_seconds, bpm, ppq, self.points.get_used()['pos'].tolist()  )
 		
 	def change_seconds_global(self, is_seconds, projid, ppq):
 		if projid in tempocalc.global_stores:
@@ -264,8 +268,10 @@ class cvpj_autopoints:
 		
 	def change_timings(self, time_ppq):
 		if not self.is_seconds:
+			#print('TMG Bef', self.is_seconds, self.time_ppq, time_ppq, self.points.get_used()['pos'].tolist()  )
 			for n, x in enumerate(self.points.data):
 				self.points.data[n]['pos'] = xtramath.change_timing(self.time_ppq, time_ppq, x['pos'])
+			#print('TMG Aft', self.is_seconds, self.time_ppq, time_ppq, self.points.get_used()['pos'].tolist()  )
 		self.time_ppq = time_ppq
 
 	def sort(self):

@@ -36,7 +36,7 @@ class input_eam2(plugins.base):
 
 		traits_obj = convproj_obj.traits
 		traits_obj.auto_types = ['nopl_points']
-		traits_obj.time_seconds = True
+		traits_obj.set_time_seconds(True)
 
 		project_obj = proj_easy_audio_mixer.easyamixr_proj()
 		if dawvert_intent.input_mode == 'file':

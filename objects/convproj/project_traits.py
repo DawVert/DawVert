@@ -22,7 +22,6 @@ class cvpj_project_traits:
 		self.track_arranger = False
 		self.notespl_features = []
 		self.notepl_pitch = False
-
 		self.time_seconds = False
 		self.time_seconds_tracks = False
 		self.time_seconds_auto = False
@@ -31,7 +30,17 @@ class cvpj_project_traits:
 		self.time_seconds_transport = False
 		self.time_seconds_timemarkers = False
 		self.time_seconds_arranger = False
-		
+
+	def set_time_seconds(self, val):
+		self.time_seconds = val
+		self.time_seconds_tracks = val
+		self.time_seconds_auto = val
+		self.time_seconds_tempo = val
+		self.time_seconds_timesig = val
+		self.time_seconds_transport = val
+		self.time_seconds_timemarkers = val
+		self.time_seconds_arranger = val
+
 	def from_dict(self, indict):
 		if 'audio_filetypes' in indict: self.audio_filetypes = indict['audio_filetypes']
 		if 'audio_nested' in indict: self.audio_nested = indict['audio_nested']
@@ -40,17 +49,17 @@ class cvpj_project_traits:
 		if 'fxchain_mixer' in indict: self.fxchain_mixer = indict['fxchain_mixer']
 		if 'fxrack' in indict: self.fxrack = indict['fxrack']
 		if 'fxrack_params' in indict: self.fxrack_params = indict['fxrack_params']
+		if 'notepl_pitch' in indict: self.notepl_pitch = indict['notepl_pitch']
 		if 'notes_midi' in indict: self.notes_midi = indict['notes_midi']
 		if 'placement_cut' in indict: self.placement_cut = indict['placement_cut']
 		if 'placement_loop' in indict: self.placement_loop = indict['placement_loop']
 		if 'plugin_ext' in indict: self.plugin_ext = indict['plugin_ext']
 		if 'plugin_ext_arch' in indict: self.plugin_ext_arch = indict['plugin_ext_arch']
 		if 'plugin_ext_platforms' in indict: self.plugin_ext_platforms = indict['plugin_ext_platforms']
+		if 'track_arranger' in indict: self.track_arranger = indict['track_arranger']
 		if 'track_hybrid' in indict: self.track_hybrid = indict['track_hybrid']
 		if 'track_lanes' in indict: self.track_lanes = indict['track_lanes']
 		if 'track_nopl' in indict: self.track_nopl = indict['track_nopl']
-		if 'track_arranger' in indict: self.track_arranger = indict['track_arranger']
-		if 'notepl_pitch' in indict: self.notepl_pitch = indict['notepl_pitch']
 
 		if 'time_seconds' in indict: 
 			self.time_seconds = indict['time_seconds']
