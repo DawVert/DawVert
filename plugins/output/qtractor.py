@@ -121,7 +121,11 @@ class output_bandlab(plugins.base):
 						qt_clip.properties.panning = sp_obj.pan
 
 						_, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
-						qt_clip.audioclip.time_stretch = 1/sp_obj.stretch.timing.get__real_rate(sampleref_obj, time_obj.realtime_tempo)
+						stretch_obj = sp_obj.stretch
+						qt_clip.audioclip.time_stretch = 1/stretch_obj.timing.get__real_rate(sampleref_obj, time_obj.realtime_tempo)
+
+						stretch_algo = stretch_obj.algorithm
+						qt_clip.audioclip.rubberband_formant = int(stretch_algo.preserve_formants)
 
 						name = audiopl_obj.visual.name if audiopl_obj.visual.name else ''
 						qt_clip.properties.name = name

@@ -162,8 +162,15 @@ class input_midi(plugins.base):
 					sampleref_obj.search_local(os.path.dirname(dawvert_intent.input_file))
 					
 					stretch_obj = placement_obj.sample.stretch
+
 					if clip.audioclip.time_stretch:
 						stretch_obj.timing.set__real_rate(tempo, 1/clip.audioclip.time_stretch)
+
+					stretch_algo = stretch_obj.algorithm
+					if clip.audioclip.rubberband_formant:
+						stretch_algo.type = 'rubberband'
+						stretch_algo.preserve_formants = 1
+						
 					stretch_obj.preserve_pitch = True
 
 			if qtrack.type == 'midi':

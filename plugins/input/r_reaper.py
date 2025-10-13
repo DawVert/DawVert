@@ -790,9 +790,9 @@ class input_reaper(plugins.base):
 		for tracknum, rpp_track_obj in enumerate(rpp_project.tracks):
 			cvpj_trackid = track_cvpjids[tracknum]
 			track_obj = track_cvpjdata[tracknum]
-			if rpp_track_obj.isbus['state']==1 and len(rpp_track_obj.items):
+			if rpp_track_obj.isbus['state']==1 and len(rpp_track_obj.auxrecv)>0:
 				groups_valid = False
-				#print('groups_valid invalid: items in group,',rpp_track_obj.name.get())
+				#print('groups_valid invalid: auxrecv in group,',rpp_track_obj.name.get())
 				break
 			if (rpp_track_obj.isbus['state'] in [0, 2]) and len(rpp_track_obj.auxrecv):
 				if (not len(rpp_track_obj.items)):
@@ -828,6 +828,14 @@ class input_reaper(plugins.base):
 					out_track_obj.visual = track_obj.visual
 					out_track_obj.params = track_obj.params
 					out_track_obj.plugslots = track_obj.plugslots
+
+					if len(rpp_track_obj.items):
+						g_track_obj = convproj_obj.track__add(cvpj_trackid+'_sep', 'hybrid', 1, False)
+						g_track_obj.visual.name = rpp_track.name.get()
+						g_track_obj.placements = track_obj.placements
+						g_track_obj.group = cvpj_trackid
+						track_cvpjdata.append(track_obj)
+
 					convproj_obj.automation.move_everything(['track', cvpj_trackid], ['group', cvpj_trackid])
 					convproj_obj.track__del(cvpj_trackid)
 					cur_groups.append(cvpj_trackid)

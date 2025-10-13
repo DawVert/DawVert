@@ -973,7 +973,17 @@ class output_oldcubase(plugins.base):
 							if audiopl_obj.visual.name: seq_PAudioClip.name = to_wide_string(audiopl_obj.visual.name)
 							do_color(audiopl_obj.visual, total_colors, audiopart.additional_attributes)
 							if sp_obj.pitch: audiopart.additional_attributes['PitF'] = xtramath.pitch_to_speed(sp_obj.pitch)
-	
+
+							stretch_algo = stretch_obj.algorithm
+
+							ElastiquePreset_obj = seq_PAudioClip.additional_attributes['StretchPreset'] = proj_sequel.class_ElastiquePreset()
+							ElastiquePreset_obj.processingmode = 'pro default'
+							ElastiquePreset_obj.stereomode = 'left-right'
+							ElastiquePreset_obj.formantpreservation = int(bool(stretch_algo.preserve_formants))
+							ElastiquePreset_obj.tapestylemode = int(not stretch_obj.preserve_pitch)
+							ElastiquePreset_obj.pitchaccuratemode = 1
+							ElastiquePreset_obj.idnum = counter_id.get()
+
 							audiopath = seq_PAudioClip.path
 							audiopath.idnum = counter_id.get()
 							audiopath.name = str(fileref_obj.file)
