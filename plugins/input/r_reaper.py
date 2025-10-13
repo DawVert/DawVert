@@ -71,12 +71,22 @@ def do_auto(pooledenvs, convproj_obj, rpp_autodata, autoloc, instant, paramtype,
 				autopoints_obj.points__add_normal((point[0]/2)/tempomul, val, tension, None)
 
 	if rpp_autodata.used:
+		instant_next = False
 		for point in rpp_autodata.points:
 			val = point[1] if not invert else 1-point[1]
 			if isbool: val = bool(val)
-			autopoint_obj = auto_obj.add_autopoint(point[0], val, 'normal' if not instant else 'instant')
-			if len(point)>6:
-				if point[2]: autopoint_obj['tension'] = -point[6]
+			if instant_next: 
+				out_instant = True
+				instant_next = False
+			else: 
+				out_instant = instant
+			if len(point)>2:
+				pointmode = point[2]
+				if pointmode==1: 
+					instant_next = True
+				if pointmode==5:
+					if len(point)>6: autopoint_obj['tension'] = -point[6]
+			autopoint_obj = auto_obj.add_autopoint(point[0], val, 'normal' if not out_instant else 'instant')
 
 def do_samplepart_loop(samplerj, sp_obj, sampleref_obj):
 	dur = sampleref_obj.get_dur_samples()
@@ -819,15 +829,15 @@ class input_reaper(plugins.base):
 			cur_groups = []
 			for tracknum, rpp_track_obj in enumerate(rpp_project.tracks):
 				cvpj_trackid = track_cvpjids[tracknum]
-				out_track_obj = track_obj = track_cvpjdata[tracknum]
+				track_obj = track_cvpjdata[tracknum]
 				bus_state = rpp_track_obj.isbus['state']
 				bus_depth = rpp_track_obj.isbus['depth']
 				if bus_state == 1:
-					#print('group add:', cvpj_trackid)
-					out_track_obj = convproj_obj.fx__group__add(cvpj_trackid)
-					out_track_obj.visual = track_obj.visual
-					out_track_obj.params = track_obj.params
-					out_track_obj.plugslots = track_obj.plugslots
+					#print('--- group add:', cvpj_trackid)
+					group_obj = convproj_obj.fx__group__add(cvpj_trackid)
+					group_obj.visual = track_obj.visual
+					group_obj.params = track_obj.params
+					group_obj.plugslots = track_obj.plugslots
 
 					if len(rpp_track_obj.items):
 						g_track_obj = convproj_obj.track__add(cvpj_trackid+'_sep', 'hybrid', 1, False)
@@ -838,16 +848,18 @@ class input_reaper(plugins.base):
 
 					convproj_obj.automation.move_everything(['track', cvpj_trackid], ['group', cvpj_trackid])
 					convproj_obj.track__del(cvpj_trackid)
+
+					sends_obj = group_obj.sends
+					if cur_groups: group_obj.group = cur_groups[-1]
 					cur_groups.append(cvpj_trackid)
 				else:
-					if cur_groups:
-						track_obj.group = cur_groups[-1]
-						#print('group use:', track_obj.group)
+					sends_obj = track_obj.sends
+					if cur_groups: track_obj.group = cur_groups[-1]
 
 				if cvpj_trackid in sends_data:
 					for returnid, auxdata in sends_data[cvpj_trackid].items():
 						rpp_auxrecv_obj = auxdata[0]
-						send_obj = out_track_obj.sends.add(returnid, None, rpp_auxrecv_obj['vol'])
+						send_obj = sends_obj.add(returnid, None, rpp_auxrecv_obj['vol'])
 						send_obj.params.add('pan', rpp_auxrecv_obj['pan'], 'float')
 
 				if bus_state == 2:
