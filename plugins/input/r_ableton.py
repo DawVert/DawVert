@@ -620,7 +620,7 @@ class input_ableton(plugins.base):
 							if clipobj.WarpMode == 6:
 								stretch_algo.type = 'ableton_complexpro'
 								stretch_algo.params['envelope'] = clipobj.ComplexProEnvelope
-								stretch_algo.formant = clipobj.ComplexProFormants
+								stretch_algo.preserve_formants = clipobj.ComplexProFormants/100
 
 							if AUDWARPVERBOSE: print('i')
 

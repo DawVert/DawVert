@@ -194,6 +194,7 @@ def to_samplepart(fl_channel_obj, sre_obj, convproj_obj, isaudioclip, flp_obj, d
 		stretch_algo.type = 'elastique_v3'
 		stretch_algo.subtype = 'pro'
 		stretch_algo.formant = fl_channel_obj.params.stretchingformant
+		stretch_algo.preserve_formants = 1
 
 	return sampleref_obj
 

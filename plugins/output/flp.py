@@ -57,12 +57,12 @@ def from_samplepart(fl_channel_obj, sre_obj, convproj_obj, isaudioclip, flp_obj)
 
 	if not stretch_obj.preserve_pitch:
 		fl_channel_obj.params.stretchingmode = 0
+	elif stretch_algo.preserve_formants>0.7:
+		fl_channel_obj.params.stretchingmode = -2
+		fl_channel_obj.params.stretchingformant = stretch_algo.formant
 	elif stretch_algo.type == 'elastique_v3':
 		if stretch_algo.subtype == 'mono': fl_channel_obj.params.stretchingmode = 2
 		elif stretch_algo.subtype == 'speech': fl_channel_obj.params.stretchingmode = 9
-		elif stretch_algo.subtype == 'pro':
-			fl_channel_obj.params.stretchingmode = -2
-			fl_channel_obj.params.stretchingformant = stretch_algo.formant
 		else: fl_channel_obj.params.stretchingmode = 1
 	elif stretch_algo.type == 'slice':
 		fl_channel_obj.params.stretchingmode = 3

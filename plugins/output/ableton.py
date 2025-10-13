@@ -200,10 +200,14 @@ def do_samplepart(convproj_obj, als_samplepart, cvpj_samplepart, ignoreresample,
 				warp_obj.WarpMode = 4
 			elif stretch_algo.type == 'ableton_complexpro':
 				warp_obj.WarpMode = 6
-				warp_obj.ComplexProFormants = stretch_algo.formant
+				warp_obj.ComplexProFormants = int(stretch_algo.preserve_formants*100)
 				if 'envelope' in stretch_algo.params: warp_obj.ComplexProEnvelope = stretch_algo.params['envelope']
 			else:
-				warp_obj.WarpMode = 4
+				if stretch_algo.preserve_formants:
+					warp_obj.WarpMode = 6
+					warp_obj.ComplexProFormants = int(stretch_algo.preserve_formants*100)
+				else:
+					warp_obj.WarpMode = 4
 
 		calc_real_size = stretch_obj.timing.get__speed(sampleref_obj)
 
@@ -582,10 +586,6 @@ def do_audio_stretch(als_audioclip, stretch_obj):
 			if 'FluctuationTexture' in stretch_algo.params: als_audioclip.FluctuationTexture = stretch_algo.params['FluctuationTexture']
 		elif stretch_algo.type == 'ableton_complex':
 			als_audioclip.WarpMode = 4
-		elif stretch_algo.type == 'ableton_complexpro':
-			als_audioclip.WarpMode = 6
-			if 'ComplexProFormants' in stretch_algo.params: als_audioclip.ComplexProFormants = stretch_algo.params['ComplexProFormants']
-			if 'ComplexProEnvelope' in stretch_algo.params: als_audioclip.ComplexProEnvelope = stretch_algo.params['ComplexProEnvelope']
 		elif stretch_algo.type == 'soundtouch':
 			stmode = None
 			if 'mode' in stretch_algo.params: stmode = stretch_algo.params['mode']
@@ -600,13 +600,16 @@ def do_audio_stretch(als_audioclip, stretch_obj):
 			else:
 				als_audioclip.WarpMode = 1
 				als_audioclip.GranularityTones = 70
-		elif stretch_algo.type == 'elastique_v3' and stretch_algo.subtype == 'pro':
+		elif stretch_algo.type == 'ableton_complexpro':
 			als_audioclip.WarpMode = 6
-			pitch = stretch_algo.formant
-			als_audioclip.PitchCoarse = round(pitch)
-			als_audioclip.PitchFine = (pitch-round(pitch))*100
+			als_audioclip.ComplexProFormants = int(stretch_algo.preserve_formants*100)
+			if 'envelope' in stretch_algo.params: als_audioclip.ComplexProEnvelope = stretch_algo.params['envelope']
 		else:
-			als_audioclip.WarpMode = 4
+			if stretch_algo.preserve_formants:
+				als_audioclip.WarpMode = 6
+				als_audioclip.ComplexProFormants = int(stretch_algo.preserve_formants*100)
+			else:
+				als_audioclip.WarpMode = 4
 
 class timestate():
 	def __init__(self, time_obj):

@@ -209,8 +209,7 @@ class input_soundation(plugins.base):
 							stretch_obj.timing.set__orgtempo(soundation_obj.bpm)
 						if soundation_region.formantCorrection:
 							stretch_algo = stretch_obj.algorithm
-							stretch_algo.type = 'elastique_v3'
-							stretch_algo.subtype = 'pro'
+							stretch_algo.preserve_formants = 1
 							stretch_algo.formant = pitch
 						else:
 							sp_obj.pitch = pitch

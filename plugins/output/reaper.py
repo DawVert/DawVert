@@ -567,35 +567,46 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 		stretch_obj = sp_obj.stretch
 
 		rppart_audio_params = 0
-		rppart_audio_stretch = 9
 
 		stretch_algo = stretch_obj.algorithm
 
 		if stretch_algo.type == 'elastique_v3':
-			if stretch_algo.subtype == 'pro': rppart_audio_stretch = 9
+			if stretch_algo.subtype == 'pro': 
+				rppart_audio_stretch = 9
+				if stretch_algo.preserve_formants: rppart_audio_params = 4
 			if stretch_algo.subtype == 'efficient': rppart_audio_stretch = 10
 			if stretch_algo.subtype == 'mono': rppart_audio_stretch = 11
 			if stretch_algo.subtype == 'speech': 
 				rppart_audio_stretch = 11
 				rppart_audio_params = 2
 
-		if stretch_algo.type == 'elastique_v2':
-			if stretch_algo.subtype == 'pro': rppart_audio_stretch = 6
+		elif stretch_algo.type == 'elastique_v2':
+			if stretch_algo.subtype == 'pro': 
+				rppart_audio_stretch = 6
+				if stretch_algo.preserve_formants: rppart_audio_params = 4
 			if stretch_algo.subtype == 'efficient': rppart_audio_stretch = 7
 			if stretch_algo.subtype == 'mono': rppart_audio_stretch = 8
 			if stretch_algo.subtype == 'speech': 
 				rppart_audio_stretch = 8
 				rppart_audio_params = 2
 
-		if stretch_algo.type == 'rubberband': rppart_audio_stretch = 13
+		elif stretch_algo.type == 'rubberband':
+			rppart_audio_stretch = 13
+			if stretch_algo.preserve_formants: rppart_audio_params = 1
 
-		if stretch_algo.type == 'soundtouch':
+		elif stretch_algo.type == 'soundtouch':
 			stmode = stretch_obj.params['mode'] if 'mode' in stretch_obj.params else None
 			if stmode == 'hq': rppart_audio_params = 1
 			elif stmode == 'fast': rppart_audio_params = 2
 			rppart_audio_stretch = 0
 
-		if stretch_algo.type == 'simple_windowing': rppart_audio_stretch = 2
+		elif stretch_algo.type == 'simple_windowing':
+			rppart_audio_stretch = 2
+
+		else:
+			rppart_audio_stretch = 9
+			if stretch_algo.preserve_formants: rppart_audio_params = 4
+
 
 		rpp_item_obj.playrate['stretch_mode'] = (rppart_audio_stretch<<16) + rppart_audio_params
 

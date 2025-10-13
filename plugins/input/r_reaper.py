@@ -684,6 +684,8 @@ class input_reaper(plugins.base):
 					if rppart_audio_stretch == 9:
 						stretch_algo.type = 'elastique_v3'
 						stretch_algo.subtype = 'pro'
+						if rppart_audio_params in [1,2,3,4,5,6,7]:
+							stretch_algo.preserve_formants = 1
 
 					if rppart_audio_stretch == 10:
 						stretch_algo.type = 'elastique_v3'
@@ -697,6 +699,8 @@ class input_reaper(plugins.base):
 					if rppart_audio_stretch == 6:
 						stretch_algo.type = 'elastique_v2'
 						stretch_algo.subtype = 'pro'
+						if rppart_audio_params in [1,2,3,4,5,6,7]:
+							stretch_algo.preserve_formants = 1
 
 					if rppart_audio_stretch == 7:
 						stretch_algo.type = 'elastique_v2'
@@ -709,6 +713,8 @@ class input_reaper(plugins.base):
 
 					if rppart_audio_stretch == 13:
 						stretch_algo.type = 'rubberband'
+						if rppart_audio_params == 1:
+							stretch_algo.preserve_formants = 1
 
 					if rppart_audio_stretch == 0:
 						stretch_algo.type = 'soundtouch'

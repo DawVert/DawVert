@@ -65,10 +65,14 @@ def addsample(zip_sngz, filepath, alredyexists):
 
 	if filepath not in audio_id:
 		if os.path.exists(filepath):
-			filename, filetype = os.path.basename(filepath).rsplit('.', 1)
-			zipfilename = datauuid+'.'+filetype
-			if zipfilename not in zip_sngz.namelist(): zip_sngz.write(filepath, zipfilename)
-			audio_id[filepath] = zipfilename
+			filesplit = os.path.basename(filepath).rsplit('.', 1)
+			if len(filesplit)>1:
+				filename, filetype = filesplit
+				zipfilename = datauuid+'.'+filetype
+				if zipfilename not in zip_sngz.namelist(): zip_sngz.write(filepath, zipfilename)
+				audio_id[filepath] = zipfilename
+			else:
+				audio_id[filepath] = None
 		else:
 			audio_id[filepath] = None
 	zipfilename = audio_id[filepath]
@@ -432,6 +436,7 @@ class output_soundation(plugins.base):
 					soundation_region.pitchShiftCents = int(sp_obj.pitch*100)-soundation_region.pitchShiftSemitones
 
 					stretch_obj = audiopl_obj.sample.stretch
+					stretch_algo = stretch_obj.algorithm
 
 					soundation_region.stretchMode = 3 if stretch_obj.preserve_pitch else 2
 
@@ -444,6 +449,9 @@ class output_soundation(plugins.base):
 					else:
 						soundation_region.autoStretchBpm = timing_obj.get__tempo(sampleref_obj)
 						soundation_region.isAutoStretched = True
+
+					if stretch_algo.preserve_formants:
+						soundation_region.formantCorrection = 1
 
 					soundation_channel.regions.append(soundation_region)
 

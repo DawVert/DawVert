@@ -16,6 +16,7 @@ class cvpj_stretch_algo:
 	subtype: str = ''
 	params: dict = field(default_factory=dict)
 	formant: float = 0
+	preserve_formants: float = 0
 
 @dataclass
 class pl_manip:
