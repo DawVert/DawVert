@@ -503,6 +503,7 @@ def addgrp(convproj_obj, project_obj, groupid):
 		group_obj = convproj_obj.fx__group__get(groupid)
 		groupnumid = counter_track.get()
 		als_gtrack = project_obj.add_group_track(groupnumid)
+		als_gtrack.TrackUnfolded = int(group_obj.visual_track.group_expanded)
 		do_effects(convproj_obj, als_gtrack, group_obj.plugslots.slots_audio)
 		als_gtrack.Color = group_obj.visual.color.closest_color_index_int(colordata, NOCOLORNUM)
 		if group_obj.visual.name: als_gtrack.Name.UserName = fixtxt(group_obj.visual.name)

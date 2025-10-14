@@ -705,6 +705,7 @@ class input_ableton(plugins.base):
 				track_obj.params.add('pan', track_pan, 'float')
 				if track_inside_group != -1: track_obj.group = 'group_'+str(track_inside_group)
 				track_obj.latency_offset = lattime
+				track_obj.visual_track.group_expanded = bool(als_track.TrackUnfolded)
 
 				AutomationLanes = als_track.DeviceChain.AutomationLanes.AutomationLanes
 				if 0 in AutomationLanes:

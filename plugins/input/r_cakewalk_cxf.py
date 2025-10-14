@@ -157,6 +157,7 @@ class input_bandlab(plugins.base):
 					autoloc = ['return', cxf_auxChannel.id]
 			if cxf_auxChannel.type == 'AuxFolder': 
 				track_obj = convproj_obj.fx__group__add(cxf_auxChannel.id)
+				track_obj.visual_track.group_expanded = False
 				if cxf_auxChannel.id not in groups: groups.append(cxf_auxChannel.id)
 				autoloc = ['group', cxf_auxChannel.id]
 

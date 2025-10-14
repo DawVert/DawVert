@@ -162,6 +162,7 @@ class input_serato(plugins.base):
 				base_trk_id = 'track_'+str(num+1)
 				group_obj = convproj_obj.fx__group__add(base_trk_id)
 				group_obj.visual.name = scene_deck.name
+				group_obj.visual_track.group_expanded = False
 				vol = (scene_strip.gain if scene_strip.gain is not None else 1)
 				vol *= (scene_strip.volume if scene_strip.volume is not None else 1)
 				group_obj.params.add('vol', vol, 'float')
