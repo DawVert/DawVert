@@ -229,6 +229,20 @@
     ],
     "priority": 0
   },
+  "data_main\\plugstatets\\to_ableton\\waveform__monoSwitch.pstr": {
+    "file": "data_main\\plugstatets\\to_ableton\\waveform__monoSwitch.pstr",
+    "daw_in": [
+      "tracktion"
+    ],
+    "daw_out": [
+      "ableton"
+    ],
+    "plugtype_in": "native:tracktion:monoSwitch",
+    "plugtype_out": [
+      "native:ableton:StereoGain"
+    ],
+    "priority": 0
+  },
   "data_main\\plugstatets\\to_amped\\bandlab__rossCompr.pstr": {
     "file": "data_main\\plugstatets\\to_amped\\bandlab__rossCompr.pstr",
     "daw_in": [

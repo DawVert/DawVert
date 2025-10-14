@@ -438,7 +438,7 @@ class cvpj_notelist:
 	def last_add_auto_instant(self, a_type, pos, val):
 		if self.__len__():
 			autodata = self.cursor.assoc_auto_set(self.time_ppq)
-			autodata.last_add_auto_instant(a_type, pos, val)
+			autodata.auto__add_point_instant(a_type, pos, val)
 
 	def last_add_slide(self, t_pos, t_dur, t_key, t_vol, t_extra):
 		if self.__len__():
