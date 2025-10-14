@@ -246,7 +246,17 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 			#	pass
 
 	elif software_mode == 'waveform':
-		if plugtype not in ['volume', 'level'] and plugtype != '':
+		if plugtype == 'noteName':
+			for name, value in wf_plugin.params.items():
+				if name.startswith('note'):
+					try:
+						notenum = int(name[4:])-60
+						visual_obj = track_obj.visual_keynotes.add_key(notenum)
+						visual_obj.name = value
+					except:
+						pass
+
+		elif plugtype not in ['volume', 'level'] and plugtype != '':
 			plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'tracktion', plugtype)
 			plugin_obj.role = 'effect'
 			plugin_obj.fxdata_add(wf_plugin.enabled, None)
@@ -258,6 +268,10 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 	
 			for param_id, dset_param in globalstore.dataset.get_params('waveform', 'plugin', plugtype):
 				paramval = wf_plugin.params[param_id] if param_id in wf_plugin.params else None
+				if paramval is not None:
+					if dset_param.type == 'float': paramval = float(paramval)
+					if dset_param.type == 'bool': paramval = bool(float(paramval))
+					if dset_param.type == 'int': paramval = int(float(paramval))
 				plugin_obj.dset_param__add(param_id, paramval, dset_param)
 	
 			for autocurves in wf_plugin.automationcurves:
@@ -274,34 +288,6 @@ autonames = {
 	'PRESSURE': 'pressure',
 }
 
-def do_foldertrack(convproj_obj, wf_track, counter_track, software_mode, dawvert_intent): 
-	groupid = str(wf_track.id_num)
-	track_obj = convproj_obj.fx__group__add(groupid)
-	track_obj.visual.name = str(wf_track.name)
-	if wf_track.colour != '0': 
-		track_obj.visual.color.set_hex(wf_track.colour)
-		track_obj.visual.color.fx_allowed = ['saturate', 'brighter']
-	track_obj.params.add('enabled', int(not wf_track.mute), 'bool')
-	track_obj.params.add('solo', wf_track.solo, 'bool')
-	#track_obj.visual_ui.height = wf_track.height/35.41053828354546
-
-	vol = 1
-	pan = 0
-
-	for wf_plugin in wf_track.plugins:
-		if wf_plugin.plugtype == 'volume':
-			if 'volume' in wf_plugin.params: vol *= wf_plugin.params['volume']
-			if 'pan' in wf_plugin.params: pan = wf_plugin.params['pan']
-			for autocurves in wf_plugin.automationcurves:
-				if autocurves.paramid == 'volume': do_auto(convproj_obj, autocurves.points, ['group',groupid,'vol'])
-				if autocurves.paramid == 'pan': do_auto(convproj_obj, autocurves.points, ['group',groupid,'pan'])
-		else:
-			do_plugin(convproj_obj, wf_plugin, track_obj, software_mode)
-
-	track_obj.params.add('vol', vol, 'float')
-	track_obj.params.add('pan', pan, 'float')
-	do_tracks(convproj_obj, wf_track.tracks, counter_track, groupid, software_mode, dawvert_intent)
-
 def do_color(visual_obj, hexcolor): 
 	try:
 		if hexcolor != '0': 
@@ -314,33 +300,64 @@ def do_color(visual_obj, hexcolor):
 	except:
 		pass
 
-def do_track(convproj_obj, wf_track, track_obj, software_mode, dawvert_intent): 
-	track_obj.visual.name = str(wf_track.name)
-	colour = str(wf_track.colour)
-	do_color(track_obj.visual, colour)
-
-	bpm = convproj_obj.params.get('bpm', 120).value
-
+def do_track_params(convproj_obj, wf_track, params_obj, autoloc): 
 	vol = 1
 	pan = 0
-
-	middlenote = 0
 
 	for wf_plugin in wf_track.plugins:
 		if wf_plugin.plugtype == 'volume':
 			if 'volume' in wf_plugin.params: vol *= wf_plugin.params['volume']
 			if 'pan' in wf_plugin.params: pan = wf_plugin.params['pan']
+			for autocurves in wf_plugin.automationcurves:
+				if autocurves.paramid == 'volume': do_auto(convproj_obj, autocurves.points, autoloc+['vol'])
+				if autocurves.paramid == 'pan': do_auto(convproj_obj, autocurves.points, autoloc+['pan'])
+
+	params_obj.add('vol', vol, 'float')
+	params_obj.add('pan', pan, 'float')
+	params_obj.add('enabled', int(not wf_track.mute), 'bool')
+	params_obj.add('solo', wf_track.solo, 'bool')
+
+def do_track_visual(wf_track, visual_obj): 
+	visual_obj.name = str(wf_track.name)
+	colour = str(wf_track.colour)
+	do_color(visual_obj, colour)
+
+def do_foldertrack(convproj_obj, wf_track, store_obj): 
+	counter_track = store_obj.counter_track
+	software_mode = store_obj.software_mode
+	dawvert_intent = store_obj.dawvert_intent
+
+	groupid = str(wf_track.id_num)
+	track_obj = convproj_obj.fx__group__add(groupid)
+	track_obj.visual_track.group_expanded = bool(wf_track.expanded)
+	do_track_visual(wf_track, track_obj.visual)
+	do_track_params(convproj_obj, wf_track, track_obj.params, ['group', groupid])
+
+	for wf_plugin in wf_track.plugins:
+		if wf_plugin.plugtype == 'volume': pass
+		else: do_plugin(convproj_obj, wf_plugin, track_obj, software_mode)
+
+	do_tracks(convproj_obj, wf_track.tracks, store_obj, groupid)
+	return track_obj
+
+def do_track(convproj_obj, wf_track, track_obj, store_obj, trackid): 
+	software_mode = store_obj.software_mode
+	dawvert_intent = store_obj.dawvert_intent
+	do_track_visual(wf_track, track_obj.visual)
+	do_track_params(convproj_obj, wf_track, track_obj.params, ['track', trackid])
+
+	bpm = convproj_obj.params.get('bpm', 120).value
+
+	middlenote = 0
+
+	for wf_plugin in wf_track.plugins:
+		if wf_plugin.plugtype == 'volume': pass
 
 		elif wf_plugin.plugtype == 'midiModifier':
 			if 'semitonesUp' in wf_plugin.params: middlenote -= int(wf_plugin.params['semitonesUp'])
 
 		else:
 			do_plugin(convproj_obj, wf_plugin, track_obj, software_mode)
-
-	track_obj.params.add('vol', vol, 'float')
-	track_obj.params.add('pan', pan, 'float')
-	track_obj.params.add('enabled', int(not wf_track.mute), 'bool')
-	track_obj.params.add('solo', wf_track.solo, 'bool')
 
 	for midiclip in wf_track.midiclips:
 		placement_obj = track_obj.placements.add_notes()
@@ -480,16 +497,44 @@ def do_track(convproj_obj, wf_track, track_obj, software_mode, dawvert_intent):
 	middlenote += track_obj.datavals.get('middlenote', 0)
 	track_obj.datavals.add('middlenote', middlenote)
 
-def do_tracks(convproj_obj, in_tracks, counter_track, groupid, software_mode, dawvert_intent):
+def do_tracks(convproj_obj, in_tracks, store_obj, groupid):
 	from objects.file_proj import tracktion_edit as proj_tracktion_edit
 	for wf_track in in_tracks:
-		tracknum = counter_track.get()
+		tracknum = store_obj.counter_track.get()
 		if isinstance(wf_track, proj_tracktion_edit.tracktion_track):
+			trackid = str(tracknum)
 			track_obj = convproj_obj.track__add(str(tracknum), 'hybrid', 1, False)
 			if groupid: track_obj.group = groupid
-			do_track(convproj_obj, wf_track, track_obj, software_mode, dawvert_intent)
+			do_track(convproj_obj, wf_track, track_obj, store_obj, trackid)
+
+			for x in wf_track.plugins:
+				if x.plugtype=='auxsend':
+					busNum = int(x.params['busNum']) if 'busNum' in x.params else 0
+					store_obj.gr_sends_t.append([busNum, trackid, track_obj, x])
+
 		if isinstance(wf_track, proj_tracktion_edit.tracktion_foldertrack):
-			do_foldertrack(convproj_obj, wf_track, counter_track, software_mode, dawvert_intent)
+			track_obj = do_foldertrack(convproj_obj, wf_track, store_obj)
+
+			for x in wf_track.plugins:
+				if x.plugtype=='auxsend':
+					busNum = int(x.params['busNum']) if 'busNum' in x.params else 0
+					store_obj.gr_sends_g.append([busNum, str(wf_track.id_num), track_obj, x])
+
+		for x in wf_track.plugins:
+			if x.plugtype=='auxreturn' and not wf_track.count_clips() and not groupid:
+				busNum = int(x.params['busNum']) if 'busNum' in x.params else 0
+				store_obj.gr_returns.append([busNum, trackid, track_obj])
+
+class state_store():
+	def __init__(self):
+		self.counter_track = None
+		self.software_mode = None
+		self.dawvert_intent = None
+
+		self.gr_valid = True
+		self.gr_returns = []
+		self.gr_sends_t = []
+		self.gr_sends_g = []
 
 class input_tracktion_edit(plugins.base):
 	def is_dawvert_plugin(self):
@@ -647,4 +692,52 @@ class input_tracktion_edit(plugins.base):
 		tracknum = 0
 		counter_track = counter.counter(1000, '')
 
-		do_tracks(convproj_obj, project_obj.tracks, counter_track, None, software_mode, dawvert_intent)
+		store_obj = state_store()
+		store_obj.counter_track = counter_track
+		store_obj.software_mode = software_mode
+		store_obj.dawvert_intent = dawvert_intent
+
+		do_tracks(convproj_obj, project_obj.tracks, store_obj, None)
+
+		gr_returns = store_obj.gr_returns
+		gr_sends_t = store_obj.gr_sends_t
+		gr_sends_g = store_obj.gr_sends_g
+
+		assoc_returnid = {}
+
+		valda_returns = []
+		valda_returns_usednums = []
+
+		for busNum, trackid, track_obj in gr_returns:
+			if trackid in valda_returns:
+				store_obj.gr_valid = False
+				break
+			valda_returns.append(trackid)
+			valda_returns_usednums.append(busNum)
+			assoc_returnid[busNum] = trackid
+
+		valda_sends_usednums = dict([[x, []] for x in valda_returns_usednums])
+
+		if store_obj.gr_valid:
+			for busNum, trackid, track_obj, wf_plugin in gr_sends_t+gr_sends_g:
+				if busNum in valda_sends_usednums:
+					if trackid not in valda_sends_usednums[busNum]:
+						valda_sends_usednums[busNum].append(trackid)
+					else:
+						store_obj.gr_valid = False
+						break
+
+		if store_obj.gr_valid:
+			for busNum, returnid, track_obj in gr_returns:
+				return_obj = convproj_obj.track_master.fx__return__add(returnid)
+				return_obj.visual = track_obj.visual
+				return_obj.params = track_obj.params
+				return_obj.plugslots = track_obj.plugslots
+				convproj_obj.automation.move_everything(['track', returnid], ['return', returnid])
+				convproj_obj.track__del(returnid)
+
+			for busNum, trackid, track_obj, wf_plugin in gr_sends_t+gr_sends_g:
+				if busNum in assoc_returnid:
+					plugparams = wf_plugin.params
+					vol = float(plugparams['auxSendSliderPos']) if 'auxSendSliderPos' in plugparams else 1
+					sends_obj = track_obj.sends.add(assoc_returnid[busNum], None, vol)

@@ -525,6 +525,7 @@ class input_zenbeats(plugins.base):
 			if zb_track.type == 258: 
 				track_groups.append(zb_track.uid)
 				track_obj = convproj_obj.fx__group__add(zb_track.uid)
+				track_obj.visual_track.group_expanded = bool(zb_track.show_sub_tracks)
 				do_rack(convproj_obj, project_obj, track_obj, zb_track, ['group', zb_track.uid], dawvert_intent)
 				do_visual(track_obj.visual, zb_track.visual, zb_track.color_index, colordata)
 

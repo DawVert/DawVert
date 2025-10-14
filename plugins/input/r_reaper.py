@@ -838,6 +838,7 @@ class input_reaper(plugins.base):
 					group_obj.visual = track_obj.visual
 					group_obj.params = track_obj.params
 					group_obj.plugslots = track_obj.plugslots
+					group_obj.visual_track.group_expanded = rpp_track_obj.buscomp['folderviewmode']!=2
 
 					if len(rpp_track_obj.items):
 						g_track_obj = convproj_obj.track__add(cvpj_trackid+'_sep', 'hybrid', 1, False)

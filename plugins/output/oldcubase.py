@@ -1013,7 +1013,8 @@ class output_oldcubase(plugins.base):
 	
 							clipattrib = seq_PAudioClip.additional_attributes
 							clipattrib['Grain Size'] = 1740
-	
+							clipattrib['TransposeLock'] = int(bool(not sp_obj.usemasterpitch))
+
 							GridDef = clipattrib['GridDef'] = proj_sequel.class_PGridDefinition()
 							GridDef.idnum = counter_id.get()
 							GridDef.tempo = bpm

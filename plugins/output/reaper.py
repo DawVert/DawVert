@@ -916,7 +916,6 @@ class output_reaper(plugins.base):
 				rpp_track_obj.name.set('Returns')
 				rpp_track_obj.isbus['state'] = 1
 				rpp_track_obj.isbus['depth'] = 1
-				rpp_track_obj.buscomp['folderviewmode'] = 1
 				tracknum += 1
 
 				for returnid, return_obj in master_returns.items():
@@ -947,6 +946,7 @@ class output_reaper(plugins.base):
 				if t == 'GROUP': 
 					track_obj = convproj_obj.fx__group__get(i)
 					rpp_track_obj = do_track(rpp_project, convproj_obj, track_obj, ['group', i], group_uuids[i])
+					rpp_track_obj.buscomp['folderviewmode'] = 1 if track_obj.visual_track.group_expanded else 2
 					group_nums[i] = tracknum
 					group_data[i] = rpp_track_obj
 

@@ -410,8 +410,6 @@ class input_sequel3(plugins.base):
 								StretchPreset = paudioclip.additional_attributes['StretchPreset']
 								stretch_algo = stretch_obj.algorithm
 								if isinstance(StretchPreset, proj_sequel.class_ElastiquePreset):
-									if StretchPreset.formantpreservation:
-										stretch_algo.type = 'elastique_v3'
-										stretch_algo.subtype = 'pro'
-									else:
-										stretch_algo.type = 'elastique_v3'
+									stretch_algo.type = 'elastique_v3'
+									stretch_algo.preserve_formants = int(bool(StretchPreset.formantpreservation))
+									stretch_obj.preserve_pitch = not ElastiquePreset_obj.tapestylemode

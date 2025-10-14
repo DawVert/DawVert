@@ -1188,6 +1188,7 @@ class tracktion_track:
 		self.currentAutoParamTag = ''
 		self.automation_tracks = []
 
+	def count_clips(self): return len(self.midiclips)+len(self.audioclips)+len(self.stepclips) 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
 			if n == 'id': self.id_num = v
