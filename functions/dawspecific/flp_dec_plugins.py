@@ -461,9 +461,12 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 			fileref_obj.search_local(dawvert_intent.input_folder)
 
 		if zipfile:
-			foundnames = [x for x in zipfile.namelist() if fileref_obj.file.basename in x]
-			if foundnames:
-				zipfile.extract(foundnames[0], path=foldername, pwd=None)
+			if fileref_obj is not None:
+				if fileref_obj.file is not None:
+					if fileref_obj.file.basename is not None:
+						foundnames = [x for x in zipfile.namelist() if fileref_obj.file.basename in x]
+						if foundnames:
+							zipfile.extract(foundnames[0], path=foldername, pwd=None)
 
 		plugin_obj.fileref__set('file', smapleid)
 
