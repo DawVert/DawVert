@@ -88,7 +88,7 @@ def sampler_soundlayer_filter(plugin_obj, soundlayer, filter_obj):
 	if filterModeParam in sampler_filter_types: filter_obj.type.set(sampler_filter_types[filterModeParam], None)
 	if filterModeParam in sampler_filter_slopes: filter_obj.slope = sampler_filter_slopes[filterModeParam]
 
-def do_auto(convproj_obj, autocurvespoints, autoloc):
+def do_auto(convproj_obj, autocurvespoints, autoloc, mul):
 	auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
 	auto_obj.is_seconds = True
 	for time, val, curve in autocurvespoints:
@@ -238,7 +238,7 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 						windata_obj.pos_y = wf_plugin.windowY
 					for autocurves in wf_plugin.automationcurves:
 						if autocurves.paramid: 
-							do_auto(convproj_obj, autocurves.points, ['plugin',pluginid,'ext_param_'+autocurves.paramid])
+							do_auto(convproj_obj, autocurves.points, ['plugin',pluginid,'ext_param_'+autocurves.paramid], 1)
 
 			#except:
 				#import traceback
@@ -276,7 +276,7 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 	
 			for autocurves in wf_plugin.automationcurves:
 				if autocurves.paramid:
-					do_auto(convproj_obj, autocurves.points, ['plugin',pluginid,autocurves.paramid])
+					do_auto(convproj_obj, autocurves.points, ['plugin',pluginid,autocurves.paramid], 1)
 	
 			plugin_obj.fxdata_add(wf_plugin.enabled, 1)
 			if plugtype not in ['4osc']: track_obj.plugslots.slots_audio.append(pluginid)
@@ -306,11 +306,11 @@ def do_track_params(convproj_obj, wf_track, params_obj, autoloc):
 
 	for wf_plugin in wf_track.plugins:
 		if wf_plugin.plugtype == 'volume':
-			if 'volume' in wf_plugin.params: vol *= wf_plugin.params['volume']
+			if 'volume' in wf_plugin.params: vol *= wf_plugin.params['volume']/0.740818202495575
 			if 'pan' in wf_plugin.params: pan = wf_plugin.params['pan']
 			for autocurves in wf_plugin.automationcurves:
-				if autocurves.paramid == 'volume': do_auto(convproj_obj, autocurves.points, autoloc+['vol'])
-				if autocurves.paramid == 'pan': do_auto(convproj_obj, autocurves.points, autoloc+['pan'])
+				if autocurves.paramid == 'volume': do_auto(convproj_obj, autocurves.points, autoloc+['vol'], 1/0.740818202495575)
+				if autocurves.paramid == 'pan': do_auto(convproj_obj, autocurves.points, autoloc+['pan'], 1)
 
 	params_obj.add('vol', vol, 'float')
 	params_obj.add('pan', pan, 'float')

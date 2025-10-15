@@ -1,25 +1,4 @@
 <dataset>
-    <category id="main">
-        <colorset id="main">
-            <color>#637585</color>
-            <color>#E76B4A</color>
-            <color>#EF9452</color>
-            <color>#F7B55A</color>
-            <color>#FFF76B</color>
-            <color>#ADD66B</color>
-            <color>#84C66B</color>
-            <color>#4AAD6B</color>
-            <color>#4AB5AD</color>
-            <color>#4AB5E7</color>
-            <color>#5A84BD</color>
-            <color>#6363A5</color>
-            <color>#634A8C</color>
-            <color>#8C528C</color>
-            <color>#AD5A94</color>
-            <color>#E76B94</color>
-            <color>#E76B73</color>
-        </colorset>
-    </category>
     <category id="fx_plugin">
         <object id="pingpongdelay">
             <visual name="PingPongDelay" />
