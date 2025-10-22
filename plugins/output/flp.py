@@ -295,7 +295,7 @@ class output_cvpjs(plugins.base):
 				for cnote in nle_obj.notelist.iter_notes():
 					if cnote.inst in g_inst_id:
 						t_autopack = cnote.auto
-						if t_autopack: t_autopack.convert_to('slide', t_keys, t_vol)
+						if t_autopack: t_autopack.convert_to('slide', cnote.keys, cnote.vol)
 
 						fl_note_obj = proj_flp.flp_note()
 						fl_note_obj.rack = g_inst_id[cnote.inst]
@@ -331,7 +331,7 @@ class output_cvpjs(plugins.base):
 							for s_pos, s_dur, s_key, s_vol, s_extra in t_slide:
 								fl_note_obj = proj_flp.flp_note()
 								fl_note_obj.rack = g_inst_id[cnote.inst]
-								fl_note_obj.pos = int(t_pos + s_pos)
+								fl_note_obj.pos = int(cnote.pos + s_pos)
 								fl_note_obj.dur = int(s_dur)
 								fl_note_obj.key = int(s_key)+60
 								fl_note_obj.velocity = int(xtramath.clamp(s_vol,0,1)*100)

@@ -240,6 +240,8 @@ class cvpj_project:
 		self.midi = cvpj_project_midi()
 		self.midi_cust_inst = []
 
+		self.freq = 44100
+
 		self._m2r_visual_playlist_first = False
 
 # --------------------------------------------------------- MAIN ---------------------------------------------------------

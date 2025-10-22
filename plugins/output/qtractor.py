@@ -44,6 +44,7 @@ class output_bandlab(plugins.base):
 
 		bpm = int(convproj_obj.params.get('bpm', 120).value)
 		project_obj.properties.tempo = bpm
+		project_obj.properties.sample_rate = convproj_obj.freq
 
 		ppq = 960
 
@@ -74,6 +75,15 @@ class output_bandlab(plugins.base):
 					sampleref_obj.copy_resample(None, a_out)
 				except:
 					pass
+
+		track_master = convproj_obj.track_master
+
+		audio_engine = proj_qtractor.qtractor_audio_engine(None)
+		audio_bus = audio_engine.audio_bus
+		audio_bus.output_gain = track_master.params.get('vol', 1.0).value
+		audio_bus.output_panning = track_master.params.get('pan', 0).value
+
+		project_obj.devices.append(audio_engine)
 
 		for trackid, track_obj in convproj_obj.track__iter():
 

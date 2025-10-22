@@ -894,5 +894,3 @@ class output_dawproject(plugins.base):
 
 		if dawvert_intent.output_mode == 'file':
 			open(dawvert_intent.output_file, 'wb').write(zip_bio.getbuffer())
-
-		open('outdebug.xml', 'wb').write(project_obj.save_to_text())

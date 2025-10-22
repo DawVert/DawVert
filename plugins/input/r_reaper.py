@@ -219,6 +219,8 @@ class input_reaper(plugins.base):
 		loop_start = rpp_project.selection['start']
 		loop_size = rpp_project.selection['end']
 
+		convproj_obj.freq = rpp_project.samplerate.get()
+
 		pooledenvs = dict([[x.id.get(), x] for x in rpp_project.pooledenvs])
 
 		tempoenvex = rpp_project.tempoenvex
