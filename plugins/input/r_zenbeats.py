@@ -452,7 +452,7 @@ def do_rack(convproj_obj, project_obj, track_obj, zb_track, autoloc, dawvert_int
 	
 			break
 
-def do_fade(pattern_envelope, placement_obj):
+def do_fade(pattern_envelope, timeline_envelope, placement_obj):
 	e_attack = 0
 	e_sustain = 0
 	e_release = 0
@@ -463,6 +463,11 @@ def do_fade(pattern_envelope, placement_obj):
 	if (e_sustain and e_release):
 		placement_obj.fade_in.set_dur(e_attack, 'beats')
 		placement_obj.fade_out.set_dur(e_release-e_sustain, 'beats')
+	for x in timeline_envelope:
+		if x.name == 'attack_control': placement_obj.fade_in.shapetype = 'scurve'
+		if x.name == 'release_control': placement_obj.fade_out.shapetype = 'scurve'
+
+	print(timeline_envelope)
 
 class input_zenbeats(plugins.base):
 	def is_dawvert_plugin(self):
@@ -558,7 +563,7 @@ class input_zenbeats(plugins.base):
 						time_obj.set_startend(zb_pattern.start_beat, zb_pattern.end_beat)
 						time_obj.set_loop_data(zb_pattern.loop_play_start, zb_pattern.loop_start_beat, zb_pattern.loop_end_beat)
 
-						do_fade(zb_pattern.pattern_envelope, placement_obj)
+						do_fade(zb_pattern.pattern_envelope, zb_pattern.timeline_envelope, placement_obj)
 
 						placement_obj.muted = not zb_pattern.active
 						placement_obj.locked = zb_pattern.locked
@@ -597,7 +602,7 @@ class input_zenbeats(plugins.base):
 						time_obj.set_startend(zb_pattern.start_beat, zb_pattern.end_beat)
 						time_obj.set_loop_data(zb_pattern.loop_play_start, zb_pattern.loop_start_beat, zb_pattern.loop_end_beat)
 
-						do_fade(zb_pattern.pattern_envelope, placement_obj)
+						do_fade(zb_pattern.pattern_envelope, zb_pattern.timeline_envelope, placement_obj)
 
 						placement_obj.muted = not zb_pattern.active
 						placement_obj.locked = zb_pattern.locked

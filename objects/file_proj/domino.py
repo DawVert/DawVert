@@ -58,7 +58,7 @@ class dms_text:
 	def read(self, ebrw_readstr):
 		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, chunk_size_data):
 			if chunk_obj.id == 1001: self.pos = ebrw_readstr.int_u32()
-			if chunk_obj.id == 2001: self.text = ebrw_readstr.string(chunk_obj.size)
+			if chunk_obj.id == 2001: self.text = ebrw_readstr.string(chunk_obj.size, encoding='shiftjis')
 
 class dms_sysex:
 	def __init__(self):
@@ -69,7 +69,7 @@ class dms_sysex:
 	def read(self, ebrw_readstr):
 		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, chunk_size_data):
 			if chunk_obj.id == 1001: self.pos = ebrw_readstr.int_u32()
-			if chunk_obj.id == 2001: self.text = ebrw_readstr.string(chunk_obj.size)
+			if chunk_obj.id == 2001: self.text = ebrw_readstr.string(chunk_obj.size, encoding='shiftjis')
 			if chunk_obj.id == 2002: self.sysex = ebrw_readstr.raw(chunk_obj.size)
 
 class dms_expression:
@@ -81,8 +81,8 @@ class dms_expression:
 	def read(self, ebrw_readstr):
 		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, chunk_size_data):
 			if chunk_obj.id == 1001: self.pos = ebrw_readstr.int_u32()
-			if chunk_obj.id == 2001: self.var = ebrw_readstr.string(chunk_obj.size)
-			if chunk_obj.id == 2002: self.value = ebrw_readstr.string(chunk_obj.size)
+			if chunk_obj.id == 2001: self.var = ebrw_readstr.string(chunk_obj.size, encoding='shiftjis')
+			if chunk_obj.id == 2002: self.value = ebrw_readstr.string(chunk_obj.size, encoding='shiftjis')
 
 class dms_measurelink:
 	def __init__(self):
@@ -132,7 +132,7 @@ class dms_keyscale:
 			if chunk_obj.id == 2001: self.key = ebrw_readstr.int_u8()
 			if chunk_obj.id == 2002: self.chord = ebrw_readstr.int_u8()
 			if chunk_obj.id == 2003: self.custom = list(ebrw_readstr.list_int_u8(12))
-			if chunk_obj.id == 2004: self.name = ebrw_readstr.string(chunk_obj.size)
+			if chunk_obj.id == 2004: self.name = ebrw_readstr.string(chunk_obj.size, encoding='shiftjis')
 
 class dms_program_change:
 	def __init__(self):
@@ -168,7 +168,7 @@ class dms_chord:
 			if chunk_obj.id == 2001: self.key = ebrw_readstr.int_u8()
 			if chunk_obj.id == 2002: self.chord = ebrw_readstr.int_u32()
 			if chunk_obj.id == 2003: self.custom = ebrw_readstr.raw(chunk_obj.size)
-			if chunk_obj.id == 2004: self.name = ebrw_readstr.string(chunk_obj.size)
+			if chunk_obj.id == 2004: self.name = ebrw_readstr.string(chunk_obj.size, encoding='shiftjis')
 
 class dms_tempo:
 	def __init__(self):
@@ -336,8 +336,8 @@ class dms_project:
 
 		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, chunk_size_data):
 			if chunk_obj.id == 1003: self.tracks.append(dms_track(chunk_obj, ebrw_readstr))
-			elif chunk_obj.id == 1000: self.name = ebrw_readstr.string(chunk_obj.size)
-			elif chunk_obj.id == 1001: self.copyright = ebrw_readstr.string(chunk_obj.size)
+			elif chunk_obj.id == 1000: self.name = ebrw_readstr.string(chunk_obj.size, encoding='shiftjis')
+			elif chunk_obj.id == 1001: self.copyright = ebrw_readstr.string(chunk_obj.size, encoding='shiftjis')
 			elif chunk_obj.id == 1002: self.ppq = ebrw_readstr.int_u16()
 			#elif chunk_obj.id == 1008: 
 			#	printchunk(0, chunk_obj, ebrw_readstr, False)

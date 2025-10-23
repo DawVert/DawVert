@@ -290,6 +290,8 @@ def do_audio(convproj_obj, npa_obj, audio_obj):
 
 def do_audioclip(convproj_obj, npa_obj, inclip):
 	if inclip.fadeTimeUnit == 'beats':
+		npa_obj.fade_in.shapetype = 'scurve'
+		npa_obj.fade_out.shapetype = 'scurve'
 		if inclip.fadeInTime: npa_obj.fade_in.set_dur(inclip.fadeInTime, 'beats')
 		if inclip.fadeOutTime: npa_obj.fade_out.set_dur(inclip.fadeOutTime, 'beats')
 
@@ -384,6 +386,8 @@ def do_clips(convproj_obj, track_obj, clip, clips):
 	docliptime(placement_obj.time, clip)
 
 	if clip.fadeTimeUnit == 'beats':
+		placement_obj.fade_in.shapetype = 'scurve'
+		placement_obj.fade_out.shapetype = 'scurve'
 		if clip.fadeInTime: placement_obj.fade_in.set_dur(clip.fadeInTime, 'beats')
 		if clip.fadeOutTime: placement_obj.fade_out.set_dur(clip.fadeOutTime, 'beats')
 

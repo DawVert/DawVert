@@ -441,6 +441,9 @@ def do_track(convproj_obj, wf_track, track_obj, store_obj, trackid):
 			placement_obj.fade_out.set_dur(audioclip.fadeOut, 'seconds')
 			placement_obj.group = str(audioclip.groupID) if audioclip.groupID!=-1 else None
 	
+			if audioclip.fadeInType==4: placement_obj.fade_in.shapetype = 'scurve'
+			if audioclip.fadeOutType==4: placement_obj.fade_out.shapetype = 'scurve'
+
 			bpmdiv = (bpm/120)
 			if audioclip.loopStartBeats == 0 and audioclip.loopLengthBeats == 0:
 				time_obj.set_offset(audioclip.offset*8*bpmdiv)

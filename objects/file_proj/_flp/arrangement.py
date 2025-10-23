@@ -32,7 +32,7 @@ class flp_arrangement_clip:
 		self.f_out_dur = 0.0
 		self.f_out_tens = 0.0
 		self.vol = 1.0
-		self.fade_flags = b'\0\0\0\0'
+		self.fade_flags = 0
 		self.startoffset = 4294967295
 		self.endoffset = 4294967295
 		self.unknown3 = 0
@@ -86,7 +86,7 @@ class flp_arrangement_clip:
 			self.f_out_dur = ebrw_readstr.float()
 			self.f_out_tens = ebrw_readstr.float()
 			self.vol = ebrw_readstr.float()
-			self.fade_flags = ebrw_readstr.read(4)
+			self.fade_flags = ebrw_readstr.int_u32()
 
 			if VERBOSE_PRINT: print('-E-'
 			,self.id
@@ -95,7 +95,7 @@ class flp_arrangement_clip:
 			,self.f_out_dur
 			,self.f_out_tens
 			,self.vol
-			,self.fade_flags.hex(), end=' ')
+			,self.fade_flags, end=' ')
 
 		if (version_split[0] >= 25): 
 			self.unknown3 = ebrw_readstr.int_u32()
@@ -154,7 +154,7 @@ class flp_arrangement_clip:
 			ebrw_writestr.float(self.f_out_dur)
 			ebrw_writestr.float(self.f_out_tens)
 			ebrw_writestr.float(self.vol)
-			ebrw_writestr.raw(self.fade_flags)
+			ebrw_writestr.int_u32(self.fade_flags)
 
 			if VERBOSE_PRINT: print('-E-'
 			,self.id
@@ -163,7 +163,7 @@ class flp_arrangement_clip:
 			,self.f_out_dur
 			,self.f_out_tens
 			,self.vol
-			,self.fade_flags.hex(), end=' ')
+			,self.fade_flags, end=' ')
 			assert ebrw_writestr.tell()==60
 
 		if (flversion >= 25): 

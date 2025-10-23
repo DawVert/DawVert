@@ -177,17 +177,19 @@ def internal_tempo_calc_nested(placements):
 			x.time.realtime_tempo = time_obj.realtime_tempo
 
 class cvpj_placement_fade:
-	__slots__ = ['dur','time_type','skew','slope']
+	__slots__ = ['dur','time_type','skew','slope','shapetype']
 
 	def __init__(self):
 		self.dur = 0
 		self.time_type = 'seconds'
+		self.shapetype = ''
 		self.skew = 0
 		self.slope = 0
 
 	def clear(self):
 		self.dur = 0
 		self.time_type = 'seconds'
+		self.shapetype = ''
 		self.skew = 0
 		self.slope = 0
 

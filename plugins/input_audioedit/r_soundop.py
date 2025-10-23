@@ -196,9 +196,12 @@ class input_soundop(plugins.base):
 						placement_obj.visual.color.set_hsv(clip.Hue/360, 0.8, 1)
 						placement_obj.visual.color.fx_allowed = ['saturate', 'brighter']
 
-
 					if 'Length' in clip.FadeIn: placement_obj.fade_in.set_dur(clip.FadeIn['Length']/hz, 'seconds')
 					if 'Length' in clip.FadeOut: placement_obj.fade_out.set_dur(clip.FadeOut['Length']/hz, 'seconds')
+					if 'Type' in clip.FadeIn: 
+						if clip.FadeIn['Type']==0: placement_obj.fade_in.shapetype = 'scurve'
+					if 'Type' in clip.FadeOut: 
+						if clip.FadeOut['Type']==0: placement_obj.fade_out.shapetype = 'scurve'
 
 					StretchData = clip.StretchData
 

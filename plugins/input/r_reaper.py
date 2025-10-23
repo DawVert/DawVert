@@ -123,6 +123,8 @@ def do_fade(fade_data, fadevals):
 	if fadevals['fade_type'] == 0: fade_data.slope = 0
 	if fadevals['fade_type'] == 2: fade_data.slope = -0.5
 	if fadevals['fade_type'] == 4: fade_data.slope = -1
+	if fadevals['fade_type'] == 5: fade_data.shapetype = 'scurve'
+	if fadevals['fade_type'] == 5.1: fade_data.shapetype = 'scurve'
 
 def do_auto_clip_notes(placement_obj, clip_env, mpetype, paramtype, invert, instant): 
 	isbool = paramtype=='bool'

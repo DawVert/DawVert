@@ -688,6 +688,11 @@ class output_tracktion_edit(plugins.base):
 				wf_audioclip.fadeIn = audiopl_obj.fade_in.get_dur_seconds(bpm)
 				wf_audioclip.fadeOut = audiopl_obj.fade_out.get_dur_seconds(bpm)
 
+				wf_audioclip.fadeInType = 1
+				wf_audioclip.fadeOutType = 1
+				if audiopl_obj.fade_in.shapetype: wf_audioclip.fadeInType = 4
+				if audiopl_obj.fade_out.shapetype: wf_audioclip.fadeOutType = 4
+
 				if audiopl_obj.visual.name: wf_audioclip.name = audiopl_obj.visual.name
 				if audiopl_obj.visual.color: wf_audioclip.colour = 'ff'+audiopl_obj.visual.color.get_hex()
 				wf_audioclip.mute = int(audiopl_obj.muted)
