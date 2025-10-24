@@ -80,6 +80,11 @@ class riff_chunk:
 		ebrw_writestr.raw(outdata)
 		if (len(outdata)%2): ebrw_writestr.raw(b'\0')
 
+	def write_data(self):
+		ebrw_writestr = easybinrw.binwrite()
+		self.write_chunk(ebrw_writestr)
+		return ebrw_writestr.getvalue()
+
 	def write_to_file(self, filename):
 		ebrw_writestr = easybinrw.binwrite()
 		self.write_chunk(ebrw_writestr)

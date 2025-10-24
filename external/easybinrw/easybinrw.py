@@ -200,7 +200,14 @@ class binread:
 
 	def raw(self, num): return self.str.read(num)
 	def string(self, num, **k): return self.str.read(num).split(b'\x00')[0].decode(**k)
-	def string16(self, num, **k): return self.str.read(num*2).decode(encoding='utf16').rstrip('\x00')
+	def string16(self, num, **k): 
+		outtxt = b''
+		e = True
+		for r in range(num):
+			p = self.str.read(2)
+			if p==b'\x00\x00': e = False
+			elif e: outtxt += p
+		return outtxt.decode(encoding='utf16').rstrip('\x00')
 	def string_t(self, **k): 
 		out = b''
 		while self.remaining():
