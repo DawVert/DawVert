@@ -32,6 +32,12 @@ class ceol_note:
 		self.len = 0
 		self.pos = 0
 
+	def read(self, ebrw_readstr):
+		self.key = ebrw_readstr.int_u16()
+		self.len = ebrw_readstr.int_u16()
+		self.pos = ebrw_readstr.int_u16()
+		ebrw_readstr.skip(2)
+
 class ceol_pattern:
 	def __init__(self, ebrw_readstr):
 		self.notes = []
@@ -44,10 +50,7 @@ class ceol_pattern:
 			numnotes = ebrw_readstr.int_u16()
 			for _ in range(numnotes):
 				note_obj = ceol_note()
-				note_obj.key = ebrw_readstr.int_u16()
-				note_obj.len = ebrw_readstr.int_u16()
-				note_obj.pos = ebrw_readstr.int_u16()
-				ebrw_readstr.skip(2)
+				note_obj.read(ebrw_readstr)
 				self.notes.append(note_obj)
 			if ebrw_readstr.int_u16():
 				self.recordfilter = ebrw_readstr.list_int_u16(16*3)

@@ -20,6 +20,12 @@ class ptcop_delay:
 		self.delay_rate = 0
 		self.delay_freq = 0
 
+	def read(self, ebrw_readstr):
+		self.unit = ebrw_readstr.int_u16()
+		self.group = ebrw_readstr.int_u16()
+		self.rate = ebrw_readstr.int_u16()
+		self.freq = ebrw_readstr.float()
+
 class ptcop_overdrive:
 	def __init__(self):
 		self.xxx = 0
@@ -27,6 +33,13 @@ class ptcop_overdrive:
 		self.cut = 0
 		self.amp = 0
 		self.yyy = 0
+
+	def read(self, ebrw_readstr):
+		self.xxx = ebrw_readstr.int_u16()
+		self.group = ebrw_readstr.int_u16()
+		self.cut = ebrw_readstr.float()
+		self.amp = ebrw_readstr.float()
+		self.yyy = ebrw_readstr.float()
 
 class ptcop_voice:
 	def __init__(self):
@@ -99,20 +112,13 @@ class ptcop_song:
 			elif chunk_id == b'effeDELA':
 				ebrw_readstr.skip(2)
 				delay_obj = ptcop_delay()
-				delay_obj.unit = ebrw_readstr.int_u16()
-				delay_obj.group = ebrw_readstr.int_u16()
-				delay_obj.rate = ebrw_readstr.int_u16()
-				delay_obj.freq = ebrw_readstr.float()
+				delay_obj.read(ebrw_readstr)
 				self.delays.append(delay_obj)
 				if VERBOSE: print('effeDELA:', delay_obj.unit, delay_obj.group)
 
 			elif chunk_id == b'effeOVER':
 				overdrive_obj = ptcop_overdrive()
-				overdrive_obj.xxx = ebrw_readstr.int_u16()
-				overdrive_obj.group = ebrw_readstr.int_u16()
-				overdrive_obj.cut = ebrw_readstr.float()
-				overdrive_obj.amp = ebrw_readstr.float()
-				overdrive_obj.yyy = ebrw_readstr.float()
+				overdrive_obj.read(ebrw_readstr)
 				self.overdrives.append(overdrive_obj)
 				if VERBOSE: print('effeOVER:', overdrive_obj.group)
 
@@ -133,7 +139,7 @@ class ptcop_song:
 
 			elif chunk_id == b'matePCM ':
 				voice_obj = ptcop_voice()
-				ebrw_readstr.skip(3)
+				ebrw_readstr.raw(3)
 				voice_obj.type = 'pcm'
 				voice_obj.basic_key_field = ebrw_readstr.int_u8()
 				voice_obj.sps2 = ebrw_readstr.flags_i32()
