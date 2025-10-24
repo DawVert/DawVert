@@ -12,6 +12,15 @@ from objects import regions
 
 dpcm_rate_arr = [4181.71,4709.93,5264.04,5593.04,6257.95,7046.35,7919.35,8363.42,9419.86,11186.1,12604.0,13982.6,16884.6,21306.8,24858.0,33143.9]
 
+def NoteToMidi(keytext):
+	l_key = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+	s_octave = (int(keytext[-1])-5)*12
+	lenstr = len(keytext)
+	if lenstr == 3: t_key = keytext[:-1]
+	else: t_key = keytext[:-1]
+	s_key = l_key.index(t_key)
+	return s_key + s_octave
+
 def add_envelope(plugin_obj, fst_Instrument, cvpj_name, fst_name):
 	if fst_name in fst_Instrument.Envelopes:
 		f_env_data = fst_Instrument.Envelopes[fst_name]
@@ -234,18 +243,18 @@ def make_auto(convproj_obj, fs_pattern, NoteLength, timemul, patpos, patdur, cha
 def parse_notes(cvpj_notelist, fs_notes, chiptype, NoteLength, arpeggios, fxchan):
 	for notedata in fs_notes:
 		if notedata.Duration != None:
-			t_duration = notedata.Duration/NoteLength
+			t_duration = float(notedata.Duration)/NoteLength
 			t_position = notedata.Time/NoteLength
 			if chiptype != 'DPCM':
 				if notedata.Instrument:
 					if notedata.Value not in ['Stop', None]:
-						t_key = notedata.Value + 24
+						t_key = NoteToMidi(notedata.Value) + 24
 						if chiptype[0:6] == 'EPSMFM': t_key -= 12
 						instid = make_instid(fxchan, get_instshape(chiptype), notedata.Instrument)
 						cvpj_notelist.add_m(instid, t_position, t_duration, t_key, 1, None)
 
 						if notedata.SlideTarget:
-							t_slidenote = notedata.SlideTarget + 24
+							t_slidenote = NoteToMidi(notedata.SlideTarget) + 24
 							cvpj_notelist.last_add_slide(0, t_duration, t_slidenote, 1, {})
 							cvpj_notelist.last_add_auto('pitch', 0, 0)
 							cvpj_notelist.last_add_auto('pitch', t_duration, t_slidenote-t_key)
@@ -320,23 +329,24 @@ class input_famistudio(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		songnamelist = list(project_obj.Songs.keys())
-
-		fst_currentsong = project_obj.Songs[songnamelist[dawvert_intent.songnum]]
+		fst_currentsong = project_obj.Songs[dawvert_intent.songnum]
 
 		if fst_currentsong.Color: convproj_obj.track_master.visual.color.set_hex(fst_currentsong.Color)
 		if fst_currentsong.Name: convproj_obj.metadata.name = fst_currentsong.Name
 
-		NoteLength = fst_currentsong.PatternSettings.NoteLength
+		NoteLength = fst_currentsong.NoteLength
 
 		# ------------------------------------------ tempoblocks ------------------------------------------
 
-		tempoblocks = regions.posdurblocks(fst_currentsong.PatternSettings.Length, fst_currentsong.PatternLength, fst_currentsong.PatternSettings.bpm)
-		for n, d in fst_currentsong.PatternCustomSettings.items(): 
+		tempoblocks = regions.posdurblocks(fst_currentsong.Length, fst_currentsong.PatternLength, fst_currentsong.get_bpm())
+
+		for d in fst_currentsong.PatternCustomSettings: 
+			n = d.Time
+			bpm = d.get_bpm()
 			tempoblocks.set_steps(n, d.Length)
-			if d.bpm: 
-				tempoblocks.set_tempo(n, d.bpm)
-				tempoblocks.set_notemul(n, d.bpm/fst_currentsong.PatternSettings.bpm)
+			if bpm: 
+				tempoblocks.set_tempo(n, bpm)
+				tempoblocks.set_notemul(n, bpm/fst_currentsong.get_bpm())
 		tempoblocks.proc()
 		tempoblocks.to_cvpj(convproj_obj)
 
@@ -388,15 +398,17 @@ class input_famistudio(plugins.base):
 
 		# ------------------------------------------ instruments ------------------------------------------
 
+		instnames = dict([[x.Name, x] for x in project_obj.Instruments])
+
 		used_instgroups = []
 		for channum, fst_channel in enumerate(fst_currentsong.Channels):
-			for pattern_name, fs_pattern in fst_channel.Patterns.items():
+			for fs_pattern in fst_channel.Patterns:
 				for x in fs_pattern.Notes:
 					instg = [
 						chantypes.index(fst_channel.Type)+1, 
 						get_instshape(fst_channel.Type), 
 						x.Instrument, 
-						project_obj.Instruments[x.Instrument] if x.Instrument else None
+						instnames[x.Instrument] if x.Instrument else None
 					]
 					if instg not in used_instgroups: used_instgroups.append(instg)
 
@@ -447,13 +459,17 @@ class input_famistudio(plugins.base):
 			playlist_obj.visual.color.set_int(defualt_track_color)
 
 			modpatbpm = {}
-			for t, i in fst_channel.Instances.items():
+			for p in fst_channel.PatternInstances:
+				t = p.Time
+				i = p.Pattern
 				if i not in modpatbpm: modpatbpm[i] = []
 				tempod = float(tempoblocks[t]['tempo'])
 				if tempod != 0: modpatbpm[i].append(tempod)
 
-			for patid, patdata in fst_channel.Patterns.items():
-				cvpj_patid = fst_channel.Type+'-'+patid+'-'+str(fst_currentsong.PatternSettings.bpm)
+			for patdata in fst_channel.Patterns:
+				patid = patdata.Name
+
+				cvpj_patid = fst_channel.Type+'-'+patid+'-'+str(fst_currentsong.get_bpm())
 
 				nle_obj = convproj_obj.notelistindex__add(cvpj_patid)
 				visual_obj = nle_obj.visual
@@ -465,7 +481,7 @@ class input_famistudio(plugins.base):
 				if patid in modpatbpm:
 					pattemps = modpatbpm[patid]
 					for pattemp in pattemps:
-						notemul = fst_currentsong.PatternSettings.bpm/pattemp
+						notemul = fst_currentsong.get_bpm()/pattemp
 						cvpj_patid = fst_channel.Type+'-'+patid+'-'+str(pattemp)
 						nle_obj = convproj_obj.notelistindex__add(cvpj_patid)
 						nle_obj.visual.name = patid+' ('+fst_channel.Type+')'
@@ -473,11 +489,14 @@ class input_famistudio(plugins.base):
 						else: nle_obj.visual.color.set_int(defualt_pattern_color)
 						parse_notes(nle_obj.notelist, patdata.Notes, fst_channel.Type, NoteLength*notemul, project_obj.Arpeggios, fxchan)
 
-			for pattime, patid in fst_channel.Instances.items():
+			for patinsid in fst_channel.PatternInstances:
+				patid = patinsid.Pattern
+				pattime = patinsid.Time
+
 				placement_obj = playlist_obj.placements.add_notes_indexed()
 
 				modt = tempoblocks[pattime]['tempo']
-				bpmd = fst_currentsong.PatternSettings.bpm if not modt else modt
+				bpmd = fst_currentsong.get_bpm() if not modt else modt
 				placement_obj.fromindex = fst_channel.Type+'-'+patid+'-'+str(bpmd)
 				time_obj = placement_obj.time
 				time_obj.set_posdur(float(tempoblocks[pattime]['start']), float(tempoblocks[pattime]['steps']))

@@ -321,7 +321,12 @@ class sony_acid_file:
 			elif riffpart.id == b'WVPL':
 				for i in riffpart.iter_reader(ebrw_readstr):
 					if i.id == b'wave':
-						self.audios.append(i.dump_list(ebrw_readstr))
+						wave_chunks = riff_chunks.riff_chunk()
+						wave_chunks.id = b'WAVE'
+						for w in i.iter_reader(ebrw_readstr):
+							in_ch = wave_chunks.add_part(w.id)
+							in_ch.data = ebrw_readstr.rest()
+						self.audios.append( wave_chunks.write_data() )
 
 			elif riffpart.id == b'INFO':
 				for i in riffpart.iter_reader(ebrw_readstr):

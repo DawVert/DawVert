@@ -164,6 +164,86 @@ class rpp_au:
 		reaper_func.writebin(rpp_vstdata, self.data_chunk)
 		rpp_data.children.append(rpp_vstdata)
 
+class rpp_lv2:
+	def __init__(self):
+		self.name = ''
+		self.uri = ''
+		self.unk1 = ''
+		self.config = rvd([0,0,0,''], ['unk1','unk2','unk3','unk4'], [int, int, int, str], True)
+		self.midi = []
+		self.params = {}
+		self.state = {}
+
+	def load(self, values, rpp_data):
+		for n, v in enumerate(values):
+			if n == 0: self.name = v
+			if n == 1: self.uri = v
+			if n == 2: self.unk1 = v
+		for name, is_dir, values, inside_dat in reaper_func.iter_rpp(rpp_data):
+			if name == 'CFG': self.config.read(values)
+			if name == 'MIDI': 
+				midival = rvd(['',0,0], ['portname','unk2','unk3'], [str, int, int], True)
+				midival.read(values)
+				self.midi.append(midival)
+			if name == 'P':
+				p_name = ''
+				p_val = 0
+				for n, v in enumerate(values):
+					if not n&1: p_name = v
+					else: p_val = float(v)
+					self.params[p_name] = p_val
+			if name == 'STATE': 
+				for s_name, s_is_dir, s_values, s_inside_dat in reaper_func.iter_rpp(inside_dat):
+					if s_name == 'I': self.state[s_values[0]] = ['int', int(s_values[1])]
+					elif s_name == 'F': self.state[s_values[0]] = ['float', float(s_values[1])]
+					elif s_name == 'P': self.state[s_values[0]] = ['path', s_values[1]]
+					elif s_name == 'X': self.state[s_values[1]] = ['bin', reaper_func.getbin(s_inside_dat), s_values[0]]
+					elif s_name == 'S': 
+						outtxt = ''
+						for x in s_inside_dat:
+							if isinstance(x, list): x = ' '.join(x)
+							x = x.split('|', 1)
+							if len(x)>1:
+								if x[0]=='n': outtxt += '\n'
+								outtxt += x[1]
+
+
+						self.state[s_values[0]] = ['str', outtxt]
+
+	def write(self, rpp_data):
+		rpp_vstdata = robj('LV2',[self.name, self.uri, self.unk1])
+		self.config.write('CFG', rpp_vstdata)
+		for midival in self.midi: midival.write('MIDI', rpp_vstdata)
+		outtxt = ''
+		for n, v in self.params.items():
+			outtxt += '%s %f ' % (n, v)
+			if len(outtxt)>80:
+				rpp_vstdata.append(['P']+outtxt.split(' '))
+				outtxt = ''
+		if outtxt: rpp_vstdata.append(['P']+outtxt.split(' '))
+
+		statedata = robj('STATE',[])
+
+
+		for k, v in self.state.items():
+			if isinstance(v, int): statedata.append(['I', k, v, 3])
+			elif isinstance(v, float): statedata.append(['F', k, v, 3])
+			elif isinstance(v, list):
+				if v[0]=='int': statedata.append(['I', k, v[1], 3])
+				elif v[0]=='float': statedata.append(['F', k, v[1], 3])
+				elif v[0]=='path': statedata.append(['P', k, v[1], 3])
+				elif v[0]=='bin': 
+					fout = robj('X',[v[2], k, 3])
+					reaper_func.writebin(fout, v[1])
+					statedata.append(fout)
+
+			else: 
+				print(type(v))
+
+		rpp_vstdata.append(statedata)
+
+		rpp_data.children.append(rpp_vstdata)
+
 class rpp_plugin:
 	def __init__(self):
 		self.plugin = None
@@ -195,53 +275,63 @@ class rpp_fxchain:
 
 	def add_vst(self):
 		guid = '{'+str(uuid.uuid4())+'}'
-		vst_obj = rpp_vst()
+		plugpart_obj = rpp_vst()
 		plug_obj = rpp_plugin()
 		plug_obj.type = 'VST'
-		plug_obj.plugin = vst_obj
+		plug_obj.plugin = plugpart_obj
 		plug_obj.fxid.set(guid)
 		self.plugins.append(plug_obj)
-		return plug_obj, vst_obj, guid
+		return plug_obj, plugpart_obj, guid
 
 	def add_clap(self):
 		guid = '{'+str(uuid.uuid4())+'}'
-		clap_obj = rpp_clap()
+		plugpart_obj = rpp_clap()
 		plug_obj = rpp_plugin()
 		plug_obj.type = 'CLAP'
-		plug_obj.plugin = clap_obj
+		plug_obj.plugin = plugpart_obj
 		plug_obj.fxid.set(guid)
 		self.plugins.append(plug_obj)
-		return plug_obj, clap_obj, guid
+		return plug_obj, plugpart_obj, guid
 
 	def add_js(self):
 		guid = '{'+str(uuid.uuid4())+'}'
-		js_obj = rpp_js()
+		plugpart_obj = rpp_js()
 		plug_obj = rpp_plugin()
 		plug_obj.type = 'JS'
-		plug_obj.plugin = js_obj
+		plug_obj.plugin = plugpart_obj
 		plug_obj.fxid.set(guid)
 		self.plugins.append(plug_obj)
-		return plug_obj, js_obj, guid
+		return plug_obj, plugpart_obj, guid
 
 	def add_dx(self):
 		guid = '{'+str(uuid.uuid4())+'}'
-		dx_obj = rpp_dx()
+		plugpart_obj = rpp_dx()
 		plug_obj = rpp_plugin()
 		plug_obj.type = 'DX'
-		plug_obj.plugin = dx_obj
+		plug_obj.plugin = plugpart_obj
 		plug_obj.fxid.set(guid)
 		self.plugins.append(plug_obj)
-		return plug_obj, dx_obj, guid
+		return plug_obj, plugpart_obj, guid
 
 	def add_au(self):
 		guid = '{'+str(uuid.uuid4())+'}'
-		js_obj = rpp_au()
+		plugpart_obj = rpp_au()
 		plug_obj = rpp_plugin()
 		plug_obj.type = 'AU'
-		plug_obj.plugin = js_obj
+		plug_obj.plugin = plugpart_obj
 		plug_obj.fxid.set(guid)
 		self.plugins.append(plug_obj)
-		return plug_obj, js_obj, guid
+		return plug_obj, plugpart_obj, guid
+
+	def add_lv2(self):
+		guid = '{'+str(uuid.uuid4())+'}'
+		plugpart_obj = rpp_lv2()
+		plug_obj = rpp_plugin()
+		plug_obj.type = 'LV2'
+		plug_obj.plugin = plugpart_obj
+		plug_obj.fxid.set(guid)
+		self.plugins.append(plug_obj)
+		return plug_obj, plugpart_obj, guid
 
 	def load(self, rpp_data):
 		bypassval = [0,0,0]
@@ -260,54 +350,62 @@ class rpp_fxchain:
 
 			if is_dir:
 				if name in 'VST': 
-					vst_obj = rpp_vst()
-					vst_obj.load(values, inside_dat)
+					plugpart_obj = rpp_vst()
+					plugpart_obj.load(values, inside_dat)
 					plug_obj = rpp_plugin()
 					plug_obj.type = name
-					plug_obj.plugin = vst_obj
+					plug_obj.plugin = plugpart_obj
 					plug_obj.bypass.read(bypassval)
 					self.plugins.append(plug_obj)
 				elif name in 'CLAP': 
-					clap_obj = rpp_clap()
-					clap_obj.load(values, inside_dat)
+					plugpart_obj = rpp_clap()
+					plugpart_obj.load(values, inside_dat)
 					plug_obj = rpp_plugin()
 					plug_obj.type = name
-					plug_obj.plugin = clap_obj
+					plug_obj.plugin = plugpart_obj
 					plug_obj.bypass.read(bypassval)
 					self.plugins.append(plug_obj)
 				elif name in 'JS': 
-					js_obj = rpp_js()
-					js_obj.load(values, inside_dat)
+					plugpart_obj = rpp_js()
+					plugpart_obj.load(values, inside_dat)
 					plug_obj = rpp_plugin()
 					plug_obj.type = name
-					plug_obj.plugin = js_obj
+					plug_obj.plugin = plugpart_obj
 					plug_obj.bypass.read(bypassval)
 					self.plugins.append(plug_obj)
 				elif name in 'JS_PINMAP': 
 					for n, x in enumerate(reaper_func.getbin_multi(inside_dat)):
-						if n == 0: js_obj.pinmap = x
+						if n == 0: plugpart_obj.pinmap = x
 				elif name in 'REWIRE': 
-					rewire_obj = rpp_rewire()
-					rewire_obj.load(values, inside_dat)
+					plugpart_obj = rpp_rewire()
+					plugpart_obj.load(values, inside_dat)
 					plug_obj = rpp_plugin()
 					plug_obj.type = name
-					plug_obj.plugin = rewire_obj
+					plug_obj.plugin = plugpart_obj
 					plug_obj.bypass.read(bypassval)
 					self.plugins.append(plug_obj)
 				elif name in 'DX': 
-					js_obj = rpp_dx()
-					js_obj.load(values, inside_dat)
+					plugpart_obj = rpp_dx()
+					plugpart_obj.load(values, inside_dat)
 					plug_obj = rpp_plugin()
 					plug_obj.type = name
-					plug_obj.plugin = js_obj
+					plug_obj.plugin = plugpart_obj
 					plug_obj.bypass.read(bypassval)
 					self.plugins.append(plug_obj)
 				elif name in 'AU': 
-					js_obj = rpp_au()
-					js_obj.load(values, inside_dat)
+					plugpart_obj = rpp_au()
+					plugpart_obj.load(values, inside_dat)
 					plug_obj = rpp_plugin()
 					plug_obj.type = name
-					plug_obj.plugin = js_obj
+					plug_obj.plugin = plugpart_obj
+					plug_obj.bypass.read(bypassval)
+					self.plugins.append(plug_obj)
+				elif name in 'LV2': 
+					plugpart_obj = rpp_lv2()
+					plugpart_obj.load(values, inside_dat)
+					plug_obj = rpp_plugin()
+					plug_obj.type = name
+					plug_obj.plugin = plugpart_obj
 					plug_obj.bypass.read(bypassval)
 					self.plugins.append(plug_obj)
 				if name == 'PARMENV': 

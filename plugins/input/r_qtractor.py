@@ -70,11 +70,13 @@ class input_midi(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+
 		ppq = project_obj.properties.ticks_per_beat
 		tempo = project_obj.properties.tempo
 		tempomul = tempo/120
 
 		convproj_obj.params.add('bpm', tempo, 'float')
+		convproj_obj.freq = project_obj.properties.sample_rate
 		
 		#for temponode in project_obj.tempo_map:
 		#	tempopos = calcsec(temponode.frame, ppq)

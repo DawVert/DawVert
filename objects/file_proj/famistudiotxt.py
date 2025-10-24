@@ -24,15 +24,6 @@ def read_regs(cmd_params, startname, size):
 		if regname in cmd_params: regdata[regnum] = int(cmd_params[regname])
 	return regdata
 
-def NoteToMidi(keytext):
-	l_key = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-	s_octave = (int(keytext[-1])-5)*12
-	lenstr = len(keytext)
-	if lenstr == 3: t_key = keytext[:-1]
-	else: t_key = keytext[:-1]
-	s_key = l_key.index(t_key)
-	return s_key + s_octave
-
 class dpcm_sample:
 	def __init__(self):
 		self.Name = ''
