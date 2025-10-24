@@ -1,6 +1,9 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import logging
+logger_projparse = logging.getLogger('projparse')
+
 # ============================================= device ============================================= 
 
 class soundation_param:
@@ -8,12 +11,16 @@ class soundation_param:
 		self.value = 0
 		self.automation = []
 		self.has_auto = False
+		if pd != None: self.read(pd)
 
-		if pd != None:
-			if 'value' in pd: self.value = pd['value']
-			if 'automation' in pd: 
-				self.automation = pd['automation']
+	def read(self, pd):
+		for n, v in pd.items():
+			if n == 'value': 
+				self.value = v
+			elif n == 'automation': 
+				self.automation = v
 				self.has_auto = True
+			else: logger_projparse.warning('soundation: param: unimplemented attrib: '+n)
 
 class soundation_paramset:
 	def __init__(self):
@@ -98,27 +105,30 @@ class soundation_region:
 		self.pitchShiftSemitones = 0
 		self.pitchShiftCents = 0
 		self.formantCorrection = 0
+		if pd != None: self.read(pd)
 
-		if pd != None:
-			if 'color' in pd: self.color = pd['color']
-			if 'position' in pd: self.position = pd['position']
-			if 'autoStretchBpm' in pd: self.autoStretchBpm = pd['autoStretchBpm']
-			if 'contentPosition' in pd: self.contentPosition = pd['contentPosition']
-			if 'file' in pd: self.file = pd['file']
-			if 'isAutoStretched' in pd: self.isAutoStretched = pd['isAutoStretched']
-			if 'isPattern' in pd: self.isPattern = pd['isPattern']
-			if 'length' in pd: self.length = pd['length']
-			if 'loopcount' in pd: self.loopcount = pd['loopcount']
-			if 'muted' in pd: self.muted = pd['muted']
-			if 'name' in pd: self.name = pd['name']
-			if 'notes' in pd: self.notes = pd['notes']
-			if 'reversed' in pd: self.reversed = pd['reversed']
-			if 'stretchMode' in pd: self.stretchMode = pd['stretchMode']
-			if 'stretchRate' in pd: self.stretchRate = pd['stretchRate']
-			if 'type' in pd: self.type = pd['type']
-			if 'pitchShiftSemitones' in pd: self.pitchShiftSemitones = pd['pitchShiftSemitones']
-			if 'pitchShiftCents' in pd: self.pitchShiftCents = pd['pitchShiftCents']
-			if 'formantCorrection' in pd: self.formantCorrection = pd['formantCorrection']
+	def read(self, pd):
+		for n, v in pd.items():
+			if n == 'color': self.color = v
+			elif n == 'position': self.position = v
+			elif n == 'autoStretchBpm': self.autoStretchBpm = v
+			elif n == 'contentPosition': self.contentPosition = v
+			elif n == 'file': self.file = v
+			elif n == 'isAutoStretched': self.isAutoStretched = v
+			elif n == 'isPattern': self.isPattern = v
+			elif n == 'length': self.length = v
+			elif n == 'loopcount': self.loopcount = v
+			elif n == 'muted': self.muted = v
+			elif n == 'name': self.name = v
+			elif n == 'notes': self.notes = v
+			elif n == 'reversed': self.reversed = v
+			elif n == 'stretchMode': self.stretchMode = v
+			elif n == 'stretchRate': self.stretchRate = v
+			elif n == 'type': self.type = v
+			elif n == 'pitchShiftSemitones': self.pitchShiftSemitones = v
+			elif n == 'pitchShiftCents': self.pitchShiftCents = v
+			elif n == 'formantCorrection': self.formantCorrection = v
+			else: logger_projparse.warning('soundation: region: unimplemented attrib: '+n)
 
 	def write(self):
 		sng_region = {}
@@ -158,22 +168,24 @@ class soundation_channel:
 		self.regions = []
 		self.instrument = None
 		self.userSetName = None
+		if pd != None: self.read(pd)
 
-		if pd != None:
-			if 'name' in pd: self.name = pd['name']
-			if 'type' in pd: self.type = pd['type']
-			if 'color' in pd: self.color = pd['color']
-			if 'mute' in pd: self.mute = pd['mute']
-			if 'solo' in pd: self.solo = pd['solo']
-			if 'volume' in pd: self.volume = pd['volume']
-			if 'pan' in pd: self.pan = pd['pan']
-			if 'volumeAutomation' in pd: self.volumeAutomation = pd['volumeAutomation']
-			if 'panAutomation' in pd: self.panAutomation = pd['panAutomation']
-			if 'effects' in pd: self.effects = [soundation_device(x) for x in pd['effects']]
-			if 'instrument' in pd: self.instrument = soundation_device(pd['instrument'])
-			if 'userSetName' in pd: self.userSetName = pd['userSetName']
-			if 'regions' in pd: self.regions = [soundation_region(x) for x in pd['regions']]
-
+	def read(self, pd):
+		for n, v in pd.items():
+			if n == 'name': self.name = v
+			elif n == 'type': self.type = v
+			elif n == 'color': self.color = v
+			elif n == 'mute': self.mute = v
+			elif n == 'solo': self.solo = v
+			elif n == 'volume': self.volume = v
+			elif n == 'pan': self.pan = v
+			elif n == 'volumeAutomation': self.volumeAutomation = v
+			elif n == 'panAutomation': self.panAutomation = v
+			elif n == 'effects': self.effects = [soundation_device(x) for x in v]
+			elif n == 'instrument': self.instrument = soundation_device(v)
+			elif n == 'userSetName': self.userSetName = v
+			elif n == 'regions': self.regions = [soundation_region(x) for x in v]
+			else: logger_projparse.warning('soundation: channel: unimplemented attrib: '+n)
 
 	def write(self):
 		sng_channel = {}
@@ -204,18 +216,20 @@ class soundation_project:
 		self.loopStart = 0
 		self.loopEnd = 4102
 		self.channels = []
+		if pd != None: self.read(pd)
 
-		if pd != None:
-			if 'version' in pd: self.version = pd['version']
-			if 'studio' in pd: self.studio = pd['studio']
-			if 'bpm' in pd: self.bpm = pd['bpm']
-			if 'timeSignature' in pd: self.timeSignature = pd['timeSignature']
-			if 'looping' in pd: self.looping = pd['looping']
-			if 'loopStart' in pd: self.loopStart = pd['loopStart']
-			if 'loopEnd' in pd: self.loopEnd = pd['loopEnd']
-			if 'channels' in pd: 
-				for channel in pd['channels']:
-					self.channels.append(soundation_channel(channel))
+	def read(self, pd):
+		for n, v in pd.items():
+			if n == 'version': self.version = v
+			elif n == 'studio': self.studio = v
+			elif n == 'bpm': self.bpm = v
+			elif n == 'timeSignature': self.timeSignature = v
+			elif n == 'looping': self.looping = v
+			elif n == 'loopStart': self.loopStart = v
+			elif n == 'loopEnd': self.loopEnd = v
+			elif n == 'channels': 
+				for channel in v: self.channels.append(soundation_channel(channel))
+			else: logger_projparse.warning('soundation: project: unimplemented attrib: '+n)
 
 	def write(self):
 		sng_proj = {}

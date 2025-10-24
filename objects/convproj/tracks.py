@@ -81,7 +81,7 @@ cvpj_stretch = stretch.cvpj_stretch
 
 class cvpj_chanport:
 	def __init__(self):
-		self.chan = False
+		self.chan = -1
 		self.port = -1
 		self.port_name = ''
 

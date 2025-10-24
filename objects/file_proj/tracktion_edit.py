@@ -248,7 +248,6 @@ class tracktion_modifier:
 			nodesxml = ET.SubElement(tempxml, 'NODES')
 			for node in self.nodes: node.write(nodesxml)
 
-
 class tracktion_modifiers:
 	def __init__(self):
 		self.modifiers = []
