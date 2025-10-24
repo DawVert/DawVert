@@ -17,7 +17,6 @@ class piyopiyo_melo_track:
 		self.unk2 = ebrw_readstr.skip(8)
 		self.waveform = ebrw_readstr.list_int_s8(256)
 		self.envelope = ebrw_readstr.list_int_u8(64)
-
 		logger_projparse.info("piyopiyo: Track:  Oct:" + str(self.octave) + ", Icon:" + str(self.icon) + ", Len:" + str(self.length) + ", Vol:" + str(self.volume))
 
 class piyopiyo_song:

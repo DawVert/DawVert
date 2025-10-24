@@ -798,6 +798,7 @@ class input_reaper(plugins.base):
 		groups_valid = True
 		groups_returns = {}
 		sends_data = {}
+		sends_auto = {}
 
 		for tracknum, rpp_track_obj in enumerate(rpp_project.tracks):
 			cvpj_trackid = track_cvpjids[tracknum]
@@ -813,9 +814,15 @@ class input_reaper(plugins.base):
 						source_trackid = track_cvpjids[x['tracknum']]
 						if source_trackid not in sends_data: sends_data[source_trackid] = {}
 						sends_data[source_trackid][cvpj_trackid] = [x]
+					for n, x in rpp_track_obj.auxvolenv.items():
+						source_trackid = track_cvpjids[n]
+						if source_trackid not in sends_auto: sends_auto[source_trackid] = {}
+						if cvpj_trackid not in sends_auto[source_trackid]: sends_auto[source_trackid][cvpj_trackid] = {}
+						sends_auto[source_trackid][cvpj_trackid]['vol'] = x
 				else:
 					groups_valid = False
 					#print('groups_valid invalid: items in return,',rpp_track_obj.name.get())
+
 
 		if groups_valid:
 			convproj_obj.fxtype = 'groupreturn'
@@ -862,7 +869,16 @@ class input_reaper(plugins.base):
 				if cvpj_trackid in sends_data:
 					for returnid, auxdata in sends_data[cvpj_trackid].items():
 						rpp_auxrecv_obj = auxdata[0]
-						send_obj = sends_obj.add(returnid, None, rpp_auxrecv_obj['vol'])
+						sendautoid = None
+
+						if cvpj_trackid in sends_auto:
+							if returnid in sends_auto[cvpj_trackid]:
+								sendautoid = 'send__'+cvpj_trackid+'_'+returnid
+								autodata = sends_auto[cvpj_trackid][returnid]
+								if 'vol' in autodata:
+									do_auto(pooledenvs, convproj_obj, autodata['vol'], ['send', sendautoid, 'amount'], False, 'float', False)
+
+						send_obj = sends_obj.add(returnid, sendautoid, rpp_auxrecv_obj['vol'])
 						send_obj.params.add('pan', rpp_auxrecv_obj['pan'], 'float')
 
 				if bus_state == 2:

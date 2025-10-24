@@ -21,15 +21,12 @@ class sn2_instrument:
 			insttype = ebrw_readstr.raw(3)
 			if insttype == b'SMP':
 				self.name = ebrw_readstr.string_t()
-
 				self.unk0 = ebrw_readstr.int_u16()
-
 				self.samplesize = ebrw_readstr.int_s32()
 				self.loopstart = ebrw_readstr.int_s32()
 				self.unk3 = ebrw_readstr.int_s32()
 				self.unk4 = ebrw_readstr.int_u16()
 				self.freq = ebrw_readstr.int_u16()
-
 				self.data = ebrw_readstr.raw(self.samplesize)
 			else:
 				self.name = ''

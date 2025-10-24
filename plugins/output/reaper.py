@@ -611,7 +611,6 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 			rppart_audio_stretch = 9
 			if stretch_algo.preserve_formants: rppart_audio_params = 4
 
-
 		rpp_item_obj.playrate['stretch_mode'] = (rppart_audio_stretch<<16) + rppart_audio_params
 
 		ref_found, sampleref_obj = convproj_obj.sampleref__get(audiopl_obj.sample.sampleref)
