@@ -687,9 +687,19 @@ class input_reaper(plugins.base):
 					sampleref_obj.search_local(dawvert_intent.input_folder)
 
 					placement_obj.sample.sampleref = cvpj_audio_file
+
+
+
 					if samplemode == 3: placement_obj.sample.reverse = True
 
 					startoffset = (cvpj_offset_bpm/cvpj_audio_rate) + (startpos/cvpj_audio_rate)*8
+
+					dur_sec = sampleref_obj.get_dur_sec()
+					if dur_sec:
+						totalaudio = dur_sec/cvpj_audio_rate
+						totalaudio = ((totalaudio)*8)*tempomul
+						time_obj.cut_type = 'loop' if cvpj_loop else 'cut'
+						time_obj.set_loop_data(startoffset, 0, totalaudio)
 
 					stretch_obj = placement_obj.sample.stretch
 					stretch_obj.preserve_pitch = cvpj_audio_preserve_pitch
