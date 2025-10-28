@@ -688,8 +688,6 @@ class input_reaper(plugins.base):
 
 					placement_obj.sample.sampleref = cvpj_audio_file
 
-
-
 					if samplemode == 3: placement_obj.sample.reverse = True
 
 					startoffset = (cvpj_offset_bpm/cvpj_audio_rate) + (startpos/cvpj_audio_rate)*8
