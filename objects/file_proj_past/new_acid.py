@@ -32,6 +32,32 @@ class chunk__regiondata:
 		self.unknowndata.append( ebrw_readstr.int_u32() )
 		self.unknowndata.append( ebrw_readstr.int_u32() )
 
+#class chunk__regiondata_2:
+#	def __init__(self, ebrw_readstr):
+#		self.unknowndata = []
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.unknowndata.append( ebrw_readstr.int_s32() )
+#		self.filename = ebrw_readstr.string16_t()
+#		self.filename2 = ebrw_readstr.string16_t()
+#		self.name = ebrw_readstr.string16_t()
+#		self.name2 = ebrw_readstr.string16_t()
+#		#self.unknowndata.append( ebrw_readstr.int_u32() )
+#		#self.unknowndata.append( ebrw_readstr.int_u32() )
+#		print( self.unknowndata, self.name2, ebrw_readstr.rest().hex()  )
+
 class chunk__peak:
 	def __init__(self, ebrw_readstr):
 		self.unknowndata = []
@@ -100,25 +126,45 @@ class chunk__maindata:
 class chunk__track_data:
 	def __init__(self, ebrw_readstr):
 		self.unknowndata = []
-		self.unknowndata.append( ebrw_readstr.int_u32() )
-		self.unknowndata.append( ebrw_readstr.int_u32() )
-		self.flags = ebrw_readstr.flags_i32()
-		self.size = ebrw_readstr.int_u32()
-		self.type = ebrw_readstr.int_u32()
-		self.color = ebrw_readstr.int_u32()
-		self.stretchtype = ebrw_readstr.int_u32()
-		self.id = ebrw_readstr.int_u32()
-		stringsize1 = ebrw_readstr.int_u32()//2
-		stringsize2 = ebrw_readstr.int_u32()//2
-		self.numaudio = ebrw_readstr.int_u32()
-		self.unknowndata.append( ebrw_readstr.int_u32() )
-		self.seconds = ebrw_readstr.int_u32()/10000000
-		self.unknowndata.append( ebrw_readstr.int_u32() )
-		stringsize3 = ebrw_readstr.int_u32()//2
-		self.unknowndata.append( ebrw_readstr.int_u32() )
-		self.filename = ebrw_readstr.string16(stringsize1)
-		self.name = ebrw_readstr.string16(stringsize2)
-		#self.name2 = ebrw_readstr.string16(stringsize3)
+		self.version = ebrw_readstr.int_u32()
+		self.filename = ''
+		self.name = ''
+
+		if self.version==64:
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.flags = ebrw_readstr.flags_i32()
+			self.size = ebrw_readstr.int_u32()
+			self.type = ebrw_readstr.int_u32()
+			self.color = ebrw_readstr.int_u32()
+			self.stretchtype = ebrw_readstr.int_u32()
+			self.id = ebrw_readstr.int_u32()
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.numaudio = ebrw_readstr.int_u32()
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.seconds = ebrw_readstr.int_u32()/10000000
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.filename = ebrw_readstr.string16_t()
+			self.name = ebrw_readstr.string16_t()
+			self.name2 = ebrw_readstr.string16_t()
+
+		if self.version==56:
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.flags = ebrw_readstr.flags_i32()
+			self.size = ebrw_readstr.int_u32()
+			self.type = ebrw_readstr.int_u32()
+			self.color = ebrw_readstr.int_u32()
+			self.id = ebrw_readstr.int_u32()
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.numaudio = ebrw_readstr.int_u32()
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.name = ebrw_readstr.string16_t()
 
 class chunk__audioinfo:
 	def __init__(self, ebrw_readstr):
@@ -255,6 +301,31 @@ class chunk__metadata:
 			chunk_data = ebrw_readstr.string16(ebrw_readstr.int_u32()//2)
 			self.metadata[chunk_name] = chunk_data
 
+class chunk__tracksfolder:
+	def __init__(self, ebrw_readstr):
+		self.unk1 = ebrw_readstr.int_u32()
+		self.idnum = ebrw_readstr.int_u32()
+		self.unk3 = ebrw_readstr.int_u32()
+		self.unk4 = ebrw_readstr.int_u32()
+		self.flags = ebrw_readstr.flags_i32()
+		self.num_tracks = ebrw_readstr.int_u32()
+		self.unk6 = ebrw_readstr.int_u32()
+		self.name = ebrw_readstr.string16_t()
+		self.inchunks = sony_acid_chunk()
+		if self.num_tracks: self.inchunks.read(ebrw_readstr, 0)
+		self.rest = ebrw_readstr.rest()
+		#print('grp', self.unk3, self.unk4, self.flags, self.unk6)
+
+class chunk__trackstrack:
+	def __init__(self, ebrw_readstr):
+		self.unk1 = ebrw_readstr.int_u32()
+		self.idnum = ebrw_readstr.int_u32()
+		self.unk3 = ebrw_readstr.int_u32()
+		self.unk4 = ebrw_readstr.int_u32()
+		self.tracknum = ebrw_readstr.int_u32()
+		self.unk6 = ebrw_readstr.int_u32()
+		#print('trk', self.unk1, self.idnum, self.unk3, self.unk4, self.tracknum, self.unk6)
+
 chunksdef = {}
 chunksdef['754be33a5ef5ec44a2f0f4eb3c53af7d'] = chunk__peak
 chunksdef['6a208d162123d21186b000c04f8edb8a'] = chunk__region
@@ -270,6 +341,9 @@ chunksdef['be3967941a398443878538bda35f409a'] = chunk__startingparam
 chunksdef['5c1b70846368d21186fd00c04f8edb8a'] = chunk__track_automation
 chunksdef['44030abfa7f8f44788cba63c7756ba9e'] = chunk__audiodefinfo
 chunksdef['1d4f23715752d21186dc00c04f8edb8a'] = chunk__metadata
+chunksdef['d0fb0bbbaec4044685662b4bf9cccbb5'] = chunk__tracksfolder
+chunksdef['2b959c4d344c664295f519126b4420a8'] = chunk__trackstrack
+#chunksdef['b5c7e0971f2d46449de8c07ff6f43b3b'] = chunk__regiondata_2
 
 # ---------------------- INDATA ----------------------
 
@@ -285,16 +359,17 @@ verboseid['9d74b872ab14884594a939343aeef7cc'] = 'MixerChannel'
 verboseid['a132b74c04e40d498806ede87d7d2c4f'] = 'TrackGroove'
 verboseid['5c1b70846368d21186fd00c04f8edb8a'] = 'TrackAutomation'
 verboseid['1b1ce45016af194e8cdba707237b7921'] = 'GrooveInfo'
-verboseid['b5c7e0971f2d46449de8c07ff6f43b3b'] = 'RegionData'
+verboseid['b5c7e0971f2d46449de8c07ff6f43b3b'] = 'RegionDataMIDI'
 verboseid['5662f7ab2d39d21186c700c04f8edb8a'] = 'Marker'
 verboseid['754be33a5ef5ec44a2f0f4eb3c53af7d'] = 'Peak?'
 verboseid['4212abe5d43b1e439148fb80c038eaeb'] = 'V3Peak?'
 verboseid['5287535c45e3784f83b8551935b4c6f7'] = 'AudioStretch'
 verboseid['07521655f6713e4e83be9dee9c5ba303'] = 'TempoKeyPoint'
 verboseid['44030abfa7f8f44788cba63c7756ba9e'] = 'AudioDef:Info'
-verboseid['5d2d8fb20f23d21186af00c04f8edb8a'] = 'RegionData'
+verboseid['5d2d8fb20f23d21186af00c04f8edb8a'] = 'RegionDataAudio'
 verboseid['be3967941a398443878538bda35f409a'] = 'StartingParams'
 verboseid['1d4f23715752d21186dc00c04f8edb8a'] = 'MetaData'
+verboseid['f7ef7162791cb545a06eeb59467bcb28'] = 'TrackOrder'
 
 verboseid['a95c808a7402c242b8b9572f6786317c'] = 'Group:AudioDefList'
 verboseid['1d54047b1c0adc4faeb3d4935206611d'] = 'Group:AudioDef'
@@ -340,7 +415,7 @@ class sony_acid_chunk:
 			idname = x.id.hex()
 			yield x, verboseid[idname] if idname in verboseid else None
 
-	def read(self, ebrw_readstr, tnum):
+	def read(self, ebrw_readstr, tnum, verb=VERBOSE):
 		self.id = ebrw_readstr.raw(16)
 		self.size = ebrw_readstr.int_u64()-24
 		self.start = ebrw_readstr.tell_real()
@@ -350,19 +425,19 @@ class sony_acid_chunk:
 			self.id = ebrw_readstr.raw(16)
 			gidname = self.id.hex()
 			if gidname in verboseid: gidname = verboseid[gidname]
-			if VERBOSE: print('\t'*tnum, '$Group %s \\' % gidname)
+			if verb: print('\t'*tnum, '$Group %s \\' % gidname)
 			ebrw_readstr.isolate_size(self.size-16)
 			while ebrw_readstr.remaining():
 				inchunk = sony_acid_chunk()
 				inchunk.read(ebrw_readstr, tnum+1)
 				self.in_data.append(inchunk)
 			ebrw_readstr.isolate_end()
-			if VERBOSE: print('\t'*tnum, '       /')
+			if verb: print('\t'*tnum, '       /')
 
 		else:
 			idname = self.id.hex()
 
-			if VERBOSE:
+			if verb:
 				if idname in verboseid: visname = verboseid[idname]
 				else: visname = 'UnknownData:'+self.id.hex()
 				print('\t'*tnum,  visname)
@@ -373,7 +448,7 @@ class sony_acid_chunk:
 				ebrw_readstr.isolate_end()
 				#print(ebrw_readstr.raw(self.size).hex())
 			else:
-				if VERBOSE: print('\t'*tnum,  ebrw_readstr.raw(self.size).hex())
+				if verb: print('\t'*tnum,  ebrw_readstr.raw(self.size).hex())
 				else: ebrw_readstr.skip(self.size)
 
 class sony_acid_song:

@@ -266,6 +266,26 @@ class input_acid_3(plugins.base):
 
 		version = 0
 
+		tracks_data = {}
+
+		def do_orders_groups(riff_data, track_order, tracks_data, ingroup):
+			for regs_chunk, regs_name in riff_data.iter_wtypes():
+				if regs_name=='TrackSTrack':
+					def_data = regs_chunk.content
+					convproj_obj.track_order.append( 'track_'+str(def_data.tracknum) )
+					track_obj = tracks_data[def_data.tracknum]
+					track_obj.group = ingroup
+				if regs_name=='TrackSFolder':
+					def_data = regs_chunk.content
+					groupid = 'group_'+str(def_data.idnum)
+					group_obj = convproj_obj.fx__group__add(groupid)
+					group_obj.visual.name = def_data.name
+					group_obj.group = ingroup
+					group_obj.params.add('enabled', 4 not in def_data.flags, 'float')
+					group_obj.params.add('solo', 3 in def_data.flags, 'float')
+					group_obj.visual_track.group_expanded = 1 not in def_data.flags
+					do_orders_groups(def_data.inchunks, track_order, tracks_data, groupid)
+
 		for root_chunk, root_name in project_obj.root.iter_wtypes():
 			if root_name == 'MainData':
 				def_data = root_chunk.content
@@ -280,7 +300,7 @@ class input_acid_3(plugins.base):
 
 			elif root_name == 'Group:RegionDatas':
 				for regs_chunk, regs_name in root_chunk.iter_wtypes():
-					if regs_name == 'RegionData':
+					if regs_name == 'RegionDataAudio':
 						if regs_chunk.content:
 							def_data = regs_chunk.content
 							files[filecount] = def_data.filename
@@ -356,10 +376,11 @@ class input_acid_3(plugins.base):
 
 						if track_header:
 
-							cvpj_trackid = 'track_'+str(tracknum)
+							cvpj_trackid = 'track_'+str(track_header.id)
 
 							if track_header.type == 2:
 								track_obj = convproj_obj.track__add(cvpj_trackid, 'audio', 1, False)
+								tracks_data[track_header.id] = track_obj
 								color = colordata.getcolornum(track_header.color)
 								track_obj.visual.name = track_header.name
 								track_obj.visual.color.set_int(color)
@@ -427,6 +448,7 @@ class input_acid_3(plugins.base):
 
 							if track_header.type == 4:
 								track_obj = convproj_obj.track__add(cvpj_trackid, 'instrument', 1, False)
+								tracks_data[track_header.id] = track_obj
 								color = colordata.getcolornum(track_header.color)
 								track_obj.visual.name = track_header.name
 								track_obj.visual.color.set_int(color)
@@ -471,6 +493,13 @@ class input_acid_3(plugins.base):
 
 										if maxdur>0:
 											time_obj.set_loop_data(region.offset, 0, maxdur*ppq)
+
+			elif root_name == 'TrackOrder':
+				old_track_order = convproj_obj.track_order
+				convproj_obj.track_order = []
+
+				do_orders_groups(root_chunk, old_track_order, tracks_data, None)
+
 
 			elif root_name == 'Group:TempoKeyPoints':
 				for regs_chunk, regs_name in root_chunk.iter_wtypes():
