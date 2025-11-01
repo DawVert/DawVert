@@ -123,6 +123,8 @@ def do_fade(fade_data, fadevals):
 	if fadevals['fade_type'] == 0: fade_data.slope = 0
 	if fadevals['fade_type'] == 2: fade_data.slope = -0.5
 	if fadevals['fade_type'] == 4: fade_data.slope = -1
+	if fadevals['fade_type'] == 5: fade_data.shapetype = 'scurve'
+	if fadevals['fade_type'] == 5.1: fade_data.shapetype = 'scurve'
 
 def do_auto_clip_notes(placement_obj, clip_env, mpetype, paramtype, invert, instant): 
 	isbool = paramtype=='bool'
@@ -685,9 +687,17 @@ class input_reaper(plugins.base):
 					sampleref_obj.search_local(dawvert_intent.input_folder)
 
 					placement_obj.sample.sampleref = cvpj_audio_file
+
 					if samplemode == 3: placement_obj.sample.reverse = True
 
 					startoffset = (cvpj_offset_bpm/cvpj_audio_rate) + (startpos/cvpj_audio_rate)*8
+
+					dur_sec = sampleref_obj.get_dur_sec()
+					if dur_sec:
+						totalaudio = dur_sec/cvpj_audio_rate
+						totalaudio = ((totalaudio)*8)*tempomul
+						time_obj.cut_type = 'loop' if cvpj_loop else 'cut'
+						time_obj.set_loop_data(startoffset, 0, totalaudio)
 
 					stretch_obj = placement_obj.sample.stretch
 					stretch_obj.preserve_pitch = cvpj_audio_preserve_pitch
@@ -798,6 +808,7 @@ class input_reaper(plugins.base):
 		groups_valid = True
 		groups_returns = {}
 		sends_data = {}
+		sends_auto = {}
 
 		for tracknum, rpp_track_obj in enumerate(rpp_project.tracks):
 			cvpj_trackid = track_cvpjids[tracknum]
@@ -813,9 +824,15 @@ class input_reaper(plugins.base):
 						source_trackid = track_cvpjids[x['tracknum']]
 						if source_trackid not in sends_data: sends_data[source_trackid] = {}
 						sends_data[source_trackid][cvpj_trackid] = [x]
+					for n, x in rpp_track_obj.auxvolenv.items():
+						source_trackid = track_cvpjids[n]
+						if source_trackid not in sends_auto: sends_auto[source_trackid] = {}
+						if cvpj_trackid not in sends_auto[source_trackid]: sends_auto[source_trackid][cvpj_trackid] = {}
+						sends_auto[source_trackid][cvpj_trackid]['vol'] = x
 				else:
 					groups_valid = False
 					#print('groups_valid invalid: items in return,',rpp_track_obj.name.get())
+
 
 		if groups_valid:
 			convproj_obj.fxtype = 'groupreturn'
@@ -862,7 +879,16 @@ class input_reaper(plugins.base):
 				if cvpj_trackid in sends_data:
 					for returnid, auxdata in sends_data[cvpj_trackid].items():
 						rpp_auxrecv_obj = auxdata[0]
-						send_obj = sends_obj.add(returnid, None, rpp_auxrecv_obj['vol'])
+						sendautoid = None
+
+						if cvpj_trackid in sends_auto:
+							if returnid in sends_auto[cvpj_trackid]:
+								sendautoid = 'send__'+cvpj_trackid+'_'+returnid
+								autodata = sends_auto[cvpj_trackid][returnid]
+								if 'vol' in autodata:
+									do_auto(pooledenvs, convproj_obj, autodata['vol'], ['send', sendautoid, 'amount'], False, 'float', False)
+
+						send_obj = sends_obj.add(returnid, sendautoid, rpp_auxrecv_obj['vol'])
 						send_obj.params.add('pan', rpp_auxrecv_obj['pan'], 'float')
 
 				if bus_state == 2:

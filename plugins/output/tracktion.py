@@ -49,7 +49,7 @@ def add_auto_curves(convproj_obj, autoloc, wf_plugin, param_id, mul):
 		autopoints.remove_instant()
 		autocurve_obj = proj_tracktion_edit.tracktion_automationcurve()
 		autocurve_obj.paramid = param_id
-		autocurve_obj.points = [[x.pos*4, x.value*mul, None] for x in autopoints if x.pos>=0]
+		autocurve_obj.points = [[x.pos, x.value*mul, None] for x in autopoints if x.pos>=0]
 		wf_plugin.automationcurves.append(autocurve_obj)
 
 def sampler_do_filter(soundlayer, filter_obj):
@@ -122,10 +122,7 @@ def do_sends(convproj_obj, sends_data, wf_track, auxnums):
 		if send_obj.sendautoid:
 			autoloc = ['send', send_obj.sendautoid, 'amount']
 			autodata = convproj_obj.automation.get_opt(autoloc)
-			if autodata:
-				if autodata.u_nopl_points:
-					if len(autodata.nopl_points): esists_2 = True
-						
+			if autodata is not None: exists_2 = True
 		if exists_1 or exists_2: make_send_plugin(convproj_obj, wf_track, sendid, send_obj, auxnums)
 
 def make_send_plugin(convproj_obj, wf_track, returnid, send_obj, auxnums):
@@ -389,7 +386,7 @@ def make_group(convproj_obj, sampleref_assoc, sampleref_obj_assoc, groupid, grou
 		group_obj = convproj_obj.fx__group__get(groupid)
 		if group_obj:
 			wf_foldertrack = proj_tracktion_edit.tracktion_foldertrack()
-			wf_foldertrack.expanded = int(track_obj.visual_track.group_expanded)
+			wf_foldertrack.expanded = int(group_obj.visual_track.group_expanded)
 			wf_foldertrack.id_num = counter_id.get()
 			wf_foldertrack.height = group_obj.visual_ui.height*35.41053828354546
 			wf_foldertrack.mute = int(not bool(group_obj.params.get('enabled', True).value))
@@ -687,6 +684,11 @@ class output_tracktion_edit(plugins.base):
 
 				wf_audioclip.fadeIn = audiopl_obj.fade_in.get_dur_seconds(bpm)
 				wf_audioclip.fadeOut = audiopl_obj.fade_out.get_dur_seconds(bpm)
+
+				wf_audioclip.fadeInType = 1
+				wf_audioclip.fadeOutType = 1
+				if audiopl_obj.fade_in.shapetype: wf_audioclip.fadeInType = 4
+				if audiopl_obj.fade_out.shapetype: wf_audioclip.fadeOutType = 4
 
 				if audiopl_obj.visual.name: wf_audioclip.name = audiopl_obj.visual.name
 				if audiopl_obj.visual.color: wf_audioclip.colour = 'ff'+audiopl_obj.visual.color.get_hex()

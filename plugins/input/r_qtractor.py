@@ -158,11 +158,15 @@ class input_midi(plugins.base):
 					sp_obj.sampleref = filepath
 					sp_obj.vol = clip.properties.gain
 					sp_obj.pan = clip.properties.panning
+					if clip.properties.fade_in in ['InOutQuad', 'InOutCubic']: 
+						placement_obj.fade_in.shapetype = 'scurve'
+					if clip.properties.fade_out in ['InOutQuad', 'InOutCubic']: 
+						placement_obj.fade_out.shapetype = 'scurve'
 					placement_obj.fade_in.set_dur(calcsec(clip.properties.fade_in, ppq), 'seconds')
 					placement_obj.fade_out.set_dur(calcsec(clip.properties.fade_out, ppq), 'seconds')
 					sampleref_obj = convproj_obj.sampleref__add(filepath, filepath, None)
 					sampleref_obj.search_local(os.path.dirname(dawvert_intent.input_file))
-					
+
 					stretch_obj = placement_obj.sample.stretch
 
 					if clip.audioclip.time_stretch:

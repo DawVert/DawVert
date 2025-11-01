@@ -306,8 +306,8 @@ def do_track_params(convproj_obj, wf_track, params_obj, autoloc):
 
 	for wf_plugin in wf_track.plugins:
 		if wf_plugin.plugtype == 'volume':
-			if 'volume' in wf_plugin.params: vol *= wf_plugin.params['volume']/0.740818202495575
-			if 'pan' in wf_plugin.params: pan = wf_plugin.params['pan']
+			if 'volume' in wf_plugin.params: vol *= float(wf_plugin.params['volume'])/0.740818202495575
+			if 'pan' in wf_plugin.params: pan = float(wf_plugin.params['pan'])
 			for autocurves in wf_plugin.automationcurves:
 				if autocurves.paramid == 'volume': do_auto(convproj_obj, autocurves.points, autoloc+['vol'], 1/0.740818202495575)
 				if autocurves.paramid == 'pan': do_auto(convproj_obj, autocurves.points, autoloc+['pan'], 1)
@@ -433,14 +433,18 @@ def do_track(convproj_obj, wf_track, track_obj, store_obj, trackid):
 	
 			placement_obj.sample.sampleref = audioclip.source
 			sampleref_exists, sampleref_obj = convproj_obj.sampleref__get(audioclip.source)
-			if not sampleref_obj.fileref.exists(None):
-				sampleref_obj.search_local(dawvert_intent.input_folder)
+			if sampleref_exists:
+				if not sampleref_obj.fileref.exists(None):
+					sampleref_obj.search_local(dawvert_intent.input_folder)
 	
 			time_obj.set_posdur_real(audioclip.start, audioclip.length)
 			placement_obj.fade_in.set_dur(audioclip.fadeIn, 'seconds')
 			placement_obj.fade_out.set_dur(audioclip.fadeOut, 'seconds')
 			placement_obj.group = str(audioclip.groupID) if audioclip.groupID!=-1 else None
 	
+			if audioclip.fadeInType==4: placement_obj.fade_in.shapetype = 'scurve'
+			if audioclip.fadeOutType==4: placement_obj.fade_out.shapetype = 'scurve'
+
 			bpmdiv = (bpm/120)
 			if audioclip.loopStartBeats == 0 and audioclip.loopLengthBeats == 0:
 				time_obj.set_offset(audioclip.offset*8*bpmdiv)
@@ -569,7 +573,7 @@ class input_tracktion_edit(plugins.base):
 		traits_obj.plugin_ext = ['vst2', 'vst3']
 		traits_obj.plugin_ext_arch = [64]
 		traits_obj.plugin_ext_platforms = ['win', 'unix']
-		traits_obj.time_seconds = True
+		traits_obj.set_time_seconds(True)
 		traits_obj.time_seconds_tempo = False
 		traits_obj.time_seconds_timesig = False
 		traits_obj.time_seconds_timemarkers = False
@@ -740,4 +744,8 @@ class input_tracktion_edit(plugins.base):
 				if busNum in assoc_returnid:
 					plugparams = wf_plugin.params
 					vol = float(plugparams['auxSendSliderPos']) if 'auxSendSliderPos' in plugparams else 1
-					sends_obj = track_obj.sends.add(assoc_returnid[busNum], None, vol)
+					sendautoid = 'send__'+str(busNum)+'_'+trackid
+					sends_obj = track_obj.sends.add(assoc_returnid[busNum], sendautoid, vol)
+					for autocurves in wf_plugin.automationcurves:
+						if autocurves.paramid == 'send level':
+							do_auto(convproj_obj, autocurves.points, ['send', sendautoid, 'amount'], 1)

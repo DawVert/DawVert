@@ -25,6 +25,12 @@ class riff_chunk:
 			yield x
 			reader.isolate_end()
 
+	def read_file(self, filename, load_data):
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(filename)
+		self.read(ebrw_readstr, load_data)
+		return ebrw_readstr
+
 	def read(self, reader, load_data):
 		self.id = reader.raw(4)
 		self.size = reader.int_u32()

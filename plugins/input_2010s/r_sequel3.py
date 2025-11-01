@@ -412,4 +412,4 @@ class input_sequel3(plugins.base):
 								if isinstance(StretchPreset, proj_sequel.class_ElastiquePreset):
 									stretch_algo.type = 'elastique_v3'
 									stretch_algo.preserve_formants = int(bool(StretchPreset.formantpreservation))
-									stretch_obj.preserve_pitch = not ElastiquePreset_obj.tapestylemode
+									stretch_obj.preserve_pitch = not StretchPreset.tapestylemode

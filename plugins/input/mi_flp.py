@@ -722,6 +722,8 @@ class input_flp(plugins.base):
 
 						placement_obj.fade_in.set_dur(item.f_in_dur/1000, 'seconds')
 						placement_obj.fade_out.set_dur(item.f_out_dur/1000, 'seconds')
+						if item.fade_flags&(1<<8): placement_obj.fade_in.shapetype = 'scurve'
+						if item.fade_flags&(1<<12): placement_obj.fade_out.shapetype = 'scurve'
 
 						placement_obj.muted = bool(item.flags & 0b0001000000000000)
 						placement_obj.fromindex = 'FLSample' + str(item.itemindex)

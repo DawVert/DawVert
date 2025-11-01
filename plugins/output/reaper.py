@@ -381,8 +381,11 @@ def file_source(rpp_source_obj, fileref_obj, filename):
 
 def do_fade(fade_data, fadevals, bpm): 
 	fadevals['fade_time'] = fade_data.get_dur_seconds(bpm)
-	fadevals['fade_type'] = 2
-	fadevals['curve'] = 0
+	if fade_data.shapetype == 'scurve':
+		fadevals['fade_type'] = 5 
+	else:
+		fadevals['fade_type'] = 2 
+		fadevals['curve'] = 0
 
 def do_auto_clip(placement_obj, rpp_env, mpetype, paramtype, invert, instant, speed): 
 	if mpetype in placement_obj.auto:
@@ -567,6 +570,7 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 		stretch_obj = sp_obj.stretch
 
 		rppart_audio_params = 0
+		rppart_audio_stretch = 0
 
 		stretch_algo = stretch_obj.algorithm
 
@@ -606,7 +610,6 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 		else:
 			rppart_audio_stretch = 9
 			if stretch_algo.preserve_formants: rppart_audio_params = 4
-
 
 		rpp_item_obj.playrate['stretch_mode'] = (rppart_audio_stretch<<16) + rppart_audio_params
 

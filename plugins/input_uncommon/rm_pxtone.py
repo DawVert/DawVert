@@ -103,7 +103,7 @@ class input_pxtone(plugins.base):
 
 			cvpj_instvol = 1.0
 
-			if voice_obj.type == 'ogg':
+			if isinstance(voice_obj, proj_pxtone.ptcop_voice_mateOGGV):
 				cvpj_instvol = 0.4
 				ogg_path = samplefolder + 'ptcop_' + str(voicenum+1).zfill(2) + '.ogg'
 				if not os.path.exists(samplefolder): os.makedirs(samplefolder)
@@ -113,8 +113,9 @@ class input_pxtone(plugins.base):
 				plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, 0, 1)
 				samplepart_obj.interpolation = "linear" if 1 in voice_obj.sps2 else "none"
 				inst_obj.plugslots.set_synth(pluginid)
+				inst_obj.datavals.add('middlenote', voice_obj.basic_key_field-60)
 
-			if voice_obj.type == 'pcm':
+			if isinstance(voice_obj, proj_pxtone.ptcop_voice_matePCM):
 				cvpj_instvol = 0.4
 				wave_path = samplefolder + 'ptcop_' + str(voicenum+1).zfill(2) + '.wav'
 				audio_obj = audio_data.audio_obj()
@@ -135,12 +136,12 @@ class input_pxtone(plugins.base):
 					samplepart_obj.loop_end = len(voice_obj.data)
 					samplepart_obj.loop_active = True
 				inst_obj.plugslots.set_synth(pluginid)
+				inst_obj.datavals.add('middlenote', voice_obj.basic_key_field-60)
 
-			if voice_obj.type == 'ptnoise':
+			if isinstance(voice_obj, proj_pxtone.ptcop_voice_matePTN):
 				inst_obj.is_drum = True
 
 			inst_obj.params.add('vol', cvpj_instvol, 'float')
-			inst_obj.datavals.add('middlenote', voice_obj.basic_key_field-60)
 
 		for unitnum, unit_obj in enumerate(project_obj.units):
 			unit_notes = project_obj.events.data[np.where(project_obj.events.data['unitnum'] == unitnum)[0]]
@@ -162,11 +163,11 @@ class input_pxtone(plugins.base):
 				if e['eventnum'] == 14: unitstream.pitch(e['d_position'], e['value'])
 				if e['eventnum'] == 15: unitstream.pan(e['d_position'], e['value'])
 
-		if project_obj.repeat != 0: 
+		if project_obj.master.repeat != 0: 
 			convproj_obj.transport.loop_active = True
-			convproj_obj.transport.loop_start = project_obj.repeat
-			convproj_obj.transport.loop_end = project_obj.last
+			convproj_obj.transport.loop_start = project_obj.master.repeat
+			convproj_obj.transport.loop_end = project_obj.master.last
 
 		convproj_obj.do_actions.append('do_addloop')
 		convproj_obj.do_actions.append('do_singlenotelistcut')
-		convproj_obj.params.add('bpm', project_obj.beattempo, 'float')
+		convproj_obj.params.add('bpm', project_obj.master.beattempo, 'float')

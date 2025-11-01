@@ -117,8 +117,10 @@ class output_bandlab(plugins.base):
 						qt_clip = proj_qtractor.qtractor_clip(None)
 						qt_clip.properties.start = calcsec(position, ppq)
 						qt_clip.properties.length = calcsec(duration, ppq)
-						qt_clip.properties.fade_in_type = 'InQuad'
-						qt_clip.properties.fade_out_type = 'OutQuad'
+						qt_clip.properties.fade_in_type = 'Linear'
+						qt_clip.properties.fade_out_type = 'Linear'
+						if audiopl_obj.fade_in.shapetype == 'scurve': qt_clip.properties.fade_in_type = 'InOutQuad'
+						if audiopl_obj.fade_out.shapetype == 'scurve': qt_clip.properties.fade_out_type = 'InOutQuad'
 						qt_clip.properties.fade_in = calcsec(audiopl_obj.fade_in.get_dur_seconds(bpm), ppq)
 						qt_clip.properties.fade_out = calcsec(audiopl_obj.fade_out.get_dur_seconds(bpm), ppq)
 						qt_clip.properties.mute = int(audiopl_obj.muted)
