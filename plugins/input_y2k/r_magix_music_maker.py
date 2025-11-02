@@ -3,6 +3,7 @@
 
 import plugins
 from objects import globalstore
+from functions import xtramath
 import os
 
 class input_old_magix_maker(plugins.base):
@@ -26,6 +27,7 @@ class input_old_magix_maker(plugins.base):
 		from objects.file_proj_past import magix_music_maker
 
 		convproj_obj.type = 'r'
+		convproj_obj.fxtype = 'groupreturn'
 
 		traits_obj = convproj_obj.traits
 		traits_obj.placement_loop = ['loop', 'loop_off']
@@ -81,6 +83,11 @@ class input_old_magix_maker(plugins.base):
 						videoref_obj.search_local(dawvert_intent.input_folder)
 						videoref_objs[n] = videoref_obj
 
+		return_obj = convproj_obj.track_master.fx__return__add('aux1')
+		return_obj.visual.name = 'FX '+str(1)
+
+		return_obj = convproj_obj.track_master.fx__return__add('aux2')
+		return_obj.visual.name = 'FX '+str(2)
 
 		data_trks = project_obj.data_trks
 		if data_trks is not None:
@@ -94,6 +101,8 @@ class input_old_magix_maker(plugins.base):
 					track_obj.params.add('pan', data_trci.pan, 'float')
 					track_obj.params.add('vol', max(0, data_trci.vol), 'float')
 					track_obj.params.add('enabled', 1 not in data_trci.flags, 'float')
+					track_obj.sends.add('aux1', 'send_%i_aux1' % (tracknum), data_trci.aux1)
+					track_obj.sends.add('aux2', 'send_%i_aux2' % (tracknum), data_trci.aux2)
 
 				totalcolors = []
 				uniquecolors = {}
@@ -202,6 +211,28 @@ class input_old_magix_maker(plugins.base):
 							uniquecolors[totalcolors.index(color)] += 1
 	
 						#print(color)
+
+				autodata = {}
+				for rubb in mmm_track.data_rubb:
+					if rubb.param not in autodata: autodata[rubb.param] = {}
+					autodata[rubb.param][rubb.pos] = rubb.val
+
+				for paramnum, paramdata in autodata.items():
+					autoloc = None
+					v_min = 0
+					v_max = 1
+					if paramnum == 0: autoloc = ['track', trackid, 'vol']
+					if paramnum == 30: 
+						autoloc = ['track', trackid, 'pan']
+						v_min = 1
+						v_max = -1
+					if paramnum == 4: autoloc = ['send', 'send_%i_aux1' % (tracknum), 'amount']
+					if paramnum == 5: autoloc = ['send', 'send_%i_aux2' % (tracknum), 'amount']
+					if autoloc:
+						auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
+						for pos, val in paramdata.items():
+							val = xtramath.between_from_one(v_min, v_max, (val+32768)/65535)
+							auto_obj.add_autopoint(pos, val, None)
 
 				if uniquecolors:
 					trackcolor = totalcolors[max(uniquecolors, key=lambda k: uniquecolors.get(k))]

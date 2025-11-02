@@ -72,8 +72,8 @@ class item_trci:
 		if ebrw_readstr.remaining(): cls.vol = ebrw_readstr.int_s32()/32767
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.flags_i32() )
 		if ebrw_readstr.remaining(): cls.name = ebrw_readstr.string(48)
-		if ebrw_readstr.remaining(): cls.aux1 = ebrw_readstr.int_u32()/16384
-		if ebrw_readstr.remaining(): cls.aux2 = ebrw_readstr.int_u32()/16384
+		if ebrw_readstr.remaining(): cls.aux1 = ebrw_readstr.int_u32()/65534
+		if ebrw_readstr.remaining(): cls.aux2 = ebrw_readstr.int_u32()/65534
 		if ebrw_readstr.remaining(): cls.pan = ebrw_readstr.float()/32767
 		if ebrw_readstr.remaining(): cls.data = ebrw_readstr.rest()
 		return cls
@@ -184,13 +184,42 @@ class item_otrn:
 		cls.rest = ebrw_readstr.rest()
 		return cls
 
-class item_rubb:
+class item_omid:
 	def __init__(self):
 		self.data = None
 
 	@classmethod
 	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
+		cls.data = ebrw_readstr.rest()
+		return cls
+
+class item_usgr:
+	def __init__(self):
+		self.data = None
+
+	@classmethod
+	def from_ebrw_readstr(cls, ebrw_readstr):
+		cls = cls()
+		cls.data = ebrw_readstr.rest()
+		return cls
+
+class item_rubb:
+	def __init__(self):
+		self.pos = 0
+		self.val = 0
+		self.param = 0
+		self.data = None
+		self.unknowns = []
+
+	@classmethod
+	def from_ebrw_readstr(cls, ebrw_readstr):
+		cls = cls()
+		cls.pos = ebrw_readstr.int_u32()
+		cls.unknowns.append( ebrw_readstr.int_u32() )
+		cls.val = ebrw_readstr.int_s32()
+		cls.unknowns.append( ebrw_readstr.int_u32() )
+		cls.param = ebrw_readstr.int_u32()
 		cls.data = ebrw_readstr.rest()
 		return cls
 
@@ -499,6 +528,7 @@ class group_trck:
 		self.data_objs = []
 		self.data_rubb = []
 		self.data_tdrx = None
+		self.data_viif = None
 
 	@classmethod
 	def from_riffchunks(cls, riffchunks, ebrw_readstr, tabnum):
@@ -524,6 +554,10 @@ class group_trck:
 				printtxt(tabnum, x, 0)
 				if not x.is_list: cls.data_rubb.append(item_rubb.from_ebrw_readstr(ebrw_readstr))
 				elif VERBOSE: print(x.id, 'is not an item')
+			elif x.id == b'viif':
+				printtxt(tabnum, x, 1)
+				if x.is_list: cls.data_viif = group_viif.from_riffchunks(x, ebrw_readstr, tabnum+1)
+				elif VERBOSE: print(x.id, 'is not a group')
 			elif VERBOSE: printtxt(tabnum, x, 0) # print('unknown chunk in trck: '+str(x.id))
 		return cls
 
@@ -568,6 +602,16 @@ class item_sfnm:
 		cls.data = ebrw_readstr.rest()
 		return cls
 
+class item_vils:
+	def __init__(self):
+		self.data = None
+
+	@classmethod
+	def from_ebrw_readstr(cls, ebrw_readstr):
+		cls = cls()
+		cls.data = ebrw_readstr.rest()
+		return cls
+
 
 
 class group_objs:
@@ -580,6 +624,8 @@ class group_objs:
 		self.synth_filename = None
 		self.data_orup = []
 		self.data_AUFX = None
+		self.data_omid = None
+		self.data_usgr = None
 
 	@classmethod
 	def from_riffchunks(cls, riffchunks, ebrw_readstr, tabnum):
@@ -613,6 +659,14 @@ class group_objs:
 				printtxt(tabnum, x, 1)
 				if not x.is_list: cls.synth_data = ebrw_readstr.rest()
 				elif VERBOSE: print(x.id, 'is not an item')
+			elif x.id == b'omid':
+				printtxt(tabnum, x, 1)
+				if not x.is_list: cls.data_omid = item_omid.from_ebrw_readstr(ebrw_readstr)
+				elif VERBOSE: print(x.id, 'is not an item')
+			elif x.id == b'usgr':
+				printtxt(tabnum, x, 1)
+				if not x.is_list: cls.data_usgr = item_usgr.from_ebrw_readstr(ebrw_readstr)
+				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'AUFX':
 				printtxt(tabnum, x, 1)
 				if x.is_list: cls.data_AUFX = group_AUFX.from_riffchunks(x, ebrw_readstr, tabnum+1)
@@ -632,6 +686,22 @@ class group_crss:
 			if x.id == b'crsr':
 				printtxt(tabnum, x, 0)
 				if not x.is_list: cls.data_crsr.append(item_crsr.from_ebrw_readstr(ebrw_readstr))
+				elif VERBOSE: print(x.id, 'is not an item')
+			elif VERBOSE: printtxt(tabnum, x, 0) # print('unknown chunk in crss: '+str(x.id))
+		return cls
+
+
+class group_viif:
+	def __init__(self):
+		self.data_vils = []
+
+	@classmethod
+	def from_riffchunks(cls, riffchunks, ebrw_readstr, tabnum):
+		cls = cls()
+		for x in riffchunks.iter_reader(ebrw_readstr):
+			if x.id == b'vils':
+				printtxt(tabnum, x, 1)
+				if not x.is_list: cls.data_vils.append(item_vils.from_ebrw_readstr(ebrw_readstr))
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif VERBOSE: printtxt(tabnum, x, 0) # print('unknown chunk in crss: '+str(x.id))
 		return cls
