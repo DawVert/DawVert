@@ -857,7 +857,7 @@ class output_reaper(plugins.base):
 									aux_env = rpp_track.add_aux_env('pan', tracksendnum)
 									add_auto_all(rpp_project, convproj_obj, aux_env, ['send', send_obj.sendautoid, 'pan'], 'float', False)
 		
-		if convproj_obj.fxtype == 'groupreturn':
+		if convproj_obj.fxtype in ['groupreturn', 'none']:
 			master_returns = convproj_obj.track_master.returns
 
 			track_uuids = dict([[x[0], '{'+str(uuid.uuid4())+'}'] for x in convproj_obj.track__iter()])
