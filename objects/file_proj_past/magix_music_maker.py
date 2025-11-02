@@ -19,9 +19,9 @@ class item_svip:
 		self.data = None
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
-		cls.data = ebrw_readstr.raw(size)
+		cls.data = ebrw_readstr.rest()
 		return cls
 
 class item_file:
@@ -33,7 +33,7 @@ class item_file:
 		self.file2 = ''
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
 		cls.folder = ebrw_readstr.string(128, errors="ignore")
 		ebrw_readstr.skip(2)
@@ -53,27 +53,28 @@ class item_trci:
 		self.vol = 1
 		self.pan = 0
 		self.name = ''
+		self.flags = []
+		self.aux1 = 0
+		self.aux2 = 0
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
-		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u16() )
-		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u16() )
-		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u32() )
-		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u32() )
+		if ebrw_readstr.remaining(): cls.flags = ebrw_readstr.flags_i32()
+		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.float() )
+		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.float() )
 		if ebrw_readstr.remaining(): val1 = ebrw_readstr.float()
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u32() )
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u32() )
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u32() )
-		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u32() )
-		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u16() )
-		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u16() )
+		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.float() )
+		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.float() )
 		if ebrw_readstr.remaining(): cls.vol = ebrw_readstr.int_s32()/32767
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u16() )
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u16() )
 		if ebrw_readstr.remaining(): cls.name = ebrw_readstr.string(48)
-		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u32() )
-		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u32() )
+		if ebrw_readstr.remaining(): cls.aux1 = ebrw_readstr.int_u32()/16384
+		if ebrw_readstr.remaining(): cls.aux2 = ebrw_readstr.int_u32()/16384
 		if ebrw_readstr.remaining(): cls.pan = ebrw_readstr.float()/32767
 		if ebrw_readstr.remaining(): cls.data = ebrw_readstr.rest()
 		return cls
@@ -84,7 +85,7 @@ class item_cntr:
 		self.unknowns = []
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u32() )
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u32() )
@@ -113,7 +114,7 @@ class item_objc:
 		self.group = 0
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
 		cls.fileid = ebrw_readstr.int_u32()
 		cls.unknowns.append( ebrw_readstr.int_u32() )
@@ -164,7 +165,7 @@ class item_oeff:
 		self.data = None
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
 		cls.data = ebrw_readstr.rest()
 		return cls
@@ -176,7 +177,7 @@ class item_otrn:
 		self.unknowns = []
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
 		cls.tempo = ebrw_readstr.float()
 		cls.unknowns.append( ebrw_readstr.int_u32() )
@@ -188,9 +189,9 @@ class item_rubb:
 		self.data = None
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
-		cls.data = ebrw_readstr.raw(size)
+		cls.data = ebrw_readstr.rest()
 		return cls
 
 class item_crsr:
@@ -198,9 +199,9 @@ class item_crsr:
 		self.data = None
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
-		cls.data = ebrw_readstr.raw(size)
+		cls.data = ebrw_readstr.rest()
 		return cls
 
 class item_proi:
@@ -215,9 +216,9 @@ class item_proi:
 
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
-		#cls.data = ebrw_readstr.raw(size)
+		#cls.data = ebrw_readstr.rest()
 		cls.unknowns.append( ebrw_readstr.int_u32() )
 		cls.unknowns.append( ebrw_readstr.int_u32() )
 		cls.unknowns.append( ebrw_readstr.int_u32() )
@@ -234,9 +235,9 @@ class item_teq:
 		self.data = None
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
-		cls.data = ebrw_readstr.raw(size)
+		cls.data = ebrw_readstr.rest()
 		return cls
 
 class item_tpq:
@@ -244,9 +245,9 @@ class item_tpq:
 		self.data = None
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
-		cls.data = ebrw_readstr.raw(size)
+		cls.data = ebrw_readstr.rest()
 		return cls
 
 class item_comp:
@@ -254,9 +255,20 @@ class item_comp:
 		self.data = None
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
-		cls.data = ebrw_readstr.raw(size)
+		cls.data = ebrw_readstr.rest()
+		return cls
+
+class item_tdrx:
+	def __init__(self):
+		self.data = None
+		self.unknowns = []
+
+	@classmethod
+	def from_ebrw_readstr(cls, ebrw_readstr):
+		cls = cls()
+		cls.data = ebrw_readstr.rest()
 		return cls
 
 # ---------------------- FX ----------------------
@@ -270,7 +282,7 @@ class item_FXHD:
 		self.flags = []
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
 		cls.unknowns.append( ebrw_readstr.int_u8() )
 		cls.unknowns.append( ebrw_readstr.int_u8() )
@@ -288,7 +300,7 @@ class item_AFXP:
 		self.data = None
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
 		cls.paramnum = ebrw_readstr.int_u32()
 		cls.name = ebrw_readstr.string(20)
@@ -314,7 +326,7 @@ class group_AFXD:
 				elif VERBOSE: print(x.id, 'is not a group')
 			elif x.id == b'AFXP':
 				printtxt(tabnum, x, 0)
-				if not x.is_list: cls.params.append(item_AFXP.from_ebrw_readstr(ebrw_readstr, x.size))
+				if not x.is_list: cls.params.append(item_AFXP.from_ebrw_readstr(ebrw_readstr))
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif VERBOSE: printtxt(tabnum, x, 0) # print('unknown chunk in trks: '+str(x.id))
 		return cls
@@ -334,7 +346,7 @@ class group_AFXE:
 				elif VERBOSE: print(x.id, 'is not a group')
 			elif x.id == b'FXHD':
 				printtxt(tabnum, x, 0)
-				if not x.is_list: cls.data_FXHD = item_FXHD.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: cls.data_FXHD = item_FXHD.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 				#print((tabnum*'   ')+str(cls.data_FXHD.unknowns))
 			elif VERBOSE: printtxt(tabnum, x, 0) # print('unknown chunk in trks: '+str(x.id))
@@ -377,7 +389,7 @@ class root_group:
 		for x in riffchunks.iter_reader(ebrw_readstr):
 			if x.id == b'SVIP':
 				printtxt(0, x, 1)
-				if not x.is_list: self.data_svip = item_svip.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: self.data_svip = item_svip.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'phys':
 				printtxt(0, x, 1)
@@ -397,51 +409,51 @@ class root_group:
 				elif VERBOSE: print(x.id, 'is not a group')
 			elif x.id == b'PROI':
 				printtxt(0, x, 1)
-				if not x.is_list: self.data_proi = item_proi.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: self.data_proi = item_proi.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'teq1':
 				printtxt(0, x, 0)
-				if not x.is_list: self.data_teq[1] = item_teq.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: self.data_teq[1] = item_teq.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'teq2':
 				printtxt(0, x, 0)
-				if not x.is_list: self.data_teq[2] = item_teq.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: self.data_teq[2] = item_teq.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'teq3':
 				printtxt(0, x, 0)
-				if not x.is_list: self.data_teq[3] = item_teq.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: self.data_teq[3] = item_teq.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'teq4':
 				printtxt(0, x, 0)
-				if not x.is_list: self.data_teq[4] = item_teq.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: self.data_teq[4] = item_teq.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'teq5':
 				printtxt(0, x, 0)
-				if not x.is_list: self.data_teq[5] = item_teq.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: self.data_teq[5] = item_teq.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'tpq1':
 				printtxt(0, x, 0)
-				if not x.is_list: self.data_tpq[1] = item_tpq.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: self.data_tpq[1] = item_tpq.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'tpq2':
 				printtxt(0, x, 0)
-				if not x.is_list: self.data_tpq[2] = item_tpq.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: self.data_tpq[2] = item_tpq.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'tpq3':
 				printtxt(0, x, 0)
-				if not x.is_list: self.data_tpq[3] = item_tpq.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: self.data_tpq[3] = item_tpq.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'tpq4':
 				printtxt(0, x, 0)
-				if not x.is_list: self.data_tpq[4] = item_tpq.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: self.data_tpq[4] = item_tpq.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'tpq5':
 				printtxt(0, x, 0)
-				if not x.is_list: self.data_tpq[5] = item_tpq.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: self.data_tpq[5] = item_tpq.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'comp':
 				printtxt(0, x, 0)
-				if not x.is_list: self.data_comp = item_comp.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: self.data_comp = item_comp.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif VERBOSE: printtxt(0, x, 0) # print('unknown chunk in root: '+str(x.id))
 		return True
@@ -457,7 +469,7 @@ class group_phys:
 		for x in riffchunks.iter_reader(ebrw_readstr):
 			if x.id == b'file':
 				printtxt(tabnum, x, 1)
-				if not x.is_list: cls.files.append(item_file.from_ebrw_readstr(ebrw_readstr, x.size))
+				if not x.is_list: cls.files.append(item_file.from_ebrw_readstr(ebrw_readstr))
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif VERBOSE: printtxt(tabnum, x, 0) # print('unknown chunk in phys: '+str(x.id))
 		return cls
@@ -486,6 +498,7 @@ class group_trck:
 		self.data_cntr = []
 		self.data_objs = []
 		self.data_rubb = []
+		self.data_tdrx = None
 
 	@classmethod
 	def from_riffchunks(cls, riffchunks, ebrw_readstr, tabnum):
@@ -493,11 +506,15 @@ class group_trck:
 		for x in riffchunks.iter_reader(ebrw_readstr):
 			if x.id == b'trci':
 				printtxt(tabnum, x, 1)
-				if not x.is_list: cls.data_trci = item_trci.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: cls.data_trci = item_trci.from_ebrw_readstr(ebrw_readstr)
+				elif VERBOSE: print(x.id, 'is not an item')
+			elif x.id == b'tdrx':
+				printtxt(tabnum, x, 1)
+				if not x.is_list: cls.data_tdrx = item_tdrx.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'cntr':
 				printtxt(tabnum, x, 1)
-				if not x.is_list: cls.data_cntr.append(item_cntr.from_ebrw_readstr(ebrw_readstr, x.size))
+				if not x.is_list: cls.data_cntr.append(item_cntr.from_ebrw_readstr(ebrw_readstr))
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'objs':
 				printtxt(tabnum, x, 1)
@@ -505,7 +522,7 @@ class group_trck:
 				elif VERBOSE: print(x.id, 'is not a group')
 			elif x.id == b'rubb':
 				printtxt(tabnum, x, 0)
-				if not x.is_list: cls.data_rubb.append(item_rubb.from_ebrw_readstr(ebrw_readstr, x.size))
+				if not x.is_list: cls.data_rubb.append(item_rubb.from_ebrw_readstr(ebrw_readstr))
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif VERBOSE: printtxt(tabnum, x, 0) # print('unknown chunk in trck: '+str(x.id))
 		return cls
@@ -517,7 +534,7 @@ class item_3dau:
 		self.unknowns = []
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
 		cls.unknowns.append( ebrw_readstr.int_u32() )
 		cls.unknowns.append( ebrw_readstr.float() )
@@ -530,7 +547,7 @@ class item_orup:
 		self.unknowns = []
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
 		cls.unknowns.append( ebrw_readstr.int_u32() )
 		ebrw_readstr.skip(4)
@@ -546,7 +563,7 @@ class item_sfnm:
 		self.data = None
 
 	@classmethod
-	def from_ebrw_readstr(cls, ebrw_readstr, size):
+	def from_ebrw_readstr(cls, ebrw_readstr):
 		cls = cls()
 		cls.data = ebrw_readstr.rest()
 		return cls
@@ -570,23 +587,23 @@ class group_objs:
 		for x in riffchunks.iter_reader(ebrw_readstr):
 			if x.id == b'objc':
 				printtxt(tabnum, x, 1)
-				if not x.is_list: cls.data_objc = item_objc.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: cls.data_objc = item_objc.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'oeff':
 				printtxt(tabnum, x, 0)
-				if not x.is_list: cls.data_oeff = item_oeff.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: cls.data_oeff = item_oeff.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'otrn':
 				printtxt(tabnum, x, 1)
-				if not x.is_list: cls.data_otrn = item_otrn.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: cls.data_otrn = item_otrn.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'3dau':
 				printtxt(tabnum, x, 1)
-				if not x.is_list: cls.data_3dau = item_3dau.from_ebrw_readstr(ebrw_readstr, x.size)
+				if not x.is_list: cls.data_3dau = item_3dau.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'orup':
 				printtxt(tabnum, x, 1)
-				if not x.is_list: cls.data_orup.append(item_orup.from_ebrw_readstr(ebrw_readstr, x.size))
+				if not x.is_list: cls.data_orup.append(item_orup.from_ebrw_readstr(ebrw_readstr))
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'sfnm':
 				printtxt(tabnum, x, 1)
@@ -614,7 +631,7 @@ class group_crss:
 		for x in riffchunks.iter_reader(ebrw_readstr):
 			if x.id == b'crsr':
 				printtxt(tabnum, x, 0)
-				if not x.is_list: cls.data_crsr.append(item_crsr.from_ebrw_readstr(ebrw_readstr, x.size))
+				if not x.is_list: cls.data_crsr.append(item_crsr.from_ebrw_readstr(ebrw_readstr))
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif VERBOSE: printtxt(tabnum, x, 0) # print('unknown chunk in crss: '+str(x.id))
 		return cls

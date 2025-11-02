@@ -64,7 +64,7 @@ class input_old_magix_maker(plugins.base):
 
 				if '.' in x.file2:
 					fileext = x.file2.rsplit('.', 1)[1].lower()
-					if fileext == 'wav':
+					if fileext.lower() in ['wav', 'ogg']:
 						sampleref_obj = convproj_obj.sampleref__add(sampleid, joinedpath, 'win')
 						sampleref_obj.search_local(dawvert_intent.input_folder)
 						sampleref_obj.set_fileformat(fileext)
@@ -93,7 +93,8 @@ class input_old_magix_maker(plugins.base):
 					track_obj.visual.name = data_trci.name
 					track_obj.params.add('pan', data_trci.pan, 'float')
 					track_obj.params.add('vol', max(0, data_trci.vol), 'float')
-				
+					track_obj.params.add('enabled', 1 not in data_trci.flags, 'float')
+
 				totalcolors = []
 				uniquecolors = {}
 
@@ -144,7 +145,7 @@ class input_old_magix_maker(plugins.base):
 										data_AFXD = x.data_AFXD
 
 										if 1 not in data_FXHD.flags:
-											if data_FXHD.fxtype==148:
+											if data_FXHD.fxtype in [148, 536871060]:
 												sample_stretch.fx_found = True
 												for param in data_AFXD.params:
 													if param.paramnum==0:
@@ -156,12 +157,16 @@ class input_old_magix_maker(plugins.base):
 													if param.paramnum==0:
 														sample_stretch.resample = True
 														sample_stretch.sample_speed = param.val_current
+											#else:
+											#	print(data_FXHD.fxtype, [x.name for x in data_AFXD.params])
 
 										if data_AFXD.data_AFXE:
 											do_fx(data_AFXD.data_AFXE, sample_stretch)
 
 							if data_AUFX:
 								do_fx(data_AUFX.data_AFXE, sample_stretch)
+
+							#print(sampleref_obj.fileref.get_path(None, False))
 
 							if not sample_stretch.fx_found:
 								samp_hz = sampleref_obj.get_hz()
