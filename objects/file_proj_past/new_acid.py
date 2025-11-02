@@ -389,6 +389,35 @@ class chunk__arrangerpart:
 		self.unknowns.append(  ebrw_readstr.int_u32()  )
 		self.name = ebrw_readstr.string16(stringsize)
 
+class chunk__grooveinfo:
+	def __init__(self, ebrw_readstr):
+		self.unk1 = ebrw_readstr.int_u32()
+		self.unk2 = ebrw_readstr.int_u32()
+		self.idnum = ebrw_readstr.int_u32()
+		self.path1_size = ebrw_readstr.int_u32()
+		self.path2_size = ebrw_readstr.int_u32()
+		self.unk3 = ebrw_readstr.int_u32()
+		self.path1 = ebrw_readstr.string16_t()
+		self.path2 = ebrw_readstr.string16_t()
+		self.unk4 = ebrw_readstr.int_u32()
+		self.unk5 = ebrw_readstr.int_s32()
+		self.unk6 = ebrw_readstr.flags_i32()
+		self.unk7 = ebrw_readstr.int_s32()
+		self.num_parts = ebrw_readstr.int_s32()
+		self.parts = []
+
+		for x in range(self.num_parts):
+			partdata = []
+			partdata.append( ebrw_readstr.int_u32() )
+			partdata.append( ebrw_readstr.int_s32() )
+			partdata.append( ebrw_readstr.int_s64() )
+			partdata.append( ebrw_readstr.int_s64() )
+			partdata.append( ebrw_readstr.float() )
+			partdata.append( ebrw_readstr.int_u32() )
+			self.parts.append(partdata)
+
+		self.rest = ebrw_readstr.rest()
+
 chunksdef = {}
 chunksdef['754be33a5ef5ec44a2f0f4eb3c53af7d'] = chunk__peak
 chunksdef['6a208d162123d21186b000c04f8edb8a'] = chunk__region
@@ -407,6 +436,7 @@ chunksdef['1d4f23715752d21186dc00c04f8edb8a'] = chunk__metadata
 chunksdef['d0fb0bbbaec4044685662b4bf9cccbb5'] = chunk__tracksfolder
 chunksdef['2b959c4d344c664295f519126b4420a8'] = chunk__trackstrack
 chunksdef['716655fbb8f792429c1a763355d5f0cd'] = chunk__arrangerpart
+chunksdef['1b1ce45016af194e8cdba707237b7921'] = chunk__grooveinfo
 #chunksdef['b5c7e0971f2d46449de8c07ff6f43b3b'] = chunk__regiondata_2
 
 # ---------------------- INDATA ----------------------
