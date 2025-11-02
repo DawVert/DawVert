@@ -181,6 +181,26 @@ class event_audio:
 
 # ============================================= project ============================================= 
 
+class temper_track_metrics_part:
+	def __init__(self):
+		self.s = ''
+		self.n = ''
+		self.h = -1
+		self.fcfg = b''
+
+	@classmethod
+	def fromxml(cls, xmldata):
+		cls = cls()
+		if "s" in xmldata.attrib: cls.s = xmldata.attrib['s']
+		if "n" in xmldata.attrib: cls.n = xmldata.attrib['n']
+		if "h" in xmldata.attrib: cls.h = int(xmldata.attrib['h'])
+		if "fcfg" in xmldata.attrib: 
+			cls.fcfg = xmldata.attrib['fcfg']
+			cls.fcfg = bytes.fromhex(cls.fcfg)
+		return cls
+
+# ============================================= track ============================================= 
+
 class temper_track:
 	def __init__(self):
 		self.name = ''
@@ -200,11 +220,16 @@ class temper_track:
 
 		cls.phrases = []
 		cls.audios = []
+		cls.metrics = {}
 		for xmlpart in xmldata:
 			if xmlpart.tag == 'phrase':
 				cls.phrases.append(temper_phrase.fromxml(xmlpart))
-			if xmlpart.tag == 'audio':
+			elif xmlpart.tag == 'audio':
 				cls.audios.append(event_audio.fromxml(xmlpart))
+			elif xmlpart.tag == 'metrics':
+				for inpartxml in xmlpart:
+					metric_part = temper_track_metrics_part.fromxml(inpartxml)
+					cls.metrics[inpartxml.tag] = metric_part
 
 		return cls
 

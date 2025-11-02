@@ -208,6 +208,13 @@ class binread:
 			if p==b'\x00\x00': e = False
 			elif e: outtxt += p
 		return outtxt.decode(encoding='utf16').rstrip('\x00')
+	def string16_t(self, **k): 
+		outtxt = b''
+		while self.remaining():
+			p = self.str.read(2)
+			if p==b'\x00\x00': break
+			else: outtxt += p
+		return outtxt.decode(encoding='utf16')
 	def string_t(self, **k): 
 		out = b''
 		while self.remaining():
