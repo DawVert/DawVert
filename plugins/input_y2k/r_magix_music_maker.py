@@ -152,7 +152,7 @@ class input_old_magix_maker(plugins.base):
 														sample_stretch.sample_speed = param.val_current
 													elif param.paramnum==1:
 														sample_stretch.sample_pitch = param.val_current
-											elif data_FXHD.fxtype==149:
+											elif data_FXHD.fxtype in [149, 536871061]:
 												for param in data_AFXD.params:
 													if param.paramnum==0:
 														sample_stretch.resample = True
