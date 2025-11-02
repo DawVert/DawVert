@@ -551,3 +551,17 @@ class input_acid_3(plugins.base):
 						if b'IART' in metadata: convproj_obj.metadata.original_author = metadata[b'IART']
 						if b'ICMT' in metadata: convproj_obj.metadata.comment_text = metadata[b'ICMT']
 						if b'ICOP' in metadata: convproj_obj.metadata.copyright = metadata[b'ICOP']
+
+			elif root_name == 'Group:Arranger':
+				arrcolordata = colors.colorset.from_dataset('sony_acid', 'track', 'arranger')
+				for regs_chunk, regs_name in root_chunk.iter_wtypes():
+					if regs_name == 'ArrangerPart':
+						arrdata = regs_chunk.content
+
+						timemarker_obj = convproj_obj.arranger.add()
+						timemarker_obj.type = 'region'
+						timemarker_obj.position = arrdata.pos
+						timemarker_obj.duration = arrdata.dur
+						timemarker_obj.visual.name = arrdata.name
+						color = arrcolordata.getcolornum(arrdata.color)
+						timemarker_obj.visual.color.set_int(color)

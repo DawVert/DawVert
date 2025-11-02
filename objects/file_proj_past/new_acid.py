@@ -370,6 +370,25 @@ class chunk__trackstrack:
 		self.unk6 = ebrw_readstr.int_u32()
 		#print('trk', self.unk1, self.idnum, self.unk3, self.unk4, self.tracknum, self.unk6)
 
+class chunk__arrangerpart:
+	def __init__(self, ebrw_readstr):
+		self.unknowns = []
+		self.unknowns.append(  ebrw_readstr.int_u32()  )
+		self.unknowns.append(  ebrw_readstr.int_u16()  )
+		self.unknowns.append(  ebrw_readstr.int_u16()  )
+		self.pos = ebrw_readstr.int_u64()
+		self.dur = ebrw_readstr.int_u64()
+		self.idnum = ebrw_readstr.int_u32()
+		self.unknowns.append(  ebrw_readstr.int_u8()  )
+		self.unknowns.append(  ebrw_readstr.int_u8()  )
+		self.unknowns.append(  ebrw_readstr.int_u8()  )
+		self.unknowns.append(  ebrw_readstr.int_u8()  )
+		stringsize = ebrw_readstr.int_u32()
+		self.unknowns.append(  ebrw_readstr.int_u32()  )
+		self.color = ebrw_readstr.int_u32()
+		self.unknowns.append(  ebrw_readstr.int_u32()  )
+		self.name = ebrw_readstr.string16(stringsize)
+
 chunksdef = {}
 chunksdef['754be33a5ef5ec44a2f0f4eb3c53af7d'] = chunk__peak
 chunksdef['6a208d162123d21186b000c04f8edb8a'] = chunk__region
@@ -387,6 +406,7 @@ chunksdef['44030abfa7f8f44788cba63c7756ba9e'] = chunk__audiodefinfo
 chunksdef['1d4f23715752d21186dc00c04f8edb8a'] = chunk__metadata
 chunksdef['d0fb0bbbaec4044685662b4bf9cccbb5'] = chunk__tracksfolder
 chunksdef['2b959c4d344c664295f519126b4420a8'] = chunk__trackstrack
+chunksdef['716655fbb8f792429c1a763355d5f0cd'] = chunk__arrangerpart
 #chunksdef['b5c7e0971f2d46449de8c07ff6f43b3b'] = chunk__regiondata_2
 
 # ---------------------- INDATA ----------------------
@@ -414,6 +434,7 @@ verboseid['5d2d8fb20f23d21186af00c04f8edb8a'] = 'RegionDataAudio'
 verboseid['be3967941a398443878538bda35f409a'] = 'StartingParams'
 verboseid['1d4f23715752d21186dc00c04f8edb8a'] = 'MetaData'
 verboseid['f7ef7162791cb545a06eeb59467bcb28'] = 'TrackOrder'
+verboseid['716655fbb8f792429c1a763355d5f0cd'] = 'ArrangerPart'
 
 verboseid['a95c808a7402c242b8b9572f6786317c'] = 'Group:AudioDefList'
 verboseid['1d54047b1c0adc4faeb3d4935206611d'] = 'Group:AudioDef'
@@ -431,6 +452,7 @@ verboseid['5287535c45e3784f83b8551935b4c6f7'] = 'Group:AudioStretch'
 verboseid['be3967941a398443878538bda35f409a'] = 'Group:StartingParams'
 verboseid['5d1b70846368d21186fd00c04f8edb8a'] = 'Group:TrackAuto'
 verboseid['bc945f925a52d21186dc00c04f8edb8a'] = 'Group:MetaData'
+verboseid['35fdff0c5f03ec4a9cc373b0187005a7'] = 'Group:Arranger'
 
 class sony_acid_chunk:
 	def __init__(self):

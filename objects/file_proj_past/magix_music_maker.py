@@ -72,8 +72,8 @@ class item_trci:
 		if ebrw_readstr.remaining(): cls.vol = ebrw_readstr.int_s32()/32767
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.flags_i32() )
 		if ebrw_readstr.remaining(): cls.name = ebrw_readstr.string(48)
-		if ebrw_readstr.remaining(): cls.aux1 = ebrw_readstr.int_u32()/65534
-		if ebrw_readstr.remaining(): cls.aux2 = ebrw_readstr.int_u32()/65534
+		if ebrw_readstr.remaining(): cls.aux1 = ebrw_readstr.int_u32()/65535
+		if ebrw_readstr.remaining(): cls.aux2 = ebrw_readstr.int_u32()/65535
 		if ebrw_readstr.remaining(): cls.pan = ebrw_readstr.float()/32767
 		if ebrw_readstr.remaining(): cls.data = ebrw_readstr.rest()
 		return cls
@@ -300,6 +300,21 @@ class item_tdrx:
 		cls.data = ebrw_readstr.rest()
 		return cls
 
+class item_vsti:
+	def __init__(self):
+		self.data = None
+		self.filename = ''
+		self.name = ''
+		self.unknowns = []
+
+	@classmethod
+	def from_ebrw_readstr(cls, ebrw_readstr):
+		cls = cls()
+		cls.filename = ebrw_readstr.string(256)
+		cls.name = ebrw_readstr.string(64)
+		cls.data = ebrw_readstr.rest()
+		return cls
+
 # ---------------------- FX ----------------------
 
 class item_FXHD:
@@ -408,6 +423,8 @@ class root_group:
 		self.data_teq = {}
 		self.data_tpq = {}
 		self.data_comp = None
+		self.data_vsti = None
+		self.data_AUFX = None
 
 	def load_from_file(self, input_file):
 		ebrw_readstr = easybinrw.binread()
@@ -435,6 +452,10 @@ class root_group:
 			elif x.id == b'crss':
 				printtxt(0, x, 1)
 				if x.is_list: self.data_crss = group_crss.from_riffchunks(x, ebrw_readstr, 1)
+				elif VERBOSE: print(x.id, 'is not a group')
+			elif x.id == b'AUFX':
+				printtxt(0, x, 0)
+				if x.is_list: self.data_AUFX = group_AUFX.from_riffchunks(x, ebrw_readstr, 1)
 				elif VERBOSE: print(x.id, 'is not a group')
 			elif x.id == b'PROI':
 				printtxt(0, x, 1)
@@ -479,6 +500,10 @@ class root_group:
 			elif x.id == b'tpq5':
 				printtxt(0, x, 0)
 				if not x.is_list: self.data_tpq[5] = item_tpq.from_ebrw_readstr(ebrw_readstr)
+				elif VERBOSE: print(x.id, 'is not an item')
+			elif x.id == b'vsti':
+				printtxt(0, x, 0)
+				if not x.is_list: self.data_vsti = item_vsti.from_ebrw_readstr(ebrw_readstr)
 				elif VERBOSE: print(x.id, 'is not an item')
 			elif x.id == b'comp':
 				printtxt(0, x, 0)

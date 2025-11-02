@@ -24,5 +24,23 @@
             <color>#415E81</color>
             <color>#59A869</color>
         </colorset>
+        <colorset id="arranger">
+            <color>#E58686</color>
+            <color>#E5AA86</color>
+            <color>#E5CD86</color>
+            <color>#DAE586</color>
+            <color>#B5E586</color>
+            <color>#92E586</color>
+            <color>#86E59D</color>
+            <color>#86E5C2</color>
+            <color>#86E5E5</color>
+            <color>#86C2E5</color>
+            <color>#869DE5</color>
+            <color>#9286E5</color>
+            <color>#B586E5</color>
+            <color>#DA86E5</color>
+            <color>#E586CD</color>
+            <color>#E586AA</color>
+        </colorset>
     </category>
 </dataset>
