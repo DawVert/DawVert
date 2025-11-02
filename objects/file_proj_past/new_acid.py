@@ -236,15 +236,58 @@ class chunk__track_automation:
 
 		self.points = []
 		self.unknowndata = []
-		self.group = ebrw_readstr.int_u32()
-		self.param = ebrw_readstr.int_u32()
-		self.min = ebrw_readstr.float()
-		self.max = ebrw_readstr.float()
-		self.defv = ebrw_readstr.float()
-		self.numpoints = ebrw_readstr.int_u32()
-		self.unknowndata.append( ebrw_readstr.int_u32() )
 
-		if version == 80:
+		#print('---------------points', version)
+		if version == 48:
+			self.group = ebrw_readstr.int_u32()
+			self.param = ebrw_readstr.int_u32()
+			self.min = ebrw_readstr.float()
+			self.max = ebrw_readstr.float()
+			self.defv = ebrw_readstr.float()
+			self.numpoints = ebrw_readstr.int_u32()
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			for _ in range(self.numpoints):
+				pointdata = []
+				pointdata.append( ebrw_readstr.int_u32() )
+				pointdata.append( ebrw_readstr.int_s32() )
+				pointdata.append( ebrw_readstr.float() )
+				pointdata.append( ebrw_readstr.int_u32() )
+				self.points.append(pointdata)
+		elif version == 72:
+			self.group = ebrw_readstr.int_u32()
+			self.param = ebrw_readstr.int_u32()
+			self.min = ebrw_readstr.float()
+			self.max = ebrw_readstr.float()
+			self.defv = ebrw_readstr.float()
+			self.numpoints = ebrw_readstr.int_u32()
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.float() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			for _ in range(self.numpoints):
+				pointdata = []
+				pointdata.append( ebrw_readstr.int_u32() )
+				pointdata.append( ebrw_readstr.int_s32() )
+				pointdata.append( ebrw_readstr.float() )
+				pointdata.append( ebrw_readstr.int_u32() )
+				self.points.append(pointdata)
+		elif version == 80:
+			self.group = ebrw_readstr.int_u32()
+			self.param = ebrw_readstr.int_u32()
+			self.min = ebrw_readstr.float()
+			self.max = ebrw_readstr.float()
+			self.defv = ebrw_readstr.float()
+			self.numpoints = ebrw_readstr.int_u32()
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.float() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
+			self.unknowndata.append( ebrw_readstr.int_u32() )
 			for _ in range(self.numpoints):
 				pointdata = []
 				pointdata.append( ebrw_readstr.int_u32() )
@@ -253,16 +296,17 @@ class chunk__track_automation:
 				pointdata.append( ebrw_readstr.int_u32() )
 				pointdata.append( ebrw_readstr.int_u32() )
 				pointdata.append( ebrw_readstr.int_u32() )
-				#print(pointdata)
 				self.points.append(pointdata)
-		else:
-			for _ in range(self.numpoints):
-				pointdata = []
-				pointdata.append( ebrw_readstr.int_u32() )
-				pointdata.append( ebrw_readstr.int_s32() )
-				pointdata.append( ebrw_readstr.float() )
-				pointdata.append( ebrw_readstr.int_u32() )
-				self.points.append(pointdata)
+		#else:
+		#	for _ in range(self.numpoints):
+		#		pointdata = []
+		#		pointdata.append( ebrw_readstr.int_u32() )
+		#		pointdata.append( ebrw_readstr.int_s32() )
+		#		pointdata.append( ebrw_readstr.float() )
+		#		pointdata.append( ebrw_readstr.int_u32() )
+		#		print(pointdata)
+		#		self.points.append(pointdata)
+		# print([x[0] for x in self.points])
 
 class chunk__audiodefinfo:
 	def __init__(self, ebrw_readstr):

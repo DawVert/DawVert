@@ -352,27 +352,30 @@ class input_acid_3(plugins.base):
 												if reg_name == 'TrackRegion':
 													track_regions.append(reg_chunk.content)
 
-								#if track_name == 'Group:TrackAuto': 
-								#	for trackg_chunk, trackg_name in track_chunk.iter_wtypes():
-								#		if trackg_name == 'TrackAutomation':
-								#			if track_header:
-								#				track_auto = trackg_chunk.content
-								#				autoloc = None
-								#				
-								#				trackid = 'track_'+str(tracknum)
-#
-								#				if not track_auto.group:
-								#					if track_auto.param == 0: autoloc = ['track', trackid, 'vol']
-								#					if track_auto.param == 1: autoloc = ['track', trackid, 'pan']
-#
-								#				if autoloc:
-								#					for p in track_auto.points:
-								#						convproj_obj.automation.add_autopoint(autoloc, 'float', p[0], p[2], 'normal')
-
 
 							else:
 								if track_name == 'TrackData':
 									track_header = track_chunk.content
+
+						for track_chunk, track_name in trks_chunk.iter_wtypes():
+							if track_chunk.is_list:
+								if track_name == 'Group:TrackAuto': 
+									if track_header:
+										cvpj_trackid = 'track_'+str(track_header.id)
+										for trackg_chunk, trackg_name in track_chunk.iter_wtypes():
+											if trackg_name == 'TrackAutomation':
+												if track_header:
+													track_auto = trackg_chunk.content
+													autoloc = None
+													
+													if not track_auto.group:
+														if track_auto.param == 0: autoloc = ['track', cvpj_trackid, 'vol']
+														if track_auto.param == 1: autoloc = ['track', cvpj_trackid, 'pan']
+	
+													if autoloc:
+														for p in track_auto.points:
+															convproj_obj.automation.add_autopoint(autoloc, 'float', p[0], p[2], 'normal')
+
 
 						if track_header:
 
