@@ -99,8 +99,9 @@ class input_old_magix_maker(plugins.base):
 
 				for obj in mmm_track.data_objs:
 					data_objc = obj.data_objc
-					if data_objc is not None:
+					data_AUFX = obj.data_AUFX
 
+					if data_objc is not None:
 						if data_objc.fileid in sampleref_objs:
 							placement_obj = track_obj.placements.add_audio()
 							time_obj = placement_obj.time
@@ -121,18 +122,59 @@ class input_old_magix_maker(plugins.base):
 							uniquecolors[totalcolors.index(color)] += 1
 	
 							sampleref_obj = sampleref_objs[data_objc.fileid]
-	
-							samp_hz = sampleref_obj.get_hz()
-							hzspeed = samp_hz/sample_rate if samp_hz else 1
-	
+
 							sample_obj = placement_obj.sample
 							sample_obj.sampleref = 'sample_'+str(data_objc.fileid)
 							sample_obj.vol = data_objc.vol/65535
-							sample_obj.pitch = data_objc.pitch
-							if data_objc.speed:
-								stretch_obj = sample_obj.stretch
-								stretch_obj.timing.set__real_rate(tempo, data_objc.speed/hzspeed)
-								stretch_obj.preserve_pitch = True
+
+
+							class sample_speedtemp:
+								def __init__(self):
+									self.sample_speed = 1
+									self.sample_pitch = 0
+									self.resample = False
+									self.fx_found = False
+
+							sample_stretch = sample_speedtemp()
+
+							def do_fx(data_AFXE, sample_stretch):
+								for x in data_AFXE:
+									data_FXHD = x.data_FXHD
+									if x.data_AFXD and data_FXHD:
+										data_AFXD = x.data_AFXD
+
+										if 1 not in data_FXHD.flags:
+											if data_FXHD.fxtype==148:
+												sample_stretch.fx_found = True
+												for param in data_AFXD.params:
+													if param.paramnum==0:
+														sample_stretch.sample_speed = param.val_current
+													elif param.paramnum==1:
+														sample_stretch.sample_pitch = param.val_current
+											elif data_FXHD.fxtype==149:
+												for param in data_AFXD.params:
+													if param.paramnum==0:
+														sample_stretch.resample = True
+														sample_stretch.sample_speed = param.val_current
+
+										if data_AFXD.data_AFXE:
+											do_fx(data_AFXD.data_AFXE, sample_stretch)
+
+							if data_AUFX:
+								do_fx(data_AUFX.data_AFXE, sample_stretch)
+
+							if not sample_stretch.fx_found:
+								samp_hz = sampleref_obj.get_hz()
+								hzspeed = samp_hz/sample_rate if samp_hz else 1
+
+								if data_objc.speed:
+									sample_stretch.sample_speed = data_objc.speed/hzspeed
+									sample_stretch.sample_pitch = data_objc.pitch
+
+							sample_obj.pitch = sample_stretch.sample_pitch
+							stretch_obj = sample_obj.stretch
+							stretch_obj.timing.set__real_rate(tempo, sample_stretch.sample_speed)
+							stretch_obj.preserve_pitch = not sample_stretch.resample
 
 						if data_objc.fileid in videoref_objs:
 							placement_obj = track_obj.placements.add_video()
