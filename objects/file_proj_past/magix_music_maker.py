@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-VERBOSE = False
+VERBOSE = 0
 from external.easybinrw import easybinrw
 from external.easybinrw import riff_chunks
 
@@ -63,15 +63,14 @@ class item_trci:
 		if ebrw_readstr.remaining(): cls.flags = ebrw_readstr.flags_i32()
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.float() )
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.float() )
-		if ebrw_readstr.remaining(): val1 = ebrw_readstr.float()
+		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.float() )
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u32() )
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u32() )
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u32() )
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.float() )
 		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.float() )
 		if ebrw_readstr.remaining(): cls.vol = ebrw_readstr.int_s32()/32767
-		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u16() )
-		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_u16() )
+		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.flags_i32() )
 		if ebrw_readstr.remaining(): cls.name = ebrw_readstr.string(48)
 		if ebrw_readstr.remaining(): cls.aux1 = ebrw_readstr.int_u32()/16384
 		if ebrw_readstr.remaining(): cls.aux2 = ebrw_readstr.int_u32()/16384
@@ -154,9 +153,10 @@ class item_objc:
 		cls.unknowns.append( ebrw_readstr.int_u32() )
 		cls.unknowns.append( ebrw_readstr.int_s32() )
 		cls.unknowns.append( ebrw_readstr.int_u32() )
-		if ebrw_readstr.remaining(): ebrw_readstr.raw(4)
+		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_s32() )
 		if ebrw_readstr.remaining(): cls.speed = ebrw_readstr.float()
-		if ebrw_readstr.remaining(): ebrw_readstr.skip(8)
+		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_s32() )
+		if ebrw_readstr.remaining(): cls.unknowns.append( ebrw_readstr.int_s32() )
 		if ebrw_readstr.remaining(): cls.pitch = ebrw_readstr.float()
 		return cls
 
