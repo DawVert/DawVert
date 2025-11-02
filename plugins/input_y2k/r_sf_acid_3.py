@@ -367,14 +367,21 @@ class input_acid_3(plugins.base):
 												if track_header:
 													track_auto = trackg_chunk.content
 													autoloc = None
-													
+
+													autotype = 'normal'
+													invert = False
+
 													if not track_auto.group:
 														if track_auto.param == 0: autoloc = ['track', cvpj_trackid, 'vol']
 														if track_auto.param == 1: autoloc = ['track', cvpj_trackid, 'pan']
+														if track_auto.param == 31: 
+															autoloc = ['track', cvpj_trackid, 'enabled']
+															invert = True
 	
 													if autoloc:
 														for p in track_auto.points:
-															convproj_obj.automation.add_autopoint(autoloc, 'float', p[0], p[2], 'normal')
+															if not p[1]:
+																convproj_obj.automation.add_autopoint(autoloc, 'float', p[0], p[2] if not invert else 1-p[2], autotype)
 
 
 						if track_header:
@@ -388,10 +395,12 @@ class input_acid_3(plugins.base):
 								track_obj.visual.name = track_header.name
 								track_obj.visual.color.set_int(color)
 								track_obj.visual.color.fx_allowed = ['brighter']
+
 								if track_audioinfo:
 									track_obj.params.add('vol', track_audioinfo.vol, 'float')
 									track_obj.params.add('pan', track_audioinfo.pan, 'float')
 									track_obj.datavals.add('pan_mode', 'stereo')
+									track_obj.params.add('enabled', 1 not in track_header.flags, 'float')
 
 								if track_regions:
 
