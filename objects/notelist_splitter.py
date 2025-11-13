@@ -44,18 +44,18 @@ class timesigblocks:
 
 	def timesig(self, endpos, ts, ppq, timesig_num, timesig_dem, startpos, mode):
 		if mode == 1: 
-			tcalc = float(timesig_num*timesig_dem)
+			tcalc = int(timesig_num*timesig_dem)
 			startd = startpos%(ppq*tcalc)
 		else: 
-			tcalc = float(timesig_num)
+			tcalc = int(timesig_num)
 			startd = startpos%ppq
 
-		self.timesigposs = [[0, float(tcalc*ppq)]]
+		self.timesigposs = [[0, int(tcalc*ppq)]]
 		for p, v in ts: 
 			if mode == 1: tscalc = timesig_num*timesig_dem
 			else: tscalc = timesig_num
 			self.timesigposs.append([startd+p, tscalc*ppq])
-		self.timesigposs += [[endpos, float(tcalc*ppq)]]
+		self.timesigposs += [[endpos, int(tcalc*ppq)]]
 		self.process()
 
 	def endsplit(self, endpos, splitdur, startpos):
