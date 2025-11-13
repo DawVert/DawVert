@@ -18,7 +18,7 @@ class timesigblocks:
 		mode = core.config_data.splitter_mode
 		detect_start = core.config_data.splitter_mode
 
-		ppq = float(convproj_obj.time_ppq)
+		ppq = int(convproj_obj.time_ppq)
 		songduration = convproj_obj.get_dur()+ppq
 
 		timesig_num, timesig_dem = convproj_obj.timesig
