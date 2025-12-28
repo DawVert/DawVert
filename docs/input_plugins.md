@@ -72,7 +72,7 @@
 | DataType | PluginSet | Short Name | Name | Ext | Autodetect | Info | 
 | --- | --- | --- | :--- | :--- | :--- | :--- |
 | M-I | ```main``` | ```jummbox``` | Beepbox/Jummbox | ```.json``` | ❌ | |
-| R | ```main``` | ```amped``` | Amped Studio | ```.json``` | ✔️ | |
+| R | ```main``` | ```amped``` | Amped Studio<br>Spume Studio | ```.amped``` | ✔️ | |
 | R | ```main``` | ```onlineseq``` | Online Sequencer | ```.sequence``` | ✔️ | |
 | R | ```uncommon``` | ```petaporon``` | Petaporon | ```.json``` | ❌ | |
 | R | ```main``` | ```soundation``` | Soundation | ```.sng``` | ✔️ | |
