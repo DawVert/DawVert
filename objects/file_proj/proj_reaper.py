@@ -99,8 +99,19 @@ class rpp_song:
 		self.project = rpp_project.rpp_project()
 
 	def load_from_file(self, input_file):
-		bytestream = open(input_file, 'r', encoding="utf-8")
-		rpp_data = rpp.load(bytestream)
+		try:
+			bytestream = open(input_file, 'r', encoding="utf-8")
+			rpp_data = rpp.load(bytestream)
+		except UnicodeDecodeError:
+			try:
+				bytestream.close()
+				bytestream = open(input_file, 'r', encoding="shift_jis")
+				rpp_data = rpp.load(bytestream)
+			except UnicodeDecodeError:
+				bytestream.close()
+				bytestream = open(input_file, 'r', encoding="cp1252")
+				rpp_data = rpp.load(bytestream)
+		
 		self.project.load(rpp_data)
 		return True
 

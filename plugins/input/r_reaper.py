@@ -44,23 +44,28 @@ class midi_notes():
 		midicmd, midich = data_bytes.splitbyte(int(tracksource_var[2],16))
 		midikey = int(tracksource_var[3],16)
 		midivel = int(tracksource_var[4],16)
-		if midicmd == 9: self.active_notes[midich][midikey].append([self.midipos, None, midivel])
-		if midicmd == 8: self.active_notes[midich][midikey][-1][1] = self.midipos
+		
+		if midicmd == 9 and midivel > 0: 
+			self.active_notes[midich][midikey].append([self.midipos, None, midivel])
+		
+		if midicmd == 8 or (midicmd == 9 and midivel == 0):
+			if len(self.active_notes[midich][midikey]) > 0:
+				self.active_notes[midich][midikey][-1][1] = self.midipos
 
-	def do_output(self, cvpj_notelist, ppq):
+	def do_output(self, cvpj_notelist, ppq, target_ppq=1):
 		for c_mid_ch in range(16):
 			for c_mid_key in range(127):
 				if self.active_notes[c_mid_ch][c_mid_key] != []:
 					for notedurpos in self.active_notes[c_mid_ch][c_mid_key]:
 						if notedurpos[1] != None:
 							cvpj_notelist.add_r(
-								notedurpos[0]/(ppq), 
-								(notedurpos[1]-notedurpos[0])/(ppq), 
+								(notedurpos[0]/(ppq))*target_ppq, 
+								((notedurpos[1]-notedurpos[0])/(ppq))*target_ppq, 
 								c_mid_key-60, 
 								notedurpos[2]/127, 
 								{'channel': c_mid_ch}
 								)
-							cvpj_notelist.time_ppq = 1
+							cvpj_notelist.time_ppq = target_ppq
 							cvpj_notelist.time_float = True
 		cvpj_notelist.sort()
 		#print(cvpj_notelist.data[:])
@@ -358,21 +363,29 @@ class input_reaper(plugins.base):
 								if insource.type in ['MP3','FLAC','VORBIS','WAVE','WAVPACK']:
 									cvpj_placement_type = 'audio'
 									cvpj_audio_file = insource.file.get()
+								if insource.type in ['MIDI']:
+									midi_ppq = insource.hasdata['ppq']
+									for note in insource.notes: midi_notes_out.do_note(note)
 
 				cvpj_offset_bpm = ((cvpj_offset)*8)*tempomul
 				cvpj_end_bpm = ((midi_notes_out.midipos/midi_ppq)*4)
 
 				if cvpj_placement_type == 'notes': 
 					placement_obj = track_obj.placements.add_notes()
+
+
 					if cvpj_name: placement_obj.visual.name = cvpj_name
 					if cvpj_color: placement_obj.visual.color.set_float(cvpj_color)
 					placement_obj.time.position_real = cvpj_position
 					placement_obj.time.duration_real = cvpj_duration
 
-					placement_obj.time.cut_type = 'loop'
-					placement_obj.time.set_loop_data(cvpj_offset_bpm, 0, cvpj_end_bpm)
+					# placement_obj.time.cut_type = 'loop'
+					# placement_obj.time.set_loop_data(cvpj_offset_bpm, 0, cvpj_end_bpm)
 
-					midi_notes_out.do_output(placement_obj.notelist, midi_ppq)
+					midi_notes_out.do_output(placement_obj.notelist, midi_ppq, 4)
+
+					cvpj_duration_bpm = ((cvpj_duration)*8)*tempomul
+					placement_obj.notelist.edit_trimmove(cvpj_offset_bpm, cvpj_offset_bpm + cvpj_duration_bpm)
 
 				if cvpj_placement_type == 'audio': 
 					placement_obj = track_obj.placements.add_audio()
