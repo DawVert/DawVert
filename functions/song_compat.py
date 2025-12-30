@@ -50,6 +50,11 @@ class song_compat:
 		self.process_part('unhybrid', unhybrid,					   convproj_obj, cvpj_type, in_dawinfo.track_hybrid, out_dawinfo.track_hybrid, out_type)
 		self.process_part('removelanes', removelanes,				 convproj_obj, cvpj_type, in_dawinfo.track_lanes, out_dawinfo, out_type)
 
+		if cvpj_type in ['r']:
+			if in_dawinfo.time_seconds and not out_dawinfo.time_seconds:
+				self.process_part('time_seconds', time_seconds,			   convproj_obj, cvpj_type, in_dawinfo.time_seconds, out_dawinfo.time_seconds, out_type)
+				if 'time_seconds' in self.finished_processes: self.currenttime = out_dawinfo.time_seconds
+
 		if self.currenttime == False:
 			self.process_part('autopl_addrem', autopl_addrem,		 convproj_obj, cvpj_type, in_dawinfo.auto_types, out_dawinfo.auto_types, out_type)
 			self.process_part('loops_remove', loops_remove,		   convproj_obj, cvpj_type, in_dawinfo.placement_loop, out_dawinfo.placement_loop, out_type)
