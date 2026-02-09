@@ -228,6 +228,7 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 
 			if wrapper_vsttype in [8,7] and wrapper_plugin.state!=None:
 				plugin_obj.type_set('external', 'vst3', 'win')
+				if wrapper_plugin.name: plugin_obj.external_info.name = wrapper_plugin.name
 				if wrapper_plugin.state:
 					dev_uuid = uuid.UUID(int=int.from_bytes(wrapper_plugin.uuid, 'big')).bytes_le
 					pluguuid = dev_uuid.hex().upper()
@@ -236,7 +237,7 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 					chunkdata.load_data(wrapper_plugin.state)
 					chunkdata.seek(84)
 
-					wrapper_vstsize = chunkdata.uint32()
+					wrapper_vstsize = chunkdata.int_u32()
 					wrapper_vstdata = chunkdata.raw(wrapper_vstsize)
 
 					extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)

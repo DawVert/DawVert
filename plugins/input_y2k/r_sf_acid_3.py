@@ -5,44 +5,9 @@ import plugins
 import os.path
 import bisect
 from objects import globalstore
+from objects import regions
 from objects.convproj import fileref
 from functions import xtramath
-
-class rootnote_stor():
-	def __init__(self):
-		self.data = []
-	
-	def add_pos(self, p):
-		if self.data:
-			for n, x in enumerate(self.data):
-				if x[1]==-1:
-					self.data[n][0] = p
-					self.data.insert(n, [0,p,60])
-					break
-				elif x[1]>p:
-					self.data.insert(n, [0,p,60])
-					break
-		else:
-			self.data = [[p,-1,60]]
-
-		for n, x in enumerate(self.data):
-			if (len(self.data)-1)>n>0:
-				self.data[n][0] = self.data[n-1][1]
-
-	def add_notes(self, notedata):
-		notepos = list(notedata)
-		for x in notepos:
-			b = bisect.bisect_left(notepos, x)
-			if b<len(self.data): self.data[b][2] = notedata[x]
-
-	def iterd(self, ostart, oend):
-		for start, end, root_note in self.data:
-			if end != -1:
-				cond = ((end>ostart) and (start<oend))
-				if cond: yield max(start, ostart), min(end, oend), root_note
-			else:
-				cond = (start<oend)
-				if cond: yield max(start, ostart), oend, root_note
 
 def calc_root(proj_root, track_root):
 	roottrack = (proj_root-60)
@@ -63,6 +28,12 @@ def extract_audio(filename, sampleref_obj, dawvert_intent, zipfile):
 	sampleref_obj.set_path(None, filepath)
 
 volumeversion = 5
+
+def do_region_common(sp_obj, placement_obj, region, version):
+	if 1 in region.flags: placement_obj.muted = True
+	if 3 in region.flags: placement_obj.locked = True
+	if 5 in region.flags: sp_obj.reverse = True
+	if version>volumeversion: sp_obj.vol = region.vol
 
 def add_audio_regions(
 	placements_obj, ppq, rootnote_auto, 
@@ -99,10 +70,7 @@ def add_audio_regions(
 				sp_obj.sampleref = filename
 				sp_obj.stretch.timing.set__beats(num_beats)
 				sp_obj.stretch.preserve_pitch = True
-				if 1 in region.flags: placement_obj.muted = True
-				if 3 in region.flags: placement_obj.locked = True
-				if 5 in region.flags: sp_obj.reverse = True
-				if version>volumeversion: sp_obj.vol = region.vol
+				do_region_common(sp_obj, placement_obj, region, version)
 
 				if cur_root != 127:
 					notetrack = calc_root(cur_root, track_root_note)
@@ -123,10 +91,7 @@ def add_audio_regions(
 			sp_obj.stretch.preserve_pitch = True
 			sp_obj.usemasterpitch = False
 			sp_obj.pitch = region.pitch+pitch
-			if 1 in region.flags: placement_obj.muted = True
-			if 3 in region.flags: placement_obj.locked = True
-			if 5 in region.flags: sp_obj.reverse = True
-			if version>volumeversion: sp_obj.vol = region.vol
+			do_region_common(sp_obj, placement_obj, region, version)
 			pls.append(placement_obj)
 
 	if stretch_type == 1:
@@ -143,10 +108,7 @@ def add_audio_regions(
 		sampmul = xtramath.pitch_to_speed(-(region.pitch+pitch))
 		time_obj.set_offset_real(real_offset)
 		sp_obj.stretch.timing.set__speed(sampmul)
-		if 1 in region.flags: placement_obj.muted = True
-		if 3 in region.flags: placement_obj.locked = True
-		if 5 in region.flags: sp_obj.reverse = True
-		if version>volumeversion: sp_obj.vol = region.vol
+		do_region_common(sp_obj, placement_obj, region, version)
 		pls.append(placement_obj)
 
 	if stretch_type == 2:
@@ -162,10 +124,7 @@ def add_audio_regions(
 		sp_obj.stretch.timing.set__orgtempo(audiotempo)
 		sp_obj.pitch = region.pitch+pitch
 		sp_obj.stretch.preserve_pitch = True
-		if 1 in region.flags: sp_obj.muted = True
-		if 3 in region.flags: sp_obj.locked = True
-		if 5 in region.flags: sp_obj.reverse = True
-		if version>volumeversion: sp_obj.vol = region.vol
+		do_region_common(sp_obj, placement_obj, region, version)
 		pls.append(placement_obj)
 
 	if stretch_type == 3:
@@ -180,10 +139,7 @@ def add_audio_regions(
 		sp_obj.stretch.timing.set__orgtempo(audiotempo)
 		sp_obj.pitch = region.pitch+pitch
 		sp_obj.stretch.preserve_pitch = True
-		if 1 in region.flags: sp_obj.muted = True
-		if 3 in region.flags: sp_obj.locked = True
-		if 5 in region.flags: sp_obj.reverse = True
-		if version>volumeversion: sp_obj.vol = region.vol
+		do_region_common(sp_obj, placement_obj, region, version)
 		pls.append(placement_obj)
 
 	return pls
@@ -260,7 +216,7 @@ class input_acid_3(plugins.base):
 						auto_basenotes[0] = int(def_data.root_note)
 						starttempo = (500000/def_data.tempo)*120
 
-		rootnote_auto = rootnote_stor()
+		rootnote_auto = regions.rootnote_stor()
 		for pos in list(auto_basenotes): rootnote_auto.add_pos(pos)
 		rootnote_auto.add_notes(auto_basenotes)
 
