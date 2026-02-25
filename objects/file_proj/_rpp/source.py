@@ -21,7 +21,7 @@ class rpp_source:
 		self.outch = rvs(0, int, False)
 		self.chase_cc_takeoffs = rvs(1, int, False)
 		self.guid = rvs("", str, True)
-		self.igntempo = rvd([0,120,4,4], ['on', 'bpm', 'ts_num', 'ts_denom'], [int,int,int,int], False)
+		self.igntempo = rvd([0,120,4,4], ['on', 'bpm', 'ts_num', 'ts_denom'], [int,float,int,int], False)
 		self.srccolor = rvs(1, int, False)
 		self.vellane = rvd([-1,100,0,0,1], None, [int,int,int,int,int], False)
 

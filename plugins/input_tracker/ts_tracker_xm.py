@@ -15,11 +15,14 @@ def env_to_cvpj(xm_env, plugin_obj, ispan, fadeout):
 	autopoints_obj = plugin_obj.env_points_add(envtype, 48, 'float')
 	autopoints_obj.enabled = xm_env.enabled
 	autopoints_obj.sustain_on = xm_env.sustain_on
-	autopoints_obj.sustain_point = xm_env.sustain+1
-	autopoints_obj.sustain_end = xm_env.sustain+1
+	autopoints_obj.sustain_point = xm_env.sustain
+	autopoints_obj.sustain_end = xm_env.sustain
 	autopoints_obj.loop_on = xm_env.loop_on
 	autopoints_obj.loop_start = xm_env.loop_start
 	autopoints_obj.loop_end = xm_env.loop_end
+
+	#if envtype=='vol': print(autopoints_obj.enabled, autopoints_obj.sustain_on, autopoints_obj.sustain_point if autopoints_obj.sustain_on else '')
+
 	for n in range(min(xm_env.numpoints, len(xm_env.points))):
 		xm_point = xm_env.points[n]
 		value = (xm_point[1]-32)/32 if ispan else xm_point[1]/64

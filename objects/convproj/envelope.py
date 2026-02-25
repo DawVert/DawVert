@@ -384,19 +384,20 @@ class cvpj_envelope_adsr:
 		#	if not data_values.list__ifallsame([x.value for x in pointsdata]):
 		#		env_pointsdata.debugview()
 
-		sustainnum = -1 if (not env_pointsdata.sustain_on or env_pointsdata.sustain_point > numpoints-1) else env_pointsdata.sustain_point
+		if env_pointsdata.enabled:
+			sustainnum = -1 if (not env_pointsdata.sustain_on or env_pointsdata.sustain_point > numpoints-1) else env_pointsdata.sustain_point
 
-		if numpoints == 2:
-			return self.from_envpoints__internal_2point(sustainnum, a_type, plugin_obj, env_pointsdata)
+			if numpoints == 2:
+				return self.from_envpoints__internal_2point(sustainnum, a_type, plugin_obj, env_pointsdata)
 
-		elif numpoints == 3:
-			return self.from_envpoints__internal_3point(sustainnum, plugin_obj, env_pointsdata)
+			elif numpoints == 3:
+				return self.from_envpoints__internal_3point(sustainnum, plugin_obj, env_pointsdata)
 
-		elif numpoints > 3:
-			if numpoints == 4:
-				if self.from_envpoints__internal_adsr(sustainnum, env_pointsdata): return True
+			elif numpoints > 3:
+				if numpoints == 4:
+					if self.from_envpoints__internal_adsr(sustainnum, env_pointsdata): return True
 
-			self.from_envpoints__internal_5point(sustainnum, env_pointsdata)
+				self.from_envpoints__internal_5point(sustainnum, env_pointsdata)
 
 class cvpj_envelope_blocks:
 	def __init__(self):
