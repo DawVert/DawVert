@@ -94,7 +94,7 @@ class ConversionWorker(QtCore.QObject):
 				dawvert_intent.path_samples['converted'] = dawvert_intent.output_samples+'converted/'
 
 			else:
-				dawvert_intent.set_projname_path(file_name)
+				dawvert_intent.set_projname_path()
 
 			dawvert_intent.create_folder_paths()
 

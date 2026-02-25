@@ -146,3 +146,39 @@ class posdurblocks:
 				cvpj_obj.timesig_auto.add_point(curpos, outtimesig)
 			if self.loop_start == n: cvpj_obj.loop_start = curpos
 			prevtimesig = temptimesig
+
+class rootnote_stor():
+	def __init__(self):
+		self.data = []
+	
+	def add_pos(self, p):
+		if self.data:
+			for n, x in enumerate(self.data):
+				if x[1]==-1:
+					self.data[n][0] = p
+					self.data.insert(n, [0,p,60])
+					break
+				elif x[1]>p:
+					self.data.insert(n, [0,p,60])
+					break
+		else:
+			self.data = [[p,-1,60]]
+
+		for n, x in enumerate(self.data):
+			if (len(self.data)-1)>n>0:
+				self.data[n][0] = self.data[n-1][1]
+
+	def add_notes(self, notedata):
+		notepos = list(notedata)
+		for x in notepos:
+			b = bisect.bisect_left(notepos, x)
+			if b<len(self.data): self.data[b][2] = notedata[x]
+
+	def iterd(self, ostart, oend):
+		for start, end, root_note in self.data:
+			if end != -1:
+				cond = ((end>ostart) and (start<oend))
+				if cond: yield max(start, ostart), min(end, oend), root_note
+			else:
+				cond = (start<oend)
+				if cond: yield max(start, ostart), oend, root_note

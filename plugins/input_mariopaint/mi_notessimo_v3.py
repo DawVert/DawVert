@@ -10,6 +10,7 @@ import plugins
 import struct
 import zlib
 import os
+import numpy as np
 
 import logging
 logger_input = logging.getLogger('input')
@@ -271,7 +272,8 @@ class input_notessimo_v3(plugins.base):
 				if nnn.sharp: inum = 1
 				if nnn.flat: inum = 2
 				noteoffs = sheetnoteofs[inum][1][out_key]
-				cvpj_notelist.add_m(nnn.inst, nnn.pos*2, nnn.dur*4, out_note+noteoffs, 1, None)
+				dur = nnn.dur*4 if not np.isnan(nnn.dur) else 1
+				cvpj_notelist.add_m(nnn.inst, nnn.pos*2, dur, out_note+noteoffs, 1, None)
 				if nnn.inst not in used_insts: used_insts.append(nnn.inst)
 			cvpj_notelist.sort()
 
