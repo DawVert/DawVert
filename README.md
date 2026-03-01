@@ -121,5 +121,3 @@ xmodits_py - for extracting Impulse Tracker and FastTracker2 Samples
 [GitHub](https://github.com/SatyrDiamond/DawVert)
 
 [Gitlab](https://gitlab.com/SatyrDiamond/DawVert)
-
-[Codeberg](https://codeberg.org/SatyrDiamond/DawVert)
