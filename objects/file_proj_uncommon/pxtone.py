@@ -15,17 +15,30 @@ logger_projparse = logging.getLogger('projparse')
 
 class ptcop_delay:
 	def __init__(self):
+		self.unk1 = 0
+		self.unk2 = 0
 		self.unit = 0
 		self.group = 0
 		self.rate = 16000
 		self.freq = 1.0
 
 	def read(self, ebrw_readstr):
-		ebrw_readstr.skip(2)
+		self.unk1 = ebrw_readstr.int_u8()
+		self.unk2 = ebrw_readstr.int_u8()
 		self.unit = ebrw_readstr.int_u16()
 		self.group = ebrw_readstr.int_u16()
 		self.rate = ebrw_readstr.int_u16()
 		self.freq = ebrw_readstr.float()
+
+	def dump(self):
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u8(self.unk1)
+		ebrw_writestr.int_u8(self.unk2)
+		ebrw_writestr.int_u16(self.unit)
+		ebrw_writestr.int_u16(self.group)
+		ebrw_writestr.int_u16(self.rate)
+		ebrw_writestr.float(self.freq)
+		return ebrw_writestr.getvalue()
 
 class ptcop_overdrive:
 	def __init__(self):
@@ -42,6 +55,15 @@ class ptcop_overdrive:
 		self.amp = ebrw_readstr.float()
 		self.yyy = ebrw_readstr.float()
 
+	def dump(self):
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u16(self.xxx)
+		ebrw_writestr.int_u16(self.group)
+		ebrw_writestr.float(self.cut)
+		ebrw_writestr.float(self.amp)
+		ebrw_writestr.float(self.yyy)
+		return ebrw_writestr.getvalue()
+
 class ptcop_master:
 	def __init__(self):
 		self.unk1 = 0
@@ -55,9 +77,20 @@ class ptcop_master:
 		self.unk1 = ebrw_readstr.int_u16()
 		self.beat = ebrw_readstr.int_u8()
 		self.unk2 = ebrw_readstr.int_u16()
-		self.beattempo = struct.unpack(">f", struct.pack("I", int.from_bytes(ebrw_readstr.read(2), "big")))[0]
+		self.beattempo = ebrw_readstr.int_u16_b()
+		self.beattempo = struct.unpack(">f", struct.pack("I", self.beattempo))[0]
 		self.repeat = ebrw_readstr.int_u32()
 		self.last = ebrw_readstr.int_u32()
+
+	def dump(self):
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.int_u16(self.unk1)
+		ebrw_writestr.int_u8(self.beat)
+		ebrw_writestr.int_u16(self.unk2)
+		ebrw_writestr.int_u16_b(struct.unpack("I", struct.pack(">f", self.beattempo))[0])
+		ebrw_writestr.int_u32(self.repeat)
+		ebrw_writestr.int_u32(self.last)
+		return ebrw_writestr.getvalue()
 
 class ptcop_voice_mateOGGV:
 	def __init__(self):
@@ -78,6 +111,18 @@ class ptcop_voice_mateOGGV:
 		self.hz = ebrw_readstr.int_u32()
 		self.samples = ebrw_readstr.int_u32()
 		self.data = ebrw_readstr.raw(ebrw_readstr.int_u32())
+
+	def dump(self):
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.raw(b'\x00\x00\x00')
+		ebrw_writestr.int_u8(self.basic_key_field)
+		ebrw_writestr.flags_i32(self.sps2)
+		ebrw_writestr.float(self.key_correct)
+		ebrw_writestr.int_u32(self.channels)
+		ebrw_writestr.int_u32(self.hz)
+		ebrw_writestr.int_u32(self.samples)
+		ebrw_writestr.raw_i32(self.data)
+		return ebrw_writestr.getvalue()
 
 class ptcop_voice_matePCM:
 	def __init__(self):
@@ -102,6 +147,18 @@ class ptcop_voice_matePCM:
 		self.samples = ebrw_readstr.int_u32()//numbytes
 		self.data = ebrw_readstr.raw(numbytes * self.samples)
 
+	def dump(self):
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.raw(b'\x00\x00\x00')
+		ebrw_writestr.int_u8(self.basic_key_field)
+		ebrw_writestr.flags_i32(self.sps2)
+		ebrw_writestr.int_u16(self.ch)
+		ebrw_writestr.int_u16(self.bits)
+		ebrw_writestr.int_u32(self.hz)
+		ebrw_writestr.float(self.key_correct)
+		ebrw_writestr.raw_i32(self.data)
+		return ebrw_writestr.getvalue()
+
 class ptcop_voice_matePTV:
 	def __init__(self):
 		self.key_correct = 0.0
@@ -113,16 +170,38 @@ class ptcop_voice_matePTV:
 		datasize = ebrw_readstr.int_u32()
 		self.data = ebrw_readstr.raw(datasize)
 
+	def dump(self):
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.raw(b'\x00\x00\x00\x00')
+		ebrw_writestr.float(self.key_correct)
+		ebrw_writestr.raw_i32(self.data)
+		return ebrw_writestr.getvalue()
+
 class ptcop_voice_matePTN:
 	def __init__(self):
 		self.key_correct = 0
+		self.basic_key_field = 69
+		self.unk1 = 2
+		self.unk2 = 1
 		self.data = b''
 
 	def read(self, ebrw_readstr):
-		ebrw_readstr.raw(8)
+		ebrw_readstr.skip(3)
+		self.basic_key_field = ebrw_readstr.int_u8()
+		self.unk1 = ebrw_readstr.int_u32()
 		self.key_correct = ebrw_readstr.float()
-		ebrw_readstr.raw(4)
+		self.unk2 = ebrw_readstr.int_u32()
 		self.data = ebrw_readstr.rest()
+
+	def dump(self):
+		ebrw_writestr = easybinrw.binwrite()
+		ebrw_writestr.raw(b'\x00\x00\x00')
+		ebrw_writestr.int_u8(self.basic_key_field)
+		ebrw_writestr.int_u32(self.unk1)
+		ebrw_writestr.float(self.key_correct)
+		ebrw_writestr.int_u32(self.unk2)
+		ebrw_writestr.raw(self.data)
+		return ebrw_writestr.getvalue()
 
 class ptcop_unit:
 	def __init__(self):
@@ -136,6 +215,10 @@ event_premake = dynbytearr.dynbytearr_premake([
 	('d_position', np.uint32),
 	])
 
+def make_chunk(ebrw_writestr, header, data):
+	ebrw_writestr.raw(header)
+	ebrw_writestr.raw_i32(data)
+
 class ptcop_song:
 	def __init__(self):
 		self.master = ptcop_master()
@@ -146,14 +229,15 @@ class ptcop_song:
 		self.voices = {}
 		self.delays = []
 		self.overdrives = []
+		self.header = b'PTCOLLAGE-071119'
+		self.unk1 = 5
 
 	def load_from_file(self, input_file):
 		ebrw_readstr = easybinrw.binread()
 		ebrw_readstr.load_file(input_file)
 
 		self.header = ebrw_readstr.raw(16)
-
-		ebrw_readstr.skip(4)
+		self.unk1 = ebrw_readstr.int_u32()
 
 		voicenum = 0
 
@@ -163,7 +247,8 @@ class ptcop_song:
 
 			if chunk_id == b'Event V5':
 				ev_cur = self.events.create_cursor()
-				for _ in range(ebrw_readstr.int_u32()):
+				numevents = ebrw_readstr.int_u32()
+				for _ in range(numevents):
 					ev_cur.add()
 					ev_cur['position'] = ebrw_readstr.varint()
 					ev_cur['unitnum'] = ebrw_readstr.int_u8()
@@ -247,6 +332,7 @@ class ptcop_song:
 
 		self.events.clean()
 
+		self.postprocess()
 		return True
 
 	def postprocess(self):
@@ -254,3 +340,55 @@ class ptcop_song:
 		for x in self.events:
 			curpos += x['position']
 			x['d_position'] = curpos
+
+	def write(self, ebrw_writestr):
+		ebrw_writestr.raw(self.header)
+		ebrw_writestr.int_u32(self.unk1)
+		make_chunk(ebrw_writestr, b'MasterV5', self.master.dump())
+
+		ebrw_writestr.raw(b'Event V5')
+		ebrw_writestr.int_u32(len(self.events)*7)
+		ebrw_writestr.int_u32(len(self.events))
+		for x in self.events:
+			ebrw_writestr.varint(x['position'])
+			ebrw_writestr.int_u8(x['unitnum'])
+			ebrw_writestr.int_u8(x['eventnum'])
+			ebrw_writestr.varint(x['value'])
+
+		if self.title: make_chunk(ebrw_writestr, b'textNAME', self.title.encode('shift-jis'))
+		if self.comment: make_chunk(ebrw_writestr, b'textCOMM', self.comment.encode('shift-jis'))
+
+		for delay_obj in self.delays:
+			make_chunk(ebrw_writestr, b'effeDELA', delay_obj.dump())
+		for overdrive_obj in self.overdrives:
+			make_chunk(ebrw_writestr, b'effeOVER', overdrive_obj.dump())
+
+		for voicenum in sorted(self.voices):
+			voice_obj = self.voices[voicenum]
+			if isinstance(voice_obj, ptcop_voice_mateOGGV): make_chunk(ebrw_writestr, b'mateOGGV', voice_obj.dump())
+			if isinstance(voice_obj, ptcop_voice_matePCM): make_chunk(ebrw_writestr, b'matePCM ', voice_obj.dump())
+			if isinstance(voice_obj, ptcop_voice_matePTV): make_chunk(ebrw_writestr, b'matePTV ', voice_obj.dump())
+			if isinstance(voice_obj, ptcop_voice_matePTN): make_chunk(ebrw_writestr, b'matePTN ', voice_obj.dump())
+
+			assiWOIC_ebrw_writestr = easybinrw.binwrite()
+			assiWOIC_ebrw_writestr.int_u32(voicenum)
+			assiWOIC_ebrw_writestr.string(voice_obj.name, 16, encoding='shift-jis')
+			make_chunk(ebrw_writestr, b'assiWOIC', assiWOIC_ebrw_writestr.getvalue())
+			
+		numUNIT_ebrw_writestr = easybinrw.binwrite()
+		numUNIT_ebrw_writestr.int_u32(len(self.units))
+		make_chunk(ebrw_writestr, b'num UNIT', numUNIT_ebrw_writestr.getvalue())
+	
+		for num, unit in enumerate(self.units):
+			assiUNIT_ebrw_writestr = easybinrw.binwrite()
+			assiUNIT_ebrw_writestr.int_u32(num)
+			assiUNIT_ebrw_writestr.string(unit.name, 16, encoding='shift-jis')
+			make_chunk(ebrw_writestr, b'assiUNIT', assiUNIT_ebrw_writestr.getvalue())
+
+		make_chunk(ebrw_writestr, b'pxtoneND', b'')
+
+	def save_to_file(self, output_file):
+		ebrw_writestr = easybinrw.binwrite()
+		self.write(ebrw_writestr)
+		f = open(output_file, 'wb')
+		f.write(ebrw_writestr.getvalue())
