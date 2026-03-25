@@ -17,7 +17,7 @@ class output_darwin(plugins.base):
 		return 'darwin'
 	
 	def get_name(self):
-		return 'darwin'
+		return 'Darwin'
 	
 	def gettype(self):
 		return 'r'

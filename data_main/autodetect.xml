@@ -477,4 +477,7 @@
 		<file fileext=".mmcmp"/>
 	</plugin>
 
+	<plugin pluginset="main" name="darwin">
+		<file fileext=".darwin"/>
+	</plugin>
 </autodetect>

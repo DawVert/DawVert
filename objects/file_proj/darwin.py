@@ -35,8 +35,8 @@ class darwin_clip:
 		if 'clipType' in trackdata: self.clipType = trackdata['clipType']
 		if 'durationTicks' in trackdata: self.durationTicks = trackdata['durationTicks']
 		if 'startTick' in trackdata: self.startTick = trackdata['startTick']
-		if 'notes' in projectdata: 
-			for t in projectdata['notes']:
+		if 'notes' in trackdata: 
+			for t in trackdata['notes']:
 				note_obj = darwin_note()
 				note_obj.read(t)
 				self.notes.append(note_obj)
@@ -67,8 +67,8 @@ class darwin_track:
 		self.volume = 1
 
 	def read(self, trackdata):
-		if 'clips' in projectdata: 
-			for t in projectdata['clips']:
+		if 'clips' in trackdata: 
+			for t in trackdata['clips']:
 				clip_obj = darwin_clip()
 				clip_obj.read(t)
 				self.clips.append(clip_obj)
@@ -121,7 +121,7 @@ class darwin_project:
 	def read(self, projectdata):
 		if 'bpm' in projectdata: self.bpm = projectdata['bpm']
 		if 'formatVersion' in projectdata: self.formatVersion = projectdata['formatVersion']
-		if 'name' in projectdata: self.masterTrack = projectdata['name']
+		if 'name' in projectdata: self.name = projectdata['name']
 		if 'masterTrack' in projectdata: self.masterTrack.read(projectdata['masterTrack'])
 		if 'tracks' in projectdata: 
 			for t in projectdata['tracks']:
