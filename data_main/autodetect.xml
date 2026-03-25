@@ -82,7 +82,7 @@
 		<archived type="zip" file="songdata.xml"/>
 	</plugin>
 
-	<plugin pluginset="main" name="bandlab">
+	<plugin pluginset="web" name="bandlab">
 		<file fileext=".blx"/>
 	</plugin>
 
@@ -112,7 +112,7 @@
 		<folder fileext=".prj" files="Package.sng;Package.prj"/>
 	</plugin>
 
-	<plugin pluginset="main" name="onlineseq">
+	<plugin pluginset="web" name="onlineseq">
 		<file fileext=".sequence"/>
 	</plugin>
 
@@ -130,11 +130,11 @@
 		<file fileext=".rpp"/>
 	</plugin>
 
-	<plugin pluginset="main" name="soundation">
+	<plugin pluginset="web" name="soundation">
 		<file fileext=".sng"/>
 	</plugin>
 
-	<plugin pluginset="main" name="soundation">
+	<plugin pluginset="web" name="soundation">
 		<file fileext=".sngz"/>
 		<archived type="zip" file="*.sng"/>
 	</plugin>
@@ -479,5 +479,9 @@
 
 	<plugin pluginset="main" name="darwin">
 		<file fileext=".darwin"/>
+	</plugin>
+
+	<plugin pluginset="web" name="greysound">
+		<archived type="zip" file="session.json"/>
 	</plugin>
 </autodetect>

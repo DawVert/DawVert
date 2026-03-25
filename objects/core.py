@@ -257,6 +257,8 @@ pluginsets_input = {
 '2010s': ['2010s', "2010's"],
 'y2k': ['y2k', 'Y2K'],
 'ancient': ['ancient', 'Ancient'],
+'web': ['web', "Web"],
+'mobile': ['mobile', 'Mobile'],
 'audioedit': ['audioedit', 'Audio Editors'],
 'midi': ['midi', 'MIDI'],
 'exper': ['exper', 'Experiments'],
@@ -267,7 +269,6 @@ pluginsets_input = {
 'drummach': ['drummach', 'Drum Machines'],
 'extlib': ['extlib', 'External Lib'],
 'nn': ['nn', 'NeuralNet'],
-'mobile': ['mobile', 'Mobile'],
 'old': ['old', 'Old/Broken']
 }
 
