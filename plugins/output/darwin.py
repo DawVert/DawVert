@@ -58,6 +58,7 @@ class output_darwin(plugins.base):
 					clip_obj.startTick = int(position)
 					clip_obj.durationTicks = int(duration)
 
+					notespl_obj.notelist.mod_limit(-60, 67)
 					for cnote in notespl_obj.notelist.iter_notes():
 						note_obj = proj_darwin.darwin_note()
 						note_obj.startTick = int(cnote.pos)

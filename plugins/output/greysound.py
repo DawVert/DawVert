@@ -92,6 +92,7 @@ class output_greysound(plugins.base):
 					greysound_region.start = {"ticks": start, "millis": ticks_to_time(start, bpm)}
 					greysound_region.end = {"ticks": end, "millis": ticks_to_time(end, bpm)}
 
+					notespl_obj.notelist.mod_limit(-60, 67)
 					for cnote in notespl_obj.notelist.iter_notes():
 						note_obj = proj_greysound.greysound_midinote()
 						note_obj.startTicks = int(cnote.pos)

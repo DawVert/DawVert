@@ -102,6 +102,7 @@ class output_onlineseq(plugins.base):
 
 			if track_obj.visual.name: iparams.name = track_obj.visual.name
 
+			notespl_obj.notelist.mod_limit(-60, 67)
 			for cnote in notespl_obj.notelist.iter_notes():
 				onlineseq_note = [int(cnote.key+60-middlenote),cnote.pos,cnote.dur,onlineseqnum,cnote.vol]
 				project_obj.notes.append(onlineseq_note)
