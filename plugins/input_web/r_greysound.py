@@ -105,6 +105,7 @@ class input_greysound(plugins.base):
 
 		gs_trackids = {}
 		trackorder = {}
+		routesends = {}
 
 		for gs_track in session_obj.tracks:
 			if gs_track.type == 'MASTER':
@@ -122,6 +123,13 @@ class input_greysound(plugins.base):
 				if gs_track.type == 'INSTRUMENT': track_obj.armed.in_keys = gs_track.armed
 				if gs_track.type == 'AUDIO': track_obj.armed.in_audio = gs_track.armed
 				trackorder[gs_track.position] = gs_track.id
+				if gs_track.id not in routesends: 
+					master_on = True
+					outputRouting = gs_track.outputRouting
+					if outputRouting is not None:
+						if 'type' in outputRouting:
+							if outputRouting['type']=='none': master_on = False
+					routesends[gs_track.id] = [master_on, []]
 
 			gs_trackids[gs_track.id] = track_obj
 
@@ -164,14 +172,14 @@ class input_greysound(plugins.base):
 			if 'ticks' in reg_offs: time_obj.set_offset(reg_offs['ticks'])
 			elif 'millis' in reg_offs: time_obj.set_offset_real(reg_offs['millis']/1000)
 
-		routesends = {}
-
 		for send in session_obj.sends:
-			if send.sourceTrackId not in routesends: routesends[send.sourceTrackId] = []
-			routesends[send.sourceTrackId].append(send)
+			if send.sourceTrackId not in routesends: routesends[send.sourceTrackId] = [True, []]
+			routesends[send.sourceTrackId][1].append(send)
 
-		for srctrk, data in routesends.items():
+		for srctrk, v in routesends.items():
+			master_on, data = v
 			sends_obj = convproj_obj.fx__route__add(str(srctrk))
+			sends_obj.to_master_active = master_on
 			for x in data:
 				send_obj = sends_obj.add(str(x.destinationTrackId), None, clipGain(x.levelDb))
 				send_obj.params.add('pan', x.channelPans[0], 'float')
