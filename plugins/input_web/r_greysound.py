@@ -203,4 +203,10 @@ class input_greysound(plugins.base):
 					elif isinstance(v, float): plugin_obj.params.add(k, v, 'float')
 					elif isinstance(v, bool): plugin_obj.params.add(k, v, 'bool')
 
+		for gs_marker in session_obj.markers:
+			if 'ticks' in gs_marker.position:
+				timemarker_obj = convproj_obj.timemarker__add()
+				if gs_marker.name: timemarker_obj.visual.name = gs_marker.name
+				timemarker_obj.position = gs_marker.position['ticks']
+
 		convproj_obj.track_order = [str(trackorder[x]) for x in sorted(trackorder)]

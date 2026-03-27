@@ -18,11 +18,11 @@ def do_track_visual(gs_track, cvpj_track, fallbackname):
 	visual_inst_obj = cvpj_track.visual_inst
 	gs_track.name = visual_obj.name if visual_obj.name else fallbackname
 	if visual_obj.comment: gs_track.comments = visual_obj.comment
-	if visual_obj.color: gs_track.color = to_color(outcolor)
+	if visual_obj.color: gs_track.color = to_color(visual_obj)
 	elif visual_inst_obj.color: gs_track.color = to_color(visual_inst_obj)
 
 def clipGain(clipGain):
-	return xtramath.to_db(clipGain) if clipGain is not 0 else None
+	return 0 if clipGain is None else xtramath.to_db(clipGain)
 
 def do_track_params(gs_track, cvpj_track):
 	gs_track.faderGainDb = clipGain(cvpj_track.params.get('vol', 1).value)
@@ -48,7 +48,7 @@ class output_greysound(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import greysound as proj_greysound
 
-		convproj_obj.change_timings(480)
+		convproj_obj.change_timings(960)
 		
 		session_obj = proj_greysound.greysound_session()
 		bpm = session_obj.tempo = int(convproj_obj.params.get('bpm', 120).value)
@@ -103,6 +103,13 @@ class output_greysound(plugins.base):
 					session_obj.regions.append(greysound_region)
 
 				tracknum += 1
+
+		for num, timemarker_obj in enumerate(convproj_obj.timemarkers):
+			greysound_marker = proj_greysound.greysound_marker()
+			greysound_marker.id = 'converted_marker_%i' % (num)
+			greysound_marker.name = timemarker_obj.visual.name if timemarker_obj.visual.name else 'Marker'
+			greysound_marker.position = {"ticks": timemarker_obj.position}
+			session_obj.markers.append(greysound_marker)
 
 		if dawvert_intent.output_mode == 'file':
 			folder = dawvert_intent.output_folder
