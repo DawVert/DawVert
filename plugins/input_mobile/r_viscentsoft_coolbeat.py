@@ -40,7 +40,7 @@ def do_auto(convproj_obj, autoloc, imin, imax, sections, defval):
 	auto_obj = convproj_obj.automation.get_opt(autoloc)
 	if auto_obj is not None: auto_obj.defualt_val = defval
 
-class output_coolbeat(plugins.base):
+class input_coolbeat(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
 	

@@ -484,4 +484,8 @@
 	<plugin pluginset="web" name="greysound">
 		<archived type="zip" file="session.json"/>
 	</plugin>
+
+	<plugin pluginset="mobile" name="midsequer">
+		<file fileext=".mdsq"/>
+	</plugin>
 </autodetect>
