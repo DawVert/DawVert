@@ -433,6 +433,7 @@ class tracktion_control:
 			if n == 'type': self.ctype = int(v)
 			if n == 'val': self.val = int(v)
 			if n == 'metadata': self.metadata = int(v)
+			else: logger_projparse.warning('tracktion_edit: control: unimplemented attrib: '+n)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "CONTROL")
@@ -454,11 +455,12 @@ class tracktion_note:
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
 			if n == 'p': self.key = int(v)
-			if n == 'b': self.pos = float(v)
-			if n == 'l': self.dur = float(v)
-			if n == 'v': self.vel = int(v)
-			if n == 'c': self.chan = int(v)
-			if n == 'm': self.mute = int(v)
+			elif n == 'b': self.pos = float(v)
+			elif n == 'l': self.dur = float(v)
+			elif n == 'v': self.vel = int(v)
+			elif n == 'c': self.chan = int(v)
+			elif n == 'm': self.mute = int(v)
+			else: logger_projparse.warning('tracktion_edit: note: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
 			if subxml.tag not in self.auto:
@@ -571,6 +573,7 @@ class tracktion_midiclip:
 			elif subxml.tag == 'FOLLOWACTIONS':
 				self.followactions = tracktion_followactions()
 				self.followactions.load(subxml)
+			#else: logger_projparse.warning('tracktion_edit: midiclip: unimplemented part: '+subxml.tag)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "MIDICLIP")
@@ -992,6 +995,7 @@ class tracktion_stepclip:
 			elif subxml.tag == 'FOLLOWACTIONS':
 				self.followactions = tracktion_followactions()
 				self.followactions.load(subxml)
+			else: logger_projparse.warning('tracktion_edit: stepclip: unimplemented part: '+subxml.tag)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "STEPCLIP")
@@ -1113,6 +1117,7 @@ class tracktion_foldertrack:
 			elif n == 'colour': self.colour = v
 			elif n == 'mute': self.mute = int(v)
 			elif n == 'solo': self.solo = int(v)
+			else: logger_projparse.warning('tracktion_edit: foldertrack: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
 			if subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
@@ -1125,6 +1130,7 @@ class tracktion_foldertrack:
 				plugin_obj.load(subxml)
 				self.plugins.append(plugin_obj)
 			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
+			else: logger_projparse.warning('tracktion_edit: foldertrack: unimplemented part: '+subxml.tag)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "FOLDERTRACK")
@@ -1150,6 +1156,7 @@ class tracktion_clipslot:
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
 			if n == 'id': self.id_num = v
+			else: logger_projparse.warning('tracktion_edit: clipslot: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
 			if subxml.tag == 'MIDICLIP':
@@ -1158,6 +1165,7 @@ class tracktion_clipslot:
 			if subxml.tag == 'STEPCLIP':
 				self.clip = tracktion_stepclip()
 				self.clip.load(subxml)
+			else: logger_projparse.warning('tracktion_edit: clipslot: unimplemented part: '+subxml.tag)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "CLIPSLOT")
@@ -1186,6 +1194,13 @@ class tracktion_track:
 		self.currentAutoParamPluginID = 0
 		self.currentAutoParamTag = ''
 		self.automation_tracks = []
+		self.index = -1
+		self.waveDeviceEnabled = -1
+		self.midiDeviceEnabled = -1
+		self.inputDevice = -1
+		self.imageIdOrData = None
+		self.soloIsolate = 0
+		self.latency = 0
 
 	def count_clips(self): return len(self.midiclips)+len(self.audioclips)+len(self.stepclips) 
 	def load(self, xmldata):
@@ -1198,8 +1213,16 @@ class tracktion_track:
 			elif n == 'height': self.height = float(v)
 			elif n == 'mute': self.mute = int(v)
 			elif n == 'solo': self.solo = int(v)
-			elif n == 'currentAutoParamPluginID': self.currentAutoParamPluginID = int(v)
+			elif n == 'currentAutoParamPluginID': self.currentAutoParamPluginID = v
 			elif n == 'currentAutoParamTag': self.currentAutoParamTag = v
+			elif n == 'index': self.index = int(v)
+			elif n == 'waveDeviceEnabled': self.waveDeviceEnabled = int(v)
+			elif n == 'midiDeviceEnabled': self.midiDeviceEnabled = int(v)
+			elif n == 'inputDevice': self.inputDevice = v
+			elif n == 'imageIdOrData': self.imageIdOrData = v
+			elif n == 'soloIsolate': self.soloIsolate = int(v)
+			elif n == 'latency': self.latency = float(v)
+			else: logger_projparse.warning('tracktion_edit: track: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
 			if subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
@@ -1238,6 +1261,7 @@ class tracktion_track:
 				auto_track = tracktion_automationtrack()
 				auto_track.load(subxml)
 				self.automation_tracks.append(auto_track)
+			else: logger_projparse.warning('tracktion_edit: track: unimplemented part: '+subxml.tag)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "TRACK")
@@ -1307,6 +1331,7 @@ class tracktion_arrangertrack:
 			if n == 'id': self.id_num = v
 			elif n == 'name': self.name = v
 			elif n == 'height': self.height = float(v)
+			else: logger_projparse.warning('tracktion_edit: arrangertrack: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
 			if subxml.tag == 'ARRANGERCLIP': 
@@ -1315,6 +1340,7 @@ class tracktion_arrangertrack:
 				self.clips.append(arrc_obj)
 			elif subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
 			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
+			else: logger_projparse.warning('tracktion_edit: arrangertrack: unimplemented part: '+subxml.tag)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "ARRANGERTRACK")
@@ -1370,12 +1396,17 @@ class tracktion_markertrack:
 		self.height = 0
 		self.macroparameters = tracktion_macroparameters()
 		self.modifiers = tracktion_modifiers()
+		self.colour = None
+		self.index = -1
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
 			if n == 'id': self.id_num = v
 			elif n == 'name': self.name = v
 			elif n == 'height': self.height = float(v)
+			elif n == 'colour': self.colour = v
+			elif n == 'index': self.index = int(v)
+			else: logger_projparse.warning('tracktion_edit: markertrack: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
 			if subxml.tag == 'MARKERCLIP': 
@@ -1384,6 +1415,7 @@ class tracktion_markertrack:
 				self.clips.append(arrc_obj)
 			elif subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
 			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
+			else: logger_projparse.warning('tracktion_edit: markertrack: unimplemented part: '+subxml.tag)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "MARKERTRACK")
@@ -1458,6 +1490,7 @@ class tracktion_chordclip:
 
 		for subxml in xmldata:
 			if subxml.tag == 'PATTERNGENERATOR': self.patterngenerator.load(subxml)
+			else: logger_projparse.warning('tracktion_edit: chordclip: unimplemented part: '+subxml.tag)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "CHORDCLIP")
@@ -1485,6 +1518,7 @@ class tracktion_chordtrack:
 			if n == 'id': self.id_num = v
 			elif n == 'name': self.name = v
 			elif n == 'height': self.height = float(v)
+			else: logger_projparse.warning('tracktion_edit: chordtrack: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
 			if subxml.tag == 'CHORDCLIP': 
@@ -1493,6 +1527,7 @@ class tracktion_chordtrack:
 				self.clips.append(chord_obj)
 			elif subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
 			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
+			else: logger_projparse.warning('tracktion_edit: chordtrack: unimplemented part: '+subxml.tag)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "CHORDTRACK")
@@ -1521,12 +1556,14 @@ class tracktion_automationtrack:
 			if n == 'id': self.id_num = v
 			elif n == 'colour': self.colour = v
 			elif n == 'height': self.height = float(v)
-			elif n == 'currentAutoParamPluginID': self.currentAutoParamPluginID = int(v)
+			elif n == 'currentAutoParamPluginID': self.currentAutoParamPluginID = v
 			elif n == 'currentAutoParamTag': self.currentAutoParamTag = v
+			else: logger_projparse.warning('tracktion_edit: automationtrack: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
 			if subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
 			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
+			else: logger_projparse.warning('tracktion_edit: automationtrack: unimplemented part: '+subxml.tag)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "AUTOMATIONTRACK")
@@ -1546,16 +1583,22 @@ class tracktion_tempotrack:
 		self.height = 0
 		self.macroparameters = tracktion_macroparameters()
 		self.modifiers = tracktion_modifiers()
+		self.colour = None
+		self.index = -1
 
 	def load(self, xmldata):
 		for n, v in xmldata.attrib.items():
 			if n == 'id': self.id_num = v
 			elif n == 'name': self.name = v
 			elif n == 'height': self.height = float(v)
+			elif n == 'colour': self.colour = v
+			elif n == 'index': self.index = int(v)
+			else: logger_projparse.warning('tracktion_edit: tempotrack: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
 			if subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
 			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
+			else: logger_projparse.warning('tracktion_edit: tempotrack: unimplemented part: '+subxml.tag)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "TEMPOTRACK")
@@ -1579,10 +1622,12 @@ class tracktion_mastertrack:
 			if n == 'id': self.id_num = v
 			elif n == 'name': self.name = v
 			elif n == 'height': self.height = float(v)
+			else: logger_projparse.warning('tracktion_edit: mastertrack: unimplemented attrib: '+n)
 
 		for subxml in xmldata:
 			if subxml.tag == 'MACROPARAMETERS': self.macroparameters.load(subxml)
 			elif subxml.tag == 'MODIFIERS': self.modifiers.load(subxml)
+			else: logger_projparse.warning('tracktion_edit: mastertrack: unimplemented part: '+subxml.tag)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, "MASTERTRACK")

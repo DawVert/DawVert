@@ -5,6 +5,9 @@ import uuid
 
 DEBUG_IN_OUT = False
 
+import logging
+logger_projparse = logging.getLogger('projparse')
+
 # =================================================== DEVICES ===================================================
 
 class wavtool_device:
@@ -70,26 +73,35 @@ class wavtool_clip:
 		self.ccs = {}
 		self.gain = 1
 		self.audioBufferId = ''
+		self.receivingRecordedBuffers = False
+		self.id = None
 
 		if pd != None:
-			if 'type' in pd: self.type = pd['type']
-			if 'color' in pd: self.color = pd['color']
-			if 'name' in pd: self.name = pd['name']
-			if 'loopStart' in pd: self.loopStart = pd['loopStart']
-			if 'loopEnd' in pd: self.loopEnd = pd['loopEnd']
-			if 'loopEnabled' in pd: self.loopEnabled = pd['loopEnabled']
-			if 'fadeIn' in pd: self.fadeIn = pd['fadeIn']
-			if 'fadeOut' in pd: self.fadeOut = pd['fadeOut']
-			if 'readStart' in pd: self.readStart = pd['readStart']
-			if 'lifted' in pd: self.lifted = pd['lifted']
-			if 'timelineStart' in pd: self.timelineStart = pd['timelineStart']
-			if 'timelineEnd' in pd: self.timelineEnd = pd['timelineEnd']
-			if 'notes' in pd: self.notes = pd['notes']
-			if 'ccs' in pd: self.ccs = pd['ccs']
-			if 'gain' in pd: self.gain = pd['gain']
-			if 'audioBufferId' in pd: self.audioBufferId = pd['audioBufferId']
-			if 'transpose' in pd: self.transpose = pd['transpose']
-			if 'warp' in pd: self.warp = pd['warp']
+			for n, v in pd.items():
+				if n=='type': self.type = v
+				elif n=='color': self.color = v
+				elif n=='name': self.name = v
+				elif n=='loopStart': self.loopStart = v
+				elif n=='loopEnd': self.loopEnd = v
+				elif n=='loopEnabled': self.loopEnabled = v
+				elif n=='fadeIn': self.fadeIn = v
+				elif n=='fadeOut': self.fadeOut = v
+				elif n=='readStart': self.readStart = v
+				elif n=='lifted': self.lifted = v
+				elif n=='timelineStart': self.timelineStart = v
+				elif n=='timelineEnd': self.timelineEnd = v
+				elif n=='notes': self.notes = v
+				elif n=='ccs': 
+					self.ccs = v
+					if self.ccs: 
+						logger_projparse.warning('wavtool: clip: ccs found but unimplemented.')
+				elif n=='gain': self.gain = v
+				elif n=='audioBufferId': self.audioBufferId = v
+				elif n=='transpose': self.transpose = v
+				elif n=='warp': self.warp = v
+				elif n=='receivingRecordedBuffers': self.receivingRecordedBuffers = v
+				elif n=='id' in pd: self.id = v
+				else: logger_projparse.warning('wavtool: clip: unimplemented attrib: '+n)
 
 	def write(self):
 		wt_clip = {}
@@ -126,16 +138,19 @@ class wavtool_clip:
 			if self.transpose: wt_clip['transpose'] = self.transpose
 			wt_clip['audioBufferId'] = self.audioBufferId
 			wt_clip['id'] = "audioClip-"+wt_id
+			wt_clip['receivingRecordedBuffers'] = self.receivingRecordedBuffers
 			if self.warp: wt_clip['warp'] = self.warp
 		return wt_clip
 
 class wavtool_track:
 	def __init__(self, pd):
+		self.id = None
 		self.armed = False
 		self.type = ''
 		self.name = ''
 		self.height = 160
 		self.hasTimelineSelection = False
+		self.hasHeaderSelection = False
 		self.gain = 1
 		self.balance = 0
 		self.color = '#333333'
@@ -148,27 +163,35 @@ class wavtool_track:
 		self.monitorInput = None
 		self.input = None
 		self.setting = None
+		self.role = None
+		self.preset = None
+		self.presetId = None
 
 		if pd != None:
-			if 'armed' in pd: self.armed = pd['armed']
-			if 'type' in pd: self.type = pd['type']
-			if 'name' in pd: self.name = pd['name']
-			if 'height' in pd: self.height = pd['height']
-			if 'hasTimelineSelection' in pd: self.hasTimelineSelection = pd['hasTimelineSelection']
-			if 'gain' in pd: self.gain = pd['gain']
-			if 'balance' in pd: self.balance = pd['balance']
-			if 'color' in pd: self.color = pd['color']
-			if 'mute' in pd: self.mute = pd['mute']
-			if 'solo' in pd: self.solo = pd['solo']
-			if 'channelStripId' in pd: self.channelStripId = pd['channelStripId']
-			if 'monitorInput' in pd: self.monitorInput = pd['monitorInput']
-
-			if 'points' in pd: self.points = pd['points']
-			if 'clips' in pd: 
-				for c in pd['clips']: self.clips.append(wavtool_clip(c))
-			self.input = pd['input'] if 'input' in pd else None
-			if 'setting' in pd: self.setting = pd['setting']
-
+			for n, v in pd.items():
+				if n=='armed' in pd: self.armed = v
+				elif n=='type' in pd: self.type = v
+				elif n=='name' in pd: self.name = v
+				elif n=='height' in pd: self.height = v
+				elif n=='hasTimelineSelection' in pd: self.hasTimelineSelection = v
+				elif n=='gain' in pd: self.gain = v
+				elif n=='balance' in pd: self.balance = v
+				elif n=='color' in pd: self.color = v
+				elif n=='mute' in pd: self.mute = v
+				elif n=='solo' in pd: self.solo = v
+				elif n=='channelStripId' in pd: self.channelStripId = v
+				elif n=='monitorInput' in pd: self.monitorInput = v
+				elif n=='points' in pd: self.points = v
+				elif n=='clips' in pd: 
+					for c in v: self.clips.append(wavtool_clip(c))
+				elif n=='input' in pd: self.input = v
+				elif n=='setting' in pd: self.setting = v
+				elif n=='id' in pd: self.id = v
+				elif n=='hasHeaderSelection' in pd: self.hasHeaderSelection = v
+				elif n=='role' in pd: self.role = v
+				elif n=='preset' in pd: self.preset = v
+				elif n=='presetId' in pd: self.presetId = v
+				else: logger_projparse.warning('wavtool: track: unimplemented attrib: '+n)
 
 	def write(self, trackid):
 		wt_track = {}
@@ -219,60 +242,86 @@ class wavtool_project:
 		self.devices = wavtool_connections()
 		self.bpmAutomation = []
 		self.markers = []
+		self.clipSelectionStart = 8.25
+		self.clipSelectionEnd = 8.25
+		self.headerAnchorTrackId = None
+		self.skills = []
+		self.panelTree = {"type": "Auto","size": 1,"units": "fr","state":{"follow": False, "xUnitsPerRem": 0.09147721,"xFocusBeats": 58.17143404147059,"yScrollRem": 0}}
+		self.focusedTrackId = ''
+		self.selectedDeviceId = None
+		self.timelineAnchorTrackId = None
+		self.editorTypeIntent = None
+		self.autoArmMIDI = None
+		self.composerHasAuthority = None
+		self.skillStack = None
 
 		self.devices.add_track('master')
 
 		if pd != None:
-			if 'id' in pd: self.id = pd['id']
-			if 'metronome' in pd: self.metronome = pd['metronome']
-			if 'midiOverdub' in pd: self.midiOverdub = pd['midiOverdub']
-			if 'loopStart' in pd: self.loopStart = pd['loopStart']
-			if 'loopEnd' in pd: self.loopEnd = pd['loopEnd']
-			if 'loopLifted' in pd: self.loopLifted = pd['loopLifted']
-			if 'loopEnabled' in pd: self.loopEnabled = pd['loopEnabled']
-			if 'markers' in pd: self.markers = pd['markers']
-			if 'bpm' in pd: self.bpm = pd['bpm']
-			if 'beatNumerator' in pd: self.beatNumerator = pd['beatNumerator']
-			if 'beatDenominator' in pd: self.beatDenominator = pd['beatDenominator']
-			if 'name' in pd: self.name = pd['name']
-			if 'arrangementFocusCategory' in pd: self.arrangementFocusCategory = pd['arrangementFocusCategory']
-			if 'conductorMessageHistory' in pd: self.conductorMessageHistory = pd['conductorMessageHistory']
-			if 'conductorUserMessage' in pd: self.conductorUserMessage = pd['conductorUserMessage']
-			if 'tracks' in pd: 
-				for track in pd['tracks']:
-					trackid = track['id']
-					self.devices.add_track(trackid)
-					self.tracks[trackid] = wavtool_track(track)
+			for n, v in pd.items():
+				if n=='id': self.id = v
+				elif n=='metronome': self.metronome = v
+				elif n=='midiOverdub': self.midiOverdub = v
+				elif n=='loopStart': self.loopStart = v
+				elif n=='loopEnd': self.loopEnd = v
+				elif n=='loopLifted': self.loopLifted = v
+				elif n=='loopEnabled': self.loopEnabled = v
+				elif n=='markers': self.markers = v
+				elif n=='bpm': self.bpm = v
+				elif n=='beatNumerator': self.beatNumerator = v
+				elif n=='beatDenominator': self.beatDenominator = v
+				elif n=='name': self.name = v
+				elif n=='arrangementFocusCategory': self.arrangementFocusCategory = v
+				elif n=='conductorMessageHistory': self.conductorMessageHistory = v
+				elif n=='conductorUserMessage': self.conductorUserMessage = v
+				elif n=='tracks':
+					for track in v:
+						trackid = track['id']
+						self.devices.add_track(trackid)
+						self.tracks[trackid] = wavtool_track(track)
 
-			if 'devices' in pd: 
-				for dev_id, dev_data in pd['devices'].items():
-					dev_trackId = dev_data['trackId']
+				elif n=='devices':
+					for dev_id, dev_data in v.items():
+						dev_trackId = dev_data['trackId']
 
-					device_obj = self.devices.add_device(dev_trackId, dev_id)
-					for n, d in dev_data.items():
-						if n == 'name': device_obj.name = d
-						elif n == 'x': device_obj.x = d
-						elif n == 'y': device_obj.y = d
-						elif n == 'type': device_obj.type = d
-						elif n == 'sourceId': device_obj.sourceId = d
-						else: device_obj.data[n] = d
+						device_obj = self.devices.add_device(dev_trackId, dev_id)
+						for n, d in dev_data.items():
+							if n == 'name': device_obj.name = d
+							elif n == 'x': device_obj.x = d
+							elif n == 'y': device_obj.y = d
+							elif n == 'type': device_obj.type = d
+							elif n == 'sourceId': device_obj.sourceId = d
+							else: device_obj.data[n] = d
 
-					#print('DEVICE', dev_trackId, dev_id, device_obj.name)
+						#print('DEVICE', dev_trackId, dev_id, device_obj.name)
 
 
-			if 'deviceRouting' in pd: 
-				for dev_to, dev_from in pd['deviceRouting'].items():
-					from_t, from_i = dev_from.split('.')
-					to_t, to_i = dev_to.split('.')
-					self.devices.add_cable(from_t, from_i, to_t, to_i)
-
+				elif n=='deviceRouting':
+					for dev_to, dev_from in v.items():
+						from_t, from_i = dev_from.split('.')
+						to_t, to_i = dev_to.split('.')
+						self.devices.add_cable(from_t, from_i, to_t, to_i)
+	
 					#print('CON', from_t, from_i, to_t, to_i)
 
-			if 'timelineSelectionStart' in pd: self.timelineSelectionStart = pd['timelineSelectionStart'] 
-			if 'timelineSelectionEnd' in pd: self.timelineSelectionEnd = pd['timelineSelectionEnd'] 
-			if 'countIn' in pd: self.countIn = pd['countIn'] 
-			if 'focusedSignal' in pd: self.focusedSignal = pd['focusedSignal'] 
-			if 'bpmAutomation' in pd: self.bpmAutomation = pd['bpmAutomation']
+				elif n=='timelineSelectionStart': self.timelineSelectionStart = v
+				elif n=='timelineSelectionEnd': self.timelineSelectionEnd = v
+				elif n=='countIn': self.countIn = v
+				elif n=='focusedSignal': self.focusedSignal = v
+				elif n=='bpmAutomation': self.bpmAutomation = v
+				elif n=='clipSelectionStart': self.clipSelectionStart = v
+				elif n=='clipSelectionEnd': self.clipSelectionEnd = v
+				elif n=='headerAnchorTrackId': self.headerAnchorTrackId = v
+				elif n=='skills': self.skills = v
+				elif n=='panelTree': self.panelTree = v
+				elif n=='focusedTrackId': self.focusedTrackId = v
+				elif n=='selectedDeviceId': self.selectedDeviceId = v
+				elif n=='timelineAnchorTrackId': self.timelineAnchorTrackId = v
+				elif n=='editorTypeIntent': self.editorTypeIntent = v
+				elif n=='autoArmMIDI': self.autoArmMIDI = v
+				elif n=='composerHasAuthority': self.composerHasAuthority = v
+				elif n=='skillStack': self.skillStack = v
+				else: logger_projparse.warning('wavtool: project: unimplemented attrib: '+n)
 
 			if DEBUG_IN_OUT:
 				import json

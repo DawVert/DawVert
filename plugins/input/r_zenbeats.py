@@ -467,8 +467,6 @@ def do_fade(pattern_envelope, timeline_envelope, placement_obj):
 		if x.name == 'attack_control': placement_obj.fade_in.shapetype = 'scurve'
 		if x.name == 'release_control': placement_obj.fade_out.shapetype = 'scurve'
 
-	print(timeline_envelope)
-
 class input_zenbeats(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
