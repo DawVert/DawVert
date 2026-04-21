@@ -254,7 +254,7 @@ class input_jummbox(plugins.base):
 		traits_obj.audio_filetypes = ['wav']
 		traits_obj.auto_types = ['pl_points']
 
-		globalstore.datapack.load('beepbox', './data/datapack/app/beepbox.dset')
+		globalstore.datapack.load('beepbox', './data/datapack/app/beepbox.xml')
 
 		colors_pitch = colors.colorset.from_datapack('beepbox', 'inst', 'beepbox_dark')
 		colors_drums = colors.colorset.from_datapack('beepbox', 'drums', 'beepbox_dark')

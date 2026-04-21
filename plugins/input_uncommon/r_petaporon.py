@@ -61,7 +61,7 @@ class input_petaporon(plugins.base):
 
 		peta_notelists = [[] for _ in range(10)]
 
-		globalstore.datapack.load('petaporon', './data/datapack/app/petaporon.dset')
+		globalstore.datapack.load('petaporon', './data/datapack/app/petaporon.xml')
 		colordata = colors.colorset.from_datapack('petaporon', 'inst', 'main')
 
 		for _ in range(len(peta_noteints)//5):

@@ -64,7 +64,7 @@ class input_trackerboy(plugins.base):
 		
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		globalstore.datapack.load('trackerboy', './data/datapack/app/trackerboy.dset')
+		globalstore.datapack.load('trackerboy', './data/datapack/app/trackerboy.xml')
 
 		tbm_cursong = project_obj.songs[dawvert_intent.songnum]
 

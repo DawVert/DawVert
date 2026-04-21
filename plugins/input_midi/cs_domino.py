@@ -35,7 +35,7 @@ class input_domino(plugins.base):
 		traits_obj.auto_types = ['nopl_ticks']
 		traits_obj.track_nopl = True
 
-		globalstore.datapack.load('midi', './data/datapack/app/midi.dset')
+		globalstore.datapack.load('midi', './data/datapack/app/midi.xml')
 		colordata = colors.colorset.from_datapack('midi', 'track', 'domino')
 
 		project_obj = proj_domino.dms_project()

@@ -130,7 +130,7 @@ class input_cvpj_r(plugins.base):
 
 		convproj_obj.set_timings(1.0)
 
-		globalstore.datapack.load('caustic', './data/datapack/app/caustic.dset')
+		globalstore.datapack.load('caustic', './data/datapack/app/caustic.xml')
 
 		project_obj = proj_caustic.caustic_project()
 		if dawvert_intent.input_mode == 'file':

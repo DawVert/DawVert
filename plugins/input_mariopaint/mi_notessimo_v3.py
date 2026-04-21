@@ -234,7 +234,7 @@ class input_notessimo_v3(plugins.base):
 
 		convproj_obj.set_timings(4.0)
 
-		globalstore.datapack.load('notessimo_v3', './data/datapack/app/notessimo_v3.dset')
+		globalstore.datapack.load('notessimo_v3', './data/datapack/app/notessimo_v3.xml')
 		
 		extpath_path = os.path.join(dawvert_intent.path_external_data, 'notessimo_v3', 'notessimo_v3_data.zip')
 

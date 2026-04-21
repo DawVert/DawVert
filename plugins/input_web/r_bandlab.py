@@ -54,7 +54,7 @@ class input_bandlab(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.dset')
+		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.xml')
 
 		bpm = 120
 		if 'bpm' in project_obj.metronome:

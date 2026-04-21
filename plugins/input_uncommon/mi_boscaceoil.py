@@ -100,7 +100,7 @@ class input_ceol(plugins.base):
 		traits_obj = convproj_obj.traits
 		traits_obj.auto_types = ['pl_points']
 
-		globalstore.datapack.load('boscaceoil', './data/datapack/app/boscaceoil.dset')
+		globalstore.datapack.load('boscaceoil', './data/datapack/app/boscaceoil.xml')
 		color_track = colors.colorset.from_datapack('boscaceoil', 'track', 'main')
 		color_main = colors.colorset.from_datapack('boscaceoil', 'main', 'main')
 

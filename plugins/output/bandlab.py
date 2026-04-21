@@ -52,7 +52,7 @@ class output_bandlab(plugins.base):
 		
 		project_obj = proj_bandlab.bandlab_project()
 
-		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.dset')
+		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.xml')
 
 		globalstore.idvals.load('bandlab_midi_map', './data_main/idvals/bandlab_map_midi.csv')
 		idvals_bandlab_inst = globalstore.idvals.get('bandlab_midi_map')

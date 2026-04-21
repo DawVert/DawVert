@@ -32,7 +32,7 @@ class input_mod(plugins.base):
 		from objects.file_proj_tracker import tracker_mod as proj_mod
 		from objects import audio_data
 		from objects import globalstore
-		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.dset')
+		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.xml')
 		
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']

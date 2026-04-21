@@ -728,7 +728,7 @@ class input_lmms(plugins.base):
 
 		autoid_assoc = auto_id.convproj2autoid(48)
 
-		globalstore.datapack.load('lmms', './data/datapack/app/lmms.dset')
+		globalstore.datapack.load('lmms', './data/datapack/app/lmms.xml')
 
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'r'

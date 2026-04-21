@@ -38,7 +38,7 @@ class input_orgyana(plugins.base):
 		traits_obj.auto_types = ['nopl_points']
 		traits_obj.track_nopl = True
 
-		globalstore.datapack.load('orgyana', './data/datapack/app/orgyana.dset')
+		globalstore.datapack.load('orgyana', './data/datapack/app/orgyana.xml')
 		colordata = colors.colorset.from_datapack('orgyana', 'track', 'orgmaker_2')
 
 		project_obj = proj_orgyana.orgyana_project()

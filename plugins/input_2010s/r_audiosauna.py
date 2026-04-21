@@ -75,7 +75,7 @@ class input_audiosanua(plugins.base):
 		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'audiosauna', ['audiosauna'])
 
 		# ------------------------------------------ Start ------------------------------------------
-		globalstore.datapack.load('audiosauna', './data/datapack/app/audiosauna.dset')
+		globalstore.datapack.load('audiosauna', './data/datapack/app/audiosauna.xml')
 		colordata = colors.colorset.from_datapack('audiosauna', 'track', 'main')
 
 		project_obj = proj_audiosauna.audiosauna_song()

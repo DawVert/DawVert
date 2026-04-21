@@ -40,7 +40,7 @@ class input_notessimo_v2(plugins.base):
 
 		convproj_obj.set_timings(4.0)
 
-		globalstore.datapack.load('notessimo_v2', './data/datapack/app/notessimo_v2.dset')
+		globalstore.datapack.load('notessimo_v2', './data/datapack/app/notessimo_v2.xml')
 		
 		# ---------- File ----------
 		project_obj = proj_notessimo_v2.notev2_song()

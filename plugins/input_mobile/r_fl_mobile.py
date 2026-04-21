@@ -59,7 +59,7 @@ class input_fl_mobile(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.datapack.load('fl_mobile', './data/datapack/app/fl_mobile.dset')
+		globalstore.datapack.load('fl_mobile', './data/datapack/app/fl_mobile.xml')
 
 		tempomul = 120/project_obj.tempo
 

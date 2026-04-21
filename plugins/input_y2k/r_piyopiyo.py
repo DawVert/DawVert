@@ -51,7 +51,7 @@ class input_piyopiyo(plugins.base):
 
 		extpath_path = os.path.join(dawvert_intent.path_external_data, 'piyopiyo')
 
-		globalstore.datapack.load('piyopiyo', './data/datapack/app/piyopiyo.dset')
+		globalstore.datapack.load('piyopiyo', './data/datapack/app/piyopiyo.xml')
 		colordata = colors.colorset.from_datapack('piyopiyo', 'inst', 'main')
 
 		for tracknum in range(3):

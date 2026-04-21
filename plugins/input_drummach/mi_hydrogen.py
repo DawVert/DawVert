@@ -42,7 +42,7 @@ class input_hydrogen(plugins.base):
 		
 		fileref.cvpj_fileref_global.add_prefix('hydrogen_drumkits', 'win', "C:\\Program Files\\Hydrogen\\data\\drumkits\\")
 
-		globalstore.datapack.load('hydrogen', './data/datapack/app/hydrogen.dset')
+		globalstore.datapack.load('hydrogen', './data/datapack/app/hydrogen.xml')
 		color_pattern = colors.colorset.from_datapack('hydrogen', 'pattern', 'main')
 		color_track = colors.colorset.from_datapack('hydrogen', 'track', 'main')
 

@@ -40,7 +40,7 @@ class input_onlinesequencer(plugins.base):
 
 		convproj_obj.set_timings(4.0)
 
-		globalstore.datapack.load('onlineseq', './data/datapack/app/onlineseq.dset')
+		globalstore.datapack.load('onlineseq', './data/datapack/app/onlineseq.xml')
 
 		project_obj = proj_onlineseq.onlineseq_project()
 		if dawvert_intent.input_mode == 'file':

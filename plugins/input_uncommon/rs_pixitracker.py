@@ -37,7 +37,7 @@ class input_cvpj_f(plugins.base):
 		convproj_obj.type = 'rs'
 		convproj_obj.set_timings(4) 
 
-		globalstore.datapack.load('pixitracker', './data/datapack/app/pixitracker.dset')
+		globalstore.datapack.load('pixitracker', './data/datapack/app/pixitracker.xml')
 		colordata = colors.colorset.from_datapack('pixitracker', 'inst', 'main')
 
 		project_obj = proj_piximod.piximod_song()

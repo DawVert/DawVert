@@ -125,7 +125,7 @@ class input_bandlab(plugins.base):
 
 		if not success: exit()
 
-		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.dset')
+		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.xml')
 
 		bpm = project_obj.metronome.bpm
 		convproj_obj.params.add('bpm', bpm, 'float')

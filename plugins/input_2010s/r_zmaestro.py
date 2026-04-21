@@ -62,7 +62,7 @@ class input_zmaestro(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		globalstore.datapack.load('z_maestro', './data/datapack/app/z_maestro.dset')
+		globalstore.datapack.load('z_maestro', './data/datapack/app/z_maestro.xml')
 
 		convproj_obj.type = 'r'
 

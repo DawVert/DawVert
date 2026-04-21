@@ -32,7 +32,7 @@ class input_deflemask(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		globalstore.datapack.load('furnace', './data/datapack/app/furnace.dset')
+		globalstore.datapack.load('furnace', './data/datapack/app/furnace.xml')
 
 		patterndata_obj = pat_multi.multi_patsong()
 		patterndata_obj.num_rows = project_obj.total_rows_per_pattern

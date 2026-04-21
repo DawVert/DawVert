@@ -181,7 +181,7 @@ class input_acid_3(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.datapack.load('sony_acid', './data/datapack/app/sony_acid.dset')
+		globalstore.datapack.load('sony_acid', './data/datapack/app/sony_acid.xml')
 		colordata = colors.colorset.from_datapack('sony_acid', 'track', 'acid_4')
 		
 		auto_basenotes = {}

@@ -500,7 +500,7 @@ class input_zenbeats(plugins.base):
 
 		convproj_obj.set_timings(1.0)
 
-		globalstore.datapack.load('zenbeats', './data/datapack/app/zenbeats.dset')
+		globalstore.datapack.load('zenbeats', './data/datapack/app/zenbeats.xml')
 		colordata = colors.colorset.from_datapack('zenbeats', 'global', 'main')
 
 		project_obj = proj_zenbeats.zenbeats_song()

@@ -41,7 +41,7 @@ class input_famitracker_txt(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		globalstore.datapack.load('chip_nes', './data/datapack/app/chip_nes.dset')
+		globalstore.datapack.load('chip_nes', './data/datapack/app/chip_nes.xml')
 
 		cur_song = project_obj.song[0]
 

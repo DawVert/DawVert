@@ -37,7 +37,7 @@ class input_korg_m1_nds(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.datapack.load('korg_m1d', './data/datapack/realsynth/korg_m1d.dset')
+		globalstore.datapack.load('korg_m1d', './data/datapack/realsynth/korg_m1d.xml')
 
 		projsong_obj = project_obj.songs[dawvert_intent.songnum]
 		

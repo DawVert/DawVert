@@ -184,7 +184,7 @@ class input_reaper(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.datapack.load('reaper', './data/datapack/app/reaper.dset')
+		globalstore.datapack.load('reaper', './data/datapack/app/reaper.xml')
 		globalstore.datadef.load('reaper', './data_main/datadef/reaper.ddef')
 		datadef_obj = globalstore.datadef.get('reaper')
 

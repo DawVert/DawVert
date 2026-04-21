@@ -95,7 +95,7 @@ class input_it(plugins.base):
 		from objects.file_proj_tracker import tracker_it as proj_it
 		global samplefolder
 		from objects import globalstore
-		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.dset')
+		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.xml')
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']

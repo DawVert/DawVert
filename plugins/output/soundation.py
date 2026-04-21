@@ -113,8 +113,8 @@ class output_soundation(plugins.base):
 		audio_id = {}
 		convproj_obj = i_convproj_obj
 
-		globalstore.datapack.load('soundation', './data/datapack/app/soundation.dset')
-		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.dset')
+		globalstore.datapack.load('soundation', './data/datapack/app/soundation.xml')
+		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.xml')
 
 		globalstore.idvals.load('gm_inst', './data_main/idvals/soundation_gm_inst.csv')
 		idvals_inst_gm2 = globalstore.idvals.get('gm_inst')

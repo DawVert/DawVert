@@ -442,7 +442,7 @@ class output_tracktion_edit(plugins.base):
 		tr_projectid = gen_hexid('1')
 		tr_editid = gen_hexid('2')
 
-		globalstore.datapack.load('waveform', './data/datapack/app/waveform.dset')
+		globalstore.datapack.load('waveform', './data/datapack/app/waveform.xml')
 
 		mainp_obj = proj_tracktion_project.tracktion_project()
 		mainp_obj.projectId = tr_projectid

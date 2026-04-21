@@ -318,7 +318,7 @@ class input_famistudio(plugins.base):
 
 		convproj_obj.set_timings(4.0)
 
-		globalstore.datapack.load('famistudio', './data/datapack/app/famistudio.dset')
+		globalstore.datapack.load('famistudio', './data/datapack/app/famistudio.xml')
 		samplefolder = dawvert_intent.path_samples['extracted']
 
 		defualt_pattern_color = get_gcolor('famistudio', 'defualt', 'pattern')

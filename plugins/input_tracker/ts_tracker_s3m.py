@@ -28,7 +28,7 @@ class input_s3m(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_tracker import tracker_s3m as proj_s3m
 		from objects import globalstore
-		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.dset')
+		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.xml')
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']

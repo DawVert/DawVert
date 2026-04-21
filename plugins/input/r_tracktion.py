@@ -582,7 +582,7 @@ class input_tracktion_edit(plugins.base):
 
 		convproj_obj.set_timings(4.0)
 
-		globalstore.datapack.load('waveform', './data/datapack/app/waveform.dset')
+		globalstore.datapack.load('waveform', './data/datapack/app/waveform.xml')
 
 		samples = {}
 		videos = {}

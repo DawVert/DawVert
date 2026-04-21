@@ -97,7 +97,7 @@ class input_soundop(plugins.base):
 		traits_obj.placement_loop = ['loop']
 		traits_obj.set_time_seconds(True)
 
-		globalstore.datapack.load('soundop', './data/datapack/app/soundop.dset')
+		globalstore.datapack.load('soundop', './data/datapack/app/soundop.xml')
 
 		project_obj = proj_soundop.soundop_proj()
 		if dawvert_intent.input_mode == 'file':

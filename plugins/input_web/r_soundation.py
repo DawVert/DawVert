@@ -112,8 +112,8 @@ class input_soundation(plugins.base):
 			except:
 				raise ProjectFileParserException('soundation: file is not Zipped or JSON')
 
-		globalstore.datapack.load('soundation', './data/datapack/app/soundation.dset')
-		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.dset')
+		globalstore.datapack.load('soundation', './data/datapack/app/soundation.xml')
+		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.xml')
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 

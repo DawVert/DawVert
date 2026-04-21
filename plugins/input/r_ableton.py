@@ -410,7 +410,7 @@ class input_ableton(plugins.base):
 		convproj_obj.set_timings(4.0)
 		autoid_assoc = auto_id.convproj2autoid(4)
 
-		globalstore.datapack.load('ableton', './data/datapack/app/ableton.dset')
+		globalstore.datapack.load('ableton', './data/datapack/app/ableton.xml')
 		colordata = colors.colorset.from_datapack('ableton', 'track', 'main')
 
 		project_obj = proj_ableton.ableton_liveset()

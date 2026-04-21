@@ -36,7 +36,7 @@ class input_adlib_rol(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.datapack.load('adlib_rol', './data/datapack/app/adlib_rol.dset')
+		globalstore.datapack.load('adlib_rol', './data/datapack/app/adlib_rol.xml')
 
 		native_insts = {}
 

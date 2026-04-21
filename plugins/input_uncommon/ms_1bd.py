@@ -69,7 +69,7 @@ class input_1bitdragon(plugins.base):
 		#onebit_ext = onebit_external()
 		#onebit_ext.load_file(os.path.join(dawvert_intent.path_external_data,'1bitdragon','1BITDRAGON_Data','resources.assets'))
 
-		globalstore.datapack.load('1bitdragon', './data/datapack/app/1bitdragon.dset')
+		globalstore.datapack.load('1bitdragon', './data/datapack/app/1bitdragon.xml')
 		colordata = colors.colorset.from_datapack('1bitdragon', 'track', 'main')
 
 		onebitd_scaleId = project_obj.scaleId

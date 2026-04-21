@@ -372,7 +372,7 @@ class output_lmms(plugins.base):
 		
 		cvpj_obj = i_cvpj_obj
 
-		globalstore.datapack.load('lmms', './data/datapack/app/lmms.dset')
+		globalstore.datapack.load('lmms', './data/datapack/app/lmms.xml')
 
 		i_cvpj_obj.change_timings(48)
 

@@ -1315,7 +1315,7 @@ class output_ableton(plugins.base):
 		project_obj = proj_ableton.ableton_liveset()
 		project_obj.make_from_scratch()
 
-		globalstore.datapack.load('ableton', './data/datapack/app/ableton.dset')
+		globalstore.datapack.load('ableton', './data/datapack/app/ableton.xml')
 		colordata = colors.colorset.from_datapack('ableton', 'track', 'main')
 
 		counter_note = data_values.counter(0)

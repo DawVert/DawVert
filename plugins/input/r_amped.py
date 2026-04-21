@@ -360,8 +360,8 @@ class input_amped(plugins.base):
 
 		convproj_obj.set_timings(1.0)
 
-		globalstore.datapack.load('amped', './data/datapack/app/amped.dset')
-		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.dset')
+		globalstore.datapack.load('amped', './data/datapack/app/amped.xml')
+		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.xml')
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 

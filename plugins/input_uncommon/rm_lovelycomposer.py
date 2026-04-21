@@ -173,7 +173,7 @@ class input_lc(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.datapack.load('lovelycomposer', './data/datapack/app/lovelycomposer.dset')
+		globalstore.datapack.load('lovelycomposer', './data/datapack/app/lovelycomposer.xml')
 		colordata = colors.colorset.from_datapack('lovelycomposer', 'track', 'main')
 
 		# ------------------------------------------ tempoblocks ------------------------------------------

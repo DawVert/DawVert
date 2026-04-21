@@ -55,7 +55,7 @@ class input_acid_old(plugins.base):
 		ppq = project_obj.ppq
 		convproj_obj.set_timings(ppq)
 
-		globalstore.datapack.load('sony_acid', './data/datapack/app/sony_acid.dset')
+		globalstore.datapack.load('sony_acid', './data/datapack/app/sony_acid.xml')
 		colordata = colors.colorset.from_datapack('sony_acid', 'track', 'acid_1')
 		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
  

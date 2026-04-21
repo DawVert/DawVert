@@ -50,7 +50,7 @@ class mariopaint_song():
 	def to_cvpj(self, convproj_obj):
 		convproj_obj.set_timings(4)
 		track_obj = convproj_obj.track__add('main', 'instruments', 0, False)
-		globalstore.datapack.load('mariopaint', './data/datapack/app/mariopaint.dset')
+		globalstore.datapack.load('mariopaint', './data/datapack/app/mariopaint.xml')
 
 
 		#print(outtempo, notelen, self.tempo)

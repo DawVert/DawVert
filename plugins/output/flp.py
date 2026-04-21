@@ -149,7 +149,7 @@ class output_cvpjs(plugins.base):
 		convproj_obj.change_timings(ppq)
 
 		globalstore.datadef.load('fl_studio', './data_main/datadef/fl_studio.ddef')
-		globalstore.datapack.load('fl_studio', './data/datapack/app/fl_studio.dset')
+		globalstore.datapack.load('fl_studio', './data/datapack/app/fl_studio.xml')
 
 		flp_obj = proj_flp.flp_project()
 		flp_obj.ppq = ppq

@@ -338,7 +338,7 @@ class output_bandlab(plugins.base):
 		
 		project_obj = proj_cakewalk_cxf.cxf_project()
 
-		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.dset')
+		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.xml')
 		globalstore.idvals.load('bandlab_midi_map', './data_main/idvals/bandlab_map_midi.csv')
 
 		project_obj.stamp = 'LOCAL_XCD_'+str(uuid.uuid4())

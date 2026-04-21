@@ -40,7 +40,7 @@ class input_gt_mnbs(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.datapack.load('noteblockstudio', './data/datapack/app/noteblockstudio.dset')
+		globalstore.datapack.load('noteblockstudio', './data/datapack/app/noteblockstudio.xml')
 
 		tempo = (project_obj.tempo/800)*120
 

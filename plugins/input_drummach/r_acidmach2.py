@@ -38,7 +38,7 @@ class input_petaporon(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.datapack.load('acid_machine_2', './data/datapack/app/acid_machine_2.dset')
+		globalstore.datapack.load('acid_machine_2', './data/datapack/app/acid_machine_2.xml')
 
 		convproj_obj.type = 'ri'
 		convproj_obj.set_timings(4)
