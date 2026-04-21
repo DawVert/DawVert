@@ -3,6 +3,7 @@
 
 import numpy as np
 from functions import xtramath
+import bisect
 
 class regions:
 	dtype = [
