@@ -19,6 +19,15 @@ class colorset:
 		else:
 			return cls(None)
 
+	@classmethod
+	def from_datapack(cls, d_id, d_cat, d_item):
+		dpack = globalstore.datapack.get_cat(d_id, d_cat)
+		if dpack:
+			colors = dpack.colorset.get(d_item)
+			return cls(colors.value) if colors else None
+		else:
+			return cls(None)
+
 	def getcolor(self):
 		if self.colorset:
 			out_color = self.colorset[self.num % self.colorlen]
