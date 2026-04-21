@@ -59,7 +59,7 @@ class input_fl_mobile(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.dataset.load('fl_mobile', './data_main/dataset/fl_mobile.dset')
+		globalstore.datapack.load('fl_mobile', './data/datapack/app/fl_mobile.dset')
 
 		tempomul = 120/project_obj.tempo
 
@@ -404,7 +404,7 @@ def do_device(convproj_obj, device_obj, projfilepath, zipfile, pluginid, numberi
 	else:
 		plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'fl_mobile', str(device_obj.type))
 
-		fldso = globalstore.dataset.get_obj('fl_mobile', 'plugin', str(device_obj.type))
+		fldso = globalstore.datapack.get_obj('fl_mobile', 'plugin', str(device_obj.type))
 		if fldso:
 			plugin_obj.visual.name = fldso.visual.name
 

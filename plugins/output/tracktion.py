@@ -355,7 +355,7 @@ def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, 
 			wf_plugin.presetDirty = 1
 			wf_plugin.enabled = int(fx_on)
 			dsetfound = False
-			for param_id, dset_param in globalstore.dataset.get_params('waveform', 'plugin', wf_plugin.plugtype):
+			for param_id, dset_param in globalstore.datapack.get_params('waveform', 'plugin', wf_plugin.plugtype):
 				wf_plugin.params[param_id] = plugin_obj.params.get(param_id, dset_param.defv).value
 				add_auto_curves(convproj_obj, ['plugin', cvpj_fxid, param_id], wf_plugin, param_id, 1)
 				dsetfound = True
@@ -442,7 +442,7 @@ class output_tracktion_edit(plugins.base):
 		tr_projectid = gen_hexid('1')
 		tr_editid = gen_hexid('2')
 
-		globalstore.dataset.load('waveform', './data_main/dataset/waveform.dset')
+		globalstore.datapack.load('waveform', './data/datapack/app/waveform.dset')
 
 		mainp_obj = proj_tracktion_project.tracktion_project()
 		mainp_obj.projectId = tr_projectid

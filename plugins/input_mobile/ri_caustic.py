@@ -50,9 +50,9 @@ def add_caustic_fx(convproj_obj, track_obj, caustic_fx, start_plugid):
 			plugin_obj = convproj_obj.plugin__add(fx_pluginid, 'native', 'caustic', fxtype)
 			plugin_obj.role = 'fx'
 			plugin_obj.fxdata_add(bool(not int(controls_data[5])), 1)
-			plugin_obj.visual.from_dset('caustic', 'plugin_fx', fxtype, True)
+			plugin_obj.visual.from_datapack('caustic', 'plugin_fx', fxtype, True)
 			plugin_obj.datavals.add('mode', caustic_fx_data.mode)
-			for param_id, dset_param in globalstore.dataset.get_params('caustic', 'plugin_fx', fxtype):
+			for param_id, dset_param in globalstore.datapack.get_params('caustic', 'plugin_fx', fxtype):
 				if param_id != '5':
 					outval = controls_data[int(param_id)] if int(param_id) in controls_data else None
 					plugin_obj.dset_param__add(param_id, outval, dset_param)
@@ -60,7 +60,7 @@ def add_caustic_fx(convproj_obj, track_obj, caustic_fx, start_plugid):
 			track_obj.plugslots.slots_audio.append(fx_pluginid)
 
 def add_controls(plugin_obj, mach_id, controls):
-	fldso = globalstore.dataset.get_obj('caustic', 'plugin_inst', mach_id)
+	fldso = globalstore.datapack.get_obj('caustic', 'plugin_inst', mach_id)
 	if fldso:
 		for param_id, dset_param in fldso.params.iter():
 			outval = controls.data[int(param_id)] if int(param_id) in controls.data else None
@@ -130,7 +130,7 @@ class input_cvpj_r(plugins.base):
 
 		convproj_obj.set_timings(1.0)
 
-		globalstore.dataset.load('caustic', './data_main/dataset/caustic.dset')
+		globalstore.datapack.load('caustic', './data/datapack/app/caustic.dset')
 
 		project_obj = proj_caustic.caustic_project()
 		if dawvert_intent.input_mode == 'file':
@@ -164,7 +164,7 @@ class input_cvpj_r(plugins.base):
 			cvpj_trackid = 'MACH'+machid
 
 			track_obj = convproj_obj.track__add(cvpj_trackid, 'instrument', 1, True)
-			track_obj.visual.from_dset('caustic', 'plugin_inst', machine.mach_id, True)
+			track_obj.visual.from_datapack('caustic', 'plugin_inst', machine.mach_id, True)
 			if machine.name: track_obj.visual.name = machine.name
 			track_obj.plugslots.set_synth(pluginid)
 			cvpj_tracks.append(track_obj)
@@ -515,7 +515,7 @@ class input_cvpj_r(plugins.base):
 		for fxid in ['master_delay','master_reverb','master_eq','master_limiter']:
 
 			plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'caustic', fxid)
-			plugin_obj.visual.from_dset('caustic', 'plugin_master_fx', fxid, True)
+			plugin_obj.visual.from_datapack('caustic', 'plugin_master_fx', fxid, True)
 
 			if fxid in ['master_delay','master_reverb']:
 				return_obj = convproj_obj.track_master.fx__return__add(fxid)
@@ -530,7 +530,7 @@ class input_cvpj_r(plugins.base):
 			if fxid == 'master_eq': plugin_obj.fxdata_add(not bool(master_controls_data[42]), 1)
 			if fxid == 'master_limiter': plugin_obj.fxdata_add(not bool(master_controls_data[43]), 1)
 
-			fldso = globalstore.dataset.get_obj('caustic', 'plugin_master_fx', fxid)
+			fldso = globalstore.datapack.get_obj('caustic', 'plugin_master_fx', fxid)
 			if fldso:
 				for param_id, dset_param in fldso.params.iter():
 					outval = master_controls_data[int(param_id)] if int(param_id) in master_controls_data else None

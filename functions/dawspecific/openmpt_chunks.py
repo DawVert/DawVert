@@ -34,7 +34,7 @@ def plugin__add(convproj_obj, omptp_num, omptp_type, omptp_id, omptp_name, omptp
 
 def parse_start(filestream, convproj_obj):
 	datadef = dv_datadef.datadef('./data_main/datadef/openmpt.ddef')
-	dataset = dv_dataset.dataset('./data_main/dataset/openmpt.dset')
+	dataset = dv_dataset.dataset('./data/datapack/app/openmpt.xml')
 
 	patnames = None
 	channames = None

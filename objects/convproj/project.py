@@ -891,8 +891,8 @@ class cvpj_project:
 		plugin_obj.midi.from_dict(indict)
 		return plugin_obj
 
-	def plugin__addspec__midi_from_dset(self, plug_id, ds_id, ds_cat, ds_obj):
-		dso_obj = globalstore.dataset.get_obj(ds_id, ds_cat, ds_obj)
+	def plugin__addspec__midi_from_datapack(self, plug_id, ds_id, ds_cat, ds_obj):
+		dso_obj = globalstore.datapack.get_obj(ds_id, ds_cat, ds_obj)
 		dso_midi = dso_obj.midi if dso_obj else None
 
 		if dso_midi:

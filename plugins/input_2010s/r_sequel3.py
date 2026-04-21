@@ -127,7 +127,7 @@ def do_plugin(plugslots, slot, convproj_obj, issynth):
 							if 'bypass' in params:
 								plugin_obj.fxdata_add(not bool(params['bypass']), None)
 							
-							for param_id, dset_param in globalstore.dataset.get_params('sequel', 'fx_plugin', plugname):
+							for param_id, dset_param in globalstore.datapack.get_params('sequel', 'fx_plugin', plugname):
 								paramval = params[param_id] if param_id in params else dset_param.defv
 								plugin_obj.params.add(param_id, paramval, 'float')
 
@@ -196,7 +196,7 @@ class input_sequel3(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		globalstore.dataset.load('z_maestro', './data_main/dataset/z_maestro.dset')
+		globalstore.datapack.load('z_maestro', './data/datapack/app/z_maestro.dset')
 
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'

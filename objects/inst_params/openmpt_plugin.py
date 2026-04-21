@@ -1,6 +1,6 @@
 
 #datadef = dv_datadef.datadef('./data_main/datadef/openmpt.ddef')
-#dataset = dv_dataset.dataset('./data_main/dataset/openmpt.dset')
+#dataset = dv_dataset.dataset('./data/datapack/app/openmpt.dset')
 #from functions_plugin_ext import plugin_vst2
 
 class openmpt_plugin:

@@ -294,7 +294,7 @@ def encode_fxchain(lmms_fxchain, track_obj, trackname, autoloc):
 			lmms_fxchain.effects.append(effect_obj)
 
 def dset_plugparams(pluginname, pluginid, lmms_plug_obj, plugin_obj):
-	for param_id, dset_param in globalstore.dataset.get_params('lmms', 'plugin', pluginname):
+	for param_id, dset_param in globalstore.datapack.get_params('lmms', 'plugin', pluginname):
 		if not dset_param.noauto: paramauto(lmms_plug_obj.add_param(param_id, dset_param.defv), plugin_obj.params, param_id, dset_param.defv, None, ['plugin', pluginid], 'Plugin', dset_param.name)
 		else: lmms_plug_obj.add_param(param_id, plugin_obj.datavals.get(param_id, dset_param.defv))
 
@@ -372,7 +372,7 @@ class output_lmms(plugins.base):
 		
 		cvpj_obj = i_cvpj_obj
 
-		globalstore.dataset.load('lmms', './data_main/dataset/lmms.dset')
+		globalstore.datapack.load('lmms', './data/datapack/app/lmms.dset')
 
 		i_cvpj_obj.change_timings(48)
 

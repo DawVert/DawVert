@@ -181,8 +181,8 @@ class input_acid_3(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.dataset.load('sony_acid', './data_main/dataset/sony_acid.dset')
-		colordata = colors.colorset.from_dataset('sony_acid', 'track', 'acid_4')
+		globalstore.datapack.load('sony_acid', './data/datapack/app/sony_acid.dset')
+		colordata = colors.colorset.from_datapack('sony_acid', 'track', 'acid_4')
 		
 		auto_basenotes = {}
 
@@ -509,7 +509,7 @@ class input_acid_3(plugins.base):
 						if b'ICOP' in metadata: convproj_obj.metadata.copyright = metadata[b'ICOP']
 
 			elif root_name == 'Group:Arranger':
-				arrcolordata = colors.colorset.from_dataset('sony_acid', 'track', 'arranger')
+				arrcolordata = colors.colorset.from_datapack('sony_acid', 'track', 'arranger')
 				for regs_chunk, regs_name in root_chunk.iter_wtypes():
 					if regs_name == 'ArrangerPart':
 						arrdata = regs_chunk.content

@@ -254,10 +254,10 @@ class input_jummbox(plugins.base):
 		traits_obj.audio_filetypes = ['wav']
 		traits_obj.auto_types = ['pl_points']
 
-		globalstore.dataset.load('beepbox', './data_main/dataset/beepbox.dset')
+		globalstore.datapack.load('beepbox', './data/datapack/app/beepbox.dset')
 
-		colors_pitch = colors.colorset.from_dataset('beepbox', 'inst', 'beepbox_dark')
-		colors_drums = colors.colorset.from_dataset('beepbox', 'drums', 'beepbox_dark')
+		colors_pitch = colors.colorset.from_datapack('beepbox', 'inst', 'beepbox_dark')
+		colors_drums = colors.colorset.from_datapack('beepbox', 'drums', 'beepbox_dark')
 
 		rawchipwaves_obj = rawchipwaves()
 		rawchipwaves_obj.load_from_file(os.path.join('data_main','text','beepbox_shapes.txt')) 
@@ -306,12 +306,12 @@ class input_jummbox(plugins.base):
 					midifound = False
 
 					if preset:
-						plugin_obj = convproj_obj.plugin__addspec__midi_from_dset(cvpj_instid, 'beepbox', 'preset', preset)
+						plugin_obj = convproj_obj.plugin__addspec__midi_from_datapack(cvpj_instid, 'beepbox', 'preset', preset)
 						if plugin_obj:
 							inst_obj.plugslots.set_synth(cvpj_instid)
 							plugin_obj.midi.to_visual(inst_obj.visual, False)
 							midifound = True
-						inst_obj.visual.from_dset('beepbox', 'preset', preset, False)
+						inst_obj.visual.from_datapack('beepbox', 'preset', preset, False)
 
 					if not midifound:
 						inst_obj.plugslots.set_synth(cvpj_instid)
@@ -321,9 +321,9 @@ class input_jummbox(plugins.base):
 
 						if 'unison' in bb_data: plugin_obj.datavals.add('unison', bb_data['unison'])
 
-						if bb_chan.type == 'pitch': inst_obj.visual.from_dset('beepbox', 'inst', bb_inst.type, False)
+						if bb_chan.type == 'pitch': inst_obj.visual.from_datapack('beepbox', 'inst', bb_inst.type, False)
 						if bb_chan.type == 'drum': 
-							inst_obj.visual.from_dset('beepbox', 'drums', bb_inst.type, False)
+							inst_obj.visual.from_datapack('beepbox', 'drums', bb_inst.type, False)
 							inst_obj.is_drum = True
 
 						if bb_inst.type == 'chip':

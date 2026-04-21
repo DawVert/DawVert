@@ -301,7 +301,7 @@ class input_flp(plugins.base):
 						pass
 
 		globalstore.datadef.load('fl_studio', './data_main/datadef/fl_studio.ddef')
-		globalstore.dataset.load('fl_studio', './data_main/dataset/fl_studio.dset')
+		globalstore.datapack.load('fl_studio', './data/datapack/app/fl_studio.dset')
 
 		wrapper_plugids = []
 

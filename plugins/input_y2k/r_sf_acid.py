@@ -55,8 +55,8 @@ class input_acid_old(plugins.base):
 		ppq = project_obj.ppq
 		convproj_obj.set_timings(ppq)
 
-		globalstore.dataset.load('sony_acid', './data_main/dataset/sony_acid.dset')
-		colordata = colors.colorset.from_dataset('sony_acid', 'track', 'acid_1')
+		globalstore.datapack.load('sony_acid', './data/datapack/app/sony_acid.dset')
+		colordata = colors.colorset.from_datapack('sony_acid', 'track', 'acid_1')
 		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
  
 		samplefolder = dawvert_intent.path_samples['extracted']

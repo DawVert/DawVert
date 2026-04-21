@@ -299,7 +299,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 
 				if xmlparams is not None:
 					soundnum = 0
-					colordrumdata = colors.colorset.from_dataset('zenbeats', 'global', 'drum')
+					colordrumdata = colors.colorset.from_datapack('zenbeats', 'global', 'drum')
 					for x in xmlparams:
 						if x.tag == 'sound':
 							attribvals = x.attrib
@@ -500,8 +500,8 @@ class input_zenbeats(plugins.base):
 
 		convproj_obj.set_timings(1.0)
 
-		globalstore.dataset.load('zenbeats', './data_main/dataset/zenbeats.dset')
-		colordata = colors.colorset.from_dataset('zenbeats', 'global', 'main')
+		globalstore.datapack.load('zenbeats', './data/datapack/app/zenbeats.dset')
+		colordata = colors.colorset.from_datapack('zenbeats', 'global', 'main')
 
 		project_obj = proj_zenbeats.zenbeats_song()
 		if dawvert_intent.input_mode == 'file':

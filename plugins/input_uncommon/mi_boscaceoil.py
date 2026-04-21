@@ -52,7 +52,7 @@ def add_master_fx(convproj_obj, fx_type, fx_value):
 		
 	plugin_obj.role = 'fx'
 
-	plugin_obj.visual.from_dset('boscaceoil', 'fx', FX_NAMES[fx_type], True)
+	plugin_obj.visual.from_datapack('boscaceoil', 'fx', FX_NAMES[fx_type], True)
 	convproj_obj.track_master.plugslots.slots_audio.append('master-effect')
 
 def add_filter(convproj_obj, instnum, cutoff, resonance):
@@ -100,13 +100,13 @@ class input_ceol(plugins.base):
 		traits_obj = convproj_obj.traits
 		traits_obj.auto_types = ['pl_points']
 
-		globalstore.dataset.load('boscaceoil', './data_main/dataset/boscaceoil.dset')
-		color_track = colors.colorset.from_dataset('boscaceoil', 'track', 'main')
-		color_main = colors.colorset.from_dataset('boscaceoil', 'main', 'main')
+		globalstore.datapack.load('boscaceoil', './data/datapack/app/boscaceoil.dset')
+		color_track = colors.colorset.from_datapack('boscaceoil', 'track', 'main')
+		color_main = colors.colorset.from_datapack('boscaceoil', 'main', 'main')
 
 		# ---------- Master FX ----------
 		convproj_obj.track_master.params.add('vol', 1, 'float')
-		convproj_obj.track_master.visual.from_dset('boscaceoil', 'main', 'masterfx', False)
+		convproj_obj.track_master.visual.from_datapack('boscaceoil', 'main', 'masterfx', False)
 
 		add_master_fx(convproj_obj, project_obj.effect_type, project_obj.effect_value)
 
@@ -134,8 +134,8 @@ class input_ceol(plugins.base):
 
 			else: 
 				strinst = str(ceol_inst_obj.inst)
-				inst_obj.from_dataset("boscaceoil", 'inst', strinst, False)
-				inst_ds_obj = globalstore.dataset.get_obj('boscaceoil', 'inst', strinst)
+				inst_obj.from_datapack("boscaceoil", 'inst', strinst, False)
+				inst_ds_obj = globalstore.datapack.get_obj('boscaceoil', 'inst', strinst)
 				if inst_ds_obj:
 					if 'valsoundid' in inst_ds_obj.data: 
 						valsoundid = inst_ds_obj.data['valsoundid']

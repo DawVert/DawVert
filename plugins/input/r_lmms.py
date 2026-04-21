@@ -150,7 +150,7 @@ def doparam(lmms_param_obj, i_type, i_addmul, i_loc):
 	return outval
 
 def dset_plugparams(pluginname, pluginid, lmms_plugin, plugin_obj):
-	for param_id, dset_param in globalstore.dataset.get_params('lmms', 'plugin', pluginname):
+	for param_id, dset_param in globalstore.datapack.get_params('lmms', 'plugin', pluginname):
 		lmms_param = lmms_plugin.get_param(param_id, dset_param.defv)
 		if not dset_param.noauto: outval = doparam(lmms_param, dset_param.type, None, ['plugin', pluginid, param_id])
 		else: outval = lmms_param.value
@@ -409,7 +409,7 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 			if malpreset == 2: plugin_obj.midi_fallback__add_inst(113)
 			if malpreset == 9: plugin_obj.midi_fallback__add_inst(14)
 
-	plugin_obj.visual.from_dset('lmms', 'plugin', pluginname, True)
+	plugin_obj.visual.from_datapack('lmms', 'plugin', pluginname, True)
 
 	return plugin_obj.visual.color, pluginid, plugin_obj
 
@@ -728,7 +728,7 @@ class input_lmms(plugins.base):
 
 		autoid_assoc = auto_id.convproj2autoid(48)
 
-		globalstore.dataset.load('lmms', './data_main/dataset/lmms.dset')
+		globalstore.datapack.load('lmms', './data/datapack/app/lmms.dset')
 
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'r'

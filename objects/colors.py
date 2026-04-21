@@ -12,7 +12,7 @@ class colorset:
 
 	@classmethod
 	def from_dataset(cls, d_id, d_cat, d_item):
-		dset = globalstore.dataset.get_cat(d_id, d_cat)
+		dset = globalstore.datapack.get_cat(d_id, d_cat)
 		if dset:
 			colors = dset.colorset.get(d_item)
 			return cls(colors.value) if colors else None

@@ -30,8 +30,8 @@ class input_nanostudio_v1(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		globalstore.dataset.load('nanostudio_v1', './data_main/dataset/nanostudio_v1.dset')
-		colordata = colors.colorset.from_dataset('nanostudio_v1', 'clips', 'main')
+		globalstore.datapack.load('nanostudio_v1', './data/datapack/app/nanostudio_v1.dset')
+		colordata = colors.colorset.from_datapack('nanostudio_v1', 'clips', 'main')
 
 		convproj_obj.type = 'r'
 

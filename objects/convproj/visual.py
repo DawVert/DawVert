@@ -375,8 +375,8 @@ class cvpj_visual:
 		if other_visual_obj.name != None and self.name == None: self.name = other_visual_obj.name
 		self.merge_color(other_visual_obj)
 
-	def from_dset(self, d_id, d_cat, d_item, overwrite):
-		d = globalstore.dataset.get_obj(d_id, d_cat, d_item)
+	def from_datapack(self, d_id, d_cat, d_item, overwrite):
+		d = globalstore.datapack.get_obj(d_id, d_cat, d_item)
 		if d: 
 			if overwrite or (not self.name): self.name = d.visual.name
 			if overwrite or (not self.color): self.color.set_int(d.visual.color)
@@ -384,23 +384,24 @@ class cvpj_visual:
 		else:
 			return False
 
-	def from_dset_midi(self, m_bank_hi, m_bank, m_inst, m_drum, m_dev, overwrite):
+	def from_datapack_midi(self, m_bank_hi, m_bank, m_inst, m_drum, m_dev, overwrite):
 		midi_dev = m_dev if m_dev else 'gm'
 		if overwrite or (not self.name or not self.color):
-			globalstore.dataset.load('midi', './data_main/dataset/midi.dset')
+			dpackname = 'midi_'+midi_dev
+			globalstore.datapack.load(dpackname, './data/datapack/midi/%s.dset' % midi_dev)
 			if midi_dev == 'xg':
 				startcat = 'xg_inst'
 				if m_drum: m_bank = 127
 				dset_inst = str(m_bank_hi)+'_'+str(m_bank)+'_'+str(m_inst)
-				self.from_dset('midi', startcat, dset_inst, overwrite)
+				self.from_datapack(dpackname, startcat, dset_inst, overwrite)
 				dset_inst_fallb = '0_'+str(m_bank)+'_'+str(m_inst)
-				self.from_dset('midi', startcat, dset_inst_fallb, overwrite)
+				self.from_datapack(dpackname, startcat, dset_inst_fallb, overwrite)
 			else:
 				startcat = midi_dev+'_inst' if not m_drum else midi_dev+'_drums'
 				dset_inst = str(m_bank_hi)+'_'+str(m_bank)+'_'+str(m_inst)
 				dset_fb = '0_0_'+str(m_inst)
-				self.from_dset('midi', startcat, dset_inst, overwrite)
-				self.from_dset('midi', startcat, dset_fb, overwrite)
+				self.from_datapack(dpackname, startcat, dset_inst, overwrite)
+				self.from_datapack(dpackname, startcat, dset_fb, overwrite)
 
 	def copy(self):
 		return copy.deepcopy(self)

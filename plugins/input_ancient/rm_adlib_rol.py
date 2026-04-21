@@ -36,7 +36,7 @@ class input_adlib_rol(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.dataset.load('adlib_rol', './data_main/dataset/adlib_rol.dset')
+		globalstore.datapack.load('adlib_rol', './data/datapack/app/adlib_rol.dset')
 
 		native_insts = {}
 
@@ -82,15 +82,15 @@ class input_adlib_rol(plugins.base):
 			instname_upper = used_voice.upper()
 			inst_obj = convproj_obj.instrument__add(instname_upper)
 			inst_obj.visual.name = instname_upper
-			inst_obj.visual.from_dset('adlib_rol', 'inst', instname_upper, True)
+			inst_obj.visual.from_datapack('adlib_rol', 'inst', instname_upper, True)
 			if instname_upper in native_insts:
 				opli = native_insts[instname_upper]
 				plugin_obj = opli.to_cvpj(convproj_obj, instname_upper)
-				plugin_obj.midi_fallback__add_from_dset('adlib_rol', 'inst', instname_upper)
+				plugin_obj.midi_fallback__add_from_datapack('adlib_rol', 'inst', instname_upper)
 				plugin_obj.midi_fallback__to_vis(inst_obj.visual, False)
 			else:
 				plugin_obj = convproj_obj.plugin__add(instname_upper, 'universal', 'midi', None)
-				plugin_obj.midi.from_dataset('adlib_rol', 'inst', instname_upper)
+				plugin_obj.midi.from_datapack('adlib_rol', 'inst', instname_upper)
 				plugin_obj.midi.to_visual(inst_obj.visual, False)
 			inst_obj.plugslots.set_synth(instname_upper)
 

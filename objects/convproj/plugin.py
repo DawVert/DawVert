@@ -134,8 +134,8 @@ class cvpj_plugin:
 		self.midi_incompat_synth_on = True
 		self.midi_incompat_synth.patch = patch
 
-	def midi_fallback__add_from_dset(self, ds_id, ds_cat, ds_obj):
-		if self.midi_incompat_synth.from_dataset(ds_id, ds_cat, ds_obj):
+	def midi_fallback__add_from_datapack(self, ds_id, ds_cat, ds_obj):
+		if self.midi_incompat_synth.from_datapack(ds_id, ds_cat, ds_obj):
 			self.midi_incompat_synth_on = True
 
 	def midi_fallback__to_vis(self, visual_obj, overwrite):
@@ -282,8 +282,8 @@ class cvpj_plugin:
 	def dset_param__add(self, p_id, p_value, dset_param):
 		return self.state.dset_param__add(p_id, p_value, dset_param)
 
-	def add_from_dset(self, p_id, p_value, dset, ds_cat, ds_group): 
-		return self.state.add_from_dset(p_id, p_value, dset, ds_cat, ds_group)
+	def add_from_datapack(self, p_id, p_value, dset, ds_cat, ds_group): 
+		return self.state.add_from_datapack(p_id, p_value, dset, ds_cat, ds_group)
 
 	def dset_obj__add_param(self, dataset_obj, i_dict):
 		return self.state.dset_obj__add_param(dataset_obj, i_dict)

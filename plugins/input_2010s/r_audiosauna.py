@@ -75,8 +75,8 @@ class input_audiosanua(plugins.base):
 		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'audiosauna', ['audiosauna'])
 
 		# ------------------------------------------ Start ------------------------------------------
-		globalstore.dataset.load('audiosauna', './data_main/dataset/audiosauna.dset')
-		colordata = colors.colorset.from_dataset('audiosauna', 'track', 'main')
+		globalstore.datapack.load('audiosauna', './data/datapack/app/audiosauna.dset')
+		colordata = colors.colorset.from_datapack('audiosauna', 'track', 'main')
 
 		project_obj = proj_audiosauna.audiosauna_song()
 		if dawvert_intent.input_mode == 'file':
@@ -170,7 +170,7 @@ class input_audiosanua(plugins.base):
 					plugin_obj.role = 'synth'
 					track_obj.plugslots.set_synth(pluginid)
 
-					fldso = globalstore.dataset.get_obj('audiosauna', 'plugin', str(as_device.deviceType))
+					fldso = globalstore.datapack.get_obj('audiosauna', 'plugin', str(as_device.deviceType))
 					if fldso:
 						for param_id, dset_param in fldso.params.iter():
 							outval = as_device.params[param_id] if param_id in as_device.params else None

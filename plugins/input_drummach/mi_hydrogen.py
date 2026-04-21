@@ -42,9 +42,9 @@ class input_hydrogen(plugins.base):
 		
 		fileref.cvpj_fileref_global.add_prefix('hydrogen_drumkits', 'win', "C:\\Program Files\\Hydrogen\\data\\drumkits\\")
 
-		globalstore.dataset.load('hydrogen', './data_main/dataset/hydrogen.dset')
-		color_pattern = colors.colorset.from_dataset('hydrogen', 'pattern', 'main')
-		color_track = colors.colorset.from_dataset('hydrogen', 'track', 'main')
+		globalstore.datapack.load('hydrogen', './data/datapack/app/hydrogen.dset')
+		color_pattern = colors.colorset.from_datapack('hydrogen', 'pattern', 'main')
+		color_track = colors.colorset.from_datapack('hydrogen', 'track', 'main')
 
 		convproj_obj.metadata.name = project_obj.name
 		convproj_obj.metadata.author = project_obj.author
@@ -67,13 +67,13 @@ class input_hydrogen(plugins.base):
 
 		if project_obj.playbackTrackFilename:
 			playlist_obj = convproj_obj.playlist__add(plnum, 1, True)
-			playlist_obj.visual.from_dset('hydrogen', 'track', 'playback', False)
+			playlist_obj.visual.from_datapack('hydrogen', 'track', 'playback', False)
 			sampleref_obj = convproj_obj.sampleref__add('playbackTrack', project_obj.playbackTrackFilename, None)
 			sre_obj = convproj_obj.sampleindex__add('playbackTrack')
 			sre_obj.from_sampleref_obj(sampleref_obj)
 			sre_obj.sampleref = 'playbackTrack'
 			sre_obj.stretch.timing.set__speed(bpm, 1)
-			sre_obj.visual.from_dset('hydrogen', 'track', 'playback', False)
+			sre_obj.visual.from_datapack('hydrogen', 'track', 'playback', False)
 			cvpj_placement = playlist_obj.placements.add_audio_indexed()
 			cvpj_placement.fromindex = 'playbackTrack'
 			dur_sec = sampleref_obj.get_dur_sec()

@@ -136,7 +136,7 @@ def create_inst(convproj_obj, vol, WaveType, fst_Instrument, fx_num):
 		inst_obj.plugslots.set_synth(synthid)
 
 	inst_obj.visual.name = instname
-	inst_obj.visual.from_dset('famistudio', 'chip', WaveType, False)
+	inst_obj.visual.from_datapack('famistudio', 'chip', WaveType, False)
 	if fst_Instrument.Color: inst_obj.visual.color.set_hex(fst_Instrument.Color)
 
 	if WaveType in ['VRC7FM']: inst_obj.datavals.add('middlenote', 12)
@@ -153,7 +153,7 @@ def create_dpcm_inst(DPCMMappings, DPCMSamples, fst_instrument, fx_num):
 	inst_obj.params.add('vol', 0.6, 'float')
 	inst_obj.params.add('usemasterpitch', False, 'bool')
 	inst_obj.visual.name = 'DPCM'
-	inst_obj.visual.from_dset('famistudio', 'chip', 'DPCM', False)
+	inst_obj.visual.from_datapack('famistudio', 'chip', 'DPCM', False)
 	inst_obj.fxrack_channel = fx_num
 	inst_obj.is_drum = True
 	plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'sampler', 'drums')
@@ -273,7 +273,7 @@ def parse_notes(cvpj_notelist, fs_notes, chiptype, NoteLength, arpeggios, fxchan
 	cvpj_notelist.only_one()
 
 def get_gcolor(dcat, dgroup, cobj):
-	def_ds_obj = globalstore.dataset.get_obj(dcat, dgroup, cobj)
+	def_ds_obj = globalstore.datapack.get_obj(dcat, dgroup, cobj)
 	if def_ds_obj: return def_ds_obj.visual.color
 
 def add_nle(convproj_obj, patdata, NoteLength, chantype, patid, bpm):
@@ -318,7 +318,7 @@ class input_famistudio(plugins.base):
 
 		convproj_obj.set_timings(4.0)
 
-		globalstore.dataset.load('famistudio', './data_main/dataset/famistudio.dset')
+		globalstore.datapack.load('famistudio', './data/datapack/app/famistudio.dset')
 		samplefolder = dawvert_intent.path_samples['extracted']
 
 		defualt_pattern_color = get_gcolor('famistudio', 'defualt', 'pattern')
@@ -356,7 +356,7 @@ class input_famistudio(plugins.base):
 		for n, x in enumerate(chantypes):
 			fxchannel_obj = convproj_obj.fx__chan__add(n+1)
 			wavetype = get_instshape(x)
-			if not fxchannel_obj.visual.from_dset('famistudio', 'chip', wavetype, True):
+			if not fxchannel_obj.visual.from_datapack('famistudio', 'chip', wavetype, True):
 				fxchannel_obj.visual.name = x
 
 			TrebleDb = 0

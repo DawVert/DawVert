@@ -84,8 +84,8 @@ class input_pxtone(plugins.base):
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 		project_obj.postprocess()
 
-		globalstore.dataset.load('pxtone', './data_main/dataset/pxtone.dset')
-		colordata = colors.colorset.from_dataset('pxtone', 'track', 'main')
+		globalstore.datapack.load('pxtone', './data/datapack/app/pxtone.dset')
+		colordata = colors.colorset.from_datapack('pxtone', 'track', 'main')
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 

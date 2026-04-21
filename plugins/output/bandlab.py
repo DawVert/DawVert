@@ -52,7 +52,7 @@ class output_bandlab(plugins.base):
 		
 		project_obj = proj_bandlab.bandlab_project()
 
-		globalstore.dataset.load('bandlab', './data_main/dataset/bandlab.dset')
+		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.dset')
 
 		globalstore.idvals.load('bandlab_midi_map', './data_main/idvals/bandlab_map_midi.csv')
 		idvals_bandlab_inst = globalstore.idvals.get('bandlab_midi_map')
@@ -214,7 +214,7 @@ class output_bandlab(plugins.base):
 							if in_inst:
 								blx_track.soundbank = in_inst
 								is_bandlab_inst = True
-								dset_obj = globalstore.dataset.get_obj('bandlab', 'inst', in_inst)
+								dset_obj = globalstore.datapack.get_obj('bandlab', 'inst', in_inst)
 								inst_supported = 1
 								if dset_obj:
 									if 'slug' in dset_obj.data: track_obj.type = dset_obj.data['slug']
@@ -227,7 +227,7 @@ class output_bandlab(plugins.base):
 								if idvals_bandlab_inst:
 									t_instid = idvals_bandlab_inst.get_idval(str(o_midi_patch), 'outid')
 									if t_instid:
-										dset_obj = globalstore.dataset.get_obj('bandlab', 'inst', t_instid)
+										dset_obj = globalstore.datapack.get_obj('bandlab', 'inst', t_instid)
 										if dset_obj:
 											blx_track.soundbank = t_instid
 											if 'slug' in dset_obj.data:
@@ -320,7 +320,7 @@ def make_plugins_fx(convproj_obj, autoPitch, effects, fxslots_audio, tempomul):
 				blx_effect = proj_bandlab.bandlab_effect(None)
 				blx_effect.slug = plugin_obj.type.subtype
 
-				dseto_obj = globalstore.dataset.get_obj('bandlab', 'fx', blx_effect.slug)
+				dseto_obj = globalstore.datapack.get_obj('bandlab', 'fx', blx_effect.slug)
 				if dseto_obj:
 					for param_id, dset_param in dseto_obj.params.iter():
 						if not dset_param.noauto: 

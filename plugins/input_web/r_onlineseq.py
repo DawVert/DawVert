@@ -40,7 +40,7 @@ class input_onlinesequencer(plugins.base):
 
 		convproj_obj.set_timings(4.0)
 
-		globalstore.dataset.load('onlineseq', './data_main/dataset/onlineseq.dset')
+		globalstore.datapack.load('onlineseq', './data/datapack/app/onlineseq.dset')
 
 		project_obj = proj_onlineseq.onlineseq_project()
 		if dawvert_intent.input_mode == 'file':
@@ -103,7 +103,7 @@ class input_onlinesequencer(plugins.base):
 
 			if trueinstid not in multig: multig[trueinstid] = []
 			track_obj = convproj_obj.track__add(trackid, 'instrument', 0, False)
-			track_obj.visual.from_dset('onlineseq', 'inst', str(trueinstid), True)
+			track_obj.visual.from_datapack('onlineseq', 'inst', str(trueinstid), True)
 			
 			multig[trueinstid].append(track_obj)
 
@@ -160,7 +160,7 @@ class input_onlinesequencer(plugins.base):
 				plugin_obj = convproj_obj.plugin__add(trackid, 'native', 'onlineseq', 'instrument')
 				plugin_obj.datavals.add('instrument', trueinstid)
 				plugin_obj.role = 'synth'
-				plugin_obj.midi_fallback__add_from_dset('onlineseq', 'inst', str(trueinstid))
+				plugin_obj.midi_fallback__add_from_datapack('onlineseq', 'inst', str(trueinstid))
 				track_obj.plugslots.set_synth(trackid)
 
 			if instid in project_obj.params:
@@ -223,7 +223,7 @@ class input_onlinesequencer(plugins.base):
 		for k, v in multig.items():
 			if len(v)>1:
 				group_obj = convproj_obj.fx__group__add(str(k))
-				group_obj.visual.from_dset('onlineseq', 'inst', str(k), True)
+				group_obj.visual.from_datapack('onlineseq', 'inst', str(k), True)
 				for x in v: x.group = str(k)
 
 		convproj_obj.timesig = [project_obj.numerator, 4]

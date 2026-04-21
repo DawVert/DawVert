@@ -57,7 +57,7 @@ def do_plugin(convproj_obj, plugin_obj, pluginid, cxf_fx, ids_obj, trackid, num)
 		cxf_fx.format = "BandLab"
 		cxf_fx.slug = plugin_obj.type.subtype
 		
-		dseto_obj = globalstore.dataset.get_obj('bandlab', 'fx', cxf_fx.slug)
+		dseto_obj = globalstore.datapack.get_obj('bandlab', 'fx', cxf_fx.slug)
 		if dseto_obj:
 			if 'uniqueId' in dseto_obj.data: cxf_fx.uniqueId = int(dseto_obj.data['uniqueId'])
 			for param_id, dset_param in dseto_obj.params.iter():
@@ -183,7 +183,7 @@ def create_track(convproj_obj, project_obj, trackid, track_obj, ids_obj):
 					in_inst = track_obj.datavals.get('instrument', '')
 					if in_inst:
 						cxf_track.soundbank = in_inst
-						dset_obj = globalstore.dataset.get_obj('bandlab', 'inst', in_inst)
+						dset_obj = globalstore.datapack.get_obj('bandlab', 'inst', in_inst)
 						inst_supported = 1
 				elif plugin_supported(plugin_obj):
 					synth_obj = cxf_track.add_synth()
@@ -198,7 +198,7 @@ def create_track(convproj_obj, project_obj, trackid, track_obj, ids_obj):
 						if ids_obj.idvals_bandlab_inst:
 							t_instid = ids_obj.idvals_bandlab_inst.get_idval(str(o_midi_patch), 'outid')
 							if t_instid:
-								dset_obj = globalstore.dataset.get_obj('bandlab', 'inst', t_instid)
+								dset_obj = globalstore.datapack.get_obj('bandlab', 'inst', t_instid)
 								if dset_obj:
 									cxf_track.soundbank = t_instid
 					else:
@@ -338,7 +338,7 @@ class output_bandlab(plugins.base):
 		
 		project_obj = proj_cakewalk_cxf.cxf_project()
 
-		globalstore.dataset.load('bandlab', './data_main/dataset/bandlab.dset')
+		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.dset')
 		globalstore.idvals.load('bandlab_midi_map', './data_main/idvals/bandlab_map_midi.csv')
 
 		project_obj.stamp = 'LOCAL_XCD_'+str(uuid.uuid4())

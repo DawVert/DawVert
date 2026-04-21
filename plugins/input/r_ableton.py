@@ -308,7 +308,7 @@ def do_devices(x_trackdevices, track_id, track_obj, convproj_obj, dawvert_intent
 				plugin_obj.datavals.add_if_missing('numparams', len(paramorder))
  
 		else:
-			fldso = globalstore.dataset.get_obj('ableton', 'plugin', device.name)
+			fldso = globalstore.datapack.get_obj('ableton', 'plugin', device.name)
 
 			plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'ableton', device.name)
 			plugin_obj.role = 'fx'
@@ -410,8 +410,8 @@ class input_ableton(plugins.base):
 		convproj_obj.set_timings(4.0)
 		autoid_assoc = auto_id.convproj2autoid(4)
 
-		globalstore.dataset.load('ableton', './data_main/dataset/ableton.dset')
-		colordata = colors.colorset.from_dataset('ableton', 'track', 'main')
+		globalstore.datapack.load('ableton', './data/datapack/app/ableton.dset')
+		colordata = colors.colorset.from_datapack('ableton', 'track', 'main')
 
 		project_obj = proj_ableton.ableton_liveset()
 		if dawvert_intent.input_mode == 'file':

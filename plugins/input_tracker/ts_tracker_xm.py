@@ -52,7 +52,7 @@ class input_xm(plugins.base):
 		from objects.file_proj_tracker import tracker_xm as proj_xm
 		global samplefolder
 		from objects import globalstore
-		globalstore.dataset.load('tracker_various', './data_main/dataset/tracker_various.dset')
+		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.dset')
 		
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']
@@ -69,7 +69,7 @@ class input_xm(plugins.base):
 		tracker_obj = convproj_obj.main__create_tracker_single()
 		tracker_obj.set_num_chans(project_obj.num_channels)
 		tracker_obj.orders = project_obj.l_order
-		tracker_obj.mainvisual.from_dset('tracker_various', 'xm', 'main', True)
+		tracker_obj.mainvisual.from_datapack('tracker_various', 'xm', 'main', True)
 		tracker_obj.tempo = project_obj.bpm
 		tracker_obj.speed = project_obj.speed
 		tracker_obj.use_starttempo = True

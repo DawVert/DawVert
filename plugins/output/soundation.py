@@ -39,7 +39,7 @@ def add_fx(convproj_obj, soundation_channel, fxchain_audio):
 				soundation_effect = proj_soundation.soundation_device(None)
 				soundation_effect.identifier = plugin_obj.type.subtype
 				soundation_effect.bypass = not fx_on
-				for param_id, dset_param in globalstore.dataset.get_params('soundation', 'plugin', plugin_obj.type.subtype):
+				for param_id, dset_param in globalstore.datapack.get_params('soundation', 'plugin', plugin_obj.type.subtype):
 					param_cvpj2sng(param_id, soundation_effect, plugin_obj, pluginid)
 				soundation_channel.effects.append(soundation_effect)
 
@@ -113,8 +113,8 @@ class output_soundation(plugins.base):
 		audio_id = {}
 		convproj_obj = i_convproj_obj
 
-		globalstore.dataset.load('soundation', './data_main/dataset/soundation.dset')
-		globalstore.dataset.load('synth_nonfree', './data_main/dataset/synth_nonfree.dset')
+		globalstore.datapack.load('soundation', './data/datapack/app/soundation.dset')
+		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.dset')
 
 		globalstore.idvals.load('gm_inst', './data_main/idvals/soundation_gm_inst.csv')
 		idvals_inst_gm2 = globalstore.idvals.get('gm_inst')
@@ -240,7 +240,7 @@ class output_soundation(plugins.base):
 						inst_supported = True
 						soundation_instrument.identifier = 'com.soundation.europa'
 						europaparamlist = dataset_synth_nonfree.params_list('plugin', 'europa')
-						for param_id, dset_param in globalstore.dataset.get_params('synth_nonfree', 'plugin', 'europa'):
+						for param_id, dset_param in globalstore.datapack.get_params('synth_nonfree', 'plugin', 'europa'):
 							if not dset_param.noauto: 
 								eur_value_value = plugin_obj.params.get(param_id, 0).value
 							else:

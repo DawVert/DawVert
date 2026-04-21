@@ -41,7 +41,7 @@ class input_famitracker_txt(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		globalstore.dataset.load('chip_nes', './data_main/dataset/chip_nes.dset')
+		globalstore.datapack.load('chip_nes', './data/datapack/app/chip_nes.dset')
 
 		cur_song = project_obj.song[0]
 
@@ -117,7 +117,7 @@ class input_famitracker_txt(plugins.base):
 				inst_obj.fxrack_channel = channum+1
 
 				insttype = patterndata_obj.get_channel_insttype(channum)
-				inst_obj.visual.from_dset('chip_nes', 'chip', insttype, False)
+				inst_obj.visual.from_datapack('chip_nes', 'chip', insttype, False)
 
 				if instnum in project_obj.inst:
 					ft_inst = project_obj.inst[instnum]

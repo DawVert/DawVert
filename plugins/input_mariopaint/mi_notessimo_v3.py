@@ -125,7 +125,7 @@ class inst_manager():
 
 	def add_inst(convproj_obj, instid, project_obj, maindata_obj):
 		inst_obj = convproj_obj.instrument__add(instid)
-		inst_obj.visual.from_dset('notessimo_v3', 'inst', instid, True)
+		inst_obj.visual.from_datapack('notessimo_v3', 'inst', instid, True)
 		if inst_obj.visual.name and DEBUGINSTNAMES: inst_obj.visual.name = '[DSET] '+inst_obj.visual.name
 
 		notet_inst = None
@@ -152,7 +152,7 @@ class inst_manager():
 
 			if sampleids:
 				plugin_obj = convproj_obj.plugin__add(instid, 'universal', 'sampler', 'multi')
-				plugin_obj.midi_fallback__add_from_dset('notessimo_v3', 'inst', instid)
+				plugin_obj.midi_fallback__add_from_datapack('notessimo_v3', 'inst', instid)
 				plugin_obj.role = 'synth'
 				inst_obj.plugslots.set_synth(instid)
 
@@ -161,7 +161,7 @@ class inst_manager():
 
 			elif notet_inst.sample:
 				plugin_obj = convproj_obj.plugin__add(instid, 'universal', 'sampler', 'single')
-				plugin_obj.midi_fallback__add_from_dset('notessimo_v3', 'inst', instid)
+				plugin_obj.midi_fallback__add_from_datapack('notessimo_v3', 'inst', instid)
 				plugin_obj.role = 'synth'
 				inst_obj.plugslots.set_synth(instid)
 
@@ -188,7 +188,7 @@ class inst_manager():
 
 			else:
 				plugin_obj = convproj_obj.plugin__add(instid, 'universal', 'midi', None)
-				plugin_obj.midi.from_dataset('notessimo_v3', 'inst', instid)
+				plugin_obj.midi.from_datapack('notessimo_v3', 'inst', instid)
 				plugin_obj.midi.to_visual(inst_obj.visual, False)
 
 def incolor(value, visual_obj): 
@@ -234,7 +234,7 @@ class input_notessimo_v3(plugins.base):
 
 		convproj_obj.set_timings(4.0)
 
-		globalstore.dataset.load('notessimo_v3', './data_main/dataset/notessimo_v3.dset')
+		globalstore.datapack.load('notessimo_v3', './data/datapack/app/notessimo_v3.dset')
 		
 		extpath_path = os.path.join(dawvert_intent.path_external_data, 'notessimo_v3', 'notessimo_v3_data.zip')
 

@@ -78,8 +78,8 @@ class multi_patsong:
 
 			fxchannel_obj = convproj_obj.fx__chan__add(ch_num+1)
 			if self.dataset_name and self.dataset_cat:
-				fxchannel_obj.visual.from_dset(self.dataset_name, self.dataset_cat, chan_obj.insttype, True)
-				playlist_obj.visual.from_dset(self.dataset_name, self.dataset_cat, chan_obj.insttype, False)
+				fxchannel_obj.visual.from_datapack(self.dataset_name, self.dataset_cat, chan_obj.insttype, True)
+				playlist_obj.visual.from_datapack(self.dataset_name, self.dataset_cat, chan_obj.insttype, False)
 
 			cur_pl_pos = 0
 			for tpl in playstr.notestreams[ch_num].placements:

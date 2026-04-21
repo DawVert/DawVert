@@ -35,7 +35,7 @@ def get_asdr(plugin_obj, soundation_device):
 	plugin_obj.env_asdr_add('vol', 0, asdr_a, 0, asdr_d, asdr_s, asdr_r, 1)
 
 def autoall_sng_to_cvpj(convproj_obj, pluginid, soundation_device, plugin_obj, fxpluginname):
-	for param_id, dset_param in globalstore.dataset.get_params('soundation', 'plugin', fxpluginname):
+	for param_id, dset_param in globalstore.datapack.get_params('soundation', 'plugin', fxpluginname):
 		sndparam_obj = get_param(soundation_device, plugin_obj, param_id, ['plugin', pluginid, param_id], True)
 		plugin_obj.dset_param__add(param_id, sndparam_obj.value, dset_param)
 
@@ -112,8 +112,8 @@ class input_soundation(plugins.base):
 			except:
 				raise ProjectFileParserException('soundation: file is not Zipped or JSON')
 
-		globalstore.dataset.load('soundation', './data_main/dataset/soundation.dset')
-		globalstore.dataset.load('synth_nonfree', './data_main/dataset/synth_nonfree.dset')
+		globalstore.datapack.load('soundation', './data/datapack/app/soundation.dset')
+		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.dset')
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
@@ -341,7 +341,7 @@ class input_soundation(plugins.base):
 						plugin_obj.role = 'synth'
 						track_obj.plugslots.set_synth(pluginid)
 
-						fldso = globalstore.dataset.get_obj('synth_nonfree', 'plugin', 'europa')
+						fldso = globalstore.datapack.get_obj('synth_nonfree', 'plugin', 'europa')
 						if fldso:
 							for param_id, dset_param in fldso.params.iter():
 								outval = get_paramval(soundation_inst, "/custom_properties/"+dset_param.name)
@@ -382,7 +382,7 @@ class input_soundation(plugins.base):
 						plugin_obj.role = 'synth'
 						track_obj.plugslots.set_synth(pluginid)
 
-						fldso = globalstore.dataset.get_obj('soundation', 'plugin', instpluginname)
+						fldso = globalstore.datapack.get_obj('soundation', 'plugin', instpluginname)
 						if fldso:
 							for param_id, dset_param in fldso.params.iter():
 								outval = get_paramval(soundation_inst, param_id)

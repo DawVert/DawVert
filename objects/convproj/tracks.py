@@ -232,9 +232,9 @@ class cvpj_instrument:
 		if 'group' in injson: cls.group = injson['group']
 		return cls
 
-	def from_dataset(self, ds_id, ds_cat, ds_obj, ow_vis):
-		self.visual.from_dset(ds_id, ds_cat, ds_obj, ow_vis)
-		dso_obj = globalstore.dataset.get_obj(ds_id, ds_cat, ds_obj)
+	def from_datapack(self, ds_id, ds_cat, ds_obj, ow_vis):
+		self.visual.from_datapack(ds_id, ds_cat, ds_obj, ow_vis)
+		dso_obj = globalstore.datapack.get_obj(ds_id, ds_cat, ds_obj)
 		dso_midi = dso_obj.midi if dso_obj else None
 
 		midifound = False
@@ -257,7 +257,7 @@ class cvpj_instrument:
 		m_drum = midi_obj.drum
 		m_dev = midi_obj.device
 		self.params.add('usemasterpitch', not m_drum, 'bool')
-		self.visual.from_dset_midi(m_bank_hi, m_bank, m_inst, m_drum, m_dev, False)
+		self.visual.from_datapack_midi(m_bank_hi, m_bank, m_inst, m_drum, m_dev, False)
 
 	def to_midi(self, convproj_obj, plug_id, use_visual):
 		midi_obj = self.midi.out_inst
@@ -277,7 +277,7 @@ class cvpj_instrument:
 		plugin_obj.role = 'synth'
 		self.plugslots.synth = plug_id
 		self.params.add('usemasterpitch', not m_drum, 'bool')
-		if use_visual: self.visual.from_dset_midi(m_bank_hi, m_bank, m_inst, m_drum, m_dev, False)
+		if use_visual: self.visual.from_datapack_midi(m_bank_hi, m_bank, m_inst, m_drum, m_dev, False)
 		return plugin_obj
 
 class cvpj_return_track:
@@ -458,9 +458,9 @@ class cvpj_track:
 		if 'visual_keynotes' in injson: cls.visual_keynotes = visual.cvpj_visual_keynote.json__parse(injson['visual_keynotes'])
 		return cls
 
-	def from_dataset(self, ds_id, ds_cat, ds_obj, ow_vis):
-		self.visual.from_dset(ds_id, ds_cat, ds_obj, ow_vis)
-		dso_obj = globalstore.dataset.get_obj(ds_id, ds_cat, ds_obj)
+	def from_datapack(self, ds_id, ds_cat, ds_obj, ow_vis):
+		self.visual.from_datapack(ds_id, ds_cat, ds_obj, ow_vis)
+		dso_obj = globalstore.datapack.get_obj(ds_id, ds_cat, ds_obj)
 		dso_midi = dso_obj.midi if dso_obj else None
 
 		midifound = False
@@ -491,8 +491,8 @@ class cvpj_track:
 		plugin_obj.role = 'synth'
 		self.plugslots.synth = plug_id
 		self.params.add('usemasterpitch', not m_drum, 'bool')
-		if use_visual: self.visual.from_dset_midi(m_bank_hi, m_bank, m_inst, m_drum, m_dev, False)
-		self.visual_inst.from_dset_midi(m_bank_hi, m_bank, m_inst, m_drum, m_dev, False)
+		if use_visual: self.visual.from_datapack_midi(m_bank_hi, m_bank, m_inst, m_drum, m_dev, False)
+		self.visual_inst.from_datapack_midi(m_bank_hi, m_bank, m_inst, m_drum, m_dev, False)
 		return plugin_obj
 
 	def used_insts(self):

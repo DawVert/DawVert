@@ -48,7 +48,7 @@ def do_fx(convproj_obj, fxdata):
 
 			plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'soundop', fxname)
 
-			for param_id, dset_param in globalstore.dataset.get_params('soundop', 'plugin', fxname):
+			for param_id, dset_param in globalstore.datapack.get_params('soundop', 'plugin', fxname):
 				paramval = fxparams[dset_param.num] if dset_param.num in fxparams else None
 				plugin_obj.dset_param__add(param_id, paramval, dset_param)
 	
@@ -97,7 +97,7 @@ class input_soundop(plugins.base):
 		traits_obj.placement_loop = ['loop']
 		traits_obj.set_time_seconds(True)
 
-		globalstore.dataset.load('soundop', './data_main/dataset/soundop.dset')
+		globalstore.datapack.load('soundop', './data/datapack/app/soundop.dset')
 
 		project_obj = proj_soundop.soundop_proj()
 		if dawvert_intent.input_mode == 'file':

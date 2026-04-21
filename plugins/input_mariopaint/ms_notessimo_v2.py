@@ -40,7 +40,7 @@ class input_notessimo_v2(plugins.base):
 
 		convproj_obj.set_timings(4.0)
 
-		globalstore.dataset.load('notessimo_v2', './data_main/dataset/notessimo_v2.dset')
+		globalstore.datapack.load('notessimo_v2', './data/datapack/app/notessimo_v2.dset')
 		
 		# ---------- File ----------
 		project_obj = proj_notessimo_v2.notev2_song()
@@ -98,8 +98,8 @@ class input_notessimo_v2(plugins.base):
 		for used_inst in used_insts:
 			cvpj_instid = str(used_inst)
 			inst_obj = convproj_obj.instrument__add(cvpj_instid)
-			inst_obj.visual.from_dset('notessimo_v2', 'inst', cvpj_instid, True)
-			midifound = inst_obj.midi.out_inst.from_dataset('notessimo_v2', 'inst', cvpj_instid)
+			inst_obj.visual.from_datapack('notessimo_v2', 'inst', cvpj_instid, True)
+			midifound = inst_obj.midi.out_inst.from_datapack('notessimo_v2', 'inst', cvpj_instid)
 			inst_obj.fxrack_channel = 1 if inst_obj.midi.out_inst.drum else fxnum
 			if midifound:
 				fxchan_data = convproj_obj.fx__chan__add(fxnum)

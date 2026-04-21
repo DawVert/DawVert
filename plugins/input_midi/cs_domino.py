@@ -35,8 +35,8 @@ class input_domino(plugins.base):
 		traits_obj.auto_types = ['nopl_ticks']
 		traits_obj.track_nopl = True
 
-		globalstore.dataset.load('midi', './data_main/dataset/midi.dset')
-		colordata = colors.colorset.from_dataset('midi', 'track', 'domino')
+		globalstore.datapack.load('midi', './data/datapack/app/midi.dset')
+		colordata = colors.colorset.from_datapack('midi', 'track', 'domino')
 
 		project_obj = proj_domino.dms_project()
 		if dawvert_intent.input_mode == 'file':

@@ -37,7 +37,7 @@ class input_korg_m1_nds(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.dataset.load('korg_m1d', './data_main/dataset/korg_m1d.dset')
+		globalstore.datapack.load('korg_m1d', './data/datapack/realsynth/korg_m1d.dset')
 
 		projsong_obj = project_obj.songs[dawvert_intent.songnum]
 		
@@ -74,7 +74,7 @@ class input_korg_m1_nds(plugins.base):
 
 			if channel_obj.mode<3:
 				instset = ['m1','m1w','ex'][channel_obj.mode]
-				dset_cat_obj = globalstore.dataset.get_cat('korg_m1d', instset)
+				dset_cat_obj = globalstore.datapack.get_cat('korg_m1d', instset)
 				if dset_cat_obj:
 					if 'numstarts' in dset_cat_obj.data:
 						try:

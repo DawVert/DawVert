@@ -40,7 +40,7 @@ class input_gt_mnbs(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.dataset.load('noteblockstudio', './data_main/dataset/noteblockstudio.dset')
+		globalstore.datapack.load('noteblockstudio', './data/datapack/app/noteblockstudio.dset')
 
 		tempo = (project_obj.tempo/800)*120
 
@@ -56,7 +56,7 @@ class input_gt_mnbs(plugins.base):
 		for instnum in range(16):
 			instid = 'NoteBlock'+str(instnum)
 			inst_obj = convproj_obj.instrument__add(instid)
-			midifound = inst_obj.from_dataset('noteblockstudio', 'inst', str(instnum), True)
+			midifound = inst_obj.from_datapack('noteblockstudio', 'inst', str(instnum), True)
 			if midifound: inst_obj.to_midi(convproj_obj, instid, True)
 
 		for nbs_layer, layer_obj in enumerate(project_obj.layers):

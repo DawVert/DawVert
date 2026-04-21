@@ -61,8 +61,8 @@ class input_petaporon(plugins.base):
 
 		peta_notelists = [[] for _ in range(10)]
 
-		globalstore.dataset.load('petaporon', './data_main/dataset/petaporon.dset')
-		colordata = colors.colorset.from_dataset('petaporon', 'inst', 'main')
+		globalstore.datapack.load('petaporon', './data/datapack/app/petaporon.dset')
+		colordata = colors.colorset.from_datapack('petaporon', 'inst', 'main')
 
 		for _ in range(len(peta_noteints)//5):
 			partdata = bio_peta_notebytes.read(5)

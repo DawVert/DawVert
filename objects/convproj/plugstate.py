@@ -124,7 +124,7 @@ class cvpj_plugin_state:
 
 	# -------------------------------------------------- dataset
 	def from_bytes(self, in_bytes, ds_name, df_name, cat_name, obj_name, structname): 
-		fldso = globalstore.dataset.get_obj(ds_name, 'plugin', obj_name)
+		fldso = globalstore.datapack.get_obj(ds_name, 'plugin', obj_name)
 		fldf = globalstore.datadef.get(df_name)
 
 		try:
@@ -151,7 +151,7 @@ class cvpj_plugin_state:
 
 	def to_bytes(self, ds_name, df_name, cat_name, obj_name, structname): 
 		fldf = globalstore.datadef.get(df_name)
-		fldso = globalstore.dataset.get_obj(ds_name, 'plugin', obj_name)
+		fldso = globalstore.datapack.get_obj(ds_name, 'plugin', obj_name)
 
 		if fldf and fldso:
 			dsetdict = self.param_dict_dataset_set(ds_name, 'plugin', obj_name)
@@ -176,7 +176,7 @@ class cvpj_plugin_state:
 
 
 
-	def add_from_dset(self, p_id, p_value, dset, ds_cat, ds_group): 
+	def add_from_datapack(self, p_id, p_value, dset, ds_cat, ds_group): 
 		defparams = dset.params_i_get(ds_cat, ds_group, p_id)
 		if defparams != None:
 			if p_value == None: p_value = defparams[2]
@@ -198,7 +198,7 @@ class cvpj_plugin_state:
 				self.dset_param__add(param_id, outval, dset_param)
 
 	def param_dict_dataset_set(self, ds_name, catname, pluginname):
-		fldso = globalstore.dataset.get_obj(ds_name, 'plugin', pluginname)
+		fldso = globalstore.datapack.get_obj(ds_name, 'plugin', pluginname)
 		outdict = {}
 		if fldso:
 			for param_id, dset_param in fldso.params.iter():

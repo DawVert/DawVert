@@ -40,7 +40,7 @@ def eq_calc_q(band_type, q_val):
 	return q_val
 
 def do_idparams(paramsdata, plugin_obj, pluginname):
-	fldso = globalstore.dataset.get_obj('amped', 'plugin', pluginname)
+	fldso = globalstore.datapack.get_obj('amped', 'plugin', pluginname)
 	if fldso:
 		for param in paramsdata:
 			dset_param = fldso.params.get(param.name)
@@ -137,7 +137,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 								value_value = float(objsub.text) if value_type == 'number' else objsub.text
 								europa_params[value_name] = [value_type, value_value]
 
-				dataset_synth_nonfree = globalstore.dataset.get_obj('synth_nonfree', 'plugin', 'europa')
+				dataset_synth_nonfree = globalstore.datapack.get_obj('synth_nonfree', 'plugin', 'europa')
 				if dataset_synth_nonfree:
 					for param_id, dset_param in dataset_synth_nonfree.params.iter():
 						if dset_param.name in europa_params:
@@ -360,8 +360,8 @@ class input_amped(plugins.base):
 
 		convproj_obj.set_timings(1.0)
 
-		globalstore.dataset.load('amped', './data_main/dataset/amped.dset')
-		globalstore.dataset.load('synth_nonfree', './data_main/dataset/synth_nonfree.dset')
+		globalstore.datapack.load('amped', './data/datapack/app/amped.dset')
+		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.dset')
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 

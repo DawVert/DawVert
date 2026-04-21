@@ -18,35 +18,37 @@ def get_visual_inst(m_bank_hi, m_bank, m_inst, m_drum, m_dev):
 	out_name = None
 
 	midi_dev = m_dev if m_dev else 'gm'
-	globalstore.dataset.load('midi', './data_main/dataset/midi.dset')
+	dpackname = 'midi_'+midi_dev
+	globalstore.datapack.load(dpackname, './data/datapack/midi/%s.xml' % midi_dev)
+
 	if midi_dev == 'xg':
 		startcat = 'xg_inst'
 		if m_drum: m_bank = 127
 
-		d = globalstore.dataset.get_obj('midi', startcat, str(m_bank_hi)+'_'+str(m_bank)+'_'+str(m_inst))
+		d = globalstore.datapack.get_obj(dpackname, startcat, str(m_bank_hi)+'_'+str(m_bank)+'_'+str(m_inst))
 		if d:
 			if d.visual.color: out_color = d.visual.color
 			if d.visual.color: out_name = d.visual.name
 
-		d = globalstore.dataset.get_obj('midi', startcat, '0_'+str(m_bank)+'_'+str(m_inst))
+		d = globalstore.datapack.get_obj(dpackname, startcat, '0_'+str(m_bank)+'_'+str(m_inst))
 		if d:
 			if d.visual.color and not out_color: out_color = d.visual.color
 			if d.visual.color and not out_name: out_name = d.visual.name
 
-		d = globalstore.dataset.get_obj('midi', startcat, '0_0_'+str(m_inst))
+		d = globalstore.datapack.get_obj(dpackname, startcat, '0_0_'+str(m_inst))
 		if d:
 			if d.visual.color and not out_color: out_color = d.visual.color
 			if d.visual.color and not out_name: out_name = d.visual.name
 
 	else:
 		startcat = midi_dev+'_inst' if not m_drum else midi_dev+'_drums'
-		d = globalstore.dataset.get_obj('midi', startcat, str(m_bank_hi)+'_'+str(m_bank)+'_'+str(m_inst))
+		d = globalstore.datapack.get_obj(dpackname, startcat, str(m_bank_hi)+'_'+str(m_bank)+'_'+str(m_inst))
 
 		if d:
 			if d.visual.color: out_color = d.visual.color
 			if d.visual.color: out_name = d.visual.name
 
-		d = globalstore.dataset.get_obj('midi', startcat, '0_0_'+str(m_inst))
+		d = globalstore.datapack.get_obj(dpackname, startcat, '0_0_'+str(m_inst))
 		if d:
 			if d.visual.color and not out_color: out_color = d.visual.color
 			if d.visual.color and not out_name: out_name = d.visual.name

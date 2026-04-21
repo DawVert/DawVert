@@ -406,7 +406,7 @@ def add_plugindevice_native(als_track, convproj_obj, plugin_obj, pluginid):
 		als_device.IsExpanded = False
 
 	parampaths = {}
-	fldso = globalstore.dataset.get_obj('ableton', 'plugin', plugin_obj.type.subtype)
+	fldso = globalstore.datapack.get_obj('ableton', 'plugin', plugin_obj.type.subtype)
 	if fldso:
 		for param_id, dset_param in fldso.params.iter():
 			paramname = param_id.split('/')[-1]
@@ -1315,8 +1315,8 @@ class output_ableton(plugins.base):
 		project_obj = proj_ableton.ableton_liveset()
 		project_obj.make_from_scratch()
 
-		globalstore.dataset.load('ableton', './data_main/dataset/ableton.dset')
-		colordata = colors.colorset.from_dataset('ableton', 'track', 'main')
+		globalstore.datapack.load('ableton', './data/datapack/app/ableton.dset')
+		colordata = colors.colorset.from_datapack('ableton', 'track', 'main')
 
 		counter_note = data_values.counter(0)
 		counter_keytrack = data_values.counter(-1)

@@ -40,8 +40,8 @@ class input_hypnospace_hsm(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.dataset.load('hypnospace_hsm', './data_main/dataset/hypnospace_hsm.dset')
-		colordata = colors.colorset.from_dataset('hypnospace_hsm', 'sample', 'main')
+		globalstore.datapack.load('hypnospace_hsm', './data/datapack/app/hypnospace_hsm.dset')
+		colordata = colors.colorset.from_datapack('hypnospace_hsm', 'sample', 'main')
 
 		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'hypnospace_hsm', ['hypnospace_hsm'])
 

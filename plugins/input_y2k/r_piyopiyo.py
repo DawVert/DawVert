@@ -51,8 +51,8 @@ class input_piyopiyo(plugins.base):
 
 		extpath_path = os.path.join(dawvert_intent.path_external_data, 'piyopiyo')
 
-		globalstore.dataset.load('piyopiyo', './data_main/dataset/piyopiyo.dset')
-		colordata = colors.colorset.from_dataset('piyopiyo', 'inst', 'main')
+		globalstore.datapack.load('piyopiyo', './data/datapack/app/piyopiyo.dset')
+		colordata = colors.colorset.from_datapack('piyopiyo', 'inst', 'main')
 
 		for tracknum in range(3):
 			pmdtrack_obj = project_obj.tracks[tracknum]

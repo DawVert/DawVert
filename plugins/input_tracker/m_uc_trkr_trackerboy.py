@@ -64,7 +64,7 @@ class input_trackerboy(plugins.base):
 		
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		globalstore.dataset.load('trackerboy', './data_main/dataset/trackerboy.dset')
+		globalstore.datapack.load('trackerboy', './data/datapack/app/trackerboy.dset')
 
 		tbm_cursong = project_obj.songs[dawvert_intent.songnum]
 
@@ -111,7 +111,7 @@ class input_trackerboy(plugins.base):
 				inst_obj.fxrack_channel = channum+1
 
 				insttype = patterndata_obj.get_channel_insttype(channum)
-				inst_obj.visual.from_dset('trackerboy', 'chip', insttype, False)
+				inst_obj.visual.from_datapack('trackerboy', 'chip', insttype, False)
 
 				plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
 				plugin_obj.role = 'synth'

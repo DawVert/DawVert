@@ -125,7 +125,7 @@ class input_bandlab(plugins.base):
 
 		if not success: exit()
 
-		globalstore.dataset.load('bandlab', './data_main/dataset/bandlab.dset')
+		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.dset')
 
 		bpm = project_obj.metronome.bpm
 		convproj_obj.params.add('bpm', bpm, 'float')
@@ -191,7 +191,7 @@ class input_bandlab(plugins.base):
 				track_obj = convproj_obj.track__add(cxf_track.id, 'instrument', 1, False)
 
 			if cxf_track.soundbank:
-				if not track_obj.visual_inst.from_dset('bandlab', 'inst', cxf_track.soundbank, False):
+				if not track_obj.visual_inst.from_datapack('bandlab', 'inst', cxf_track.soundbank, False):
 					track_obj.visual_inst.name = cxf_track.soundbank
 
 			if track_obj:
@@ -223,7 +223,7 @@ class input_bandlab(plugins.base):
 						plugin_obj = convproj_obj.plugin__add(cxf_track.id, 'native', 'bandlab', 'instrument')
 						plugin_obj.datavals.add('instrument', cxf_track.soundbank)
 						plugin_obj.role = 'synth'
-						plugin_obj.midi_fallback__add_from_dset('bandlab', 'inst', cxf_track.soundbank)
+						plugin_obj.midi_fallback__add_from_datapack('bandlab', 'inst', cxf_track.soundbank)
 						track_obj.plugslots.set_synth(cxf_track.id)
 
 					for cxf_region in cxf_track.regions:
@@ -326,7 +326,7 @@ def do_plugin(convproj_obj, startid, cxf_effect, num, fxid, stored_vals_obj):
 
 		plugparams = cxf_effect.params
 
-		dseto_obj = globalstore.dataset.get_obj('bandlab', 'fx', cxf_effect.slug)
+		dseto_obj = globalstore.datapack.get_obj('bandlab', 'fx', cxf_effect.slug)
 		if dseto_obj:
 			dseto_obj.visual.apply_cvpj_visual(plugin_obj.visual)
 			for param_id, dset_param in dseto_obj.params.iter():

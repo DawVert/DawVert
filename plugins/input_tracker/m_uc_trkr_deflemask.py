@@ -32,7 +32,7 @@ class input_deflemask(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		globalstore.dataset.load('furnace', './data_main/dataset/furnace.dset')
+		globalstore.datapack.load('furnace', './data/datapack/app/furnace.dset')
 
 		patterndata_obj = pat_multi.multi_patsong()
 		patterndata_obj.num_rows = project_obj.total_rows_per_pattern
@@ -113,7 +113,7 @@ class input_deflemask(plugins.base):
 				inst_obj.fxrack_channel = channum+1
 
 				insttype = patterndata_obj.get_channel_insttype(channum)
-				inst_obj.visual.from_dset('furnace', 'chip', insttype, False)
+				inst_obj.visual.from_datapack('furnace', 'chip', insttype, False)
 
 				if instnum<10000:
 					dmf_inst = project_obj.insts[instnum]

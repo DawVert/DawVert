@@ -38,8 +38,8 @@ class input_orgyana(plugins.base):
 		traits_obj.auto_types = ['nopl_points']
 		traits_obj.track_nopl = True
 
-		globalstore.dataset.load('orgyana', './data_main/dataset/orgyana.dset')
-		colordata = colors.colorset.from_dataset('orgyana', 'track', 'orgmaker_2')
+		globalstore.datapack.load('orgyana', './data/datapack/app/orgyana.dset')
+		colordata = colors.colorset.from_datapack('orgyana', 'track', 'orgmaker_2')
 
 		project_obj = proj_orgyana.orgyana_project()
 		if dawvert_intent.input_mode == 'file':
@@ -58,7 +58,7 @@ class input_orgyana(plugins.base):
 				idval = 'org_'+str(tracknum)
 				track_obj = convproj_obj.track__add(idval, 'instrument', 0, False)
 				if tracknum > 7: 
-					track_obj.visual.from_dset('orgyana', 'drums', str(orgtrack_obj.instrument), False)
+					track_obj.visual.from_datapack('orgyana', 'drums', str(orgtrack_obj.instrument), False)
 					track_obj.is_drum = True
 					if orgsamp_obj.loaded:
 						drum_filename = os.path.join(dawvert_intent.path_samples['extracted']+'orgmaker_drum_'+str(orgtrack_obj.instrument)+'.wav')

@@ -177,7 +177,7 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 				track_obj.plugslots.set_synth(pluginid)
 	
 				if "state" in wf_plugin.params:
-					colordata = colors.colorset.from_dataset('waveform', 'plugin', 'drum_sampler')
+					colordata = colors.colorset.from_datapack('waveform', 'plugin', 'drum_sampler')
 					sampler_obj = sampler.waveform_sampler_main()
 					sampler_obj.read( juce_memoryblock.fromJuceBase64Encoding(wf_plugin.params['state']) )
 					program = sampler_obj.program.programdata
@@ -266,7 +266,7 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 				windata_obj.pos_x = wf_plugin.windowX
 				windata_obj.pos_y = wf_plugin.windowY
 	
-			for param_id, dset_param in globalstore.dataset.get_params('waveform', 'plugin', plugtype):
+			for param_id, dset_param in globalstore.datapack.get_params('waveform', 'plugin', plugtype):
 				paramval = wf_plugin.params[param_id] if param_id in wf_plugin.params else None
 				if paramval is not None:
 					if dset_param.type == 'float': paramval = float(paramval)
@@ -582,7 +582,7 @@ class input_tracktion_edit(plugins.base):
 
 		convproj_obj.set_timings(4.0)
 
-		globalstore.dataset.load('waveform', './data_main/dataset/waveform.dset')
+		globalstore.datapack.load('waveform', './data/datapack/app/waveform.dset')
 
 		samples = {}
 		videos = {}

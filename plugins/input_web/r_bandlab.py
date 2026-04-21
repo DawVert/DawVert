@@ -54,7 +54,7 @@ class input_bandlab(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.dataset.load('bandlab', './data_main/dataset/bandlab.dset')
+		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.dset')
 
 		bpm = 120
 		if 'bpm' in project_obj.metronome:
@@ -90,7 +90,7 @@ class input_bandlab(plugins.base):
 				track_obj = convproj_obj.track__add(blx_track.id, 'instrument', 1, False)
 
 			if blx_track.soundbank:
-				if not track_obj.visual_inst.from_dset('bandlab', 'inst', blx_track.soundbank, False):
+				if not track_obj.visual_inst.from_datapack('bandlab', 'inst', blx_track.soundbank, False):
 					track_obj.visual_inst.name = blx_track.soundbank
 
 			if blx_track.type in ['creators-kit']:
@@ -153,7 +153,7 @@ class input_bandlab(plugins.base):
 
 								use_drum = True
 
-								colordrumdata = colors.colorset.from_dataset('bandlab', 'global', 'drum')
+								colordrumdata = colors.colorset.from_datapack('bandlab', 'global', 'drum')
 
 								for layer in layers_list:
 									minKeyRange = layer['minKeyRange'] if 'minKeyRange' in layer else 60
@@ -197,7 +197,7 @@ class input_bandlab(plugins.base):
 						plugin_obj = convproj_obj.plugin__add(blx_track.id, 'native', 'bandlab', 'instrument')
 						plugin_obj.datavals.add('instrument', blx_track.soundbank)
 						plugin_obj.role = 'synth'
-						plugin_obj.midi_fallback__add_from_dset('bandlab', 'inst', blx_track.soundbank)
+						plugin_obj.midi_fallback__add_from_datapack('bandlab', 'inst', blx_track.soundbank)
 						track_obj.plugslots.set_synth(blx_track.id)
 
 				for blx_region in blx_track.regions:
@@ -264,7 +264,7 @@ def do_track_common(convproj_obj, track_obj, blx_track, tempomul):
 
 		plugparams = blx_effect.params
 
-		dseto_obj = globalstore.dataset.get_obj('bandlab', 'fx', blx_effect.slug)
+		dseto_obj = globalstore.datapack.get_obj('bandlab', 'fx', blx_effect.slug)
 		if dseto_obj:
 			dseto_obj.visual.apply_cvpj_visual(plugin_obj.visual)
 			for param_id, dset_param in dseto_obj.params.iter():

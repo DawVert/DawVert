@@ -38,7 +38,7 @@ class input_petaporon(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		globalstore.dataset.load('acid_machine_2', './data_main/dataset/acid_machine_2.dset')
+		globalstore.datapack.load('acid_machine_2', './data/datapack/app/acid_machine_2.dset')
 
 		convproj_obj.type = 'ri'
 		convproj_obj.set_timings(4)
@@ -56,9 +56,9 @@ class input_petaporon(plugins.base):
 		for instid, instdata in proj_song.instruments.items():
 			machineName = instdata.machineName
 			track_obj = convproj_obj.track__add(instid, 'instrument', 1, True)
-			track_obj.visual.from_dset('acid_machine_2', 'plugin_inst', machineName, True)
+			track_obj.visual.from_datapack('acid_machine_2', 'plugin_inst', machineName, True)
 			plugin_obj = convproj_obj.plugin__add(instid, 'native', 'acidmach2', machineName)
-			plugin_obj.visual.from_dset('acid_machine_2', 'plugin_inst', machineName, True)
+			plugin_obj.visual.from_datapack('acid_machine_2', 'plugin_inst', machineName, True)
 			track_obj.plugslots.set_synth(instid)
 			tracks[instid] = track_obj
 			idinstnum_assoc.append(instid)
@@ -95,11 +95,11 @@ class input_petaporon(plugins.base):
 					fxtype, fxdata = fxUnits[slotnum]
 					plugin_obj, fxid = convproj_obj.plugin__add__genid('native', 'acidmach2', 'fx_'+str(fxtype))
 					plugin_obj.role = 'fx'
-					plugin_obj.visual.from_dset('acid_machine_2', 'plugin_fx', str(fxtype), True)
+					plugin_obj.visual.from_datapack('acid_machine_2', 'plugin_fx', str(fxtype), True)
 					track_obj.plugin_autoplace(plugin_obj, fxid)
 
 					if 'controls' in fxdata:
-						fldso = globalstore.dataset.get_obj('acid_machine_2', 'plugin_fx', str(fxtype))
+						fldso = globalstore.datapack.get_obj('acid_machine_2', 'plugin_fx', str(fxtype))
 						for num, control in enumerate(fxdata['controls']):
 							dset_param = fldso.params.get(str(num))
 							if dset_param: plugin_obj.dset_param__add(str(num), control, dset_param)
