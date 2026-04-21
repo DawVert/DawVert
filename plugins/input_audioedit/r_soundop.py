@@ -39,7 +39,7 @@ def do_fx(convproj_obj, fxdata):
 		#try:
 		if True:
 			ebrw_readstr = easybinrw.binread()
-			ebrw_readstr.load_file(StateChunk)
+			ebrw_readstr.load_data(StateChunk)
 			ebrw_readstr.magic_check(b'XEFD')
 			unk1 = ebrw_readstr.int_u32()
 			unk2 = ebrw_readstr.int_u32()

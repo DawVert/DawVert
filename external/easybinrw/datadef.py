@@ -95,7 +95,7 @@ class datadef_part:
 		elif self.size_source == 'lenval': return state.lengths[self.size_name]
 		elif self.size_source == 'fromkey': return outval[self.size_local_name]
 
-	def getvaluelist(self, state, outval):
+	def get_valuelist(self, state, outval):
 		reader = state.reader
 		size = self.get_lenval(state, outval)
 
@@ -199,7 +199,7 @@ class datadef_part:
 			printtab(state, '<< STRUCT_END', None, None, None)
 			return outv
 
-		elif self.bintype == 'list': return self.getvaluelist(state, outval)
+		elif self.bintype == 'list': return self.get_valuelist(state, outval)
 
 	def parse(self, state, outval, num):
 		if self.type == 'part':
