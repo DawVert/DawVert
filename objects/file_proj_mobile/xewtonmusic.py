@@ -75,16 +75,19 @@ class xewtonmusic_song_note:
 		self.key = 0
 		self.vol = 0
 		self.unk = 0
-		self.unk1_data = b''
+		self.auto = []
 
 	def read(self, ebrw_readstr):
 		self.pos = ebrw_readstr.int_u32()
 		self.dur = ebrw_readstr.int_u32()
 		self.key = ebrw_readstr.int_u8()
 		self.vol = ebrw_readstr.int_u8()
-		self.unk1 = ebrw_readstr.int_u8()
-		self.unk2 = ebrw_readstr.int_u8()
-		if self.unk1: self.unk1_data = ebrw_readstr.raw(self.unk1*4)
+		self.unk1 = ebrw_readstr.int_u16()
+		if self.unk1: 
+			for _ in range(self.unk1):
+				auto_pos = ebrw_readstr.int_u16()
+				auto_val = ebrw_readstr.int_u16()
+				self.auto.append([auto_pos, auto_val])
 
 class xewtonmusic_song_notes:
 	def __init__(self):
@@ -246,6 +249,8 @@ class xewtonmusic_inst_file:
 				self.samples.append(sample_obj)
 			elif chunk_name==b'SDAT':
 				sample_obj.data = ebrw_readstr.rest()
+			#else:
+			#	print(chunk_name)
 
 			ebrw_readstr.isolate_end()
 
