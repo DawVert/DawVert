@@ -388,7 +388,7 @@ class cvpj_visual:
 		midi_dev = m_dev if m_dev else 'gm'
 		if overwrite or (not self.name or not self.color):
 			dpackname = 'midi_'+midi_dev
-			globalstore.datapack.load(dpackname, './data/datapack/midi/%s.dset' % midi_dev)
+			globalstore.datapack.load(dpackname, './data/datapack/midi/%s.xml' % midi_dev)
 			if midi_dev == 'xg':
 				startcat = 'xg_inst'
 				if m_drum: m_bank = 127

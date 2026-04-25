@@ -584,11 +584,11 @@ class cvpj_project:
 		return len(self.track_order)
 
 	def track__addspec__midi(self, track_id, uses_placements, is_indexed, indict):
-		plugin_obj = self.plugin__addspec__midi(plug_id, indict)
+		plugin_obj = self.plugin__addspec__midi(track_id, indict)
 		plugin_obj.role = 'synth'
 
 		track_obj = self.track__add(track_id, 'instrument', uses_placements, is_indexed)
-		track_obj.plugslots.set_synth(plug_id)
+		track_obj.plugslots.set_synth(track_id)
 		track_obj.params.add('usemasterpitch', not m_drum, 'bool')
 		return track_obj, plugin_obj
 
