@@ -142,43 +142,43 @@ class extlib:
 		return extlib.loaded_parts[nameid] if nameid in extlib.loaded_parts else None
 
 class datapack:
-    loaded_parts = {}
-    def load(dset_name, filepath):
-        if dset_name not in datapack.loaded_parts:
-            if os.path.exists(filepath):
-                datapack.loaded_parts[dset_name] = dp_class.datapack(filepath)
-                logger_globalstore.info('datapack: Loaded "'+filepath+'" as '+dset_name)
-                return 1
-            else: return -1
-        else: return 0
+	loaded_parts = {}
+	def load(dset_name, filepath):
+		if dset_name not in datapack.loaded_parts:
+			if os.path.exists(filepath):
+				datapack.loaded_parts[dset_name] = dp_class.datapack(filepath)
+				logger_globalstore.info('datapack: Loaded "'+filepath+'" as '+dset_name)
+				return 1
+			else: return -1
+		else: return 0
 
-    def get(d_id):
-        return datapack.loaded_parts[d_id] if d_id in datapack.loaded_parts else None
+	def get(d_id):
+		return datapack.loaded_parts[d_id] if d_id in datapack.loaded_parts else None
 
-    def get_obj(d_id, d_cat, d_item):
-        o_dset = datapack.loaded_parts[d_id] if d_id in datapack.loaded_parts else None
-        if o_dset:
-            if d_cat in o_dset.categorys:
-                return o_dset.categorys[d_cat].objects.get(d_item)
+	def get_obj(d_id, d_cat, d_item):
+		o_dset = datapack.loaded_parts[d_id] if d_id in datapack.loaded_parts else None
+		if o_dset:
+			if d_cat in o_dset.categorys:
+				return o_dset.categorys[d_cat].objects.get(d_item)
 
-    def get_cat(d_id, d_cat):
-        o_dset = datapack.loaded_parts[d_id] if d_id in datapack.loaded_parts else None
-        if o_dset:
-            return o_dset.categorys[d_cat] if d_cat in o_dset.categorys else None
+	def get_cat(d_id, d_cat):
+		o_dset = datapack.loaded_parts[d_id] if d_id in datapack.loaded_parts else None
+		if o_dset:
+			return o_dset.categorys[d_cat] if d_cat in o_dset.categorys else None
 
-    def get_params(d_id, d_cat, d_item):
-        fldso = datapack.get_obj(d_id, d_cat, d_item)
-        if fldso:
-            return fldso.params.iter()
-        else:
-            return []
+	def get_params(d_id, d_cat, d_item):
+		fldso = datapack.get_obj(d_id, d_cat, d_item)
+		if fldso:
+			return fldso.params.iter()
+		else:
+			return []
 
-    def get_datavals(d_id, d_cat, d_item):
-        fldso = datapack.get_obj(d_id, d_cat, d_item)
-        if fldso:
-            return fldso.datavals.iter()
-        else:
-            return []
+	def get_datavals(d_id, d_cat, d_item):
+		fldso = datapack.get_obj(d_id, d_cat, d_item)
+		if fldso:
+			return fldso.datavals.iter()
+		else:
+			return []
 
 class datadef:
 	loaded_parts = {}
