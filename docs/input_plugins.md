@@ -11,7 +11,6 @@
 | M-S | ```main``` | ```serato``` | Serato Studio | ```.ssp``` | ✔️ | |
 | R | ```main``` | ```tracktion_edit``` | Waveform<br>SoundBug/音虫 | ```.tracktionedit``` | ✔️ | |
 | R | ```main``` | ```zenbeats``` | ZenBeats | ```.song``` | ✔️ | |
-| R | ```main``` | ```bandlab_blx``` | Bandlab BLX | ```.blx``` | ✔️ | |
 | R | ```main``` | ```qtractor``` | Qtractor | ```.qtr``` | ✔️ | |
 
 ## Tracker
@@ -71,12 +70,14 @@
 ## Modern Web
 | DataType | PluginSet | Short Name | Name | Ext | Autodetect | Info | 
 | --- | --- | --- | :--- | :--- | :--- | :--- |
-| M-I | ```main``` | ```jummbox``` | Beepbox/Jummbox | ```.json``` | ❌ | |
-| R | ```main``` | ```amped``` | Amped Studio<br>Spume Studio | ```.amped``` | ✔️ | |
-| R | ```main``` | ```onlineseq``` | Online Sequencer | ```.sequence``` | ✔️ | |
-| R | ```uncommon``` | ```petaporon``` | Petaporon | ```.json``` | ❌ | |
-| R | ```main``` | ```soundation``` | Soundation | ```.sng``` | ✔️ | |
-| R | ```main``` | ```wavtool``` | WavTool | ```.zip``` | ❌ | |
+| M-I | ```web``` | ```jummbox``` | Beepbox/Jummbox | ```.json``` | ❌ | |
+| R | ```web``` | ```amped``` | Amped Studio<br>Spume Studio | ```.amped``` | ✔️ | |
+| R | ```web``` | ```onlineseq``` | Online Sequencer | ```.sequence``` | ✔️ | |
+| R | ```web``` | ```petaporon``` | Petaporon | ```.json``` | ❌ | |
+| R | ```web``` | ```soundation``` | Soundation | ```.sng``` | ✔️ | |
+| R | ```web``` | ```wavtool``` | WavTool | ```.zip``` | ❌ | |
+| R | ```web``` | ```bandlab_blx``` | Bandlab BLX | ```.blx``` | ✔️ | |
+| R | ```web``` | ```greysound``` | Greysound | ```.zip``` | ✔️ | |
 
 ## Mobile
 | DataType | PluginSet | Short Name | Name | Ext | Autodetect | Info | 
@@ -85,6 +86,7 @@
 | R | ```mobile``` | ```fl_mobile``` | FL Studio Mobile | ```.flm``` | ✔️ | | 
 | R | ```mobile``` | ```nanostudio_v1``` | NanoStudio 1 | ```.prj``` | ✔️ | |
 | R | ```mobile``` | ```viscentsoft_coolbeat``` | 玩酷电音/CoolBeat | ```.mlp``` | ✔️ | |
+| R-I | ```mobile``` | ```midsequer``` | Midsequer | ```.mdsq``` | ✔️ |  |
 
 ## Audio Editors
 | DataType | PluginSet | Short Name | Name | Ext | Autodetect | Info | 
@@ -123,6 +125,11 @@
 | --- | --- | --- | :--- | :--- |
 | R | ```exper``` | ```color_art``` | Color Art | Image to Clip Colors
 | R | ```exper``` | ```libopenmpt``` | libOpenMPT | 38 Formats
+
+## Experiments
+| DataType | PluginSet | Short Name | Name | Info |
+| --- | --- | --- | :--- | :--- |
+| R | ```gameres``` | ```hypnospace_hsm``` | Hypnospace HSM | |
 
 ## AI
 | DataType | PluginSet | Short Name | Name | Info |

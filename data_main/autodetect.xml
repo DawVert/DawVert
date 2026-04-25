@@ -72,7 +72,7 @@
 		<xml root_name="Ableton"/>
 	</plugin>
 
-	<plugin pluginset="main" name="amped">
+	<plugin pluginset="web" name="amped">
 		<file fileext=".amped"/>
 		<archived type="zip" file="amped-studio-project.json"/>
 	</plugin>
@@ -487,5 +487,9 @@
 
 	<plugin pluginset="mobile" name="midsequer">
 		<file fileext=".mdsq"/>
+	</plugin>
+
+	<plugin pluginset="mobile" name="xewton_music">
+		<file fileext=".xms"/>
 	</plugin>
 </autodetect>

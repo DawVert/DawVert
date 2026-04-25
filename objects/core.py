@@ -474,9 +474,10 @@ class core:
 					isconverted = sampleref_obj.convert(out_dawinfo.audio_filetypes, dawvert_intent.path_samples['converted'])
 
 	def convert_plugins(self, dawvert_intent): 
-		if out_dawinfo.plugin_ext_arch:
-			globalstore.os_info_target.bits = out_dawinfo.plugin_ext_arch
-		plug_conv.convproj(self.convproj_obj, in_dawinfo, out_dawinfo, self.currentplug_output.selected_shortname, self.currentplug_input.selected_shortname, dawvert_intent)
+		print('!! plugconv disabled for now')
+		#if out_dawinfo.plugin_ext_arch:
+		#	globalstore.os_info_target.bits = out_dawinfo.plugin_ext_arch
+		#plug_conv.convproj(self.convproj_obj, in_dawinfo, out_dawinfo, self.currentplug_output.selected_shortname, self.currentplug_input.selected_shortname, dawvert_intent)
 
 	def parse_output(self, dawvert_intent): 
 		plug_obj = self.currentplug_output.selected_plugin.plug_obj

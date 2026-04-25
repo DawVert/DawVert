@@ -36,8 +36,8 @@ class input_deflemask(plugins.base):
 
 		patterndata_obj = pat_multi.multi_patsong()
 		patterndata_obj.num_rows = project_obj.total_rows_per_pattern
-		patterndata_obj.dataset_name = 'furnace'
-		patterndata_obj.dataset_cat = 'chip'
+		patterndata_obj.datapack_name = 'furnace'
+		patterndata_obj.datapack_cat = 'chip'
 
 		if project_obj.song_name: convproj_obj.metadata.name = project_obj.song_name
 		if project_obj.song_author: convproj_obj.metadata.author = project_obj.song_author

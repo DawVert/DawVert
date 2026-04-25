@@ -10,8 +10,8 @@ class multi_patsong:
 	def __init__(self):
 		self.num_chans = 0
 		self.num_rows = 0
-		self.dataset_name = None
-		self.dataset_cat = None
+		self.datapack_name = None
+		self.datapack_cat = None
 		self.channels = []
 		self.patdata = {}
 		self.orders = []
@@ -77,9 +77,9 @@ class multi_patsong:
 			if chan_obj.color: playlist_obj.visual.color.set_float(chan_obj.color)
 
 			fxchannel_obj = convproj_obj.fx__chan__add(ch_num+1)
-			if self.dataset_name and self.dataset_cat:
-				fxchannel_obj.visual.from_datapack(self.dataset_name, self.dataset_cat, chan_obj.insttype, True)
-				playlist_obj.visual.from_datapack(self.dataset_name, self.dataset_cat, chan_obj.insttype, False)
+			if self.datapack_name and self.datapack_cat:
+				fxchannel_obj.visual.from_datapack(self.datapack_name, self.datapack_cat, chan_obj.insttype, True)
+				playlist_obj.visual.from_datapack(self.datapack_name, self.datapack_cat, chan_obj.insttype, False)
 
 			cur_pl_pos = 0
 			for tpl in playstr.notestreams[ch_num].placements:

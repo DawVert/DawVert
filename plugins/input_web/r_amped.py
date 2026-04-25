@@ -44,7 +44,9 @@ def do_idparams(paramsdata, plugin_obj, pluginname):
 	if fldso:
 		for param in paramsdata:
 			dset_param = fldso.params.get(param.name)
-			if dset_param: plugin_obj.dset_param__add(param.name, param.value, dset_param)
+			if dset_param: plugin_obj.datapack_param__add(param.name, param.value, dset_param)
+			dset_dataval = fldso.datavals.get(param.name)
+			if dset_dataval: plugin_obj.datapack_dataval__add(param.name, param.value, dset_dataval)
 
 def do_idauto(convproj_obj, amped_autodata, devid, amped_auto, pluginid):
 	if amped_autodata:
@@ -137,9 +139,9 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 								value_value = float(objsub.text) if value_type == 'number' else objsub.text
 								europa_params[value_name] = [value_type, value_value]
 
-				dataset_synth_nonfree = globalstore.datapack.get_obj('synth_nonfree', 'plugin', 'europa')
-				if dataset_synth_nonfree:
-					for param_id, dset_param in dataset_synth_nonfree.params.iter():
+				datapack_synth_nonfree = globalstore.datapack.get_obj('synth_nonfree', 'plugin', 'europa')
+				if datapack_synth_nonfree:
+					for param_id, dset_param in datapack_synth_nonfree.params.iter():
 						if dset_param.name in europa_params:
 							param_type, param_value = europa_params[dset_param.name]
 							if param_type == 'number': plugin_obj.dset_param__add(param_id, param_value, dset_param)

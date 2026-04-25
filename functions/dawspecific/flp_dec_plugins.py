@@ -817,7 +817,7 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 			except:
 				pass
 
-	fldso = globalstore.dataset.get_obj('fl_studio', 'plugin', flplugin.name)
+	fldso = globalstore.datapack.get_obj('fl_studio', 'plugin', flplugin.name)
 	if fldso:
 		for param_id, dset_param in fldso.params.iter():
 			if dset_param.num != -1:

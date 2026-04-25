@@ -272,24 +272,27 @@ class cvpj_plugin:
 	def viscustom_get(self, name, fallback):
 		return self.visual_custom[name] if name in self.visual_custom else fallback
 
-	# -------------------------------------------------- dataset
+	# -------------------------------------------------- datapack
 	def from_bytes(self, in_bytes, ds_name, df_name, cat_name, obj_name, structname): 
 		return self.state.from_bytes(in_bytes, ds_name, df_name, cat_name, obj_name, structname)
 
 	def to_bytes(self, ds_name, df_name, cat_name, obj_name, structname):
 		return self.state.to_bytes(ds_name, df_name, cat_name, obj_name, structname)
 
-	def dset_param__add(self, p_id, p_value, dset_param):
-		return self.state.dset_param__add(p_id, p_value, dset_param)
+	def datapack_param__add(self, p_id, p_value, datapack_param):
+		return self.state.datapack_param__add(p_id, p_value, datapack_param)
 
-	def add_from_datapack(self, p_id, p_value, dset, ds_cat, ds_group): 
-		return self.state.add_from_datapack(p_id, p_value, dset, ds_cat, ds_group)
+	def datapack_dataval__add(self, p_id, p_value, datapack_param):
+		return self.state.datapack_dataval__add(p_id, p_value, datapack_param)
 
-	def dset_obj__add_param(self, dataset_obj, i_dict):
-		return self.state.dset_obj__add_param(dataset_obj, i_dict)
+	def add_from_datapack(self, p_id, p_value, datapack, ds_cat, ds_group): 
+		return self.state.add_from_datapack(p_id, p_value, datapack, ds_cat, ds_group)
 
-	def param_dict_dataset_set(self, ds_name, catname, pluginname):
-		return self.state.param_dict_dataset_set(ds_name, catname, pluginname)
+	def datapack_obj__add_param(self, datapack_obj, i_dict):
+		return self.state.datapack_obj__add_param(datapack_obj, i_dict)
+
+	def param_dict_datapack_set(self, ds_name, catname, pluginname):
+		return self.state.param_dict_datapack_set(ds_name, catname, pluginname)
 
 	# -------------------------------------------------- rawdata
 	def rawdata_add(self, i_name, i_databytes): return self.state.rawdata_add(i_name, i_databytes)

@@ -49,8 +49,8 @@ class input_famitracker_txt(plugins.base):
 
 		patterndata_obj = pat_multi.multi_patsong()
 		patterndata_obj.num_rows = cur_song.patlen
-		patterndata_obj.dataset_name = 'chip_nes'
-		patterndata_obj.dataset_cat = 'chip'
+		patterndata_obj.datapack_name = 'chip_nes'
+		patterndata_obj.datapack_cat = 'chip'
 		patterndata_obj.add_channel('square1')
 		patterndata_obj.add_channel('square2')
 		patterndata_obj.add_channel('triangle')

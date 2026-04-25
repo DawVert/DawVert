@@ -115,8 +115,6 @@ class input_cvpj_r(plugins.base):
 		from objects import audio_data
 		from objects.file_proj_past import caustic as proj_caustic
 		
-		global dataset
-
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.type = 'ri'
 

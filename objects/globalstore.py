@@ -9,7 +9,6 @@ from contextlib import contextmanager
 from objects.data_bytes import dv_datadef
 from objects.datastorage import extplug_db as ep_class
 from objects.datastorage import datapack as dp_class
-from objects.datastorage import dataset as ds_class
 from objects.datastorage import idvals as iv_class
 from objects.datastorage import paramremap as pr_class
 from objects.datastorage import plugts as pts_class
@@ -142,38 +141,6 @@ class extlib:
 	def get(nameid):
 		return extlib.loaded_parts[nameid] if nameid in extlib.loaded_parts else None
 
-class dataset:
-	loaded_parts = {}
-	def load(dset_name, filepath):
-		if dset_name not in dataset.loaded_parts:
-			if os.path.exists(filepath):
-				dataset.loaded_parts[dset_name] = ds_class.dataset(filepath)
-				logger_globalstore.info('dataset: Loaded "'+filepath+'" as '+dset_name)
-				return 1
-			else: return -1
-		else: return 0
-
-	def get(d_id):
-		return dataset.loaded_parts[d_id] if d_id in dataset.loaded_parts else None
-
-	def get_obj(d_id, d_cat, d_item):
-		o_dset = dataset.loaded_parts[d_id] if d_id in dataset.loaded_parts else None
-		if o_dset:
-			if d_cat in o_dset.categorys:
-				return o_dset.categorys[d_cat].objects.get(d_item)
-
-	def get_cat(d_id, d_cat):
-		o_dset = dataset.loaded_parts[d_id] if d_id in dataset.loaded_parts else None
-		if o_dset:
-			return o_dset.categorys[d_cat] if d_cat in o_dset.categorys else None
-
-	def get_params(d_id, d_cat, d_item):
-		fldso = dataset.get_obj(d_id, d_cat, d_item)
-		if fldso:
-			return fldso.params.iter()
-		else:
-			return []
-
 class datapack:
     loaded_parts = {}
     def load(dset_name, filepath):
@@ -203,6 +170,13 @@ class datapack:
         fldso = datapack.get_obj(d_id, d_cat, d_item)
         if fldso:
             return fldso.params.iter()
+        else:
+            return []
+
+    def get_datavals(d_id, d_cat, d_item):
+        fldso = datapack.get_obj(d_id, d_cat, d_item)
+        if fldso:
+            return fldso.datavals.iter()
         else:
             return []
 

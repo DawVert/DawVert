@@ -266,13 +266,13 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 				windata_obj.pos_x = wf_plugin.windowX
 				windata_obj.pos_y = wf_plugin.windowY
 	
-			for param_id, dset_param in globalstore.datapack.get_params('waveform', 'plugin', plugtype):
+			for param_id, datapack_param in globalstore.datapack.get_params('waveform', 'plugin', plugtype):
 				paramval = wf_plugin.params[param_id] if param_id in wf_plugin.params else None
 				if paramval is not None:
-					if dset_param.type == 'float': paramval = float(paramval)
-					if dset_param.type == 'bool': paramval = bool(float(paramval))
-					if dset_param.type == 'int': paramval = int(float(paramval))
-				plugin_obj.dset_param__add(param_id, paramval, dset_param)
+					if datapack_param.type == 'float': paramval = float(paramval)
+					if datapack_param.type == 'bool': paramval = bool(float(paramval))
+					if datapack_param.type == 'int': paramval = int(float(paramval))
+				plugin_obj.datapack_param__add(param_id, paramval, datapack_param)
 	
 			for autocurves in wf_plugin.automationcurves:
 				if autocurves.paramid:

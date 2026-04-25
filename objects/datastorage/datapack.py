@@ -214,7 +214,11 @@ class datapack_param:
 		self.unit_custom = None
 
 		self.is_enum = False
-		self.enum_data = None
+		self.enum_param = None
+
+		self.out_enum_max = 0
+		self.out_enum_parts = []
+		self.out_enum_end_point = 'start'
 		if i_param: self.load_dict(i_param)
 
 	def read_xml(self, xml_data):
@@ -226,7 +230,10 @@ class datapack_param:
 		if 'num' in attrib: self.num = int(attrib['num'])
 		if ptype.startswith('enum'):
 			self.is_enum = True
-			self.enum_data = datapack_enum_param(xml_data)
+			self.enum_param = datapack_enum_param(xml_data)
+			self.out_enum_max = self.enum_param.enum_max
+			self.out_enum_parts = self.enum_param.parts
+			self.out_enum_end_point = self.enum_param.end_point
 			if 'def' in attrib: self.defe = attrib['def']
 		else:
 			if ptype == 'int':
@@ -295,7 +302,7 @@ class datapack_param:
 			if self.min not in [0, None]: xml_data.set('min', "%g" % round(self.min, 7))
 		else:
 			if self.defe: xml_data.set('def', str(self.defe))
-			self.enum_data.write_xml(xml_data)
+			self.enum_param.write_xml(xml_data)
 
 		if self.extplug_paramid != None: xml_data.set('ext_id', str(self.extplug_paramid))
 		if self.math_zeroone.is_used(): 
@@ -484,6 +491,13 @@ class datapack_object:
 					else:
 						param_obj = self.params.create(cat_id)
 						param_obj.read_xml(inpart)
+					if param_obj.enum_param:
+						if param_obj.enum_param.source:
+							enum_g = self.enums.get(param_obj.enum_param.source)
+							if enum_g != None: 
+								param_obj.out_enum_max = enum_g.enum_max
+								param_obj.out_enum_parts = enum_g.parts
+								param_obj.out_enum_end_point = enum_g.end_point
 			if x_part.tag == 'datavals':
 				for inpart in x_part:
 					if inpart.tag != 'customunit':

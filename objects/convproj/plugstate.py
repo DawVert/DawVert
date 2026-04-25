@@ -122,7 +122,7 @@ class cvpj_plugin_state:
 	def get_type_visual(self):
 		return str(self.type)
 
-	# -------------------------------------------------- dataset
+	# -------------------------------------------------- datapack
 	def from_bytes(self, in_bytes, ds_name, df_name, cat_name, obj_name, structname): 
 		fldso = globalstore.datapack.get_obj(ds_name, 'plugin', obj_name)
 		fldf = globalstore.datadef.get(df_name)
@@ -132,7 +132,7 @@ class cvpj_plugin_state:
 				if fldso.datadef.struct: dfdict = fldf.parse(fldso.datadef.struct, in_bytes)
 				elif structname: dfdict = fldf.parse(structname, in_bytes)
 
-				self.dset_obj__add_param(fldso, dfdict)
+				self.datapack_obj__add_param(fldso, dfdict)
 				return dfdict
 			return {}
 		except:
@@ -154,21 +154,53 @@ class cvpj_plugin_state:
 		fldso = globalstore.datapack.get_obj(ds_name, 'plugin', obj_name)
 
 		if fldf and fldso:
-			dsetdict = self.param_dict_dataset_set(ds_name, 'plugin', obj_name)
-			outbytes = fldf.create(fldso.datadef.struct if fldso.datadef.struct else structname, dsetdict)
+			datapackdict = self.param_dict_datapack_set(ds_name, 'plugin', obj_name)
+			outbytes = fldf.create(fldso.datadef.struct if fldso.datadef.struct else structname, datapackdict)
 			return outbytes
 		else:
 			return b''
 			
-	def dset_param__add(self, p_id, p_value, dset_param):
-		if p_value is None: p_value = dset_param.defv
-		if dset_param.type != 'list': 
-			if not dset_param.noauto:
-				param_obj = self.params.add(p_id, p_value, dset_param.type)
-				param_obj.min = dset_param.min
-				param_obj.max = dset_param.max
-				param_obj.visual.name = dset_param.name
-			else: self.datavals.add(p_id, p_value)
+	def datapack_param__add(self, p_id, p_value, datapack_param):
+		if p_value is None: p_value = datapack_param.defv
+		valtype = datapack_param.type
+		if valtype == 'enum_int': 
+			param_obj = self.params.add(p_id, p_value, 'int')
+			param_obj.min = 0
+			param_obj.max = datapack_param.out_enum_max
+			param_obj.is_enum = True
+			param_obj.enum_max = datapack_param.out_enum_max
+			param_obj.enum_end_point = 'start'
+			for ep in datapack_param.out_enum_parts:
+				enum_part = param_obj.add_enum_part(ep.num, ep.id)
+		if valtype == 'enum_float': 
+			param_obj = self.params.add(p_id, p_value, 'float')
+			param_obj.min = 0
+			param_obj.max = datapack_param.max
+			param_obj.is_enum = True
+			param_obj.enum_max = datapack_param.out_enum_max
+			param_obj.enum_end_point = datapack_param.out_enum_end_point
+			for ep in datapack_param.out_enum_parts:
+				enum_part = param_obj.add_enum_part(ep.num, ep.id)
+
+		elif valtype == 'bool': 
+			param_obj = self.params.add(p_id, p_value, 'bool')
+		elif valtype == 'int': 
+			param_obj = self.params.add(p_id, p_value, 'int')
+			param_obj.min = datapack_param.min
+			param_obj.max = datapack_param.max
+		elif valtype == 'float': 
+			param_obj = self.params.add(p_id, p_value, 'float')
+			param_obj.min = datapack_param.min
+			param_obj.max = datapack_param.max
+		param_obj.visual.name = datapack_param.name
+		if datapack_param.unit: 
+			param_obj.unit.current = datapack_param.unit
+			print(param_obj.unit.current)
+
+	def datapack_dataval__add(self, p_id, p_value, datapack_param):
+		if p_value is None: p_value = datapack_param.defv
+		if datapack_param.type != 'list': 
+			self.datavals.add(p_id, p_value)
 		else: 
 			self.array_add(p_id, p_value)
 
@@ -176,8 +208,8 @@ class cvpj_plugin_state:
 
 
 
-	def add_from_datapack(self, p_id, p_value, dset, ds_cat, ds_group): 
-		defparams = dset.params_i_get(ds_cat, ds_group, p_id)
+	def add_from_datapack(self, p_id, p_value, datapack, ds_cat, ds_group): 
+		defparams = datapack.params_i_get(ds_cat, ds_group, p_id)
 		if defparams != None:
 			if p_value == None: p_value = defparams[2]
 			if defparams[0] == False:
@@ -191,22 +223,27 @@ class cvpj_plugin_state:
 			if p_value == None: p_value = 0
 			self.params.add(p_id, p_value, 'float')
 
-	def dset_obj__add_param(self, dataset_obj, i_dict):
-		if dataset_obj:
-			for param_id, dset_param in dataset_obj.params.iter():
+	def datapack_obj__add_param(self, datapack_obj, i_dict):
+		if datapack_obj:
+			for param_id, datapack_param in datapack_obj.params.iter():
 				outval = data_values.dict__nested_get_value(i_dict, param_id.split('/'))
-				self.dset_param__add(param_id, outval, dset_param)
+				self.datapack_param__add(param_id, outval, datapack_param)
 
-	def param_dict_dataset_set(self, ds_name, catname, pluginname):
+	def param_dict_datapack_set(self, ds_name, catname, pluginname):
 		fldso = globalstore.datapack.get_obj(ds_name, 'plugin', pluginname)
 		outdict = {}
 		if fldso:
-			for param_id, dset_param in fldso.params.iter():
-				if dset_param.type != 'list': 
-					if not dset_param.noauto: outdata = self.params.get(param_id, dset_param.defv).value
-					else: outdata = self.datavals.get(param_id, dset_param.defv)
+			for param_id, datapack_param in fldso.params.iter():
+				if datapack_param.type != 'list': 
+					outdata = self.params.get(param_id, datapack_param.defv).value
 				else:
-					outdata = self.array_get(param_id, dset_param.defv)
+					outdata = self.array_get(param_id, datapack_param.defv)
+				data_values.dict__nested_add_value(outdict, param_id.split('/'), outdata)
+			for param_id, datapack_param in fldso.datavals.iter():
+				if datapack_param.type != 'list': 
+					outdata = self.datavals.get(param_id, datapack_param.defv)
+				else:
+					outdata = self.array_get(param_id, datapack_param.defv)
 				data_values.dict__nested_add_value(outdict, param_id.split('/'), outdata)
 		return outdict
 

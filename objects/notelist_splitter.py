@@ -119,7 +119,7 @@ class timesigblocks:
 			add_dur_end(self.splitdata)
 
 			for u in self.splitdata.get_used():
-				for val in xtramath.gen_float_range(u['start'], u['end'], ppq*(u['numerator']*u['denominator'])):
+				for val in xtramath.gen_float_range(int(u['start']), int(u['end']), int(ppq*(u['numerator']*u['denominator']))):
 					cur_splitdata.add()
 					cur_splitdata['start'] = val
 					cur_splitdata['numerator'] = u['numerator']
@@ -149,7 +149,7 @@ class timesigblocks:
 			add_dur_end(self.splitdata)
 
 			for u in self.splitdata.get_used():
-				for val in xtramath.gen_float_range(u['start'], u['end'], ppq*(u['numerator']*2)):
+				for val in xtramath.gen_float_range(int(u['start']), int(u['end']), int(ppq*int(u['numerator']*2))):
 					cur_splitdata.add()
 					cur_splitdata['start'] = val
 					cur_splitdata['numerator'] = u['numerator']

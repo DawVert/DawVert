@@ -720,7 +720,6 @@ class input_lmms(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import lmms as proj_lmms
 
-		global dataset
 		global autoid_assoc
 		global bbpld
 

@@ -435,7 +435,6 @@ class output_tracktion_edit(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import tracktion_edit as proj_tracktion_edit
 		from objects.file_proj import tracktion_project as proj_tracktion_project
-		global dataset
 
 		convproj_obj.change_timings(4.0)
 

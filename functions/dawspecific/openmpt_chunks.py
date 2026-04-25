@@ -4,17 +4,17 @@ import struct
 from io import BytesIO
 from functions_plugin_ext import plugin_vst2
 from objects.data_bytes import dv_datadef
-from objects import dv_dataset
+from objects import dv_datapack
 
 XTPM_valid = [b'...P',b'...R',b'..BM',b'..CM',b'..EP',b'..EV',b'..MF',b'..OF',b'..PM',b'..RV',b'..SC',b'..SR',b'.[EP',b'.[EV',b'.[PP',b'.[PV',b'.EiP',b'.PiM',b'[EiP',b'[PiP',b'DWPM',b'HEVP',b'HOVP',b'LTTP',b'NREA',b'NREP',b'NREV',b'PTTF']
 STPM_valid = [b'...C',b'..MT',b'..PR',b'..TD',b'.APS',b'.BPR',b'.FSM',b'.MMP',b'.MPR',b'.VGD',b'.VWC',b'AMIM',b'AUTH',b'CCOL',b'CUES',b'DTFR',b'RSMP',b'SnhC',b'SWNG',b'VTSV',b'VWSL']
 
-def plugin__add(convproj_obj, omptp_num, omptp_type, omptp_id, omptp_name, omptp_libname, omptp_chunkdata, datadef, dataset):
+def plugin__add(convproj_obj, omptp_num, omptp_type, omptp_id, omptp_name, omptp_libname, omptp_chunkdata, datadef, datapack):
 	pluginid = 'FX'+str(omptp_num)
 	if omptp_type == b'OMXD':
 		plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'directx', omptp_libname)
 		jsondecoded = datadef.parse(omptp_libname.lower(), omptp_chunkdata)
-		plugin_obj.param_dict_dataset_get(jsondecoded, dataset, 'plugin', omptp_libname.lower())
+		plugin_obj.param_dict_datapack_get(jsondecoded, datapack, 'plugin', omptp_libname.lower())
 	elif omptp_type == b'PtsV':
 		plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst2', None)
 		plugin_vst2.replace_data(convproj_obj, plugin_obj, 'id', 'win', omptp_id, 'chunk', omptp_chunkdata, 0)
@@ -34,7 +34,7 @@ def plugin__add(convproj_obj, omptp_num, omptp_type, omptp_id, omptp_name, omptp
 
 def parse_start(filestream, convproj_obj):
 	datadef = dv_datadef.datadef('./data_main/datadef/openmpt.ddef')
-	dataset = dv_dataset.dataset('./data/datapack/app/openmpt.xml')
+	datapack = dv_datapack.datapack('./data/datapack/app/openmpt.xml')
 
 	patnames = None
 	channames = None
@@ -69,7 +69,7 @@ def parse_start(filestream, convproj_obj):
 			omptp_chunksize = int.from_bytes(chunk_value.read(4), "little")
 			omptp_chunkdata = chunk_value.read(omptp_chunksize)
 			#print('[input-it] Plugin '+str(omptp_num)+': '+omptp_type.decode()+': '+omptp_libname)
-			plugin__add(convproj_obj, omptp_num, omptp_type, omptp_id, omptp_name, omptp_libname, omptp_chunkdata, datadef, dataset)
+			plugin__add(convproj_obj, omptp_num, omptp_type, omptp_id, omptp_name, omptp_libname, omptp_chunkdata, datadef, datapack)
 
 		else: break
 

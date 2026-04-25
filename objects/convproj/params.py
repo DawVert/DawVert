@@ -46,8 +46,43 @@ class cvpj_datavals:
 		for x in self.data:
 			print(x, '|', self.data[x] )
 
+class cvpj_param_enum_part:
+	def __init__(self):
+		self.num = 0
+		self.id = ''
+		self.name = None
+
+class cvpj_param_unit:
+	def __init__(self):
+		self.current = None
+		self.custom_calc = []
+
+	def outcalc(self, unit_org, unit_targ):
+		outd = [unit_org, unit_targ]
+		if outd==None: 
+			if unit_targ=="decibel": return [['to_db']]
+
+		elif  outd == ["volume", "decibel"]:                return [['to_db']]
+
+		elif  outd == ["time:ms", "time:seconds"]:          return [['div', 10]]
+		elif  outd == ["time:ms", "time:samples"]:          return [['mul', 44.100]]
+		elif  outd == ["time:seconds", "time:ms"]:          return [['mul', 1000]]
+		elif  outd == ["time:seconds", "time:samples"]:     return [['mul', 44100]]
+		elif  outd == ["time:samples", "time:ms"]:          return [['div', 44100*1000]]
+		elif  outd == ["time:samples", "time:seconds"]:     return [['div', 44100]]
+
+		elif  outd == ["freq:midikey", "freq:hz"]:          return [['midi2freq']]
+		elif  outd == ["freq:hz", "freq:midikey"]:          return [['freq2midi']]
+
+		elif  outd == ["pitch:cents", "pitch:semitones"]:   return [['div', 100]]
+		elif  outd == ["pitch:cents", "pitch:octave"]:      return [['div', 1200]]
+		elif  outd == ["pitch:semitones", "pitch:cents"]:   return [['mul', 100]]
+		elif  outd == ["pitch:semitones", "pitch:octave"]:  return [['div', 12]]
+		elif  outd == ["pitch:octave", "pitch:cents"]:      return [['mul', 1200]]
+		elif  outd == ["pitch:octave", "pitch:semitones"]:  return [['mul', 12]]
+
 class cvpj_param:
-	__slots__ = ['value','type','min','max','visual','found']
+	__slots__ = ['value','type','min','max','visual','found','unit','is_enum','enum_max','enum_parts','enum_end_point']
 	def __init__(self, p_value, p_type):
 		self.value = p_value
 		self.type = p_type
@@ -55,7 +90,20 @@ class cvpj_param:
 		self.max = 1
 		self.visual = visual.cvpj_visual()
 		self.found = True
-	
+		self.unit = cvpj_param_unit()
+		self.is_enum = False
+		self.enum_max = 0
+		self.enum_parts = []
+		self.enum_end_point = 'end'
+
+	def add_enum_part(self, num, idv):
+		self.is_enum = True
+		self.enum_max = max(num, self.enum_max)
+		enum_part = cvpj_param_enum_part()
+		enum_part.num = num
+		enum_part.id = idv
+		return enum_part
+
 	def __int__(self): return int(self.value)
 
 	def __float__(self): return float(self.value)

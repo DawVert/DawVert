@@ -74,8 +74,8 @@ class input_trackerboy(plugins.base):
 
 		patterndata_obj = pat_multi.multi_patsong()
 		patterndata_obj.num_rows = tbm_cursong.rows
-		patterndata_obj.dataset_name = 'trackerboy'
-		patterndata_obj.dataset_cat = 'chip'
+		patterndata_obj.datapack_name = 'trackerboy'
+		patterndata_obj.datapack_cat = 'chip'
 		patterndata_obj.add_channel('pulse')
 		patterndata_obj.add_channel('pulse')
 		patterndata_obj.add_channel('wavetable')

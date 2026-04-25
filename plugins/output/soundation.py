@@ -239,7 +239,6 @@ class output_soundation(plugins.base):
 					elif plugin_obj.check_match('user', 'reasonstudios', 'europa'):
 						inst_supported = True
 						soundation_instrument.identifier = 'com.soundation.europa'
-						europaparamlist = dataset_synth_nonfree.params_list('plugin', 'europa')
 						for param_id, dset_param in globalstore.datapack.get_params('synth_nonfree', 'plugin', 'europa'):
 							if not dset_param.noauto: 
 								eur_value_value = plugin_obj.params.get(param_id, 0).value
