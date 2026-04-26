@@ -116,13 +116,13 @@ class input_xewton(plugins.base):
 								for t in tracks:
 									t.is_drum = True
 	
-							for s in inst_obj.samples:
+							for n, s in enumerate(inst_obj.samples):
 								wavfilename = os.path.join(samplefolder, s.filename)
 								org_filename =  s.filename
-	
+	 
 								sampleref_obj = convproj_obj.sampleref__add(s.filename, wavfilename, None)
 								audio_obj = audio_data.audio_obj()
-								audio_obj.rate = 22050
+								audio_obj.rate = 22050 
 								audio_obj.channels = 2
 								audio_obj.set_codec('int16')
 								audio_obj.pcm_from_bytes(s.data)

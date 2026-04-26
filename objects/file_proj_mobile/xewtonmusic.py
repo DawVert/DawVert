@@ -53,12 +53,55 @@ class xewtonmusic_song_header:
 		#self.unk.append(  ebrw_readstr.int_u16()  )
 		#self.unk.append(  ebrw_readstr.int_u16()  )
 
-#class xewtonmusic_song_effx:
-#	def __init__(self):
-#		self.unk = []
+class xewtonmusic_song_effx:
+	def __init__(self):
+		self.unk = []
+		self.params = []
 
-#	def read(self, ebrw_readstr):
-#		print(  ebrw_readstr.rest().hex()  )
+	def read(self, ebrw_readstr):
+		self.unk = []
+		self.version = ebrw_readstr.int_u16()
+		self.fxtype = ebrw_readstr.int_u8()
+		self.unk.append(  ebrw_readstr.int_u8()  )
+		self.unk.append(  ebrw_readstr.int_u8()  )
+		self.unk.append(  ebrw_readstr.int_u8()  )
+		self.unk.append(  ebrw_readstr.int_u8()  )
+		self.unk.append(  ebrw_readstr.float()  )
+		if self.fxtype==0:
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.float())
+		elif self.fxtype==1:
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.int_u8())
+			self.params.append(ebrw_readstr.int_u8())
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.float())
+		elif self.fxtype==2:
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.int_u8())
+			self.params.append(ebrw_readstr.int_u8())
+			self.params.append(ebrw_readstr.float())
+		elif self.fxtype==3:
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.float())
+		elif self.fxtype==4:
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.int_u8())
+			self.params.append(ebrw_readstr.float())
+		elif self.fxtype==5:
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.int_u8())
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.float())
+			self.params.append(ebrw_readstr.int_u8())
+			self.params.append(ebrw_readstr.int_u8())
+			self.params.append(ebrw_readstr.float())
 
 notes_dtype = np.dtype([
 	('pos', np.uint32),
@@ -107,22 +150,24 @@ class xewtonmusic_song_file:
 	def __init__(self):
 		self.tracks = {}
 		self.header = xewtonmusic_song_header()
+		self.effects = {}
 
 	def load_from_file(self, input_file):
 		ebrw_readstr = easybinrw.binread()
 		ebrw_readstr.load_file(input_file)
-
-		ebrw_readstr.magic_check(b'\x99XMS')
-		ebrw_readstr.skip(4)
+		ebrw_readstr.magic_check(b'\x99XMS\x0D\x0A\x1A\x0A')
 
 		self.tracks = {}
+		self.effects = {}
 		while ebrw_readstr.remaining():
 			chunk_name = ebrw_readstr.raw(4)
 			chunk_size = ebrw_readstr.int_u32()
 
 			ebrw_readstr.isolate_size(chunk_size)
 
-			if chunk_name==b'TINF':
+			if chunk_name==b'HEAD':
+				self.header.read(ebrw_readstr)
+			elif chunk_name==b'TINF':
 				tinf_obj = xewtonmusic_song_track()
 				tinf_obj.read(ebrw_readstr)
 				self.tracks[tinf_obj.tracknum] = tinf_obj
@@ -131,17 +176,28 @@ class xewtonmusic_song_file:
 				tnot_obj.read(ebrw_readstr)
 				if tnot_obj.tracknum in self.tracks:
 					self.tracks[tnot_obj.tracknum].notes = tnot_obj
-			elif chunk_name==b'HEAD':
-				self.header.read(ebrw_readstr)
-			#elif chunk_name==b'EFFX':
-			#	tinf_obj = xewtonmusic_song_effx()
-			#	tinf_obj.read(ebrw_readstr)
-			#	#exit()
+			elif chunk_name==b'EFFX':
+				tinf_obj = xewtonmusic_song_effx()
+				tinf_obj.read(ebrw_readstr)
+				self.effects[tinf_obj.fxtype] = tinf_obj
+			#elif chunk_name==b'TPAD':
+			#	print( ebrw_readstr.rest().hex() )
+			#elif chunk_name==b'KEYB':
+			#	print( ebrw_readstr.rest().hex() )
+			#elif chunk_name==b'METR':
+			#	print( ebrw_readstr.rest().hex() )
+			#elif chunk_name==b'PITB':
+			#	print( ebrw_readstr.rest().hex() )
+			#elif chunk_name==b'CHRD':
+			#	print( ebrw_readstr.rest().hex() )
+			#elif chunk_name==b'ATRK':
+			#	print( ebrw_readstr.rest().hex() )
 			#else:
 			#	print(chunk_name)
 			#	chunk_data = ebrw_readstr.raw(chunk_size)
 
 			ebrw_readstr.isolate_end()
+
 		return True
 
 # =========================================== INST ===========================================
