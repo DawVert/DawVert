@@ -492,4 +492,8 @@
 	<plugin pluginset="mobile" name="xewton_music">
 		<file fileext=".xms"/>
 	</plugin>
+
+	<plugin pluginset="mobile" name="zquence">
+		<file fileext=".zssong"/>
+	</plugin>
 </autodetect>

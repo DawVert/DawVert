@@ -1,0 +1,138 @@
+# SPDX-FileCopyrightText: 2024 SatyrDiamond
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+import plugins
+import struct
+
+def color_to_int(c):
+	Color = struct.unpack('BBBB', struct.pack('<i', c))
+	return [Color[0], Color[1], Color[2]]
+
+class input_zquence(plugins.base):
+	def is_dawvert_plugin(self):
+		return 'input'
+	
+	def get_shortname(self):
+		return 'zquence'
+	
+	def get_name(self):
+		return 'Zquence Studio 2016'
+	
+	def get_priority(self):
+		return 0
+	
+	def get_prop(self, in_dict): 
+		pass
+
+	def parse(self, convproj_obj, dawvert_intent):
+		from objects.file_proj_mobile import zquence
+
+		project_obj = zquence.zquence_song()
+
+		convproj_obj.type = 'mi'
+
+		traits_obj = convproj_obj.traits
+
+		convproj_obj.set_timings(96)
+
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		synthgrpassoc = {}
+
+		if project_obj.tracks:
+			for track in project_obj.tracks:
+				trackid = track.attrib['TrackID']
+				inst_obj = convproj_obj.instrument__add(trackid)
+				trkgrps = track.groups
+				for group in trkgrps:
+					if group.name == 'Synthesizer':
+						synthattrib = group.attrib
+						visual_obj = inst_obj.visual
+
+						if 'TrackName' in synthattrib: 
+							visual_obj.name = synthattrib['TrackName']
+							synthgrpassoc[synthattrib['TrackName']] = trackid
+
+						if 'Color' in synthattrib:
+							Color = int(synthattrib['Color'])
+							visual_obj.color.set_int(color_to_int(Color))
+
+		if project_obj.patterns:
+			for pattern in project_obj.patterns:
+				patternattrib = pattern.attrib
+
+				if 'PatternName' in patternattrib:
+					notelistname = patternattrib['PatternName']
+					nle_obj = convproj_obj.notelistindex__add(notelistname)
+					visual_obj = nle_obj.visual
+					visual_obj.name = notelistname
+					cvpj_notelist = nle_obj.notelist
+
+					if 'Color' in patternattrib:
+						Color = int(patternattrib['Color'])
+						visual_obj.color.set_int(color_to_int(Color))
+
+					patterngrps = pattern.groups
+					for patterngrp in patterngrps:
+						if patterngrp.name == 'Sequences':
+							for seqsgrp in patterngrp.groups:
+								seqsgrpattrib = seqsgrp.attrib
+
+								if seqsgrp.name == 'Sequence':
+									instid = None
+									if 'ReferencedToTrack.TrackName' in seqsgrpattrib:
+										instid = seqsgrpattrib['ReferencedToTrack.TrackName']
+										if instid in synthgrpassoc: instid = synthgrpassoc[instid]
+
+									if instid:
+										for inseqgrp in seqsgrp.groups:
+											if inseqgrp.name == 'Notes':
+												for notesgrp in inseqgrp.groups:
+													noteattrib = notesgrp.attrib
+
+													note_NoteKey = int(noteattrib['NoteKey']) if 'NoteKey' in noteattrib else 60
+													note_TickLength = int(noteattrib['TickLength']) if 'TickLength' in noteattrib else 48
+													note_TickStart = int(noteattrib['TickStart']) if 'TickStart' in noteattrib else 0
+													note_Velocity = int(noteattrib['Velocity']) if 'Velocity' in noteattrib else 127
+
+													cvpj_notelist.add_m(instid, note_TickStart, note_TickLength, note_NoteKey-60, note_Velocity/127, None)
+
+		if project_obj.references:
+			playlist_stor = {}
+
+			for reference in project_obj.references:
+				referenceattrib = reference.attrib
+
+				ref_Start = int(referenceattrib['Start'])
+				ref_Stop = int(referenceattrib['Stop'])
+				ref_Length = int(referenceattrib['Length'])
+				ref_GraphicLength = int(referenceattrib['GraphicLength'])
+				ref_TrackStationIndex = int(referenceattrib['TrackStationIndex'])
+				ref_ReferencedToPattern_PatternName = referenceattrib['ReferencedToPattern.PatternName']
+
+				if ref_TrackStationIndex not in playlist_stor:
+					playlist_stor[ref_TrackStationIndex] = convproj_obj.playlist__add(ref_TrackStationIndex, 1, True)
+
+				playlist_obj = playlist_stor[ref_TrackStationIndex]
+				placement_obj = playlist_obj.placements.add_notes_indexed()
+				placement_obj.fromindex = ref_ReferencedToPattern_PatternName
+				time_obj = placement_obj.time
+				time_obj.set_posdur(ref_Start, ref_GraphicLength)
+
+		if project_obj.globals:
+			zglobals = project_obj.globals.attrib
+
+			if 'BPM' in zglobals:
+				convproj_obj.params.add('bpm', int(zglobals['BPM']), 'float')
+			if 'CycleStartPosition' in zglobals:
+				convproj_obj.transport.loop_start = int(zglobals['CycleStartPosition'])
+			if 'CycleEndPosition' in zglobals:
+				convproj_obj.transport.loop_end = int(zglobals['CycleEndPosition'])
+			if 'TimeSignatureDenominator' in zglobals:
+				convproj_obj.timesig[0] = int(zglobals['TimeSignatureDenominator'])
+			if 'TimeSignatureNumerator' in zglobals:
+				convproj_obj.timesig[1] = int(zglobals['TimeSignatureNumerator'])
+
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
