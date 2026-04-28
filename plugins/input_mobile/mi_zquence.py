@@ -8,6 +8,37 @@ def color_to_int(c):
 	Color = struct.unpack('BBBB', struct.pack('<i', c))
 	return [Color[0], Color[1], Color[2]]
 
+def text_float(c):
+	return float(c.replace(',', '.'))
+
+def do_mixer(convproj_obj, num, mixerchan):
+	fxchannel_obj = convproj_obj.fx__chan__add(num)
+	mixerattrib = mixerchan.attrib
+	if 'Volyme' in mixerattrib: 
+		fxchannel_obj.params.add('vol', text_float(mixerattrib['Volyme']), 'float')
+	if 'Pan' in mixerattrib:
+		fxchannel_obj.params.add('pan', text_float(mixerattrib['Pan']), 'float')
+	if 'FXEnable' in mixerattrib:
+		fxchannel_obj.plugslots.slots_audio_enabled = mixerattrib['FXEnable']=='True'
+	if 'Active' in mixerattrib:
+		fxchannel_obj.params.add('enabled', mixerattrib['Active']=='True', 'bool')
+	if 'UniqueName' in mixerattrib: 
+		fxchannel_obj.visual.name = mixerattrib['UniqueName']
+	for group in mixerchan.groups:
+		if group.name == 'Effects':
+			for fxgroup in group:
+				fxattrib = fxgroup.attrib
+				dspid = fxattrib['DspID']
+				fxid = 'fx_'+dspid
+				fxname = fxattrib['DspName'].replace(' ', '_').lower()
+				plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'zquence', fxname)
+				plugin_obj.role = 'fx'
+				for fxd in fxgroup.groups:
+					if fxd.name=='Parameters':
+						for n, v in fxd.attrib.items():
+							plugin_obj.params.add(n, text_float(v), 'float')
+				fxchannel_obj.plugslots.slots_audio.append(fxid)
+
 class input_zquence(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -29,6 +60,7 @@ class input_zquence(plugins.base):
 
 		project_obj = zquence.zquence_song()
 
+		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'mi'
 
 		traits_obj = convproj_obj.traits
@@ -38,12 +70,33 @@ class input_zquence(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		synthgrpassoc = {}
+		mixercount = 0
+		mixerassoc = {}
+		if project_obj.mixers:
+			for mixer in project_obj.mixers:
+				if mixer.name == 'MainMixer':
+					for mixerchan in mixer.groups:
+						mixerattrib = mixerchan.attrib
+						mixerassoc[mixerattrib['ID']] = mixercount
+						do_mixer(convproj_obj, mixercount, mixerchan)
+						mixercount += 1
+				if mixer.name == 'AdditionalMixers':
+					for mixerchan in mixer.groups:
+						mixerattrib = mixerchan.attrib
+						mixerassoc[mixerattrib['ID']] = mixercount
+						do_mixer(convproj_obj, mixercount, mixerchan)
+						mixercount += 1
 
+		synthgrpassoc = {}
 		if project_obj.tracks:
 			for track in project_obj.tracks:
-				trackid = track.attrib['TrackID']
+				trackattrib = track.attrib
+				trackid = trackattrib['TrackID']
 				inst_obj = convproj_obj.instrument__add(trackid)
+				if 'MixerChannelID' in trackattrib:
+					MixerChannelID = trackattrib['MixerChannelID']
+					if MixerChannelID in mixerassoc:
+						inst_obj.fxrack_channel = mixerassoc[MixerChannelID]
 				trkgrps = track.groups
 				for group in trkgrps:
 					if group.name == 'Synthesizer':
