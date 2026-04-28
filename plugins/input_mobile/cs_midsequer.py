@@ -2,10 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import plugins
-from functions import xtramath
-from objects.convproj import fileref
 
-class input_coolbeat(plugins.base):
+class input_midsequer(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
 	

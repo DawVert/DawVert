@@ -87,6 +87,7 @@
 | R | ```mobile``` | ```nanostudio_v1``` | NanoStudio 1 | ```.prj``` | ✔️ | |
 | R | ```mobile``` | ```viscentsoft_coolbeat``` | 玩酷电音/CoolBeat | ```.mlp``` | ✔️ | |
 | R-I | ```mobile``` | ```midsequer``` | Midsequer | ```.mdsq``` | ✔️ |  |
+| R-I | ```mobile``` | ```xewton_music``` | Xewton Music Studio | ```.xms``` | ✔️ |  |
 
 ## Audio Editors
 | DataType | PluginSet | Short Name | Name | Ext | Autodetect | Info | 
