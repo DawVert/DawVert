@@ -20,7 +20,7 @@ def setasdr(plugin_obj, asdr_name, i_dict, sustain_hundred, n_attack, n_decay, n
 	plugin_obj.env_asdr_add(asdr_name, 0, out_attack, 0, out_decay, out_sustain, out_release, 1)
 	return out_attack, out_decay, out_release, out_sustain
 
-audiosanua_device_id = ['fm', 'analog']
+audiosanua_device_id = ['fm', 'analog', 'sampler', 'fm', 'analog']
 delay_sync = [[1, 64, ''],[1, 64, 't'],[1, 64, 'd'],[1, 32, ''],[1, 32, 't'],[1, 32, 'd'],[1, 16, ''],[1, 16, 't'],[1, 16, 'd'],[1, 8, ''],[1, 8, 't'],[1, 8, 'd'],[1, 4, ''],[1, 4, 't'],[1, 4, 'd'],[1, 2, ''],[1, 2, 't'],[1, 2, 'd'],[1, 1, '']]
 op_lfo_shapes = ['saw','square','triangle','random','sine']
 
@@ -104,6 +104,7 @@ class input_audiosanua(plugins.base):
 		plugin_obj.params.add_named("time", project_obj.dlyTime, 'float', "Time")
 		plugin_obj.params.add_named("damage", project_obj.dlyDamage/100, 'float', "Damage")
 		plugin_obj.params.add_named("feedback", project_obj.dlyFeed/100, 'float', "Feedback")
+		plugin_obj.params.add_named("width", project_obj.dlyWidth/100, 'float', "Width")
 		plugin_obj.params.add_named("sync", project_obj.dlySync, 'bool', "Sync")
 		return_obj.plugslots.slots_audio.append(pluginid)
 
@@ -118,6 +119,10 @@ class input_audiosanua(plugins.base):
 		plugin_obj.params.add_named("time", project_obj.rvbTime, 'float', 'Time')
 		plugin_obj.params.add_named("feedback", project_obj.rvbFeed/100, 'float', 'Feedback')
 		plugin_obj.params.add_named("width", project_obj.rvbWidth/100, 'float', 'Width')
+		plugin_obj.params.add_named("tankmix", project_obj.rvbTankMix/100, 'float', 'TankMix')
+		plugin_obj.params.add_named("damp", project_obj.rvbDamp/100, 'float', 'Damp')
+		plugin_obj.params.add_named("lines", project_obj.rvbLines, 'float', 'Lines')
+		
 		return_obj.plugslots.slots_audio.append(pluginid)
 
 		# ------------------------------------------ Tracks ------------------------------------------
@@ -146,6 +151,7 @@ class input_audiosanua(plugins.base):
 				time_obj.set_loop_data(0, 0, as_pattern.patternLength)
 				placement_obj.visual.color.set_int(colordata.getcolornum(as_pattern.patternColor))
 				placement_obj.visual.color.fx_allowed = ['saturate']
+				if as_pattern.name: placement_obj.visual.name = as_pattern.name
 
 				cvpj_notelist = placement_obj.notelist
 				
@@ -165,10 +171,14 @@ class input_audiosanua(plugins.base):
 				windata_obj.pos_y = as_device.ypos
 				windata_obj.open = as_device.visible
 
-				if as_device.deviceType == 1 or as_device.deviceType == 0:
+				if as_device.deviceType in [0, 1, 3, 4]:
 					plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'audiosauna', audiosanua_device_id[as_device.deviceType])
 					plugin_obj.role = 'synth'
 					track_obj.plugslots.set_synth(pluginid)
+
+					deviceType = as_device.deviceType
+					if deviceType==3: deviceType = 1
+					if deviceType==4: deviceType = 2
 
 					fldso = globalstore.datapack.get_obj('audiosauna', 'plugin', str(as_device.deviceType))
 					if fldso:
@@ -178,10 +188,8 @@ class input_audiosanua(plugins.base):
 
 					setasdr(plugin_obj, 'vol', as_device.params, False, 'attack', 'decay', 'release', 'sustain')
 
-					#print(as_device.params)
-
-					if as_device.deviceType == 1: oprange = 2
-					if as_device.deviceType == 0: oprange = 4
+					if deviceType == 1: oprange = 2
+					if deviceType == 0: oprange = 4
 
 					for opnum in range(oprange):
 						opnumtxt = str(opnum+1)
@@ -191,7 +199,7 @@ class input_audiosanua(plugins.base):
 						osc_data = plugin_obj.osc_add()
 						osc_data.env['vol'] = 'op'+opnumtxt
 	
-						if as_device.deviceType == 0: 
+						if deviceType == 0: 
 							as_oct = int(getvalue(as_device.params, 'oct'+opnumtxt))*12
 							as_fine = float(getvalue(as_device.params, 'fine'+opnumtxt))
 							as_semi = int(getvalue(as_device.params, 'semi'+opnumtxt))

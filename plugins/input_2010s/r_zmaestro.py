@@ -24,19 +24,20 @@ def do_automation(convproj_obj, trackid, atype, timelineobj, usetimeline):
 			if event.fade == 'Logarithmic': autopoint_obj['tension'] = 1
 			if event.fade == 'Edge': nextinstant = True
 
-keynums = {}
-keynums['B'] = 11
-keynums['ASharp'] = 10
-keynums['A'] = 9
-keynums['GSharp'] = 8
-keynums['G'] = 7
-keynums['FSharp'] = 6
-keynums['F'] = 5
-keynums['E'] = 4
-keynums['DSharp'] = 3
-keynums['D'] = 2
-keynums['CSharp'] = 1
-keynums['C'] = 0
+keynums = {
+	'B': 11,
+	'ASharp': 10,
+	'A': 9,
+	'GSharp': 8,
+	'G': 7,
+	'FSharp': 6,
+	'F': 5,
+	'E': 4,
+	'DSharp': 3,
+	'D': 2,
+	'CSharp': 1,
+	'C': 0
+}
 
 class input_zmaestro(plugins.base):
 	def is_dawvert_plugin(self):
@@ -78,8 +79,6 @@ class input_zmaestro(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		tempodiv = project_obj.tempo/120
-
 		convproj_obj.metadata.name = project_obj.name
 		convproj_obj.metadata.author = project_obj.author
 		convproj_obj.metadata.comment_text = project_obj.comments
@@ -109,10 +108,9 @@ class input_zmaestro(plugins.base):
 					track_obj.midi.out_inst.patch = zm_track.instrumentcode
 					track_obj.midi.out_inst.bank = zm_track.instrumentbank
 					track_obj.to_midi(convproj_obj, cvpj_trackid, True)
-					track_obj.visual.name = zm_track.name
+					track_obj.visual_inst.color = track_obj.visual.color.copy()
 				else:
 					track_obj.visual.from_datapack('z_maestro', 'track', tracktype, True)
-					track_obj.visual.name = zm_track.name
 					plugin_obj = convproj_obj.plugin__add(cvpj_trackid, 'universal', 'soundfont2', None)
 					track_obj.plugslots.set_synth(cvpj_trackid)
 					sf2_path = os.path.join(dawvert_intent.input_folder, zm_track.soundfont)
@@ -120,6 +118,7 @@ class input_zmaestro(plugins.base):
 					plugin_obj.filerefs['file'] = sf2_path
 					fileref_obj.search_local(dawvert_intent.input_folder)
 					plugin_obj.midi.from_sf2(zm_track.instrumentbank, zm_track.instrumentcode)
+				track_obj.visual.name = zm_track.name
 
 				if tracktype == 'MIDIDrumTrack': track_obj.is_drum = True
 
@@ -239,7 +238,6 @@ class input_zmaestro(plugins.base):
 
 						audio_obj.pcm_from_bytes(part.channels)
 						audio_obj.to_file_wav(wave_path)
-
 						sampleref_obj = convproj_obj.sampleref__add(sampleref_id, wave_path, None)
 						sampleref_obj.set_fileformat('wav')
 						audio_obj.to_sampleref_obj(sampleref_obj)

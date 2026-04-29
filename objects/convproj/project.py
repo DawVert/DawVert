@@ -27,6 +27,7 @@ from objects.convproj import stretch
 from objects.convproj import timemarker
 from objects.convproj import videoref
 from objects.convproj import sampleref
+from objects.convproj import realdevices
 
 from functions.convproj_types import convert_r2m
 from functions.convproj_types import convert_ri2mi
@@ -239,6 +240,7 @@ class cvpj_project:
 		self.tracker_single = None
 		self.midi = cvpj_project_midi()
 		self.midi_cust_inst = []
+		self.realdevices = realdevices.cvpj_realdevicelist()
 
 		self.freq = 44100
 

@@ -40,7 +40,7 @@ class input_soundclub2(plugins.base):
 	
 	def get_prop(self, in_dict): 
 		in_dict['plugin_included'] = ['universal:sampler:single']
-		in_dict['projtype'] = 'rs'
+		in_dict['projtype'] = 'rs' 
 		
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import audio_data

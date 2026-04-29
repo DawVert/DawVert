@@ -68,7 +68,7 @@ class audiosauna_note:
 		self.noteCutoff = int(xt_note.get('noteCutoff'))
 
 class audiosauna_pattern:
-	__slots__ = ['trackNro', 'patternId', 'patternColor', 'startTick', 'endTick', 'patternLength', 'selected']
+	__slots__ = ['trackNro', 'patternId', 'patternColor', 'startTick', 'endTick', 'patternLength', 'selected', 'name']
 	def __init__(self, xt_pattern):
 		self.trackNro = int(xt_pattern.get('trackNro'))
 		self.patternId = int(xt_pattern.get('patternId'))
@@ -77,6 +77,7 @@ class audiosauna_pattern:
 		self.endTick = int(xt_pattern.get('endTick'))
 		self.patternLength = int(xt_pattern.get('patternLength'))
 		self.selected = getbool(xt_pattern.get('selected'))
+		self.name = xt_pattern.get('name')
 
 # ============================================= track ============================================= 
 
@@ -126,6 +127,7 @@ class audiosauna_song:
 		x_proj_songPatterns = x_proj.findall('songPatterns')[0]
 		x_proj_devices = x_proj.findall('devices')[0]
 
+		self.formatVersion = getbool(getvalue(x_proj, 'formatVersion', '1'))
 		self.mixerVisible = getbool(getvalue(x_proj, 'mixerVisible', 'true'))
 		self.appArrangeToolMode = int(getvalue(x_proj, 'appArrangeToolMode', '1'))
 		self.appPianoRollToolMode = int(getvalue(x_proj, 'appPianoRollToolMode', '1'))
@@ -138,8 +140,8 @@ class audiosauna_song:
 		self.appNoteHeight = int(getvalue(x_proj, 'appNoteHeight', '15'))
 		self.appVOffset = int(getvalue(x_proj, 'appVOffset', '551'))
 		self.appHOffset = int(getvalue(x_proj, 'appHOffset', '100'))
-		self.appPatternWidth = int(getvalue(x_proj, 'appPatternWidth', '4'))
-		self.appPatternHeight = int(getvalue(x_proj, 'appPatternHeight', '40'))
+		self.appPatternWidth = float(getvalue(x_proj, 'appPatternWidth', '4'))
+		self.appPatternHeight = float(getvalue(x_proj, 'appPatternHeight', '40'))
 		self.appVOffsetArrange = int(getvalue(x_proj, 'appVOffsetArrange', '0'))
 		self.appHOffsetArrange = int(getvalue(x_proj, 'appHOffsetArrange', '0'))
 		self.appLoopStart = int(getvalue(x_proj, 'appLoopStart', '0'))
@@ -158,11 +160,15 @@ class audiosauna_song:
 		self.dlyDamage = int(getvalue(x_proj, 'dlyDamage', '0'))
 		self.dlyFeed = int(getvalue(x_proj, 'dlyFeed', '70'))
 		self.dlyLevel = int(getvalue(x_proj, 'dlyLevel', '100'))
+		self.dlyWidth = getbool(getvalue(x_proj, 'dlyWidth', '75'))
 		self.dlySync = getbool(getvalue(x_proj, 'dlySync', 'true'))
 		self.rvbTime = float(getvalue(x_proj, 'rvbTime', '0'))
 		self.rvbFeed = int(getvalue(x_proj, 'rvbFeed', '90'))
 		self.rvbLevel = int(getvalue(x_proj, 'rvbLevel', '100'))
 		self.rvbWidth = int(getvalue(x_proj, 'rvbWidth', '100'))
+		self.rvbTankMix = int(getvalue(x_proj, 'rvbTankMix', '100'))
+		self.rvbDamp = int(getvalue(x_proj, 'rvbDamp', '30'))
+		self.rvbLines = int(getvalue(x_proj, 'rvbLines', '12'))
 
 		self.channels = {}
 		xt_channels = x_proj_channels.findall('channel')
