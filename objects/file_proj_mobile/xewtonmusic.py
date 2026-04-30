@@ -117,7 +117,6 @@ class xewtonmusic_song_note:
 		self.dur = 0
 		self.key = 0
 		self.vol = 0
-		self.unk = 0
 		self.auto = []
 
 	def read(self, ebrw_readstr):
@@ -125,8 +124,8 @@ class xewtonmusic_song_note:
 		self.dur = ebrw_readstr.int_u32()
 		self.key = ebrw_readstr.int_u8()
 		self.vol = ebrw_readstr.int_u8()
-		self.unk1 = ebrw_readstr.int_u16()
-		if self.unk1: 
+		numauto = ebrw_readstr.int_u16()
+		if numauto: 
 			for _ in range(self.unk1):
 				auto_pos = ebrw_readstr.int_u16()
 				auto_val = ebrw_readstr.int_u16()

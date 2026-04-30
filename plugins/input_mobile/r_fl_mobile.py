@@ -30,7 +30,7 @@ class input_fl_mobile(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		global samplefolder
 
-		from objects.file_proj import fl_mobile as proj_fl_mobile
+		from objects.file_proj_mobile import fl_mobile as proj_fl_mobile
 		from objects.file import adlib_bnk
 		from objects.convproj import fileref
 		fileref_global = fileref.cvpj_fileref_global

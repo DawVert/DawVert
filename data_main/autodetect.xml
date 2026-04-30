@@ -496,4 +496,9 @@
 	<plugin pluginset="mobile" name="zquence">
 		<file fileext=".zssong"/>
 	</plugin>
+
+	<plugin pluginset="mobile" name="fl_mobile_old">
+		<file fileext=".flm"/>
+		<bytes_header data="0080D444"/>
+	</plugin>
 </autodetect>
