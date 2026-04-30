@@ -88,6 +88,7 @@
 | R | ```mobile``` | ```viscentsoft_coolbeat``` | 玩酷电音/CoolBeat | ```.mlp``` | ✔️ | |
 | R-I | ```mobile``` | ```midsequer``` | Midsequer | ```.mdsq``` | ✔️ |  |
 | R-I | ```mobile``` | ```xewton_music``` | Xewton Music Studio | ```.xms``` | ✔️ |  |
+| M-I | ```mobile``` | ```zquence``` | Zquence Studio 2016 | ```.zssong``` | ✔️ |  |
 
 ## Audio Editors
 | DataType | PluginSet | Short Name | Name | Ext | Autodetect | Info | 
