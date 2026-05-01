@@ -273,11 +273,11 @@ class cvpj_plugin:
 		return self.visual_custom[name] if name in self.visual_custom else fallback
 
 	# -------------------------------------------------- datapack
-	def from_bytes(self, in_bytes, ds_name, df_name, cat_name, obj_name, structname): 
-		return self.state.from_bytes(in_bytes, ds_name, df_name, cat_name, obj_name, structname)
+	def from_bytes(self, in_bytes, dp_name, cat_name, obj_name, structname): 
+		return self.state.from_bytes(in_bytes, dp_name, cat_name, obj_name, structname)
 
-	def to_bytes(self, ds_name, df_name, cat_name, obj_name, structname):
-		return self.state.to_bytes(ds_name, df_name, cat_name, obj_name, structname)
+	def to_bytes(self, dp_name, cat_name, obj_name, structname):
+		return self.state.to_bytes(dp_name, cat_name, obj_name, structname)
 
 	def datapack_param__add(self, p_id, p_value, datapack_param):
 		return self.state.datapack_param__add(p_id, p_value, datapack_param)

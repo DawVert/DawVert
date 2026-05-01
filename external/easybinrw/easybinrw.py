@@ -422,9 +422,17 @@ class binwrite:
 	def double_l(self, v): self.str.write(self.pak_double_l(v))
 
 	def raw(self, v): self.str.write(v)
+	def raw_n(self, v, num):
+		outtxt = np.zeros(1, (np.void, num))
+		outtxt[:] = v
+		self.str.write(outtxt[0])
 	def string(self, v, num, **k):
 		outtxt = np.zeros(1, (np.void, num))
 		outtxt[:] = str(v).encode(**k)
+		self.str.write(outtxt[0])
+	def string16(self, v, num):
+		outtxt = np.zeros(1, (np.void, num))
+		outtxt[:] = str(v).encode('utf16')
 		self.str.write(outtxt[0])
 	def string_nolimit(self, v): self.str.write(str(v).encode())
 	def string_t(self, v): 

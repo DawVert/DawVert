@@ -4,6 +4,7 @@ import os
 from functions import data_values
 from functions import xtramath
 import xml.etree.ElementTree as ET
+from external.easybinrw import datadef
 
 def make_color_text(color):
 	return ('#'+'%02x%02x%02x' % (color[0], color[1], color[2]))
@@ -344,26 +345,6 @@ class datapack_colorset:
 			tempxml = ET.SubElement(xml_data, 'color')
 			tempxml.text = make_color_text(color)
 
-class datapack_datadef:
-	__slots__ = ['path', 'name', 'struct']
-	def __init__(self):
-		self.path = None
-		self.name = None
-		self.struct = None
-
-	def is_used(self): return self.path or self.name or self.struct
-
-	def read_xml(self, xml_data):
-		self.path = xml_data.get('path')
-		self.name = xml_data.get('name')
-		self.struct = xml_data.get('struct')
-
-	def write_xml(self, xml_data):
-		tempxml = ET.SubElement(xml_data, 'datadef')
-		if self.path is not None: tempxml.set('path',str(self.path))
-		if self.name is not None: tempxml.set('name',str(self.name))
-		if self.struct is not None: tempxml.set('struct',str(self.struct))
-
 class datapack_datapack_ext:
 	__slots__ = ['id', 'category', 'object']
 	def __init__(self):
@@ -467,7 +448,7 @@ class datapack_object:
 		self.params = datapack_objectset(datapack_param)
 		self.datavals = datapack_objectset(datapack_param)
 		self.drumset = datapack_objectset(datapack_drum)
-		self.datadef = datapack_datadef()
+		self.datadef = datadef.datadef_file()
 		self.datapack_ext = datapack_datapack_ext()
 		self.midi = datapack_midi()
 		self.extplug_assoc = datapack_object_extplug_assoc()
@@ -508,7 +489,8 @@ class datapack_object:
 				partattrib = x_part.attrib
 				for k, v in partattrib.items():
 					self.data[k] = v
-			elif x_part.tag == 'datadef': self.datadef.read_xml(x_part)
+			elif x_part.tag == 'datadef': 
+				self.datadef.read_xml(x_part)
 			elif x_part.tag == 'visual': self.visual.read_xml(x_part)
 			elif x_part.tag == 'midi': self.midi.read_xml(x_part)
 			elif x_part.tag == 'drumset':

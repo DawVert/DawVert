@@ -312,7 +312,7 @@ def setparams(convproj_obj, plugin_obj):
 		fl_pluginparams = ebrw_writestr.getvalue()
 
 	if plugin_obj.check_wildmatch('native', 'flstudio', None):
-		outbytes = plugin_obj.to_bytes('fl_studio', 'fl_studio', 'plugin', plug_type[2], None)
+		outbytes = plugin_obj.to_bytes('fl_studio', 'plugin', plug_type[2], 'main')
 
 		if outbytes:
 			fl_plugin = plug_type[2]

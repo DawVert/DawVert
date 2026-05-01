@@ -123,42 +123,46 @@ class cvpj_plugin_state:
 		return str(self.type)
 
 	# -------------------------------------------------- datapack
-	def from_bytes(self, in_bytes, ds_name, df_name, cat_name, obj_name, structname): 
-		fldso = globalstore.datapack.get_obj(ds_name, 'plugin', obj_name)
-		fldf = globalstore.datadef.get(df_name)
+	def from_bytes(self, in_bytes, dp_name, cat_name, obj_name, structname): 
+		fldso = globalstore.datapack.get_obj(dp_name, cat_name, obj_name)
 
 		try:
-			if fldso and fldf:
-				if fldso.datadef.struct: dfdict = fldf.parse(fldso.datadef.struct, in_bytes)
-				elif structname: dfdict = fldf.parse(structname, in_bytes)
-
-				self.datapack_obj__add_param(fldso, dfdict)
-				return dfdict
+			if fldso:
+				fdatadef = fldso.datadef
+				if fdatadef:
+					outdata = fdatadef.parse_data(in_bytes, structname)
+					self.datapack_obj__add_param(fldso, outdata)
+					return outdata
 			return {}
 		except:
 			return {}
 
 	def from_bytes_debug(self, in_bytes, df_name, structname): 
-		fldf = globalstore.datadef.get(df_name)
+		pass
+		#fldf = globalstore.datadef.get(df_name)
+
+		#try:
+		#	if fldf:
+		#		dfdict = fldf.parse(structname, in_bytes)
+		#		for x, d in dfdict.items():
+		#			print(x, d)
+		#except:
+		#	pass
+
+	def to_bytes(self, dp_name, cat_name, obj_name, structname): 
+		fldso = globalstore.datapack.get_obj(dp_name, cat_name, obj_name)
 
 		try:
-			if fldf:
-				dfdict = fldf.parse(structname, in_bytes)
-				for x, d in dfdict.items():
-					print(x, d)
+			if fldso:
+				fdatadef = fldso.datadef
+				if fdatadef:
+					datapackdict = self.param_dict_datapack_set_obj(fldso)
+					outdata = fdatadef.dump_bytes(structname, datapackdict)
+					return outdata
 		except:
 			pass
 
-	def to_bytes(self, ds_name, df_name, cat_name, obj_name, structname): 
-		fldf = globalstore.datadef.get(df_name)
-		fldso = globalstore.datapack.get_obj(ds_name, 'plugin', obj_name)
-
-		if fldf and fldso:
-			datapackdict = self.param_dict_datapack_set(ds_name, 'plugin', obj_name)
-			outbytes = fldf.create(fldso.datadef.struct if fldso.datadef.struct else structname, datapackdict)
-			return outbytes
-		else:
-			return b''
+		return b''
 			
 	def datapack_param__add(self, p_id, p_value, datapack_param):
 		if p_value is None: p_value = datapack_param.defv
@@ -172,7 +176,7 @@ class cvpj_plugin_state:
 			param_obj.enum_end_point = 'start'
 			for ep in datapack_param.out_enum_parts:
 				enum_part = param_obj.add_enum_part(ep.num, ep.id)
-		if valtype == 'enum_float': 
+		elif valtype == 'enum_float': 
 			param_obj = self.params.add(p_id, p_value, 'float')
 			param_obj.min = 0
 			param_obj.max = datapack_param.max
@@ -192,10 +196,13 @@ class cvpj_plugin_state:
 			param_obj = self.params.add(p_id, p_value, 'float')
 			param_obj.min = datapack_param.min
 			param_obj.max = datapack_param.max
+		else:
+			print('dpack to: unknown param valtype', valtype)
+			exit()
 		param_obj.visual.name = datapack_param.name
 		if datapack_param.unit: 
 			param_obj.unit.current = datapack_param.unit
-			print(param_obj.unit.current)
+			#print(param_obj.unit.current)
 
 	def datapack_dataval__add(self, p_id, p_value, datapack_param):
 		if p_value is None: p_value = datapack_param.defv
@@ -229,8 +236,11 @@ class cvpj_plugin_state:
 				outval = data_values.dict__nested_get_value(i_dict, param_id.split('/'))
 				self.datapack_param__add(param_id, outval, datapack_param)
 
-	def param_dict_datapack_set(self, ds_name, catname, pluginname):
-		fldso = globalstore.datapack.get_obj(ds_name, 'plugin', pluginname)
+	def param_dict_datapack_set(self, dp_name, catname, pluginname):
+		fldso = globalstore.datapack.get_obj(dp_name, 'plugin', pluginname)
+		return self.param_dict_datapack_set_obj(fldso)
+
+	def param_dict_datapack_set_obj(self, fldso):
 		outdict = {}
 		if fldso:
 			for param_id, datapack_param in fldso.params.iter():

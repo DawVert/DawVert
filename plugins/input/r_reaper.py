@@ -185,8 +185,6 @@ class input_reaper(plugins.base):
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
 		globalstore.datapack.load('reaper', './data/datapack/app/reaper.xml')
-		globalstore.datadef.load('reaper', './data_main/datadef/reaper.ddef')
-		datadef_obj = globalstore.datadef.get('reaper')
 
 		convproj_obj.type = 'r'
 
@@ -374,12 +372,15 @@ class input_reaper(plugins.base):
 							fourid = rpp_extplug.vst_fourid
 
 							if fourid == 1920167789:
-								if datadef_obj:
-									dfdict = datadef_obj.parse('reasamplomatic', rpp_extplug.data_chunk)
-									if dfdict: 
-										filenames = []
-										if 'filename' in dfdict: filenames = dfdict['filename'].split('>0 YOU NEED A NEWER REASAMPLOMATIC, HIT LEAVE OFFLINE!')[0].split('|')
-										samplers.append([filenames, dfdict])
+								datapack_obj = globalstore.datapack.get_obj('reaper', 'plugin', 'reasamplomatic')
+								if datapack_obj:
+									fdatadef = datapack_obj.datadef
+									if fdatadef:
+										dfdict = fdatadef.parse_data(rpp_extplug.data_chunk, 'main')
+										if dfdict: 
+											filenames = []
+											if 'filename' in dfdict: filenames = dfdict['filename'].split('>0 YOU NEED A NEWER REASAMPLOMATIC, HIT LEAVE OFFLINE!')[0].split('|')
+											samplers.append([filenames, dfdict])
 
 							else:
 								pluginfo_obj = globalstore.extplug.get('vst2', 'id', fourid, None, [64, 32])

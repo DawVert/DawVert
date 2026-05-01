@@ -680,11 +680,11 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 
 		if flplugin.name == 'bassdrum': 
 			plugin_obj.type_set('native', 'flstudio', flplugin.name)
-			plugin_obj.from_bytes(sslfdata, 'fl_studio', 'fl_studio', 'plugin', flplugin.name, 'sslf_bassdrum')
+			plugin_obj.from_bytes(sslfdata, 'fl_studio', 'plugin', flplugin.name, 'main')
 
 		if flplugin.name == 'pitcher': 
 			plugin_obj.type_set('native', 'flstudio', flplugin.name)
-			plugin_obj.from_bytes(sslfdata, 'fl_studio', 'fl_studio', 'plugin', flplugin.name, 'sslf_pitcher')
+			plugin_obj.from_bytes(sslfdata, 'fl_studio', 'plugin', flplugin.name, 'main')
 
 	elif flplugin.name == 'slicex':
 		version = ebrw_readstr.list_int_u16(2)
@@ -789,14 +789,14 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 		if flplugin.name == 'fl slayer': plugin_obj.midi_fallback__add_inst(30)
 		if flplugin.name == 'fl keys': plugin_obj.midi_fallback__add_inst(0)
 
-		if DEBUGSTUFF:
-			print(flplugin.name, flplugin.params.hex())
-			fldf = globalstore.datadef.get('fl_studio')
-			dfdict = fldf.parse(flplugin.name, flplugin.params)
-			for x in dfdict.items():
-				print(x)
+		#if DEBUGSTUFF:
+		#	print(flplugin.name, flplugin.params.hex())
+		#	fldf = globalstore.datadef.get('fl_studio')
+		#	dfdict = fldf.parse(flplugin.name, flplugin.params)
+		#	for x in dfdict.items():
+		#		print(x)
 
-		dfdict = plugin_obj.from_bytes(flplugin.params, 'fl_studio', 'fl_studio', 'plugin', flplugin.name, None)
+		dfdict = plugin_obj.from_bytes(flplugin.params, 'fl_studio', 'plugin', flplugin.name, 'main')
 
 		if DEBUGSTUFF:
 			plugin_obj.params.debugtxt()
