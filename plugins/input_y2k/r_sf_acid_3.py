@@ -9,6 +9,8 @@ from objects import regions
 from objects.convproj import fileref
 from functions import xtramath
 
+volumeversion = 5
+
 def calc_root(proj_root, track_root):
 	roottrack = (proj_root-60)
 	roottrack = roottrack%12
@@ -27,8 +29,6 @@ def extract_audio(filename, sampleref_obj, dawvert_intent, zipfile):
 	filepath = os.path.join(dawvert_intent.path_samples['extracted'], filename)
 	sampleref_obj.set_path(None, filepath)
 
-volumeversion = 5
-
 def do_region_common(sp_obj, placement_obj, region, version):
 	if 1 in region.flags: placement_obj.muted = True
 	if 3 in region.flags: placement_obj.locked = True
@@ -39,9 +39,7 @@ def add_audio_regions(
 	placements_obj, ppq, rootnote_auto, 
 	region, stretch_type, num_beats, seconds,
 	stretchflags, filename, tempo,
-	track_root_note, audiotempo, pitch, version
-	):
-
+	track_root_note, audiotempo, pitch, version):
 	mul1 = audiotempo/120 if audiotempo else 1
 
 	if seconds is not None:
@@ -94,57 +92,46 @@ def add_audio_regions(
 			do_region_common(sp_obj, placement_obj, region, version)
 			pls.append(placement_obj)
 
-	if stretch_type == 1:
-		real_offset = region.offset/10000000
-		real_size = region.size/10000000
-
-		placement_obj = placements_obj.add_audio()
-		ssize = (real_size)*ppq
-		time_obj = placement_obj.time
-		time_obj.set_pos(region.pos)
-		time_obj.set_dur_real(real_size)
-		sp_obj = placement_obj.sample 
-		sp_obj.sampleref = filename
-		sampmul = xtramath.pitch_to_speed(-(region.pitch+pitch))
-		time_obj.set_offset_real(real_offset)
-		sp_obj.stretch.timing.set__speed(sampmul)
-		do_region_common(sp_obj, placement_obj, region, version)
-		pls.append(placement_obj)
-
-	if stretch_type == 2:
-		calc_offset = region.offset/5000000
-		calc_offset = calc_offset*ppq*mul1
-
+	if stretch_type in [1,2,3]:
 		placement_obj = placements_obj.add_audio()
 		time_obj = placement_obj.time
-		time_obj.set_posdur(region.pos, region.size)
-		time_obj.set_offset(calc_offset)
-		sp_obj = placement_obj.sample 
+		sp_obj = placement_obj.sample
 		sp_obj.sampleref = filename
-		sp_obj.stretch.timing.set__orgtempo(audiotempo)
-		sp_obj.pitch = region.pitch+pitch
-		sp_obj.stretch.preserve_pitch = True
-		do_region_common(sp_obj, placement_obj, region, version)
-		pls.append(placement_obj)
 
-	if stretch_type == 3:
-		calc_offset = region.offset/10000000
+		if stretch_type == 1:
+			real_offset = region.offset/10000000
+			real_size = region.size/10000000
+			sampmul = xtramath.pitch_to_speed(-(region.pitch+pitch))
 
-		placement_obj = placements_obj.add_audio()
-		time_obj = placement_obj.time
-		time_obj.set_posdur(region.pos, region.size)
-		time_obj.set_offset_real(calc_offset)
-		sp_obj = placement_obj.sample 
-		sp_obj.sampleref = filename
-		sp_obj.stretch.timing.set__orgtempo(audiotempo)
-		sp_obj.pitch = region.pitch+pitch
-		sp_obj.stretch.preserve_pitch = True
+			ssize = (real_size)*ppq
+			time_obj.set_pos(region.pos)
+			time_obj.set_dur_real(real_size)
+			time_obj.set_offset_real(real_offset)
+			sp_obj.stretch.timing.set__speed(sampmul)
+
+		if stretch_type == 2:
+			calc_offset = region.offset/5000000
+			calc_offset = calc_offset*ppq*mul1
+
+			time_obj.set_posdur(region.pos, region.size)
+			time_obj.set_offset(calc_offset)
+			sp_obj.stretch.timing.set__orgtempo(audiotempo)
+			sp_obj.pitch = region.pitch+pitch
+			sp_obj.stretch.preserve_pitch = True
+
+		if stretch_type == 3:
+			calc_offset = region.offset/10000000
+
+			time_obj.set_posdur(region.pos, region.size)
+			time_obj.set_offset_real(calc_offset)
+			sp_obj.stretch.timing.set__orgtempo(audiotempo)
+			sp_obj.pitch = region.pitch+pitch
+			sp_obj.stretch.preserve_pitch = True
+
 		do_region_common(sp_obj, placement_obj, region, version)
 		pls.append(placement_obj)
 
 	return pls
-
-
 
 class input_acid_3(plugins.base):
 	def is_dawvert_plugin(self):
@@ -465,9 +452,7 @@ class input_acid_3(plugins.base):
 			elif root_name == 'TrackOrder':
 				old_track_order = convproj_obj.track_order
 				convproj_obj.track_order = []
-
 				do_orders_groups(root_chunk, old_track_order, tracks_data, None)
-
 
 			elif root_name == 'Group:TempoKeyPoints':
 				for regs_chunk, regs_name in root_chunk.iter_wtypes():
