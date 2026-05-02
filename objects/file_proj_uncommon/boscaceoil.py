@@ -23,6 +23,14 @@ class ceol_instrument:
 			self.resonance = ebrw_readstr.int_u16()
 			self.volume = ebrw_readstr.int_u16()
 
+	def write_ebrw(self, ebrw_writestr):
+		ebrw_writestr.int_u16(self.inst)
+		ebrw_writestr.int_u16(self.type)
+		ebrw_writestr.int_u16(self.palette)
+		ebrw_writestr.int_u16(self.cutoff)
+		ebrw_writestr.int_u16(self.resonance)
+		ebrw_writestr.int_u16(self.volume)
+
 # ============================================= pattern ============================================= 
 
 class ceol_note:
@@ -37,6 +45,12 @@ class ceol_note:
 		self.len = ebrw_readstr.int_u16()
 		self.pos = ebrw_readstr.int_u16()
 		ebrw_readstr.skip(2)
+
+	def write_ebrw(self, ebrw_writestr):
+		ebrw_writestr.int_u16(self.key)
+		ebrw_writestr.int_u16(self.len)
+		ebrw_writestr.int_u16(self.pos)
+		ebrw_writestr.int_u16(0)
 
 class ceol_pattern:
 	def __init__(self, ebrw_readstr):
@@ -55,6 +69,17 @@ class ceol_pattern:
 			if ebrw_readstr.int_u16():
 				self.recordfilter = ebrw_readstr.list_int_u16(16*3)
 				self.recordfilter = np.reshape(self.recordfilter, [16, 3])
+
+	def write_ebrw(self, ebrw_writestr):
+		ebrw_writestr.int_u16(self.key)
+		ebrw_writestr.int_u16(self.scale)
+		ebrw_writestr.int_u16(self.inst)
+		ebrw_writestr.int_u16(self.palette)
+		ebrw_writestr.int_u16(len(self.notes))
+		for n in self.notes: n.write_ebrw(ebrw_writestr)
+		ebrw_writestr.int_u16(1 if self.recordfilter!=None else 0)
+		if self.recordfilter!=None:
+			ebrw_readstr.list_int_u16(self.recordfilter.reshape([3, 16]).flatten(), 16*3)
 
 # ============================================= song ============================================= 
 
@@ -95,10 +120,35 @@ class ceol_song:
 		self.bar_length = ebrw_readstr.int_u16()
 		self.instruments = [ceol_instrument(ebrw_readstr) for x in range(ebrw_readstr.int_u16())]
 		self.patterns = [ceol_pattern(ebrw_readstr) for x in range(ebrw_readstr.int_u16())]
-
 		self.length = ebrw_readstr.int_u16()
 		self.loopstart = ebrw_readstr.int_u16()
 		self.loopend = ebrw_readstr.int_u16()
 		self.spots = ebrw_readstr.list_int_s16(self.length*8)
 		self.spots = np.reshape(self.spots, [self.length, 8])
 		return True
+
+	def write_ebrw(self, ebrw_writestr):
+		ebrw_writestr.int_u16(self.versionnum)
+		ebrw_writestr.int_u16(self.swing)
+		ebrw_writestr.int_u16(self.effect_type)
+		ebrw_writestr.int_u16(self.effect_value)
+		ebrw_writestr.int_u16(self.bpm)
+		ebrw_writestr.int_u16(self.pattern_length)
+		ebrw_writestr.int_u16(self.bar_length)
+		ebrw_writestr.int_u16(len(self.instruments))
+		for i in self.instruments: i.write_ebrw(ebrw_writestr)
+		ebrw_writestr.int_u16(len(self.patterns))
+		for i in self.patterns: i.write_ebrw(ebrw_writestr)
+		ebrw_writestr.int_u16(self.length)
+		ebrw_writestr.int_u16(self.loopstart)
+		ebrw_writestr.int_u16(self.loopend)
+		spots = np.reshape(self.spots, [8, self.length]).flatten()
+		ebrw_writestr.list_int_s16(spots, self.length*8)
+
+	def save_to_file(self, output_file):
+		ebrw_writestr = easybinrw.binwrite()
+		self.write_ebrw(ebrw_writestr)
+		outd = np.frombuffer(ebrw_writestr.getvalue(), dtype=np.int16)
+		outtxt = ','.join([str(x) for x in outd])
+		f = open(output_file, 'w')
+		f.write(outtxt)
