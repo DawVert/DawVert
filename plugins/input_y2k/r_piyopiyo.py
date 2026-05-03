@@ -6,6 +6,10 @@ import json
 import struct
 import os.path
 from objects import globalstore
+import zipfile
+
+import logging
+logger_input = logging.getLogger('input')
 
 def parse_notes(convproj_obj, trackid, notes_data, track_obj, keyoffset):
 	cvpj_notelist = track_obj.placements.notelist
@@ -14,6 +18,25 @@ def parse_notes(convproj_obj, trackid, notes_data, track_obj, keyoffset):
 		cvpj_notelist.add_r_multi(pos, 1, [(x+keyoffset)-12 for x in notes], 1, None)
 		if pan != 0: convproj_obj.automation.add_autotick(['track', trackid, 'pan'], 'float', pos, (pan-4)/3)
 	cvpj_notelist.sort()
+
+class external_data_zip():
+	def __init__(self):
+		self.zipfile = None
+
+	def load_data(self, input_file):
+		import zipfile
+		try: zip_data = zipfile.ZipFile(input_file, 'r')
+		except zipfile.BadZipFile as t: 
+			logger_input.warning('piyopiyo: extdata: Bad ZIP File: '+str(t))
+		self.zipfile = zip_data
+
+	def extract(self, arch_file, out_file):
+		if self.zipfile:
+			try: 
+				self.zipfile.extract(arch_file, path=out_file, pwd=None)
+				logger_input.info('piyopiyo: extdata: extracted '+arch_file+' as '+out_file)
+			except: 
+				logger_input.warning('piyopiyo: extdata: error extracting file: '+arch_file)
 
 class input_piyopiyo(plugins.base):
 	def is_dawvert_plugin(self):
@@ -38,6 +61,8 @@ class input_piyopiyo(plugins.base):
 		from objects.convproj import fileref
 		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'piyopiyo_wav', ['piyopiyo'])
 
+		print(dawvert_intent.path_external_data)
+
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(4)
 
@@ -49,7 +74,8 @@ class input_piyopiyo(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		extpath_path = os.path.join(dawvert_intent.path_external_data, 'piyopiyo')
+		external_dat = external_data_zip()
+		external_dat.load_data(os.path.join(dawvert_intent.path_external_data, 'piyopiyo', 'piyopiyo.zip'))
 
 		globalstore.datapack.load('piyopiyo', './data/datapack/app/piyopiyo.xml')
 		colordata = colors.colorset.from_datapack('piyopiyo', 'inst', 'main')
@@ -64,7 +90,7 @@ class input_piyopiyo(plugins.base):
 			track_obj.visual.color.set_int(colordata.getcolornum(tracknum))
 			track_obj.params.add('vol', pmdtrack_obj.volume/250, 'float')
 
-			plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
+			plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'single')
 			plugin_obj.role = 'synth'
 			osc_data = plugin_obj.osc_add()
 			osc_data.prop.type = 'wave'
@@ -87,8 +113,10 @@ class input_piyopiyo(plugins.base):
 
 		for sampname in ['BASS1', 'BASS2', 'SNARE1', 'HAT1', 'HAT2', 'SYMBAL1']:
 			sampid = 'PIYOPIYO_%s' % sampname
-			sampleref_obj = convproj_obj.sampleref__add__prefix(sampname, 'piyopiyo_wav', sampname+'.wav')
-			sampleref_obj.fileref.resolve_prefix()
+			wavfilename = sampname+'.wav'
+			outfile = os.path.join(dawvert_intent.path_samples['extracted'], wavfilename)
+			external_dat.extract(wavfilename, outfile)
+			sampleref_obj = convproj_obj.sampleref__add(sampname, outfile, None)
 			sp_obj = plugin_obj.samplepart_add(sampid)
 			sp_obj.sampleref = sampname
 

@@ -4,9 +4,32 @@
 import json
 import math
 import plugins
+import os
 
 from objects import globalstore
 from functions import xtramath
+
+import logging
+logger_input = logging.getLogger('input')
+
+class external_data_zip():
+	def __init__(self):
+		self.zipfile = None
+
+	def load_data(self, input_file):
+		import zipfile
+		try: zip_data = zipfile.ZipFile(input_file, 'r')
+		except zipfile.BadZipFile as t: 
+			logger_input.warning('mnbs: extdata: Bad ZIP File: '+str(t))
+		self.zipfile = zip_data
+
+	def extract(self, arch_file, out_file):
+		if self.zipfile:
+			try: 
+				self.zipfile.extract(arch_file, path=out_file, pwd=None)
+				logger_input.info('mnbs: extdata: extracted '+arch_file+' as '+out_file)
+			except: 
+				logger_input.warning('mnbs: extdata: error extracting file: '+arch_file)
 
 class input_gt_mnbs(plugins.base):
 	def is_dawvert_plugin(self):
@@ -40,6 +63,9 @@ class input_gt_mnbs(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		external_dat = external_data_zip()
+		external_dat.load_data(os.path.join(dawvert_intent.path_external_data, 'mnbs', 'samples.zip'))
+
 		globalstore.datapack.load('noteblockstudio', './data/datapack/app/noteblockstudio.xml')
 
 		tempo = (project_obj.tempo/800)*120
@@ -53,11 +79,7 @@ class input_gt_mnbs(plugins.base):
 		convproj_obj.params.add('bpm', outtempo, 'float')
 		convproj_obj.timesig = [project_obj.numerator, 4]
 
-		for instnum in range(16):
-			instid = 'NoteBlock'+str(instnum)
-			inst_obj = convproj_obj.instrument__add(instid)
-			midifound = inst_obj.from_datapack('noteblockstudio', 'inst', str(instnum), True)
-			if midifound: inst_obj.to_midi(convproj_obj, instid, True)
+		used_inst = []
 
 		for nbs_layer, layer_obj in enumerate(project_obj.layers):
 			cvpj_trackid = str(nbs_layer+1)
@@ -69,9 +91,36 @@ class input_gt_mnbs(plugins.base):
 			cvpj_notelist = track_obj.placements.notelist
 
 			for note_obj in layer_obj.notes: 
+				if note_obj.inst not in used_inst:
+					if note_obj.inst<16:
+						used_inst.append(note_obj.inst)
 				cvpj_notelist.add_m('NoteBlock'+str(note_obj.inst), note_obj.pos*notelen, 2*notelen, note_obj.key-39, note_obj.vel/100, None)
 				if note_obj.pan!=100: cvpj_notelist.last_add_pan((note_obj.pan/100)-1)
 				if note_obj.pitch: cvpj_notelist.last_add_finepitch(note_obj.pitch)
+
+		for instnum in used_inst:
+			instid = 'NoteBlock'+str(instnum)
+			inst_obj = convproj_obj.instrument__add(instid)
+			dpobj = globalstore.datapack.get_obj('noteblockstudio', 'inst', str(instnum))
+			if dpobj:
+				inst_obj.visual.from_datapack_obj(dpobj, True)
+
+				plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'single')
+				plugin_obj.role = 'synth'
+				plugin_obj.midi_incompat_synth_on = True
+				plugin_obj.midi_incompat_synth.from_datapack_obj(dpobj)
+
+				if 'audiofile' in dpobj.data:
+					wavfile = dpobj.data['audiofile']
+					outfile = os.path.join(dawvert_intent.path_samples['extracted'], wavfile)
+					external_dat.extract(wavfile, outfile)
+
+					sampleref_obj = convproj_obj.sampleref__add(wavfile, outfile, None)
+
+					samplepart_obj = plugin_obj.samplepart_add('sample')
+					samplepart_obj.sampleref = wavfile
+					inst_obj.plugslots.set_synth(pluginid)
+					inst_obj.datavals.add('middlenote', 6)
 
 		custominstid = 16
 		for custominstid, custom_obj in enumerate(project_obj.custom):

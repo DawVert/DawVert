@@ -376,10 +376,13 @@ class cvpj_visual:
 		self.merge_color(other_visual_obj)
 
 	def from_datapack(self, d_id, d_cat, d_item, overwrite):
-		d = globalstore.datapack.get_obj(d_id, d_cat, d_item)
-		if d: 
-			if overwrite or (not self.name): self.name = d.visual.name
-			if overwrite or (not self.color): self.color.set_int(d.visual.color)
+		dpobj = globalstore.datapack.get_obj(d_id, d_cat, d_item)
+		return self.from_datapack_obj(dpobj, overwrite)
+
+	def from_datapack_obj(self, dpobj, overwrite):
+		if dpobj: 
+			if overwrite or (not self.name): self.name = dpobj.visual.name
+			if overwrite or (not self.color): self.color.set_int(dpobj.visual.color)
 			return True
 		else:
 			return False

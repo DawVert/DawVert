@@ -4,8 +4,33 @@
 import plugins
 from objects import globalstore
 from functions import xtramath
+import os
+
+import logging
+logger_input = logging.getLogger('input')
 
 PL_MODE = 0
+
+class external_data_zip():
+	def __init__(self):
+		self.zipfile = None
+
+	def load_data(self, input_file):
+		import zipfile
+		if os.path.exists(input_file):
+			try: 
+				zip_data = zipfile.ZipFile(input_file, 'r')
+			except zipfile.BadZipFile as t: 
+				logger_input.warning('hydrogen: extdata: Bad ZIP File: '+str(t))
+			self.zipfile = zip_data
+
+	def extract(self, arch_file, out_file):
+		if self.zipfile:
+			try: 
+				self.zipfile.extract(arch_file, path=out_file, pwd=None)
+				logger_input.info('hydrogen: extdata: extracted '+arch_file+' as '+out_file)
+			except: 
+				logger_input.warning('hydrogen: extdata: error extracting file: '+arch_file)
 
 class input_hydrogen(plugins.base):
 	def is_dawvert_plugin(self):
@@ -40,7 +65,7 @@ class input_hydrogen(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 		
-		fileref.cvpj_fileref_global.add_prefix('hydrogen_drumkits', 'win', "C:\\Program Files\\Hydrogen\\data\\drumkits\\")
+		external_dats = {}
 
 		globalstore.datapack.load('hydrogen', './data/datapack/app/hydrogen.xml')
 		color_pattern = colors.colorset.from_datapack('hydrogen', 'pattern', 'main')
@@ -96,6 +121,12 @@ class input_hydrogen(plugins.base):
 			inst_obj = convproj_obj.instrument__add(str(instrument.id))
 			inst_obj.visual.name = instrument.name
 			drumkit = instrument.drumkit
+
+			if drumkit not in external_dats:
+				zipfilepath = os.path.join(dawvert_intent.path_external_data, 'hydrogen', drumkit+'.zip')
+				external_dat = external_dats[drumkit] = external_data_zip()
+				external_dat.load_data(zipfilepath)
+
 			opan, ovol = xtramath.sep_pan_to_vol(instrument.pan_L, instrument.pan_R)
 			inst_obj.params.add('pan', opan, 'float')
 			inst_obj.params.add('vol', instrument.volume*instrument.gain*ovol, 'float')
@@ -124,8 +155,13 @@ class input_hydrogen(plugins.base):
 			for layer in instrument.instrumentComponent.layers:
 				filename = layer.filename
 				sampleid = drumkit+'__'+filename
-				sampleref_obj = convproj_obj.sampleref__add__prefix(sampleid, 'hydrogen_drumkits', '.\\GMRockKit\\'+filename)
-				sampleref_obj.fileref.resolve_prefix()
+
+				if sampleid not in convproj_obj.samplerefs and drumkit in external_dats:
+					external_dat = external_dats[drumkit]
+					outpath = os.path.join(dawvert_intent.path_samples['extracted'], drumkit)
+					outfile = os.path.join(outpath, filename)
+					external_dat.extract(filename, outpath)
+					sampleref_obj = convproj_obj.sampleref__add(sampleid, outfile, None)
 
 				sp_obj = plugin_obj.sampleregion_add(-50, 50, 0, None)
 				sp_obj.sampleref = sampleid
