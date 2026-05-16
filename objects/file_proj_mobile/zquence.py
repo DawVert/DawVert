@@ -61,7 +61,13 @@ class zquence_group:
 				if ptoken is not None:
 					if ptoken.type=='ATTRIB':
 						attribval = ptoken.value
-						if len(attribval)==2: self.attrib[attribval[0]] = attribval[1]
+						if len(attribval)==2: 
+							if attribval[0] in self.attrib:
+								if not isinstance(self.attrib[attribval[0]], list): 
+									self.attrib[attribval[0]] = [attribval[1]]
+								self.attrib[attribval[0]].append(attribval[1])
+
+							else: self.attrib[attribval[0]] = attribval[1]
 					elif ptoken.type=='GROUP':
 						gname = ptoken.value
 						ingroup = zquence_group()

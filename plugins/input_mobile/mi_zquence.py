@@ -111,6 +111,46 @@ class input_zquence(plugins.base):
 							Color = int(synthattrib['Color'])
 							visual_obj.color.set_int(color_to_int(Color))
 
+						if 'DspName' in synthattrib:
+							dspname = synthattrib['DspName']
+							if dspname=='SamplerSynth':
+								plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'drums')
+								plugin_obj.role = 'synth'
+								inst_obj.plugslots.plugin_autoplace(plugin_obj, pluginid)
+								for x in group:
+									if x.name=='EData':
+										for instpart in x.groups:
+											attrib = instpart.attrib
+											if instpart.name == 'ContentFiles':
+												if 'File' in attrib:
+													files = attrib['File']
+													if isinstance(files, list):
+														for f in files:
+															sampleref_obj = convproj_obj.sampleref__add(f, f, None)
+															if sampleref_obj: 
+																sampleref_obj.search_local(dawvert_intent.input_folder)
+													else:
+														sampleref_obj = convproj_obj.sampleref__add(files, files, None)
+														if sampleref_obj: 
+															sampleref_obj.search_local(dawvert_intent.input_folder)
+
+											if instpart.name == 'Node':
+												for i in instpart:
+													if i.name=='Notes':
+														for p in i:
+															drump = p.attrib
+															key = int(drump['K']) if 'K' in drump else 0
+															file = drump['F'] if 'F' in drump else ''
+
+															drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+															drumpad_obj.key = key-60
+															drumpad_obj.visual.name = file
+															layer_obj.samplepartid = 'drum_%i' % key
+															sp_obj = plugin_obj.samplepart_add(layer_obj.samplepartid)
+															sp_obj.sampleref = file
+
+
+
 		if project_obj.patterns:
 			for pattern in project_obj.patterns:
 				patternattrib = pattern.attrib
@@ -148,8 +188,9 @@ class input_zquence(plugins.base):
 													note_TickLength = int(noteattrib['TickLength']) if 'TickLength' in noteattrib else 48
 													note_TickStart = int(noteattrib['TickStart']) if 'TickStart' in noteattrib else 0
 													note_Velocity = int(noteattrib['Velocity']) if 'Velocity' in noteattrib else 127
+													note_Pan = int(noteattrib['Pan'])/127 if 'Pan' in noteattrib else 0
 
-													cvpj_notelist.add_m(instid, note_TickStart, note_TickLength, note_NoteKey-60, note_Velocity/127, None)
+													cvpj_notelist.add_m(instid, note_TickStart, note_TickLength, note_NoteKey-60, note_Velocity/127, None if not note_Pan else {'pan': note_Pan})
 
 		if project_obj.references:
 			playlist_stor = {}
