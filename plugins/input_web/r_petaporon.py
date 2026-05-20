@@ -19,6 +19,8 @@ midi_inst_nums = {
 	'paint': [5,0,3,4,9,14,11,13,1,12]
 }
 
+logger_input = logging.getLogger('input')
+
 class input_petaporon(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -54,26 +56,27 @@ class input_petaporon(plugins.base):
 		traits_obj = convproj_obj.traits
 		traits_obj.track_nopl = True
 
-		peta_notedata = petapo_data['n'].encode('ascii')
-		peta_noteints = struct.unpack("B"*len(peta_notedata), peta_notedata)
-		peta_instset = petapo_data['i']
-		bio_peta_notebytes = BytesIO(bytes(peta_noteints))
-
-		peta_notelists = [[] for _ in range(10)]
-
 		globalstore.datapack.load('petaporon', './data/datapack/app/petaporon.xml')
 		colordata = colors.colorset.from_datapack('petaporon', 'inst', 'main')
 
-		for _ in range(len(peta_noteints)//5):
-			partdata = bio_peta_notebytes.read(5)
-			peta_note = getval(partdata[0]-35)
-			peta_inst = getval(partdata[1]-35)
-			peta_len = getval(partdata[2]-35)
-			peta_poshigh = getval(partdata[3]-35)
-			peta_poslow = getval(partdata[4]-35)
-			peta_pos = peta_poslow+(peta_poshigh*94)
-			peta_notelists[peta_inst].append([peta_pos, peta_len, peta_note-12])
+		peta_notelists = [[] for _ in range(10)]
+		if 'n' in petapo_data:
+			peta_notedata = petapo_data['n'].encode('ascii')
+			peta_noteints = struct.unpack("B"*len(peta_notedata), peta_notedata)
+			bio_peta_notebytes = BytesIO(bytes(peta_noteints))
+			for _ in range(len(peta_noteints)//5):
+				partdata = bio_peta_notebytes.read(5)
+				peta_note = getval(partdata[0]-35)
+				peta_inst = getval(partdata[1]-35)
+				peta_len = getval(partdata[2]-35)
+				peta_poshigh = getval(partdata[3]-35)
+				peta_poslow = getval(partdata[4]-35)
+				peta_pos = peta_poslow+(peta_poshigh*94)
+				peta_notelists[peta_inst].append([peta_pos, peta_len, peta_note-12])
+		else:
+			logger_input.info('notes data not found')
 
+		peta_instset = petapo_data['i'] if 'i' in petapo_data else None
 		for instnum in range(10):
 			instid = 'petaporon'+str(instnum)
 
@@ -86,7 +89,7 @@ class input_petaporon(plugins.base):
 				track_obj.midi.out_inst.device = 'mariopaint'
 				track_obj.to_midi(convproj_obj, instid, True)
 
-			if peta_instset == 'chiptune':
+			elif peta_instset == 'chiptune':
 				plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
 				plugin_obj.role = 'synth'
 				track_obj.plugslots.set_synth(pluginid)
@@ -115,5 +118,5 @@ class input_petaporon(plugins.base):
 			for n in peta_notelists[instnum]: cvpj_notelist.add_r(n[0], n[1], n[2], 1, None)
 
 		convproj_obj.do_actions.append('do_singlenotelistcut')
-		convproj_obj.params.add('bpm', petapo_data['t'], 'float')
-		convproj_obj.timesig[0] = petapo_data['c']
+		if 't' in petapo_data: convproj_obj.params.add('bpm', petapo_data['t'], 'float')
+		if 'c' in petapo_data: convproj_obj.timesig[0] = petapo_data['c']
