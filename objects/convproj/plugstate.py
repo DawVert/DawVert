@@ -73,8 +73,8 @@ class cvpj_poly:
 		self.max = 32
 		self.porta = False
 		self.porta_time = time.time_lfo()
-		self.slide_always = False
 		self.porta_octive_scale = False
+		self.slide_always = False
 		self.slide_slope = 0
 		self.defined = False
 

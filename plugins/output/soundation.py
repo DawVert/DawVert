@@ -192,32 +192,79 @@ class output_soundation(plugins.base):
 						inst_supported = True
 						soundation_instrument.identifier = 'com.soundation.simple-sampler'
 
-						middlenote = track_obj.datavals.get('middlenote', 0)
+						# --------- samplepart
+						sp_obj = plugin_obj.samplepart_get('sample')
+						reffound, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
+						if reffound: sp_obj.convpoints_percent(sampleref_obj)
+
+						# --------- asdr
+						set_asdr(soundation_instrument, plugin_obj)
+
+						# --------- gain
+						v_gain = track_obj.datavals.get('gain', 0.25)
+						soundation_instrument.params.add('gain', v_gain, [])
+
+						# --------- loop_points
+						soundation_instrument.params.add('start', sp_obj.start, [])
+						soundation_instrument.params.add('end', 1, [])
+						soundation_instrument.params.add('loop_start', sp_obj.loop_start, [])
+						soundation_instrument.params.add('loop_end', sp_obj.loop_end, [])
+
+						# --------- pitch
 						pitch = track_obj.params.get('pitch', 0).value
 
-						#negpitch = -1 if pitch<0 else 1
 						transpose = round(pitch)
 						detune = pitch-transpose
 
 						transpose = xtramath.between_to_one(-48, 48, transpose)
 						detune = xtramath.between_to_one(-1, 1, detune)
-
-						set_asdr(soundation_instrument, plugin_obj)
-						soundation_instrument.params.add('playback_mode', 2, [])
-						soundation_instrument.params.add('gain', 0.25, [])
-						soundation_instrument.params.add('end', 1, [])
-						soundation_instrument.params.add('crossfade', 0, [])
 						soundation_instrument.params.add('coarse', transpose, [])
 						soundation_instrument.params.add('fine', detune, [])
-						soundation_instrument.params.add('root_note', middlenote+72, [])
-						soundation_instrument.params.add('playback_direction', 0, [])
-						soundation_instrument.params.add('interpolation_mode', 2, [])
-						soundation_instrument.params.add('release_mode', 1, [])
-						soundation_instrument.params.add('portamento_time', 0.1, [])
 
-						sp_obj = plugin_obj.samplepart_get('sample')
-						reffound, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
-						if reffound: sp_obj.convpoints_percent(sampleref_obj)
+						# --------- root_note
+						middlenote = track_obj.datavals.get('middlenote', 0)
+						soundation_instrument.params.add('root_note', middlenote+72, [])
+
+						# --------- loop_mode
+						if sp_obj.loop_active:
+							outnum = 1
+							if sp_obj.loop_mode=="reverse": outnum = 2
+							if sp_obj.loop_mode=="pingpong": outnum = 3
+							soundation_instrument.params.add('loop_mode', outnum, [])
+						else:
+							soundation_instrument.params.add('loop_mode', 0, [])
+
+						# --------- interpolation_mode
+						outnum = 0
+						if sp_obj.interpolation=="none": outnum = 0
+						elif sp_obj.interpolation=="linear": outnum = 1
+						elif sp_obj.interpolation=="sinc": outnum = 2
+						else: outnum = 2
+						soundation_instrument.params.add('interpolation_mode', outnum, [])
+
+						# --------- playback_direction
+						soundation_instrument.params.add('playback_direction', int(sp_obj.reverse), [])
+
+						# --------- release_mode
+						soundation_instrument.params.add('release_mode', int(sp_obj.loop_release), [])
+
+						# --------- playback_mode
+						poly_obj = plugin_obj.state.poly
+
+						v_portamento_time = 0.1
+						v_playback_mode = 2
+						if poly_obj.defined:
+							if poly_obj.mono:
+								if poly_obj.porta:
+									v_playback_mode = 1
+									v_portamento_time = poly_obj.porta_time.speed_seconds
+								else:
+									v_playback_mode = 0
+						soundation_instrument.params.add('playback_mode', v_playback_mode, [])
+						soundation_instrument.params.add('portamento_time', v_portamento_time, [])
+
+						# --------- others
+						soundation_instrument.params.add('crossfade', 0, [])
 
 						filename = sp_obj.get_filepath(convproj_obj, None)
 						zipfilename = addsample(zip_sngz, filename, False)
@@ -227,14 +274,6 @@ class output_soundation(plugins.base):
 						else:
 							soundation_instrument.data['sample'] = {"url": zipfilename, "name": ""}
 
-						soundation_instrument.params.add('start', sp_obj.start, [])
-						soundation_instrument.params.add('loop_start', sp_obj.loop_start, [])
-						soundation_instrument.params.add('loop_end', sp_obj.loop_end, [])
-							 
-						if sp_obj.loop_active:
-							soundation_instrument.params.add('loop_mode', 1, [])
-						else:
-							soundation_instrument.params.add('loop_mode', 0, [])
 
 					elif plugin_obj.check_match('user', 'reasonstudios', 'europa'):
 						inst_supported = True
