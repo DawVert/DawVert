@@ -61,10 +61,10 @@ class input_greysound(plugins.base):
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_stretch = []
-		traits_obj.auto_types = []
 		traits_obj.placement_cut = False
 		traits_obj.placement_loop = []
 		traits_obj.time_seconds = False
+		traits_obj.auto_types = ['nopl_points']
 
 		convproj_obj.set_timings(960)
 
@@ -109,10 +109,12 @@ class input_greysound(plugins.base):
 
 		for gs_track in session_obj.tracks:
 			if gs_track.type == 'MASTER':
+				autoloc = ['master']
 				track_obj = convproj_obj.track_master
 				do_track_visual(gs_track, track_obj)
 				do_track_params(gs_track, track_obj)
 			else:
+				autoloc = ['track', str(gs_track.id)]
 				if gs_track.type == 'INSTRUMENT': track_type = 'instrument'
 				if gs_track.type == 'AUX': track_type = 'fx'
 				if gs_track.type == 'AUDIO': track_type = 'audio'
@@ -130,6 +132,19 @@ class input_greysound(plugins.base):
 						if 'type' in outputRouting:
 							if outputRouting['type']=='none': master_on = False
 					routesends[gs_track.id] = [master_on, []]
+
+			for lane in gs_track.automationLanes:
+				if lane.trackId==gs_track.id:
+					target = lane.target
+					if target.type=='TRACK':
+						if target.parameterId=='volume':
+							auto_obj = convproj_obj.automation.create(autoloc+['vol'], 'float', True)
+							for point in lane.points:
+								if 'ticks' in point.position: auto_obj.add_autopoint(point.position['ticks']*16, clipGain(point.value), None)
+						if target.parameterId=='pan':
+							auto_obj = convproj_obj.automation.create(autoloc+['pan'], 'float', True)
+							for point in lane.points:
+								if 'ticks' in point.position: auto_obj.add_autopoint(point.position['ticks']*16, point.value, None)
 
 			gs_trackids[gs_track.id] = track_obj
 
@@ -186,8 +201,8 @@ class input_greysound(plugins.base):
 
 		fxslots = {}
 		for insert in session_obj.inserts:
-			if region.trackId not in fxslots: fxslots[region.trackId] = {}
-			fxslots[region.trackId][insert.slotIndex] = insert
+			if insert.trackId not in fxslots: fxslots[insert.trackId] = {}
+			fxslots[insert.trackId][insert.slotIndex] = insert
 
 		for trackid, slots in fxslots.items():
 			track_obj = gs_trackids[trackid]

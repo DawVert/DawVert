@@ -190,6 +190,92 @@ class greysound_region:
 		if self.clipGain: out['clipGain'] = self.clipGain
 		return out
 
+class greysound_automationLane_target:
+	def __init__(self):
+		self.type = "TRACK"
+		self.parameterId = ""
+		self.label = ""
+		self.minValue = 0
+		self.maxValue = 1
+		self.defaultValue = 0
+		self.unit = None
+
+	def read(self, pd):
+		for n, v in pd.items():
+			if n == 'type': self.type = v
+			elif n == 'parameterId': self.parameterId = v
+			elif n == 'label': self.label = v
+			elif n == 'minValue': self.minValue = v
+			elif n == 'maxValue': self.maxValue = v
+			elif n == 'defaultValue': self.defaultValue = v
+			elif n == 'unit': self.unit = v
+			else: logger_projparse.warning('greysound: automationLane_target: unimplemented attrib: '+n)
+
+	def write(self):
+		out = {}
+		out['type'] = self.type
+		out['parameterId'] = self.parameterId
+		out['label'] = self.label
+		out['minValue'] = self.minValue
+		out['maxValue'] = self.maxValue
+		out['defaultValue'] = self.defaultValue
+		if self.unit: out['unit'] = self.unit
+		return out
+
+class greysound_automationLane_point:
+	def __init__(self):
+		self.id = ""
+		self.position = {}
+		self.value = 0
+
+	def read(self, pd):
+		for n, v in pd.items():
+			if n == 'id': self.id = v
+			elif n == 'position': self.position = v
+			elif n == 'value': self.value = v
+			else: logger_projparse.warning('greysound: greysound_automationLane_point: unimplemented attrib: '+n)
+
+	def write(self):
+		out = {}
+		out['id'] = self.id
+		out['position'] = self.position
+		out['value'] = self.value
+		return out
+
+class greysound_automationLane:
+	def __init__(self):
+		self.id = ""
+		self.trackId = 0
+		self.target = greysound_automationLane_target()
+		self.points = []
+		self.bypassed = False
+		self.visible = False
+
+	def read(self, pd):
+		for n, v in pd.items():
+			if n == 'id': self.id = v
+			elif n == 'trackId': self.trackId = v
+			elif n == 'target': self.target.read(v)
+			elif n == 'points': 
+				self.points = []
+				for point in v:
+					lane = greysound_automationLane_point()
+					lane.read(point)
+					self.points.append(lane)
+			elif n == 'bypassed': self.bypassed = v
+			elif n == 'visible': self.visible = v
+			else: logger_projparse.warning('greysound: automationLane: unimplemented attrib: '+n)
+
+	def write(self):
+		out = {}
+		out['id'] = self.id
+		out['trackId'] = self.trackId
+		out['target'] = self.target.write()
+		out['points'] = [x.write() for x in self.points]
+		out['bypassed'] = self.bypassed
+		out['visible'] = self.visible
+		return out
+
 class greysound_track:
 	def __init__(self):
 		self.id = 1
@@ -207,6 +293,7 @@ class greysound_track:
 		self.inputMonitor = False
 		self.position = 0
 		self.outputRouting = None
+		self.automationLanes = []
 
 	def read(self, pd):
 		for n, v in pd.items():
@@ -225,6 +312,12 @@ class greysound_track:
 			elif n == 'inputMonitor': self.inputMonitor = v
 			elif n == 'position': self.position = v
 			elif n == 'outputRouting': self.outputRouting = v
+			elif n == 'automationLanes': 
+				self.automationLanes = []
+				for automationLane in v:
+					lane = greysound_automationLane()
+					lane.read(automationLane)
+					self.automationLanes.append(lane)
 			else: logger_projparse.warning('greysound: track: unimplemented attrib: '+n)
 
 	def write(self):
@@ -244,6 +337,7 @@ class greysound_track:
 		out['inputMonitor'] = self.inputMonitor
 		out['position'] = self.position
 		out['outputRouting'] = self.outputRouting
+		out['automationLanes'] = [x.write() for x in self.automationLanes]
 		return out
 
 class greysound_session:
