@@ -6,6 +6,7 @@ from io import BytesIO
 import json
 import plugins
 import struct
+import logging
 from objects.exceptions import ProjectFileParserException
 
 def getval(i_val):
