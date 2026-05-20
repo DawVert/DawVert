@@ -6,6 +6,7 @@ import os
 import json
 from objects import globalstore
 from functions import xtramath
+from functions import data_values
 
 def to_color(visual_obj):
 	return '#'+visual_obj.color.get_hex()
@@ -44,6 +45,7 @@ class output_greysound(plugins.base):
 		in_dict['projtype'] = 'r'
 		in_dict['fxtype'] = 'none'
 		in_dict['file_ext'] = ''
+		in_dict['auto_types'] = ['nopl_points']
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import greysound as proj_greysound
@@ -57,7 +59,6 @@ class output_greysound(plugins.base):
 
 		# master
 		track_obj = convproj_obj.track_master
-
 		greysound_track = proj_greysound.greysound_track()
 		greysound_track.id = 5000000000
 		greysound_track.type = 'MASTER'
@@ -66,24 +67,33 @@ class output_greysound(plugins.base):
 		do_track_params(greysound_track, track_obj)
 		session_obj.tracks.append(greysound_track)
 
+		clipsdata = {}
+		sampleref_assoc = {}
+
+		folder = dawvert_intent.output_folder
+		namet = dawvert_intent.output_visname
+		audiofilepath = os.path.join(folder, namet, 'audio-files')
+		os.makedirs(audiofilepath, exist_ok=True)
+
 		# tracks
 		tracknum = 0
+		pointnum = 1000
 		for trackid, track_obj in convproj_obj.track__iter():
 			gtracknum = 1000000000+tracknum
-			if track_obj.type in ['instrument']:
-				visual_obj = track_obj.visual
-				visual_inst_obj = track_obj.visual_inst
+			greysound_track = proj_greysound.greysound_track()
+			greysound_track.id = gtracknum
+			greysound_track.position = tracknum
+			greysound_track.type = 'AUX'
+			session_obj.tracks.append(greysound_track)
 
-				greysound_track = proj_greysound.greysound_track()
-				greysound_track.id = gtracknum
-				do_track_visual(greysound_track, track_obj, 'Track')
-				do_track_params(greysound_track, track_obj)
+			visual_obj = track_obj.visual
+			visual_inst_obj = track_obj.visual_inst
+			do_track_visual(greysound_track, track_obj, 'Track')
+			do_track_params(greysound_track, track_obj)
+
+			if track_obj.type == 'instrument':
 				greysound_track.type = 'INSTRUMENT'
 				greysound_track.timeBase = 'TICKS'
-				greysound_track.position = tracknum
-
-				session_obj.tracks.append(greysound_track)
-
 				for rnum, notespl_obj in enumerate(track_obj.placements.pl_notes):
 					greysound_region = proj_greysound.greysound_region()
 					greysound_region.id = 'converted_region_%s_%i' % (gtracknum, rnum)
@@ -91,7 +101,6 @@ class output_greysound(plugins.base):
 					start, end = notespl_obj.time.get_startend()
 					greysound_region.start = {"ticks": start, "millis": ticks_to_time(start, bpm)}
 					greysound_region.end = {"ticks": end, "millis": ticks_to_time(end, bpm)}
-
 					notespl_obj.notelist.mod_limit(-60, 67)
 					for cnote in notespl_obj.notelist.iter_notes():
 						note_obj = proj_greysound.greysound_midinote()
@@ -100,10 +109,97 @@ class output_greysound(plugins.base):
 						note_obj.pitch = int(cnote.key)+60
 						note_obj.velocity = int(float(cnote.vol)*100)
 						greysound_region.midiNotes.append(note_obj)
-
 					session_obj.regions.append(greysound_region)
 
-				tracknum += 1
+			if track_obj.type in ['audio']:
+				greysound_track.type = 'AUDIO'
+				greysound_track.timeBase = 'TIME'
+				for rnum, placement_obj in enumerate(track_obj.placements.pl_audio):
+					greysound_region = proj_greysound.greysound_region()
+					greysound_region.id = 'converted_region_%s_%i' % (gtracknum, rnum)
+					greysound_region.trackId = gtracknum
+					pos, dur = placement_obj.time.get_posdur_real()
+					greysound_region.start = {"millis": (pos)*1000}
+					greysound_region.end = {"millis": (pos+dur)*1000}
+
+					sp_obj = placement_obj.sample
+					sampleref_id = greysound_region.clipId = sp_obj.sampleref
+
+					if sampleref_id not in clipsdata:
+						ref_found, sampleref_obj = convproj_obj.sampleref__get(sampleref_id)
+						uuiddata = sampleref_assoc[sampleref_id] = str(data_values.bytes__to_uuid( sampleref_id.encode()))
+
+						sampleref_assoc[sampleref_id] = uuiddata
+
+						if ref_found:
+							fileref_obj = sampleref_obj.fileref
+							fileext = fileref_obj.file.extension
+
+							outfilename = '%s.%s' % (uuiddata, fileext)
+
+							greysound_clip = clipsdata[sampleref_id] = proj_greysound.greysound_clip()
+							greysound_clip.id = uuiddata
+							greysound_clip.filename = str(fileref_obj.file)
+							greysound_clip.storagePath = "/".join(['audio-files', outfilename])
+							greysound_clip.durationSec = sampleref_obj.get_dur_sec()
+							session_obj.clips.append(greysound_clip)
+
+							sampleref_obj.copy_file(None, os.path.join(audiofilepath, outfilename))
+
+					greysound_region.clipId = sampleref_assoc[sampleref_id]
+					session_obj.regions.append(greysound_region)
+
+
+			v_ap_f, v_ap_d = convproj_obj.automation.get(['track', trackid, 'vol'], 'float')
+			if v_ap_f:
+				if v_ap_d.u_nopl_points:
+					gs_lane = proj_greysound.greysound_automationLane()
+					gs_lane.id = "automation-%s-track-volume" % (gtracknum)
+					gs_lane.trackId = gtracknum
+					greysound_track.automationLanes.append(gs_lane)
+
+					target = gs_lane.target
+					target.type = "TRACK"
+					target.parameterId = "volume"
+					target.label = "Volume"
+					target.minValue = -60
+					target.maxValue = 12
+					target.defaultValue = 0
+					target.unit = "dB"
+					
+					for point in v_ap_d.nopl_points:
+						pointnum += 1
+						p = proj_greysound.greysound_automationLane_point()
+						p.id = "automationpoint-%s" % (pointnum)
+						p.position = {"ticks": point.pos/16}
+						p.value = clipGain(point.value) if point.value else  -60
+						gs_lane.points.append(p)
+
+			p_ap_f, p_ap_d = convproj_obj.automation.get(['track', trackid, 'pan'], 'float')
+			if p_ap_f:
+				if p_ap_d.u_nopl_points:
+					gs_lane = proj_greysound.greysound_automationLane()
+					gs_lane.id = "automation-%s-track-pan" % (gtracknum)
+					gs_lane.trackId = gtracknum
+					greysound_track.automationLanes.append(gs_lane)
+
+					target = gs_lane.target
+					target.type = "TRACK"
+					target.parameterId = "pan"
+					target.label = "Pan"
+					target.minValue = -1
+					target.maxValue =1
+					target.defaultValue = 0
+					
+					for point in p_ap_d.nopl_points:
+						pointnum += 1
+						p = proj_greysound.greysound_automationLane_point()
+						p.id = "automationpoint-%s" % (pointnum)
+						p.position = {"ticks": point.pos/16}
+						p.value = point.value
+						gs_lane.points.append(p)
+
+			tracknum += 1
 
 		for num, timemarker_obj in enumerate(convproj_obj.timemarkers):
 			greysound_marker = proj_greysound.greysound_marker()
@@ -122,4 +218,4 @@ class output_greysound(plugins.base):
 			outfile = os.path.join(foldpath, 'session.json')
 
 			f = open(outfile, 'w')
-			f.write(json.dumps(session_obj.write()))
+			f.write(json.dumps(session_obj.write(), indent=4))

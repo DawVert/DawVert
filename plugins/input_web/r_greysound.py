@@ -6,6 +6,7 @@ import json
 import zipfile
 import os
 from functions import xtramath
+from objects import globalstore
 
 def do_track_visual(gs_track, cvpj_track):
 	visual_obj = cvpj_track.visual
@@ -77,6 +78,8 @@ class input_greysound(plugins.base):
 		samplefolder = dawvert_intent.path_samples['extracted']
 		if 'session.json' not in zip_data.namelist(): 
 			raise ProjectFileParserException('greysound: JSON file not found')
+
+		globalstore.datapack.load('greysound', './data/datapack/app/greysound.xml')
 
 		t_greysound_session = zip_data.read('session.json')
 		gs_proj = json.loads(t_greysound_session)
@@ -209,14 +212,15 @@ class input_greysound(plugins.base):
 			for slotnum in sorted(slots):
 				fxdata = slots[slotnum]
 				fxid = 'fx_%i_%s' % (trackid, slotnum)
-				plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'graysound', fxdata.pluginType.lower())
+				pluginname = fxdata.pluginType.lower()
+				plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'greysound', fxdata.pluginType.lower())
 				plugin_obj.fxdata_add(not fxdata.bypassed, 1)
 				plugin_obj.role = 'effect'
-			
-				for k, v in fxdata.parameters.items():
-					if isinstance(v, int): plugin_obj.params.add(k, v, 'int')
-					elif isinstance(v, float): plugin_obj.params.add(k, v, 'float')
-					elif isinstance(v, bool): plugin_obj.params.add(k, v, 'bool')
+
+				fxparams = fxdata.parameters
+				dpackpluginname = fxdata.pluginType.upper()
+				for param_id, dset_param in globalstore.datapack.get_params('greysound', 'plugin', dpackpluginname):
+					plugin_obj.datapack_param__add(param_id, fxparams[param_id] if param_id in fxparams else None, dset_param)
 
 		for gs_marker in session_obj.markers:
 			if 'ticks' in gs_marker.position:

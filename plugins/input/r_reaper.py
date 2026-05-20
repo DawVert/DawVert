@@ -392,8 +392,9 @@ class input_reaper(plugins.base):
 								else:
 									numparams = (len(rpp_extplug.data_chunk)//4)-2
 									vstparams = struct.unpack('f'*numparams, rpp_extplug.data_chunk[8:])
-									extmanu_obj.vst2__setup_params('id', fourid, numparams, None, False)
-									for n, v in enumerate(vstparams): extmanu_obj.vst2__set_param(n, v)
+									if numparams>0:
+										extmanu_obj.vst2__setup_params('id', fourid, numparams, None, False)
+										for n, v in enumerate(vstparams): extmanu_obj.vst2__set_param(n, v)
 									extmanu_obj.vst2__params_output()
 
 								for parmenv in rpp_plugin.parmenv:
