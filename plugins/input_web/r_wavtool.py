@@ -43,7 +43,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					if devicedata.data['portalType'] == 'MIDI':
 						TrackMIDIReceiver = deviceid
 
-			if devicedata.type == 'JS':
+			elif devicedata.type == 'JS':
 
 				inputdata = devicedata.data['inputs'] if 'inputs' in devicedata.data else {}
 				constantsdata = devicedata.data['constants'] if 'constants' in devicedata.data else {}
@@ -321,7 +321,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					plugin_obj.fxdata_add(1, inputdata['mix'] if 'mix' in inputdata else 1)
 					effects.append(deviceid)
 
-			if devicedata.type == 'Bridge':
+			elif devicedata.type == 'Bridge':
 				from objects.inst_params import juce_plugin
 
 				encodedState = base64.b64decode(devicedata.data['encodedState']) if 'encodedState' in devicedata.data else ''
@@ -353,6 +353,9 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 						effects.append(deviceid)
 						if plugin_obj: plugin_obj.role = 'fx'
 	
+			else:
+				logger_input.info('Unimplemented Device Type: '+devicedata.type)
+
 			trackdevices.append(deviceid)
 
 		if TrackMIDIReceiver:
@@ -491,10 +494,12 @@ class input_wavtool(plugins.base):
 						wt_warp_enabled = wavtool_clip.warp['enabled'] if 'enabled' in wavtool_clip.warp else False
 						wt_warp_anchors = wavtool_clip.warp['anchors'] if 'anchors' in wavtool_clip.warp else {}
 						wt_warp_sourceBPM = wavtool_clip.warp['sourceBPM'] if 'sourceBPM' in wavtool_clip.warp else 120
+						wt_warp_algorithm = wavtool_clip.warp['algorithm'] if 'algorithm' in wavtool_clip.warp else None
 					else:
 						wt_warp_enabled = False
 						wt_warp_anchors = {}
 						wt_warp_sourceBPM = 120
+						wt_warp_algorithm = None
 					wt_warp_numanchors = len(wt_warp_anchors)
 
 					sourcebpmmod = wt_warp_sourceBPM/120
@@ -518,9 +523,12 @@ class input_wavtool(plugins.base):
 											(wt_warp_anchors[anchor]['destination']/2)/sourcebpmmod
 											)
 
-					else: 
-						s_timing_obj.set__speed(xtramath.pitch_to_speed(wavtool_clip.transpose))
-						stretch_obj.preserve_pitch = False
+					else:
+						if wt_warp_algorithm=='Pro':
+							s_timing_obj.set__orgtempo(wt_warp_sourceBPM/2)
+						else: 
+							s_timing_obj.set__speed(xtramath.pitch_to_speed(wavtool_clip.transpose))
+							stretch_obj.preserve_pitch = False
 
 					sp_obj.vol = wavtool_clip.gain
 

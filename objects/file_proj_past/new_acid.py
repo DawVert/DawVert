@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
-import zipfile
 from external.easybinrw import easybinrw
 from objects.exceptions import ProjectFileParserException
 
@@ -554,6 +553,7 @@ class sony_acid_song:
 		self.zipfile = None
 
 	def load_from_file(self, input_file):
+		import zipfile
 		self.zipped = False
 		self.zipfile = None
 
