@@ -196,8 +196,6 @@ class input_sequel3(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		globalstore.datapack.load('z_maestro', './data/datapack/app/z_maestro.xml')
-
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'
 
