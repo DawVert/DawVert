@@ -13,11 +13,16 @@ class cvpj_realdevice_midi:
 
 class cvpj_realdevicelist:
 	def __init__(self):
-		self.audio = {}
+		self.audio_in = {}
+		self.audio_out = {}
 		self.midi = {}
 
-	def add_audio(self, idt):
-		outd = self.audio[idt] = cvpj_realdevice_audio()
+	def add_audio_in(self, idt):
+		outd = self.audio_in[idt] = cvpj_realdevice_audio()
+		return outd
+
+	def add_audio_out(self, idt):
+		outd = self.audio_out[idt] = cvpj_realdevice_audio()
 		return outd
 
 	def add_midi(self, idt):

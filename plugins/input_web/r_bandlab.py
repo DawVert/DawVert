@@ -269,12 +269,9 @@ def do_track_common(convproj_obj, track_obj, blx_track, tempomul):
 			dseto_obj.visual.apply_cvpj_visual(plugin_obj.visual)
 			for param_id, dset_param in dseto_obj.params.iter():
 				paramv = plugparams[param_id] if param_id in plugparams else dset_param.defv
-				if not dset_param.noauto:
-					plugin_obj.params.add(param_id, paramv, 'float')
-					if n in blx_effect.automation: 
-						do_automation(convproj_obj, blx_effect.automation[n], ['plugin', fxid, n], tempomul)
-				else:
-					plugin_obj.datavals.add(param_id, paramv)
+				plugin_obj.datapack_param__add(param_id, paramv, dset_param)
+				if n in blx_effect.automation: 
+					do_automation(convproj_obj, blx_effect.automation[n], ['plugin', fxid, n], tempomul)
 
 		else:
 			for n, v in plugparams.items():

@@ -185,6 +185,18 @@ class cvpj_plugin_state:
 			param_obj.enum_end_point = datapack_param.out_enum_end_point
 			for ep in datapack_param.out_enum_parts:
 				enum_part = param_obj.add_enum_part(ep.num, ep.id)
+		elif valtype == 'enum_string': 
+			enumdata = dict([[x.id, x.num] for x in datapack_param.out_enum_parts])
+			p_value = enumdata[p_value] if p_value in enumdata else 0
+
+			param_obj = self.params.add(p_id, p_value, 'int')
+			param_obj.min = 0
+			param_obj.max = datapack_param.out_enum_max
+			param_obj.is_enum = True
+			param_obj.enum_max = datapack_param.out_enum_max
+			param_obj.enum_end_point = 'start'
+			for ep in datapack_param.out_enum_parts:
+				enum_part = param_obj.add_enum_part(ep.num, ep.id)
 
 		elif valtype == 'bool': 
 			param_obj = self.params.add(p_id, p_value, 'bool')

@@ -152,6 +152,8 @@ class greysound_region:
 		self.fadeOut = {}
 		self.clipGain = 0
 		self.midiNotes = []
+		self.loopEnabled = False
+		self.loopLength = {}
 
 	def read(self, pd):
 		for n, v in pd.items():
@@ -172,6 +174,8 @@ class greysound_region:
 					o = greysound_midinote()
 					o.read(t)
 					self.midiNotes.append(o)
+			elif n == 'loopEnabled': self.loopEnabled = v
+			elif n == 'loopLength': self.loopLength = v
 			else: logger_projparse.warning('greysound: region: unimplemented attrib: '+n)
 
 	def write(self):
