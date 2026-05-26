@@ -80,31 +80,97 @@ class magda_clip_auto_midiPitchBendData:
 		o['outHandle'] = self.outHandle.write()
 		return o
 
-class magda_clip_audio:
+class magda_clip_audio_source:
 	def __init__(self):
-		self.source = {}
-		self.interpretation = {}
-		self.playback = {}
-		self.warpEnabled = False
-		self.warpMarkers = {}
+		self.filePath = ''
+		self.durationSeconds = 0
 
 	def read(self, j):
-		if 'source' in j: self.source = j['source']
-		if 'interpretation' in j: self.interpretation = j['interpretation']
-		if 'playback' in j: self.playback = j['playback']
-		if 'warpEnabled' in j: self.warpEnabled = j['warpEnabled']
-		if 'warpMarkers' in j: self.warpMarkers = j['warpMarkers']
+		if 'filePath' in j: self.filePath = j['filePath']
+		if 'durationSeconds' in j: self.durationSeconds = j['durationSeconds']
 
 	def write(self):
 		o = {}
-		o['source'] = self.source
-		o['interpretation'] = self.interpretation
-		o['playback'] = self.playback
-		o['warpEnabled'] = self.warpEnabled
-		o['warpMarkers'] = self.warpMarkers
+		o['filePath'] = self.filePath
+		o['durationSeconds'] = self.durationSeconds
 		return o
 
-class magda_clip_midiNotes:
+class magda_clip_audio_interpretation:
+	def __init__(self):
+		self.bpm = 120
+		self.totalBeats = 4
+		self.totalBeatsLocked = False
+
+	def read(self, j):
+		if 'bpm' in j: self.bpm = j['bpm']
+		if 'totalBeats' in j: self.totalBeats = j['totalBeats']
+		if 'totalBeatsLocked' in j: self.totalBeatsLocked = j['totalBeatsLocked']
+
+	def write(self):
+		o = {}
+		o['bpm'] = self.bpm
+		o['totalBeats'] = self.totalBeats
+		o['totalBeatsLocked'] = self.totalBeatsLocked
+		return o
+
+class magda_clip_audio_playback:
+	def __init__(self):
+		self.offsetSeconds = 0.0
+		self.offsetBeats = 0.0
+		self.loopStartSeconds = 0.0
+		self.loopLengthSeconds = 1
+		self.loopStartBeats = 0.0
+		self.loopLengthBeats = 0.0
+		self.speedRatio = 1.0
+	
+	def read(self, j):
+		if 'offsetSeconds' in j: self.offsetSeconds = j['offsetSeconds']
+		if 'offsetBeats' in j: self.offsetBeats = j['offsetBeats']
+		if 'loopStartSeconds' in j: self.loopStartSeconds = j['loopStartSeconds']
+		if 'loopLengthSeconds' in j: self.loopLengthSeconds = j['loopLengthSeconds']
+		if 'loopStartBeats' in j: self.loopStartBeats = j['loopStartBeats']
+		if 'loopLengthBeats' in j: self.loopLengthBeats = j['loopLengthBeats']
+		if 'speedRatio' in j: self.speedRatio = j['speedRatio']
+	
+	def write(self):
+		o = {}
+		o['offsetSeconds'] = self.offsetSeconds
+		o['offsetBeats'] = self.offsetBeats
+		o['loopStartSeconds'] = self.loopStartSeconds
+		o['loopLengthSeconds'] = self.loopLengthSeconds
+		o['loopStartBeats'] = self.loopStartBeats
+		o['loopLengthBeats'] = self.loopLengthBeats
+		o['speedRatio'] = self.speedRatio
+		return o
+
+class magda_clip_audio:
+	def __init__(self):
+		self.source = magda_clip_audio_source()
+		self.interpretation = magda_clip_audio_interpretation()
+		self.playback = magda_clip_audio_playback()
+		self.warpEnabled = False
+		self.warpMarkers = {}
+		self.timeStretchMode = 0
+
+	def read(self, j):
+		if 'source' in j: self.source.read(j['source'])
+		if 'interpretation' in j: self.interpretation.read(j['interpretation'])
+		if 'playback' in j: self.playback.read(j['playback'])
+		if 'warpEnabled' in j: self.warpEnabled = j['warpEnabled']
+		if 'warpMarkers' in j: self.warpMarkers = j['warpMarkers']
+		if 'timeStretchMode' in j: self.timeStretchMode = j['timeStretchMode']
+
+	def write(self):
+		o = {}
+		o['source'] = self.source.write()
+		o['interpretation'] = self.interpretation.write()
+		o['playback'] = self.playback.write()
+		if self.warpEnabled: o['warpEnabled'] = self.warpEnabled
+		if self.warpMarkers: o['warpMarkers'] = self.warpMarkers
+		if self.timeStretchMode: o['timeStretchMode'] = self.timeStretchMode
+		return o
+
+class magda_clip_midiNote:
 	def __init__(self):
 		self.noteNumber = 60
 		self.velocity = 100
@@ -133,7 +199,7 @@ class magda_clip:
 		self.colour = "FF5588AA"
 		self.type = 1
 		self.view = 0
-		self.loopEnabled = True
+		self.loopEnabled = False
 		self.sceneIndex = -1
 		self.launchMode = 0
 		self.launchQuantize = 4
@@ -216,7 +282,7 @@ class magda_clip:
 		if 'midiNotes' in j: 
 			self.midiNotes = []
 			for x in j['midiNotes']:
-				t = magda_clip_midiNotes()
+				t = magda_clip_midiNote()
 				t.read(x)
 				self.midiNotes.append(t)
 		if 'audio' in j: 
@@ -688,7 +754,7 @@ class magda_track_viewSetting:
 		self.visible = True
 		self.locked = False
 		self.collapsed = False
-		self.height = 60
+		self.height = 80
 
 	def read(self, j):
 		if 'visible' in j: self.visible = j['visible']
@@ -744,7 +810,7 @@ class magda_track:
 		self.frozen = False
 		self.playbackMode = 0
 		self.viewSettings = {}
-		self.midiInputDevice = "all"
+		self.midiInputDevice = ""
 		self.midiOutputDevice = ""
 		self.audioInputDevice = ""
 		self.audioOutputDevice = "master"
@@ -757,6 +823,15 @@ class magda_track:
 		self.globalMacrosPanelOpen = False
 		self.selectedGlobalModIndex = -1
 		self.selectedGlobalMacroIndex = -1
+		for x in range(16):
+			t = magda_macros()
+			t.name = 'Macro '+str(x+1)
+			t.id = x
+			self.trackMacros.append(t)
+		self.viewSettings['Live'] = magda_track_viewSetting()
+		self.viewSettings['Arrange'] = magda_track_viewSetting()
+		self.viewSettings['Mix'] = magda_track_viewSetting()
+		self.viewSettings['Master'] = magda_track_viewSetting()
 
 	def read(self, j):
 		if 'id' in j: self.idnum = j['id']
@@ -986,13 +1061,13 @@ class magda_automation_lane:
 		o['snapEditsToBeatGrid'] = self.snapEditsToBeatGrid
 		o['snapValue'] = self.snapValue
 		o['height'] = self.height
-		o['absolutePoints'] = [x.write() for x in self.absolutePoints]
+		o['absolutePoints'] = [x.write for x in self.absolutePoints]
 		o['clipIds'] = self.clipIds
 		return o
 
 class magda_automation:
 	def __init__(self):
-		self.clips = {}
+		self.clips = []
 		self.lanes = []
 
 	def read(self, j):
@@ -1142,3 +1217,19 @@ class magda_session:
 			f.write(str(json.dumps(o, indent=4)))
 
 		return o
+
+	def save_to_file(self, filename):
+		outjsond = json.dumps(self.write()).encode()
+		f = open(filename, 'wb')
+		f.write(zlib.compress(outjsond))
+
+if __name__ == "__main__":
+	import argparse
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-i", default=None)
+	parser.add_argument("-o", default=None)
+	args = parser.parse_args()
+	session_obj = magda_session()
+	session_obj.load_from_file(args.i)
+	f = open(args.o, 'w')
+	f.write(str(json.dumps(session_obj.write(), indent=4)))

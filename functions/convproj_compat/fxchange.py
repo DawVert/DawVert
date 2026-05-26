@@ -130,6 +130,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 			track_obj.fxrack_channel = tracknum
 			track_obj.placements.add_fxrack_channel(tracknum)
 			tracknum += 1
+		convproj_obj.fxtype = 'rack'
 		return True
 
 	elif in_fxtype == 'groupreturn' and 'rack' in out_fxtype and convproj_obj.type in ['r', 'ri', 'rm', 'ms', 'rs']:
@@ -168,6 +169,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 				fxchannel_obj.sends.add(senddata[0]+1, senddata[2], senddata[1])
 				#fxchannel_obj.sends[5].to_master_active = False
 
+		convproj_obj.fxtype = 'rack'
 		return True
 
 	elif in_fxtype == 'rack' and 'groupreturn' in out_fxtype and convproj_obj.type in ['r', 'ri']:
@@ -250,6 +252,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 
 			logger_compat.info('fxchange: FX to Tracks '+ ', '.join(fx_trackids[fx_num]))
 		convproj_obj.fxrack = {}
+		convproj_obj.fxtype = 'groupreturn'
 		return True
 
 	elif in_fxtype == 'rack' and 'route' in out_fxtype and convproj_obj.type in ['r', 'ri']:
@@ -321,6 +324,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		for sid in nofx_trackids: convproj_obj.track_order.append(sid)
 
 		for fxnum in used_fxchans: convproj_obj.track_order.append('fxrack_'+str(fxnum))
+		convproj_obj.fxtype = 'route'
 		return True
 
 	elif in_fxtype == 'route' and ('groupreturn' in out_fxtype or 'route' in out_fxtype) and convproj_obj.type in ['r', 'ri']:
@@ -347,6 +351,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 			group_obj.plugslots.slots_mixer = track_obj.plugslots.slots_mixer
 			group_obj.plugslots.slots_audio_enabled = track_obj.plugslots.slots_audio_enabled
 
+		convproj_obj.fxtype = 'groupreturn'
 		return True
 
 	elif in_fxtype == 'route' and 'rack' in out_fxtype and convproj_obj.type in ['r', 'ri']:
@@ -374,6 +379,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 			fxchannel_obj.sends.to_master_active = oldmasteractive
 			track_obj.placements.add_fxrack_channel(fxnum)
 
+		convproj_obj.fxtype = 'rack'
 		return True
 
 	elif in_fxtype == 'groupreturn' and 'route' in out_fxtype and convproj_obj.type in ['r', 'ri', 'rs']:
@@ -446,6 +452,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 					send_obj.sendautoid = x.sendautoid
 
 		convproj_obj.fx__group__clear()
+		convproj_obj.fxtype = 'route'
 		return True
 		
 	else: return False

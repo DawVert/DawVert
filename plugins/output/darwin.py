@@ -47,7 +47,7 @@ class output_darwin(plugins.base):
 				if visual_obj.color: darwin_track.color = to_color(outcolor)
 				elif visual_inst_obj.color: darwin_track.color = to_color(visual_inst_obj)
 				if visual_obj.name: darwin_track.name = visual_obj.name
-				darwin_track.muted = not bool(track_obj.params.get('on', 1).value)
+				darwin_track.muted = not bool(track_obj.params.get('enabled', 1).value)
 				darwin_track.pan = track_obj.params.get('pan', 1).value
 				darwin_track.solo = bool(track_obj.params.get('solo', 1).value)
 				darwin_track.volume = track_obj.params.get('vol', 1).value

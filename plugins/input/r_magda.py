@@ -6,8 +6,7 @@ import json
 from functions import xtramath
 
 def get_color(color):
-	col = color[2:]
-	return col[4:6]+col[2:4]+col[0:2]
+	return color[2:]
 
 def do_track_base(magda_track, track_obj):
 	track_obj.visual.name = magda_track.name
@@ -51,11 +50,16 @@ class input_magda(plugins.base):
 		convproj_obj.type = 'r'
 
 		traits_obj = convproj_obj.traits
-		traits_obj.audio_stretch = []
+		traits_obj.audio_filetypes = ['wav','flac','ogg','mp3']
+		traits_obj.audio_stretch = ['warp', 'rate']
 		traits_obj.auto_types = ['nopl_points']
 		traits_obj.placement_cut = True
-		traits_obj.placement_loop = []
+		traits_obj.placement_loop = ['loop', 'loop_eq', 'loop_off', 'loop_adv', 'loop_adv_off']
+		traits_obj.plugin_ext = ['vst3']
+		traits_obj.plugin_ext_arch = [64]
+		traits_obj.plugin_ext_platforms = ['win', 'unix']
 		traits_obj.time_seconds = False
+		traits_obj.track_hybrid = True
 
 		convproj_obj.set_timings(1.0)
 
@@ -68,6 +72,7 @@ class input_magda(plugins.base):
 
 		tempo = projprop.tempo
 		timesig = projprop.timeSignature
+		convproj_obj.metadata.name = projprop.name
 		convproj_obj.params.add('bpm', tempo, 'float')
 		convproj_obj.timesig = timesig
 
@@ -242,37 +247,47 @@ class input_magda(plugins.base):
 					audiodata = x.audio
 					if audiodata:
 						audio_source = audiodata.source
-						if 'filePath' in audio_source:
-							filePath = audio_source['filePath']
+						if audio_source.filePath:
+							filePath = audio_source.filePath
 							sampleref_obj = convproj_obj.sampleref__add(filePath, filePath, None)
 							sp_obj.sampleref = filePath
-							if 'durationSeconds' in audio_source:
-								sampleref_obj.set_dur_sec(audio_source['durationSeconds'])
+							if audio_source.durationSeconds:
+								sampleref_obj.set_dur_sec(audio_source.durationSeconds)
 
-						audio_interpretation = audiodata.interpretation
 						audio_playback = audiodata.playback
 						audio_warpEnabled = audiodata.warpEnabled
 						audio_warpMarkers = audiodata.warpMarkers
 
-						offsetSeconds = audio_playback['offsetSeconds'] if 'offsetSeconds' in audio_playback else 0.0
+						offsetSeconds = audio_playback.offsetSeconds
 
 						time_obj.set_offset_real(offsetSeconds)
 
 						if not audio_warpEnabled:
-							loopLengthBeats = audio_playback['loopLengthBeats'] if 'loopLengthBeats' in audio_playback else 0.0
-							if not loopLengthBeats:
-								speed = audio_playback['speedRatio'] if 'speedRatio' in audio_playback else 1.0
-								s_timing_obj.set__real_rate(tempo, speed)
-							else:
+							loopLengthBeats = audio_playback.loopLengthBeats
+							if x.autoTempo and loopLengthBeats:
 								s_timing_obj.set__beats(loopLengthBeats)
+							else:
+								speed = audio_playback.speedRatio
+								s_timing_obj.set__speed(speed)
 						else:
 							dur_sec = sampleref_obj.get_dur_sec()
-							with s_timing_obj.setup_warp(True) as warp_obj:
-								for marker in audio_warpMarkers:
-									sourcetime = marker['sourceTime'] if 'sourceTime' in marker else 0.0
-									warpTime = marker['warpTime'] if 'warpTime' in marker else 0.0
-									warp_obj.points__add_beatsec(warpTime*2, sourcetime*(120/tempo))
-								warp_obj.fix__remove_dupe_sec()
+
+							loopLengthBeats = audio_playback.loopLengthBeats
+							if x.autoTempo and loopLengthBeats:
+								with s_timing_obj.setup_warp(True) as warp_obj:
+									for marker in audio_warpMarkers:
+										sourcetime = marker['sourceTime'] if 'sourceTime' in marker else 0.0
+										warpTime = marker['warpTime'] if 'warpTime' in marker else 0.0
+										dd = loopLengthBeats/(dur_sec*4)
+										warp_obj.points__add_beatsec((warpTime*dd)*4, sourcetime)
+									warp_obj.fix__remove_dupe_sec()
+							else:
+								with s_timing_obj.setup_warp(True) as warp_obj:
+									for marker in audio_warpMarkers:
+										sourcetime = marker['sourceTime'] if 'sourceTime' in marker else 0.0
+										warpTime = marker['warpTime'] if 'warpTime' in marker else 0.0
+										warp_obj.points__add_beatsec(warpTime*2, sourcetime*(120/tempo))
+									warp_obj.fix__remove_dupe_sec()
 
 		for x in project_obj.automation.lanes:
 			target = x.target
