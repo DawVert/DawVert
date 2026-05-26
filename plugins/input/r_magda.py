@@ -271,7 +271,7 @@ class input_magda(plugins.base):
 								for marker in audio_warpMarkers:
 									sourcetime = marker['sourceTime'] if 'sourceTime' in marker else 0.0
 									warpTime = marker['warpTime'] if 'warpTime' in marker else 0.0
-									warp_obj.points__add_beatsec(warpTime*2, sourcetime)
+									warp_obj.points__add_beatsec(warpTime*2, sourcetime*(120/tempo))
 								warp_obj.fix__remove_dupe_sec()
 
 		for x in project_obj.automation.lanes:
