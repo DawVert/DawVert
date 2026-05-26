@@ -501,4 +501,8 @@
 		<file fileext=".flm"/>
 		<bytes_header data="0080D444"/>
 	</plugin>
+
+	<plugin pluginset="main" name="magda">
+		<file fileext=".mgd"/>
+	</plugin>
 </autodetect>
