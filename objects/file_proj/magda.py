@@ -1,7 +1,7 @@
 
 import json, zlib
 
-DEBUGSTUFF = True
+DEBUGSTUFF = False
 
 # =========================================== clip ===========================================
 
