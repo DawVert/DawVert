@@ -64,7 +64,17 @@ class input_magda(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		tempo = project_obj.project.tempo
+		projprop = project_obj.project
+
+		tempo = projprop.tempo
+		timesig = projprop.timeSignature
+		convproj_obj.params.add('bpm', tempo, 'float')
+		convproj_obj.timesig = timesig
+
+		loopd = projprop.loop
+		convproj_obj.transport.loop_active = loopd.enabled
+		convproj_obj.transport.loop_start = loopd.startBeats
+		convproj_obj.transport.loop_end = loopd.endBeats
 
 		sends_all = [] # send > [src, target, level, tomaster, sendautoid, native, prefader]
 		send_nums = []
