@@ -4,7 +4,7 @@ This project is not affiliated with, endorsed by, or associated with Ableton AG,
 
 All product names, trademarks, and registered trademarks are the property of their respective owners.
 
-All references to the DAW product's names in this project's source, documentation are nominative fair use — they identify the file format this project parses and writes, and no more.
+All references to the DAW product names in this project's source, documentation are nominative fair use — they identify the file format this project parses and writes, and no more.
 
 This project neither uses nor distributes the source code, object code, proprietary SDK components, or header files of any proprietary DAW software.
 
