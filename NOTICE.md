@@ -8,7 +8,7 @@ All references to the DAW product's names in this project's source, documentatio
 
 This project neither uses nor distributes the source code, object code, proprietary SDK components, or header files of any proprietary DAW software.
 
-All file-format observations were obtained by inspecting the bytes of files written by the DAW Software — using only public tools.
+All file-format observations were obtained by inspecting the bytes of files written by the DAW Software using only public tools.
 
 ## Interoperability basis
 
