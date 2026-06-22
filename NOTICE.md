@@ -1,12 +1,12 @@
 ## Trademark and attribution
 
-This project is not affiliated with, endorsed by, or associated with Ableton AG, Image-Line Software, Cockos Incorporated, or any other DAW software company.
+DawVert is not affiliated with, endorsed by, or associated with Ableton AG, Image-Line Software, Cockos Incorporated, or any other DAW software company.
 
 All product names, trademarks, and registered trademarks are the property of their respective owners.
 
-All references to "FL Studio", "Ableton" and others in this project's source and documentation are nominative fair use — they identify the file format this project parses and writes, and no more.
+All references to "FL Studio", "Ableton" and others in DawVert's source and documentation are nominative fair use — they identify the file format this software parses and writes, and no more.
 
-This project neither uses nor distributes the source code, object code, proprietary SDK components, or header files of any proprietary DAW software.
+DawVert neither uses nor distributes the source code, object code, proprietary SDK components, or header files of any proprietary DAW software.
 
 All file-format observations were obtained by inspecting the bytes of files written by the DAW Software — using only public tools.
 
