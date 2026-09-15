@@ -37,7 +37,7 @@ class output_cvpj_f(plugins.base):
 
 		convproj_obj.change_timings(384, False)
 		
-		midiobj = mido.MidiFile()
+		midiobj = mido.MidiFile(charset='utf-8')
 		midiobj.ticks_per_beat = convproj_obj.time_ppq
 		multi_miditrack = []
 

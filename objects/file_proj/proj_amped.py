@@ -209,9 +209,9 @@ class amped_track:
 	def add_region(self, position, duration, offset, idnum):
 		amped_obj = amped_region(None, 'lime')
 		amped_obj.id = idnum
-		amped_obj.position = position/4
-		amped_obj.length = duration/4
-		amped_obj.offset = offset/4
+		amped_obj.position = float(position)/4
+		amped_obj.length = float(duration)/4
+		amped_obj.offset = float(offset)/4
 		self.regions.append(amped_obj)
 		return amped_obj
 

@@ -22,6 +22,8 @@ class timesigblocks:
 		songduration = convproj_obj.get_dur()+ppq
 
 		timesig_num, timesig_dem = convproj_obj.timesig
+		timesig_num = int(timesig_num)
+		timesig_dem = int(timesig_dem)
 
 		if detect_start:
 			startpos = convproj_obj.loop_start if convproj_obj.loop_start else 0
@@ -40,9 +42,13 @@ class timesigblocks:
 				self.timesig(songduration, ts_parts, ppq, timesig_num, timesig_dem, outstart, mode)
 			else: 
 				pos, timesig = ts_parts[0]
-				self.timesig(songduration, ts_parts, ppq, timesig[0], timesig[1], outstart, mode)
+				self.timesig(songduration, ts_parts, ppq, int(timesig[0]), int(timesig[1]), outstart, mode)
 
 	def timesig(self, endpos, ts, ppq, timesig_num, timesig_dem, startpos, mode):
+		timesig_num = int(timesig_num)
+		timesig_dem = int(timesig_dem)
+		ppq = int(ppq)
+
 		if mode == 1: 
 			tcalc = int(timesig_num*timesig_dem)
 			startd = startpos%(ppq*tcalc)
@@ -54,7 +60,7 @@ class timesigblocks:
 		for p, v in ts: 
 			if mode == 1: tscalc = timesig_num*timesig_dem
 			else: tscalc = timesig_num
-			self.timesigposs.append([startd+p, tscalc*ppq])
+			self.timesigposs.append([startd+p, int(tscalc*ppq)])
 		self.timesigposs += [[endpos, int(tcalc*ppq)]]
 		self.process()
 

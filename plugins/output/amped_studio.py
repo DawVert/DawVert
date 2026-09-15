@@ -19,7 +19,7 @@ def convauto(autopoints, param_obj):
 	ampedauto = []
 	for autopoint in autopoints:
 		value = xtramath.between_to_one(param_obj.min, param_obj.max, autopoint.value)
-		ampedauto.append({"pos": autopoint.pos/4, "value": value})
+		ampedauto.append({"pos": float(autopoint.pos)/4, "value": float(value)})
 	return ampedauto
 
 def createclip(audiopl_obj, audio_id):
@@ -28,11 +28,11 @@ def createclip(audiopl_obj, audio_id):
 	amped_audclip.contentGuid.is_custom = True
 	amped_audclip.contentGuid.id = audio_id[audiopl_obj.sample.sampleref] if audiopl_obj.sample.sampleref in audio_id else ''
 	amped_audclip.position = 0
-	amped_audclip.gain = audiopl_obj.sample.vol
-	amped_audclip.length = audiopl_obj.time.duration*4
+	amped_audclip.gain = float(audiopl_obj.sample.vol)
+	amped_audclip.length = float(audiopl_obj.time.duration)*4
 	amped_audclip.offset = 0
-	amped_audclip.stretch = audiopl_obj.sample.stretch.calc_real_size
-	amped_audclip.pitchShift = audiopl_obj.sample.pitch
+	amped_audclip.stretch = float(audiopl_obj.sample.stretch.calc_real_size)
+	amped_audclip.pitchShift = float(audiopl_obj.sample.pitch)
 	return amped_audclip
 
 def do_idparams(amped_track, convproj_obj, plugin_obj, pluginid, amped_device, amped_auto):
@@ -49,7 +49,7 @@ def do_idparams(amped_track, convproj_obj, plugin_obj, pluginid, amped_device, a
 				autospec = {"type": "numeric", "min": param_obj.min, "max": param_obj.max, "curve": 0, "step": 0}
 				amped_auto = amped_track.add_auto(paramid, True, amped_device.id, convauto(ap_d.nopl_points, param_obj), autospec)
 
-		amped_device.add_param(paramnum, ampedpid, param_obj.value)
+		amped_device.add_param(paramnum, ampedpid, float(param_obj.value))
 	return paramout
 
 def amped_parse_effects(amped_track, convproj_obj, fxchain_audio, amped_auto):
@@ -154,7 +154,7 @@ class output_amped(plugins.base):
 
 		amped_obj.createdWith = "DawVert"
 		amped_obj.settings = {"deviceDelayCompensation": True}
-		amped_obj.masterTrack.volume = convproj_obj.track_master.params.get('vol', 1).value
+		amped_obj.masterTrack.volume = float(convproj_obj.track_master.params.get('vol', 1).value)
 		#amped_obj.masterTrack.devices = amped_parse_effects(None, convproj_obj, convproj_obj.track_master.plugslots.slots_audio, None)
 
 		audio_id = {}
@@ -172,8 +172,8 @@ class output_amped(plugins.base):
 			amped_track = proj_amped.amped_track(None)
 			amped_track.id = counter_id.get()
 			amped_track.name = track_obj.visual.name if track_obj.visual.name else ''
-			amped_track.pan = track_obj.params.get('pan', 0).value
-			amped_track.volume = track_obj.params.get('vol', 1.0).value
+			amped_track.pan = float(track_obj.params.get('pan', 0).value)
+			amped_track.volume = float(track_obj.params.get('vol', 1.0).value)
 			amped_track.mute = not track_obj.params.get('on', True).value
 			amped_track.solo = bool(track_obj.params.get('solo', False).value)
 
@@ -193,7 +193,7 @@ class output_amped(plugins.base):
 					wamPreset['bank'] = ''
 					wamPreset['bankName'] = ''
 					wamPreset['patchIndex'] = 0
-					wamPreset['data'] = [plugin_obj.params.get('obxd_'+str(x), 0).value for x in range(71)]
+					wamPreset['data'] = [float(plugin_obj.params.get('obxd_'+str(x), 0).value) for x in range(71)]
 					amped_device.data['wamClassName'] = 'OBXD'
 					amped_device.data['wamPreset'] = json.dumps(wamPreset)
 					amped_device.bypass = False
@@ -205,7 +205,7 @@ class output_amped(plugins.base):
 					wamPreset['bank'] = ''
 					wamPreset['bankName'] = ''
 					wamPreset['patchIndex'] = 0
-					wamPreset['data'] = [plugin_obj.params.get('augur_'+str(x), 0).value for x in range(183)]
+					wamPreset['data'] = [float(plugin_obj.params.get('augur_'+str(x), 0).value) for x in range(183)]
 					amped_device.data['wamClassName'] = 'AUGUR'
 					amped_device.data['wamPreset'] = json.dumps(wamPreset)
 					amped_device.bypass = False
@@ -246,7 +246,7 @@ class output_amped(plugins.base):
 					for eur_value_name in europa_vals:
 						eur_value_type, cvpj_val_name = europa_vals[eur_value_name]
 						if eur_value_type == 'number':
-							eur_value_value = plugin_obj.params.get(cvpj_val_name, 0).value
+							eur_value_value = float(plugin_obj.params.get(cvpj_val_name, 0).value)
 						else:
 							eur_value_value = plugin_obj.datavals.get(cvpj_val_name, '')
 							if eur_value_name in ['Curve1','Curve2','Curve3','Curve4','Curve']: 
@@ -299,7 +299,7 @@ class output_amped(plugins.base):
 								"position": float(t_pos)/4, 
 								"length": float(t_dur)/4, 
 								"key": int(t_key+60),
-								"velocity": t_vol*100, 
+								"velocity": float(t_vol*100), 
 								"channel": 0
 								})
 
@@ -308,7 +308,7 @@ class output_amped(plugins.base):
 				if audiopl_obj.time.cut_type == 'cut': amped_offset = audiopl_obj.time.cut_start
 				amped_region = amped_track.add_region(audiopl_obj.time.position, audiopl_obj.time.duration, amped_offset, counter_id.get())
 				amped_audclip = createclip(audiopl_obj, audio_id)
-				amped_audclip.fadeIn = audiopl_obj.fade_in.get_dur_beat(amped_obj.tempo)
+				amped_audclip.fadeIn = float(audiopl_obj.fade_in.get_dur_beat(amped_obj.tempo))
 				amped_region.clips = [amped_audclip]
 
 			for nestedaudiopl_obj in track_obj.placements.pl_audio_nested:
@@ -318,7 +318,7 @@ class output_amped(plugins.base):
 						amped_audclip = createclip(insideaudiopl_obj, audio_id)
 						amped_audclip.position = insideaudiopl_obj.time.position/4
 						amped_audclip.length = insideaudiopl_obj.time.duration/4
-						amped_audclip.fadeIn = insideaudiopl_obj.fade_in.get_dur_beat(amped_obj.tempo)
+						amped_audclip.fadeIn = float(insideaudiopl_obj.fade_in.get_dur_beat(amped_obj.tempo))
 						if insideaudiopl_obj.time.cut_type == 'cut': 
 							amped_audclip.offset = (insideaudiopl_obj.time.cut_start/4)
 						amped_region.clips.append(amped_audclip)
