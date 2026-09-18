@@ -11,11 +11,37 @@ import zipfile
 import logging
 logger_input = logging.getLogger('input')
 
+alt_drum_note_map = {
+	0: [1.0, 0],
+	1: [0.6, 0],
+	2: [1.0, 1],
+	3: [0.6, 1],
+	4: [1.0, 2],
+	5: [0.6, 2],
+	8: [1.0, 3],
+	9: [0.6, 3],
+	10: [1.0, 4],
+	11: [0.6, 4],
+	12: [1.0, 5],
+	13: [0.6, 5]
+}
+
 def parse_notes(convproj_obj, trackid, notes_data, track_obj, keyoffset):
 	cvpj_notelist = track_obj.placements.notelist
 	for pos, nd in enumerate(notes_data):
 		notes, pan = nd
 		cvpj_notelist.add_r_multi(pos, 1, [(x+keyoffset)-12 for x in notes], 1, None)
+		if pan != 0: convproj_obj.automation.add_autotick(['track', trackid, 'pan'], 'float', pos, (pan-4)/3)
+	cvpj_notelist.sort()
+
+def parse_notes_drumalt(convproj_obj, trackid, notes_data, track_obj):
+	cvpj_notelist = track_obj.placements.notelist
+	for pos, nd in enumerate(notes_data):
+		notes, pan = nd
+		for x in notes:
+			if x in alt_drum_note_map: 
+				vol, key = alt_drum_note_map[x]
+				cvpj_notelist.add_r(pos, 1, key, vol, None)
 		if pan != 0: convproj_obj.automation.add_autotick(['track', trackid, 'pan'], 'float', pos, (pan-4)/3)
 	cvpj_notelist.sort()
 
@@ -55,13 +81,17 @@ class input_piyopiyo(plugins.base):
 		in_dict['plugin_included'] = ['universal:synth-osc','universal:sampler:multi']
 		in_dict['projtype'] = 'r'
 
+	def get_configmenu(self): 
+		return {
+			"use_samples": {"type": "bool","name": "Use Drum Samples","def": True},
+			"drum_notes_alt": {"type": "bool","name": "Alternate Drum Notes","def": True},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import colors
 		from objects.file_proj_past import piyopiyo as proj_piyopiyo
 		from objects.convproj import fileref
 		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'piyopiyo_wav', ['piyopiyo'])
-
-		print(dawvert_intent.path_external_data)
 
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(4)
@@ -73,9 +103,6 @@ class input_piyopiyo(plugins.base):
 		project_obj = proj_piyopiyo.piyopiyo_song()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		external_dat = external_data_zip()
-		external_dat.load_data(os.path.join(dawvert_intent.path_external_data, 'piyopiyo', 'piyopiyo.zip'))
 
 		globalstore.datapack.load('piyopiyo', './data/datapack/app/piyopiyo.xml')
 		colordata = colors.colorset.from_datapack('piyopiyo', 'inst', 'main')
@@ -111,82 +138,122 @@ class input_piyopiyo(plugins.base):
 		track_obj.is_drum = True
 		track_obj.plugslots.set_synth(pluginid)
 
-		for sampname in ['BASS1', 'BASS2', 'SNARE1', 'HAT1', 'HAT2', 'SYMBAL1']:
-			sampid = 'PIYOPIYO_%s' % sampname
-			wavfilename = sampname+'.wav'
-			outfile = os.path.join(dawvert_intent.path_samples['extracted'], wavfilename)
-			external_dat.extract(wavfilename, outfile)
-			sampleref_obj = convproj_obj.sampleref__add(sampname, outfile, None)
-			sp_obj = plugin_obj.samplepart_add(sampid)
-			sp_obj.sampleref = sampname
+		if dawvert_intent.input_get_param('use_samples', 1):
+			try:
+				external_dat = external_data_zip()
+				external_dat.load_data(os.path.join(dawvert_intent.path_external_data, 'piyopiyo', 'piyopiyo.zip'))
 
-		drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
-		drumpad_obj.key = -12
-		drumpad_obj.visual.name = 'Bass 1'
-		layer_obj.samplepartid = 'PIYOPIYO_BASS1'
+				for sampname in ['BASS1', 'BASS2', 'SNARE1', 'HAT1', 'HAT2', 'SYMBAL1']:
+					sampid = 'PIYOPIYO_%s' % sampname
+					wavfilename = sampname+'.wav'
+					outfile = os.path.join(dawvert_intent.path_samples['extracted'], wavfilename)
+					external_dat.extract(wavfilename, outfile)
+					sampleref_obj = convproj_obj.sampleref__add(sampname, outfile, None)
+					sp_obj = plugin_obj.samplepart_add(sampid)
+					sp_obj.sampleref = sampname
+			except FileNotFoundError:
+				logger_input.warning('piyopiyo: extdata: ZIP file missing.')
 
-		drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
-		drumpad_obj.key = -11
-		drumpad_obj.vol = 0.6
-		drumpad_obj.visual.name = 'Bass 1'
-		layer_obj.samplepartid = 'PIYOPIYO_BASS1'
+		if not dawvert_intent.input_get_param('drum_notes_alt', 0):
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = -12
+			drumpad_obj.visual.name = 'Bass 1'
+			layer_obj.samplepartid = 'PIYOPIYO_BASS1'
 
-		drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
-		drumpad_obj.key = -10
-		drumpad_obj.visual.name = 'Bass 2'
-		layer_obj.samplepartid = 'PIYOPIYO_BASS2'
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = -11
+			drumpad_obj.vol = 0.6
+			drumpad_obj.visual.name = 'Bass 1'
+			layer_obj.samplepartid = 'PIYOPIYO_BASS1'
 
-		drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
-		drumpad_obj.key = -9
-		drumpad_obj.vol = 0.6
-		drumpad_obj.visual.name = 'Bass 2'
-		layer_obj.samplepartid = 'PIYOPIYO_BASS2'
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = -10
+			drumpad_obj.visual.name = 'Bass 2'
+			layer_obj.samplepartid = 'PIYOPIYO_BASS2'
 
-		drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
-		drumpad_obj.key = -8
-		drumpad_obj.visual.name = 'Snare'
-		layer_obj.samplepartid = 'PIYOPIYO_SNARE1'
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = -9
+			drumpad_obj.vol = 0.6
+			drumpad_obj.visual.name = 'Bass 2'
+			layer_obj.samplepartid = 'PIYOPIYO_BASS2'
 
-		drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
-		drumpad_obj.key = -7
-		drumpad_obj.vol = 0.6
-		drumpad_obj.visual.name = 'Snare'
-		layer_obj.samplepartid = 'PIYOPIYO_SNARE1'
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = -8
+			drumpad_obj.visual.name = 'Snare'
+			layer_obj.samplepartid = 'PIYOPIYO_SNARE1'
 
-		drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
-		drumpad_obj.key = -4
-		drumpad_obj.visual.name = 'Hat 1'
-		layer_obj.samplepartid = 'PIYOPIYO_HAT1'
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = -7
+			drumpad_obj.vol = 0.6
+			drumpad_obj.visual.name = 'Snare'
+			layer_obj.samplepartid = 'PIYOPIYO_SNARE1'
 
-		drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
-		drumpad_obj.key = -3
-		drumpad_obj.vol = 0.6
-		drumpad_obj.visual.name = 'Hat 1'
-		layer_obj.samplepartid = 'PIYOPIYO_HAT1'
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = -4
+			drumpad_obj.visual.name = 'Hat 1'
+			layer_obj.samplepartid = 'PIYOPIYO_HAT1'
 
-		drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
-		drumpad_obj.key = -2
-		drumpad_obj.visual.name = 'Hat 2'
-		layer_obj.samplepartid = 'PIYOPIYO_HAT2'
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = -3
+			drumpad_obj.vol = 0.6
+			drumpad_obj.visual.name = 'Hat 1'
+			layer_obj.samplepartid = 'PIYOPIYO_HAT1'
 
-		drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
-		drumpad_obj.key = -1
-		drumpad_obj.vol = 0.6
-		drumpad_obj.visual.name = 'Hat 2'
-		layer_obj.samplepartid = 'PIYOPIYO_HAT2'
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = -2
+			drumpad_obj.visual.name = 'Hat 2'
+			layer_obj.samplepartid = 'PIYOPIYO_HAT2'
 
-		drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
-		drumpad_obj.key = 0
-		drumpad_obj.visual.name = 'Symbal'
-		layer_obj.samplepartid = 'PIYOPIYO_SYMBAL1'
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = -1
+			drumpad_obj.vol = 0.6
+			drumpad_obj.visual.name = 'Hat 2'
+			layer_obj.samplepartid = 'PIYOPIYO_HAT2'
 
-		drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
-		drumpad_obj.key = 1
-		drumpad_obj.vol = 0.6
-		drumpad_obj.visual.name = 'Symbal'
-		layer_obj.samplepartid = 'PIYOPIYO_SYMBAL1'
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = 0
+			drumpad_obj.visual.name = 'Symbal'
+			layer_obj.samplepartid = 'PIYOPIYO_SYMBAL1'
 
-		parse_notes(convproj_obj, '3', project_obj.notes_data[3], track_obj, 0)
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = 1
+			drumpad_obj.vol = 0.6
+			drumpad_obj.visual.name = 'Symbal'
+			layer_obj.samplepartid = 'PIYOPIYO_SYMBAL1'
+
+			parse_notes(convproj_obj, '3', project_obj.notes_data[3], track_obj, 0)
+		else:
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = 0
+			drumpad_obj.visual.name = 'Bass 1'
+			layer_obj.samplepartid = 'PIYOPIYO_BASS1'
+
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = 1
+			drumpad_obj.visual.name = 'Bass 2'
+			layer_obj.samplepartid = 'PIYOPIYO_BASS2'
+			
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = 2
+			drumpad_obj.visual.name = 'Snare'
+			layer_obj.samplepartid = 'PIYOPIYO_SNARE1'
+			
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = 3
+			drumpad_obj.visual.name = 'Hat 1'
+			layer_obj.samplepartid = 'PIYOPIYO_HAT1'
+			
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = 4
+			drumpad_obj.visual.name = 'Hat 2'
+			layer_obj.samplepartid = 'PIYOPIYO_HAT2'
+			
+			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+			drumpad_obj.key = 5
+			drumpad_obj.visual.name = 'Symbal'
+			layer_obj.samplepartid = 'PIYOPIYO_SYMBAL1'
+			
+			parse_notes_drumalt(convproj_obj, '3', project_obj.notes_data[3], track_obj)
 
 		convproj_obj.do_actions.append('do_addloop')
 		convproj_obj.do_actions.append('do_singlenotelistcut')

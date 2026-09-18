@@ -18,6 +18,7 @@ import logging
 import os
 import sys
 import traceback
+import functools
 
 from objects.convproj import fileref
 fileref_global = fileref.cvpj_fileref_global
@@ -25,6 +26,8 @@ fileref_global = fileref.cvpj_fileref_global
 scriptfiledir = os.path.dirname(os.path.realpath(__file__))
 
 from objects.ui.ui_pyqt import Ui_MainWindow
+from objects.ui import ui_configmenu
+from objects.ui import ui_configmenu_qt6
 
 logging.disable(logging.INFO)
 
@@ -43,15 +46,58 @@ dawvert_core = dv_core.core()
 
 dawvert_config__main = {}
 dawvert_config__main['songnum'] = dawvert_intent.songnum
-#dawvert_config__main['extrafile'] = dv_core.config_data.path_extrafile
-dawvert_config__main['ui__drag_drop'] = 0
-dawvert_config__main['ui__overwrite_out'] = False
-dawvert_config__main['ui__auto_convert'] = False
+dawvert_config__main['dd_outpath'] = 'beside_original'
+dawvert_config__main['overwrite_out'] = False
+dawvert_config__main['auto_convert'] = False
 
-dawvert_config__nopl_splitter = {}
-dawvert_config__nopl_splitter['mode'] = dawvert_intent.splitter_mode
-dawvert_config__nopl_splitter['detect_start'] = dawvert_intent.splitter_detect_start
-dawvert_config__mi2m = {}
+dawvert_config__conversion = {}
+dawvert_config__conversion['splitter_mode'] = dawvert_intent.splitter_mode
+dawvert_config__conversion['splitter_detect_start'] = dawvert_intent.splitter_detect_start
+dawvert_config__conversion['output_unused_nle'] = False
+
+dawvert_config__extplug = {}
+dawvert_config__extplug['out_foss'] = False
+dawvert_config__extplug['out_old'] = False
+dawvert_config__extplug['out_freeware'] = False
+dawvert_config__extplug['out_shareware'] = False
+
+dawvert_config__soundfont = {}
+
+configdef_main = {
+	"overwrite_out": {"type": "bool","name": "Overwrite Output","def": 0},
+	"auto_convert": {"type": "bool","name": "Auto-Convert","def": 0},
+	"dd_outpath": {
+		"type": "enum",
+		"name": "Set DragDrop Out Path",
+		"choices": [
+			{"id": "beside_original", "name": 'Beside Original'},
+			{"id": "out_folder", "name": 'In "output" folder'},
+			{"id": "out_file", "name": 'Always out.'}
+		]
+	}
+}
+
+configdef_soundfont = {
+	"gm": {"type": "text","name": "GM","def": ''},
+	"xg": {"type": "text","name": "XG","def": ''},
+	"gs": {"type": "text","name": "GS","def": ''},
+	"mt32": {"type": "text","name": "MT32","def": ''},
+	"mariopaint": {"type": "text","name": "Mario Paint","def": ''},
+}
+
+configdef_conversion = {
+	"songnum": {"type": "int","name": "Song Number","def": 0},
+	"output_unused_nle": {"type": "bool","name": "MI2M: Output Unused Patterns","def": 0},
+	"splitter_mode": {"type": "int","name": "Mode","def": 0, "group": "splitter"},
+	"splitter_detect_start": {"type": "int","name": "Detect Start","def": 0, "group": "splitter"},
+}
+
+configdef_extplugs = {
+	"out_foss": {"type": "bool","name": "Use FOSS Plugins","def": 1},
+	"out_old": {"type": "bool","name": "Use Old Plugins","def": 1},
+	"out_freeware": {"type": "bool","name": "Use Freeware Plugins","def": 1},
+	"out_shareware": {"type": "bool","name": "Use Shareware Plugins","def": 1},
+}
 
 def debugtxt(intxt):
 	if intxt == 'route': return 'RO'
@@ -78,12 +124,18 @@ class ConversionWorker(QtCore.QObject):
 			file_name = os.path.splitext(os.path.basename(dawvert_intent.input_file))[0]
 
 			dawvert_intent.flags_compat = []
-			if 'output_unused_nle' in dawvert_config__mi2m: dawvert_intent.flags_compat.append('mi2m-output-unused-nle')
-			dawvert_intent.splitter_mode = dawvert_config__nopl_splitter['mode']
-			dawvert_intent.splitter_detect_start = dawvert_config__nopl_splitter['detect_start']
+			if 'output_unused_nle' in dawvert_config__conversion: dawvert_intent.flags_compat.append('mi2m-output-unused-nle')
+			dawvert_intent.splitter_mode = dawvert_config__conversion['splitter_mode']
+			dawvert_intent.splitter_detect_start = dawvert_config__conversion['splitter_detect_start']
+
+			extplug_cat = []
+			if dawvert_config__extplug['out_foss']: extplug_cat.append('foss')
+			if dawvert_config__extplug['out_old']: extplug_cat.append('old')
+			if dawvert_config__extplug['out_freeware']: extplug_cat.append('nonfree')
+			if dawvert_config__extplug['out_shareware']: extplug_cat.append('shareware')
+			dawvert_intent.extplug_cat = extplug_cat
 
 			if 'songnum' in dawvert_config__main: dawvert_intent.songnum = dawvert_config__main['songnum']
-#			if 'extrafile' in dawvert_config__main: dv_core.config_data.path_extrafile = dawvert_config__main['extrafile']
 
 			if dawvert_intent.output_samples:
 				dawvert_intent.output_samples += '/'
@@ -172,103 +224,6 @@ class PlugScanWorker(QtCore.QObject):
 			converterstate.is_plugscan = False
 		self.finished.emit()
 
-class configinput():
-	qt_ui = None
-	qt_item = None
-	d_data = {}
-	d_key = None
-	ctrltype = None
-
-	def change_control(ctrltype):
-		configinput.ctrltype = ctrltype
-		qt_ui = configinput.qt_ui
-		if configinput.ctrltype == 'int':
-			qt_ui.ConfigInt.show()
-			qt_ui.ConfigFloat.hide()
-			qt_ui.ConfigString.hide()
-			qt_ui.ConfigBool.hide()
-			qt_ui.ConfigInt.setValue(configinput.get_value())
-		if configinput.ctrltype == 'float':
-			qt_ui.ConfigInt.hide()
-			qt_ui.ConfigFloat.show()
-			qt_ui.ConfigString.hide()
-			qt_ui.ConfigBool.hide()
-			qt_ui.ConfigFloat.setValue(configinput.get_value())
-		if configinput.ctrltype == 'str':
-			qt_ui.ConfigInt.hide()
-			qt_ui.ConfigFloat.hide()
-			qt_ui.ConfigString.show()
-			qt_ui.ConfigBool.hide()
-			qt_ui.ConfigString.setText(configinput.get_value())
-		if configinput.ctrltype == 'bool':
-			qt_ui.ConfigInt.hide()
-			qt_ui.ConfigFloat.hide()
-			qt_ui.ConfigString.hide()
-			qt_ui.ConfigBool.show()
-			qt_ui.ConfigBool.setChecked(configinput.get_value())
-				
-	def update_value(value):
-		value = configinput.d_data[configinput.d_key] = bool(value) if configinput.ctrltype == 'bool' else value
-		if configinput.qt_item:
-			configinput.qt_item.setText(1, str(value))
-
-	def get_value():
-		if configinput.d_key in configinput.d_data: return configinput.d_data[configinput.d_key]
-		else:
-			if configinput.ctrltype == 'int': return 0
-			if configinput.ctrltype == 'float': return 0.0
-			if configinput.ctrltype == 'str': return ''
-			if configinput.ctrltype == 'bool': return False
-
-	def select_item():
-		qt_ui = configinput.qt_ui
-		selected_items = qt_ui.ConfigList.selectedItems()
-		if len(selected_items)==1:
-			ptrid = id(selected_items[0])
-			if ptrid in configdata.ptrnames:
-				configinput.qt_item = selected_items[0]
-				configinput.d_data, configinput.d_key, ctrltype, listpart = configdata.ptrnames[ptrid]
-				configinput.change_control(ctrltype)
-
-class configdata():
-	ptrnames = {}
-
-	def __init__(self, qt_ui, configparts, configlabel, dictdata):
-		listtree_temp = QtWidgets.QTreeWidgetItem(qt_ui.ConfigList)
-		listtree_temp.setText(0, configlabel)
-		self.configparts = configparts
-		self.dictdata = dictdata
-
-		for key, data in configparts.items():
-			valuetype, fullname = data
-
-			listpart_temp = QtWidgets.QTreeWidgetItem(listtree_temp)
-			listpart_temp.setText(0, fullname)
-			if key in dictdata: listpart_temp.setText(1, str(dictdata[key]))
-			configdata.ptrnames[id(listpart_temp)] = [dictdata, key, valuetype, listpart_temp]
-
-configparts_main = {
-	'songnum': ['int', 'Song Number'],
-#	'extrafile': ['str', 'Extra File'],
-}
-
-configparts_soundfont = {
-	'gm': ['str', 'GM'],
-	'xg': ['str', 'XG'],
-	'gs': ['str', 'GS'],
-	'mt32': ['str', 'MT32'],
-	'mariopaint': ['str', 'Mario Paint']
-}
-
-configparts_splitter = {
-	'mode': ['int', 'Mode'],
-	'detect_start': ['bool', 'Detect Start']
-}
-
-configparts_mi2m = {
-	'output_unused_nle': ['bool', 'OutUnused']
-}
-
 filedetector_obj = format_detect.file_detector()
 filedetector_obj.load_def('data_main/autodetect.xml')
 
@@ -287,8 +242,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.setAcceptDrops(True)
 
 		layout = QtWidgets.QVBoxLayout()
-
-		configinput.qt_ui = self.ui
 
 		self.ui.InputFileButton.clicked.connect(self.__choose_input)
 		self.ui.OutputFileButton.clicked.connect(self.__choose_output)
@@ -309,40 +262,52 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		for x in dawvert_core.input_get_pluginsets_names(): self.ui.ListWidget_InPlugSet.addItem(x)
 		for x in dawvert_core.output_get_pluginsets_names(): self.ui.ListWidget_OutPlugSet.addItem(x)
 
-		self.ui.ExtPlugG_Shareware.clicked.connect(self.__extplugcheck_shareware)
-		self.ui.ExtPlugG_FOSS.clicked.connect(self.__extplugcheck_foss)
-		self.ui.ExtPlugG_Old.clicked.connect(self.__extplugcheck_old)
-		self.ui.ExtPlugG_NonFree.clicked.connect(self.__extplugcheck_nonfree)
-
 		self.__update_convst()
-		self.__set_checks()
 		self.__display_extplugcount()
 
-		configinput.change_control('float')
+		self.ui.ConfigMain.clicked.connect(functools.partial(self.open_configmenu, 'main'))
+		self.ui.ConfigSoundFont.clicked.connect(functools.partial(self.open_configmenu, 'soundfont'))
+		self.ui.ConfigExtPlug.clicked.connect(functools.partial(self.open_configmenu, 'extplug'))
+		self.ui.ConfigConversion.clicked.connect(functools.partial(self.open_configmenu, 'conversion'))
+		self.ui.ConfigOutput.clicked.connect(functools.partial(self.open_configmenu, 'output'))
+		self.ui.ConfigInput.clicked.connect(functools.partial(self.open_configmenu, 'input'))
 
-		self.ui.ConfigInt.valueChanged.connect(configinput.update_value)
-		self.ui.ConfigFloat.valueChanged.connect(configinput.update_value)
-		self.ui.ConfigString.textChanged.connect(configinput.update_value)
-		self.ui.ConfigBool.stateChanged.connect(configinput.update_value)
+	def open_configmenu(self, name, _):
+		config_values = {}
+		config_def = {}
+		window_title = 'Config'
 
-		for dragdroploctext in dragdroploctexts:
-			self.ui.DndOutPathSelection.addItem(dragdroploctext)
-		self.ui.DndOutPathSelection.currentIndexChanged.connect(self.__change_dd_setting)
-		self.ui.OverwriteOut.stateChanged.connect(self.__change_overwrite_setting)
-		self.ui.AutoConvert.stateChanged.connect(self.__change_auto_convert_setting)
+		if name=='main':
+			config_values = dawvert_config__main
+			config_def = configdef_main
+			window_title = 'Main Config'
+		if name=='soundfont':
+			config_values = dawvert_config__soundfont
+			config_def = configdef_soundfont
+			window_title = 'Soundfont Config'
+		if name=='extplug':
+			config_values = dawvert_config__extplug
+			config_def = configdef_extplugs
+			window_title = 'External Plugs Config'
+		if name=='conversion':
+			config_values = dawvert_config__conversion
+			config_def = configdef_conversion
+			window_title = 'Conversion Config'
+		if name=='input':
+			config_values = dawvert_intent.input_params
+			plugin_obj = dawvert_core.input_get_current_plug()
+			if plugin_obj is not None: config_def = plugin_obj.configmenu
+			window_title = 'Input Config'
+		if name=='output':
+			config_values = dawvert_intent.output_params
+			plugin_obj = dawvert_core.output_get_current_plug()
+			if plugin_obj is not None: config_def = plugin_obj.configmenu
+			window_title = 'Output Config'
 
-		configdata(self.ui, configparts_main, 'Main', dawvert_config__main)
-		configdata(self.ui, configparts_soundfont, 'Soundfonts', dawvert_intent.path_soundfonts)
-		configdata(self.ui, configparts_splitter, 'NoPl Splitter', dawvert_config__nopl_splitter)
-		configdata(self.ui, configparts_mi2m, 'MI2M', dawvert_config__mi2m)
+		miniconfmenu_store_obj = ui_configmenu.miniconfmenu_store()
+		miniconfmenu_store_obj.dict_load(config_def)
 
-		self.ui.ConfigList.itemSelectionChanged.connect(configinput.select_item)
-
-		#self.ui.ConfigList.topLevelItem(0).setText(0, 'Input')
-		#self.ui.ConfigList.topLevelItem(0).setText(0, 'Output')
-		#self.ui.ConfigList.topLevelItem(0).setText(0, 'SF2')
-		#self.ui.ConfigList.topLevelItem(0).setText(0, 'Splitter')
-		testdict = {}
+		ui_configmenu_qt6.show_gui(miniconfmenu_store_obj, config_values, window_title)
 
 	def __display_extplugcount(self):
 		vst2_count = globalstore.extplug.count('vst2')
@@ -352,44 +317,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.ui.ExtCountVST3.setText('VST3: '+str(vst3_count))
 		self.ui.ExtCountCLAP.setText('CLAP: '+str(clap_count))
 
-	def __set_checks(self):
-		extplug_cat = dawvert_intent.extplug_cat
-		self.ui.ExtPlugG_Shareware.setChecked('shareware' in extplug_cat)
-		self.ui.ExtPlugG_FOSS.setChecked('foss' in extplug_cat)
-		self.ui.ExtPlugG_Old.setChecked('old' in extplug_cat)
-		self.ui.ExtPlugG_NonFree.setChecked('nonfree' in extplug_cat)
-
-	def __plugcatmod(self, name, isset):
-		extplug_cat = dawvert_intent.extplug_cat
-		if name not in extplug_cat and isset: extplug_cat.append(name)
-		if name in extplug_cat and not isset: extplug_cat.remove(name)
-
-	def __extplugcheck_shareware(self, event):
-		self.__plugcatmod('shareware', event)
-
-	def __extplugcheck_foss(self, event):
-		self.__plugcatmod('foss', event)
-
-	def __extplugcheck_old(self, event):
-		self.__plugcatmod('old', event)
-
-	def __extplugcheck_nonfree(self, event):
-		self.__plugcatmod('nonfree', event)
-
 	def dragEnterEvent(self, event):
 		if event.mimeData().hasUrls(): event.accept()
 		else: event.ignore()
 
 	def set_dd_output(self, f):
 		self.ui.InputFilePath.setText(f)
-		if dawvert_config__main['ui__drag_drop'] == 0:
+		if dawvert_config__main['dd_outpath'] == 'beside_original':
 			self.ui.OutputFilePath.setText(f.rsplit('.',1)[0])
 			self.ui.OutputSamplePath.setText(f.rsplit('.',1)[0]+'_samples')
-		if dawvert_config__main['ui__drag_drop'] == 1:
+		if dawvert_config__main['dd_outpath'] == 'out_folder':
 			outfile = os.path.join(globalstore.dawvert_script_path, 'output', os.path.basename(f))
 			self.ui.OutputFilePath.setText(outfile.rsplit('.',1)[0])
 			self.ui.OutputSamplePath.setText(outfile.rsplit('.',1)[0]+'_samples')
-		if dawvert_config__main['ui__drag_drop'] == 2:
+		if dawvert_config__main['dd_outpath'] == 'out_file':
 			outfile = os.path.join(globalstore.dawvert_script_path, 'out')
 			self.ui.OutputFilePath.setText(outfile.rsplit('.',1)[0])
 			samplepath = os.path.join(globalstore.dawvert_script_path, '__samples', os.path.basename(f))
@@ -401,18 +342,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 			self.set_dd_output(files[0])
 			self.__do_auto_detect()
 			self.__change_output_path()
-			if dawvert_config__main['ui__auto_convert']:
+			if dawvert_config__main['auto_convert']:
 				if self.__can_convert(): self.__do_convert()
 
 	def __change_dd_setting(self, num):
-		dawvert_config__main['ui__drag_drop'] = num
+		dawvert_config__main['dd_outpath'] = num
 
 	def __change_overwrite_setting(self, val):
-		dawvert_config__main['ui__overwrite_out'] = val
+		dawvert_config__main['overwrite_out'] = val
 		self.__update_convst()
 
 	def __change_auto_convert_setting(self, val):
-		dawvert_config__main['ui__auto_convert'] = val
+		dawvert_config__main['auto_convert'] = val
 
 	def __choose_input(self):
 		filename, _filter = QFileDialog.getOpenFileName(self, "Open File", "", "")
@@ -450,7 +391,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		inplug = dawvert_core.input_get_current()
 		outplug = dawvert_core.output_get_current()
 		not_same = dawvert_intent.input_file!=dawvert_intent.output_file
-		out_exists = (not os.path.exists(dawvert_intent.output_file)) or dawvert_config__main['ui__overwrite_out']
+		out_exists = (not os.path.exists(dawvert_intent.output_file)) or dawvert_config__main['overwrite_out']
 		in_usable, in_usable_msg = dawvert_core.input_get_usable()
 		out_usable, out_usable_msg = dawvert_core.output_get_usable()
 		return bool(inplug and outplug and not_same and out_exists and in_usable and out_usable)
@@ -461,7 +402,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		inplug = dawvert_core.input_get_current()
 		outplug = dawvert_core.output_get_current()
 		not_same = dawvert_intent.input_file!=dawvert_intent.output_file
-		out_exists = (not os.path.exists(dawvert_intent.output_file)) or dawvert_config__main['ui__overwrite_out']
+		out_exists = (not os.path.exists(dawvert_intent.output_file)) or dawvert_config__main['overwrite_out']
 		in_usable, in_usable_msg = dawvert_core.input_get_usable()
 		out_usable, out_usable_msg = dawvert_core.output_get_usable()
 		outstate = bool(inplug and outplug and not_same and out_exists and in_usable and out_usable)

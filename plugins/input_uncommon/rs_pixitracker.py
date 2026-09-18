@@ -26,6 +26,11 @@ class input_cvpj_f(plugins.base):
 	def get_detect_info(self, detectdef_obj):
 		detectdef_obj.headers.append([0, b'PIXIMOD1'])
 
+	def get_configmenu(self): 
+		return {
+			"tracker_mode": {"type": "bool","name": "Tracker Mode","def": 1},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import audio_data
 		from objects import colors
@@ -34,8 +39,6 @@ class input_cvpj_f(plugins.base):
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']
 
-		convproj_obj.type = 'rs'
-		convproj_obj.set_timings(4) 
 
 		globalstore.datapack.load('pixitracker', './data/datapack/app/pixitracker.xml')
 		colordata = colors.colorset.from_datapack('pixitracker', 'inst', 'main')
@@ -45,11 +48,10 @@ class input_cvpj_f(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
-		convproj_obj.track_master.params.add('vol', project_obj.vol/100, 'float')
-
+		swing = project_obj.shuffle/100
 		samplefolder = dawvert_intent.path_samples['extracted']
 		
+
 		for instnum, pixi_sound in enumerate(project_obj.sounds):
 			cvpj_instid = 'pixi_'+str(instnum)
 
@@ -81,65 +83,88 @@ class input_cvpj_f(plugins.base):
 				samplepart_obj.end = pixi_sound.end
 				samplepart_obj.length = len(pixi_sound.data)//pixi_sound.channels
 
-		swing = project_obj.shuffle/100
 
-		for pat_num, pat_data_r in project_obj.patterns.items():
-			sceneid = str(pat_num)
+		if not dawvert_intent.input_get_param('tracker_mode', 0):
+			convproj_obj.type = 'rs'
+			convproj_obj.set_timings(4) 
+			convproj_obj.params.add('bpm', project_obj.bpm, 'float')
+			convproj_obj.track_master.params.add('vol', project_obj.vol/100, 'float')
 
-			scene_obj = convproj_obj.scene__add(sceneid)
-			scene_obj.visual.name = 'Pat #'+str(pat_num+1)
+			for pat_num, pat_data_r in project_obj.patterns.items():
+				sceneid = str(pat_num)
 
-			pat_data = np.rot90(pat_data_r.data)
-			numtracks = len(pat_data)
+				scene_obj = convproj_obj.scene__add(sceneid)
+				scene_obj.visual.name = 'Pat #'+str(pat_num+1)
 
-			instnotes = [[] for x in range(16)]
+				pat_data = np.rot90(pat_data_r.data)
+				numtracks = len(pat_data)
 
-			for num in range(numtracks):
-				c_track = (numtracks-1)-num
-				s_data = pat_data[[c_track]][0]
+				instnotes = [[] for x in range(16)]
 
-				vol_where = np.where(s_data[:, 0]!=0)[0]
+				for num in range(numtracks):
+					c_track = (numtracks-1)-num
+					s_data = pat_data[[c_track]][0]
 
-				track_data = np.zeros((len(vol_where), 6), dtype=np.uint8)
+					vol_where = np.where(s_data[:, 0]!=0)[0]
 
-				for num, pos in enumerate(vol_where):
-					track_data[num,:][0:4] = s_data[pos]
-					track_data[num,:][4] = pos
-					if num>0: track_data[num-1,:][5] = track_data[num,:][4]-track_data[num-1,:][4]
-				if len(vol_where): track_data[-1,:][5] = len(s_data)-track_data[-1,:][4]
+					track_data = np.zeros((len(vol_where), 6), dtype=np.uint8)
 
-				for x in track_data: instnotes[x[1]].append(x)
+					for num, pos in enumerate(vol_where):
+						track_data[num,:][0:4] = s_data[pos]
+						track_data[num,:][4] = pos
+						if num>0: track_data[num-1,:][5] = track_data[num,:][4]-track_data[num-1,:][4]
+					if len(vol_where): track_data[-1,:][5] = len(s_data)-track_data[-1,:][4]
 
-			for instnum, instnote in enumerate(instnotes):
-				if len(instnote):
-					cvpj_instid = 'pixi_'+str(instnum)
-					trscene_obj = convproj_obj.track__add_scene(cvpj_instid, sceneid, 'main')
-					placement_obj = trscene_obj.add_notes()
-					placement_obj.visual.name = 'Pat #'+str(pat_num+1)
-					time_obj = placement_obj.time
-					time_obj.set_posdur(0, pat_data_r.length)
+					for x in track_data: instnotes[x[1]].append(x)
 
-					cvpj_notelist = placement_obj.notelist
+				for instnum, instnote in enumerate(instnotes):
+					if len(instnote):
+						cvpj_instid = 'pixi_'+str(instnum)
+						trscene_obj = convproj_obj.track__add_scene(cvpj_instid, sceneid, 'main')
+						placement_obj = trscene_obj.add_notes()
+						placement_obj.visual.name = 'Pat #'+str(pat_num+1)
+						time_obj = placement_obj.time
+						time_obj.set_posdur(0, pat_data_r.length)
 
-					for nnn in instnote:
-						pos = nnn[4]
-						dur = nnn[5]
-						if pos%2:
-							pos += swing
-							dur -= swing
-						else:
-							dur += swing
+						cvpj_notelist = placement_obj.notelist
 
-						if nnn[2]: cvpj_notelist.add_r(pos, dur, int(nnn[0])-78, int(nnn[2])/100, None)
+						for nnn in instnote:
+							pos = nnn[4]
+							dur = nnn[5]
+							if pos%2:
+								pos += swing
+								dur -= swing
+							else:
+								dur += swing
 
-		curpos = 0
-		for pat_num in project_obj.order:
-			size = project_obj.patterns[pat_num].length
-			scenepl_obj = convproj_obj.scene__add_pl()
-			scenepl_obj.position = curpos
-			scenepl_obj.duration = size
-			scenepl_obj.id = str(pat_num)
-			curpos += size
+							if nnn[2]: cvpj_notelist.add_r(pos, dur, int(nnn[0])-78, int(nnn[2])/100, None)
+
+			curpos = 0
+			for pat_num in project_obj.order:
+				#size = project_obj.patterns[pat_num].length
+				scenepl_obj = convproj_obj.scene__add_pl()
+				scenepl_obj.position = curpos
+				scenepl_obj.duration = size
+				scenepl_obj.id = str(pat_num)
+				curpos += size
+		#else:
+		#	convproj_obj.type = 'ts'
+		#	numtracks = max([v.tracks for k, v in project_obj.patterns.items()])
+
+		#	tracker_obj = convproj_obj.main__create_tracker_single()
+		#	tracker_obj.set_num_chans(numtracks)
+		#	tracker_obj.mainvisual.from_datapack('tracker_various', 'mod', 'main', True)
+		#	tracker_obj.tempo = project_obj.bpm
+		#	tracker_obj.speed = 6
+		#	tracker_obj.orders = project_obj.order
+		#	tracker_obj.use_starttempo = True
+
+		#	for num_pat, pat_data in project_obj.patterns.items():
+		#		pattern_obj = tracker_obj.pattern_add(num_pat, pat_data.length)
+		#		for num_row, row_data in enumerate(pat_data.data):
+		#			for num_ch, nnn in enumerate(row_data):
+		#				if nnn[2]: 
+		#					pattern_obj.cell_note(num_ch, num_row, int(nnn[0])-78, int(nnn[1]))
 
 		convproj_obj.do_actions.append('do_addloop')
 		convproj_obj.do_actions.append('do_lanefit')

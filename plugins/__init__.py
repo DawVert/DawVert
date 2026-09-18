@@ -278,6 +278,7 @@ class dv_plugin:
 		self.priority = 100
 		self.usable = True
 		self.usable_meg = ''
+		self.configmenu = None
 		self.detectdef = dv_plugin_bindetect()
 
 	def propproc(self):
@@ -413,25 +414,29 @@ class base:
 		in_object = plcv_obj()
 		plugintype = in_object.is_dawvert_plugin()
 
+		dirobj = dir(in_object)
+
 		try:
 			if plugintype not in base.loaded_plugins: base.loaded_plugins[plugintype] = {}
 			dvplug_obj = dv_plugin()
-			if 'get_shortname' in dir(in_object): 
+			if 'get_shortname' in dirobj: 
 				dvplug_obj.shortname = in_object.get_shortname()
 			else: 
 				dvplug_obj.shortname = 'noname_'+str(base.noname_num)
 				base.noname_num += 1
 
-			if 'usable' in dir(in_object): 
+			if 'usable' in dirobj: 
 				dvplug_obj.usable, dvplug_obj.usable_meg = in_object.usable()
 
 			if dvplug_obj.shortname not in base.loaded_plugins:
 				dvplug_obj.type = plugintype
 				dvplug_obj.plug_obj = in_object
 
-				if 'get_priority' in dir(in_object): dvplug_obj.priority = in_object.get_priority()
-				if 'get_name' in dir(in_object): dvplug_obj.name = in_object.get_name()
-				if 'get_detect_info' in dir(in_object): 
+				if 'get_priority' in dirobj: dvplug_obj.priority = in_object.get_priority()
+				if 'get_name' in dirobj: dvplug_obj.name = in_object.get_name()
+				if 'get_configmenu' in dirobj: dvplug_obj.configmenu = in_object.get_configmenu()
+
+				if 'get_detect_info' in dirobj: 
 					dvplug_obj.detectdef.used = True
 					in_object.get_detect_info(dvplug_obj.detectdef)
 				in_object.get_prop(dvplug_obj.prop)

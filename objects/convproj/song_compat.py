@@ -50,9 +50,9 @@ class song_compat:
 				for n, x in convproj_obj.track_data.items():
 					x.debugtxt_placements(n)
 
-			if classname.process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
-				logger_compat.info(process_name+' Done.')
-				self.finished_processes.append(process_name)
+			#if classname.process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
+			#	logger_compat.info(process_name+' Done.')
+			#	self.finished_processes.append(process_name)
 
 			if DEBUG_BEF_AFT_TRACKS:
 				print(process_name, 'after')

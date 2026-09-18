@@ -245,6 +245,11 @@ class input_jummbox(plugins.base):
 		in_dict['plugin_included'] = ['native:jummbox','universal:midi','universal:eq:bands','universal:delay','simple:distortion','universal:bitcrush','simple:chorus','simple:reverb']
 		in_dict['projtype'] = 'mi'
 
+	def get_configmenu(self): 
+		return {
+			"transpose_ignore": {"type": "bool","name": "Ignore Transpose","def": False},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import jummbox as proj_jummbox
 
@@ -279,7 +284,11 @@ class input_jummbox(plugins.base):
 		convproj_obj.params.add('bpm', jummbox_obj.beatsPerMinute, 'float')
 		convproj_obj.track_master.params.add('vol', jummbox_obj.masterGain, 'float')
 		if jummbox_obj.name: convproj_obj.metadata.name = jummbox_obj.name
-		jummbox_key = noteoffset[jummbox_obj.key]
+
+		jummbox_key = 0
+		if not dawvert_intent.input_get_param('transpose_ignore', False):
+			if jummbox_obj.key in noteoffset:
+				jummbox_key = noteoffset[jummbox_obj.key]
 		
 		jummbox_obj.get_durpos()
 		durpos = jummbox_obj.get_durpos()

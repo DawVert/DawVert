@@ -164,6 +164,12 @@ class dawvert_intent:
 
 		self.debug_flags = []
 
+	def input_get_param(self, name, fallback):
+		return self.input_params[name] if name in self.input_params else fallback
+
+	def output_get_param(self, name, fallback):
+		return self.output_params[name] if name in self.output_params else fallback
+
 	def copy(self):
 		return copy.deepcopy(self)
 
@@ -379,6 +385,8 @@ class core:
 
 	def input_get_plugins_auto(self): return dv_plugins.get_list_detect('input')
 
+	def input_get_current_plug(self): return self.currentplug_input.selected_plugin
+
 	def input_get_current(self): return self.currentplug_input.selected_shortname
 
 	def input_get_current_name(self): return self.currentplug_input.selected_plugin.name if self.currentplug_input.selected_plugin else 'None'
@@ -424,6 +432,8 @@ class core:
 
 	def output_get_pluginsets_names(self): return [n[1] for _, n in pluginsets_output.items()]
 
+	def output_get_current_plug(self): return self.currentplug_output.selected_plugin
+
 	def output_get_current(self): return self.currentplug_output.selected_shortname
 
 	def output_get_current_name(self): return self.currentplug_output.selected_plugin.name if self.currentplug_output.selected_plugin else 'None'
@@ -441,10 +451,16 @@ class core:
 
 	def output_set(self, pluginname): return self.currentplug_output.set(pluginname)
 
-	def parse_input(self, dawvert_intent): 
+	def parse_input(self, dawvert_intent):
 		self.convproj_obj = convproj.cvpj_project()
 		selected_plugin = self.currentplug_input.selected_plugin
 		plug_obj = selected_plugin.plug_obj
+		configmenu = selected_plugin.configmenu
+		if configmenu:
+			for k, v in configmenu.items():
+				if ('def' in v) and (k not in dawvert_intent.input_params):
+					dawvert_intent.input_params[k] = v['def']
+
 		if selected_plugin.usable:
 			plug_obj.parse(self.convproj_obj, dawvert_intent)
 		else:

@@ -181,7 +181,7 @@ class cvpj_placement_notes:
 		plb_obj.muted = self.muted
 		plb_obj.visual = self.visual
 		plb_obj.timesig_auto = self.timesig_auto.copy()
-		plb_obj.timemarkers = self.timemarkers.copy()
+		plb_obj.timemarkers = copy.deepcopy(self.timemarkers)
 		plb_obj.group = self.group
 		plb_obj.locked = self.locked
 		return plb_obj
