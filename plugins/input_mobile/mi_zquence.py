@@ -117,6 +117,10 @@ class input_zquence(plugins.base):
 								plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'drums')
 								plugin_obj.role = 'synth'
 								inst_obj.plugslots.plugin_autoplace(plugin_obj, pluginid)
+
+								inst_obj.is_drum = True
+								inst_obj.is_multinote_drum = True
+
 								for x in group:
 									if x.name=='EData':
 										for instpart in x.groups:

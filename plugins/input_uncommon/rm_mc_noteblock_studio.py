@@ -121,6 +121,9 @@ class input_gt_mnbs(plugins.base):
 					samplepart_obj.sampleref = wavfile
 					inst_obj.plugslots.set_synth(pluginid)
 					inst_obj.datavals.add('middlenote', 6)
+				if 'isdrum' in dpobj.data:
+					isdrum = int(dpobj.data['isdrum'])
+					if isdrum: inst_obj.is_drum = True
 
 		custominstid = 16
 		for custominstid, custom_obj in enumerate(project_obj.custom):

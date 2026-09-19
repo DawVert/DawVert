@@ -250,6 +250,8 @@ class input_audiosanua(plugins.base):
 						plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'drums')
 						plugin_obj.role = 'synth'
 						track_obj.is_drum = True
+						track_obj.is_multinote_drum = True
+
 						track_obj.plugslots.set_synth(pluginid)
 
 						for num, as_cell in as_device.samples.items():

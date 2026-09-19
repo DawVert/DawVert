@@ -24,6 +24,11 @@ class input_sop(plugins.base):
 		in_dict['plugin_included'] = ['chip:fm:opl2','chip:fm:opl3']
 		in_dict['projtype'] = 'rm'
 
+	def get_configmenu(self): 
+		return {
+			"endtxt_on": {"type": "bool","name": "Add OP Type to Track name","def": True},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_adlib import sop as proj_adlib_sop
 
@@ -55,13 +60,17 @@ class input_sop(plugins.base):
 			opli.to_cvpj(convproj_obj, cvpj_instname)
 
 		for tracknum, soptrack in enumerate(project_obj.tracks):
-			trackname_endtext = endtxt[soptrack.chanmode]
 
 			cvpj_trackid = str(tracknum)
 			track_obj = convproj_obj.track__add(cvpj_trackid, 'instruments', 0, False)
-			track_obj.visual.name = '#'+str(cvpj_trackid)+' '+str()+trackname_endtext
+			track_obj.visual.name = '#'+str(cvpj_trackid)
 			track_obj.visual.color.set_float(maincolor)
 			
+			endtxt_on = dawvert_intent.input_get_param('endtxt_on', True)
+			if endtxt_on:
+				trackname_endtext = endtxt[soptrack.chanmode]
+				track_obj.visual.name += ' '+str()+trackname_endtext
+
 			cvpj_notelist = track_obj.placements.notelist
 			
 			curtick = 0

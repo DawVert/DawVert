@@ -334,6 +334,7 @@ class input_jummbox(plugins.base):
 						if bb_chan.type == 'drum': 
 							inst_obj.visual.from_datapack('beepbox', 'drums', bb_inst.type, False)
 							inst_obj.is_drum = True
+							inst_obj.is_multinote_drum = True
 
 						if bb_inst.type == 'chip':
 							if 'wave' in bb_data: 

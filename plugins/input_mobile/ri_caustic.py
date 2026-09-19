@@ -248,6 +248,7 @@ class input_cvpj_r(plugins.base):
 				plugin_obj.role = 'synth'
 				track_obj.params.add('usemasterpitch', False, 'bool')
 				track_obj.is_drum = True
+				track_obj.is_multinote_drum = True
 
 				drumdata = []
 

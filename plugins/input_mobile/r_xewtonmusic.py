@@ -115,6 +115,7 @@ class input_xewton(plugins.base):
 							if isdrums:
 								for t in tracks:
 									t.is_drum = True
+									t.is_multinote_drum = True
 	
 							for n, s in enumerate(inst_obj.samples):
 								wavfilename = os.path.join(samplefolder, s.filename)

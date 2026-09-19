@@ -127,6 +127,9 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					instrument_dev = deviceid
 					instrument_dev_data = devicedata
 
+					track_obj.is_drum = True
+					track_obj.is_multinote_drum = True
+
 					for samplenum in range(1,13):
 						endstr = str(samplenum)
 						if "sample"+endstr in constantsdata:

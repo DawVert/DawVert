@@ -120,7 +120,9 @@ class input_zmaestro(plugins.base):
 					plugin_obj.midi.from_sf2(zm_track.instrumentbank, zm_track.instrumentcode)
 				track_obj.visual.name = zm_track.name
 
-				if tracktype == 'MIDIDrumTrack': track_obj.is_drum = True
+				if tracktype == 'MIDIDrumTrack': 
+					track_obj.is_drum = True
+					track_obj.is_multinote_drum = True
 
 				do_automation(convproj_obj, cvpj_trackid, 'vol', zm_track.volumetimeline, zm_track.usevolumetimeline)
 				do_automation(convproj_obj, cvpj_trackid, 'pan', zm_track.pantimeline, zm_track.usepantimeline)

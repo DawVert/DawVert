@@ -191,13 +191,14 @@ class cvpj_plugslots:
 		for x in self.slots_audio: yield 'audio', x
 
 class cvpj_instrument:
-	__slots__ = ['visual','params','datavals','midi','fxrack_channel','pluginid','is_drum','plugslots','group','latency_offset','visual_keynotes']
+	__slots__ = ['visual','params','datavals','midi','fxrack_channel','pluginid','is_drum','is_multinote_drum','plugslots','group','latency_offset','visual_keynotes']
 	def __init__(self):
 		self.visual = visual.cvpj_visual()
 		self.params = params.cvpj_paramset()
 		self.datavals = params.cvpj_datavals()
 		self.midi = cvpj_midiport()
 		self.is_drum = False
+		self.is_multinote_drum = False
 		self.fxrack_channel = -1
 		self.plugslots = cvpj_plugslots()
 		self.latency_offset = 0
@@ -247,6 +248,7 @@ class cvpj_instrument:
 				midi_obj.patch = dso_midi.patch
 				midi_obj.drum = dso_midi.is_drum
 				self.is_drum = dso_midi.is_drum
+				self.is_multinote_drum = dso_midi.is_drum
 
 		return midifound
 
@@ -368,7 +370,7 @@ class cvpj_armstate:
 		return cls
 
 class cvpj_track:
-	__slots__ = ['time_ppq','uses_placements','lanes','is_indexed','type','is_laned','datavals','visual','visual_ui','visual_inst','params','midi','fxrack_channel','placements','sends','group','returns','notelist_index','scenes','audio_channels','is_drum','timemarkers','armed','plugslots','latency_offset','visual_keynotes','visual_track']
+	__slots__ = ['time_ppq','uses_placements','lanes','is_indexed','type','is_laned','datavals','visual','visual_ui','visual_inst','params','midi','fxrack_channel','placements','sends','group','returns','notelist_index','scenes','audio_channels','is_drum','is_multinote_drum','timemarkers','armed','plugslots','latency_offset','visual_keynotes','visual_track']
 	def __init__(self, track_type, time_ppq, uses_placements, is_indexed):
 		self.time_ppq = time_ppq
 		self.uses_placements = uses_placements
@@ -392,6 +394,7 @@ class cvpj_track:
 		self.scenes = {}
 		self.audio_channels = 2
 		self.is_drum = False
+		self.is_multinote_drum = False
 		self.timemarkers = placements_marker.cvpj_placements_marker(time_ppq)
 		self.armed = cvpj_armstate()
 		self.latency_offset = 0

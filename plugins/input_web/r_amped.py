@@ -166,6 +166,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			plugin_obj.role = 'synth'
 			track_obj.plugslots.set_synth(pluginid)
 			track_obj.is_drum = True
+			track_obj.is_multinote_drum = True
 
 			drumplerdata = {}
 			for param in amped_tr_device.params: data_values.dict__nested_add_value(drumplerdata, param.name.split('/'), param.value)

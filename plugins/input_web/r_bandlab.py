@@ -143,6 +143,7 @@ class input_bandlab(plugins.base):
 				do_track_common(convproj_obj, track_obj, blx_track, tempomul)
 				if blx_track.type in ['creators-kit', 'sampler']:
 					track_obj.is_drum = True
+					track_obj.is_multinote_drum = True
 					samplerkit = blx_track.samplerKit
 					if samplerkit:
 						if 'kit' in samplerkit:

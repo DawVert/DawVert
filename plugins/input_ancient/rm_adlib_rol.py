@@ -22,6 +22,11 @@ class input_adlib_rol(plugins.base):
 		in_dict['plugin_included'] = ['chip:fm:opl2']
 		in_dict['projtype'] = 'rm'
 
+	def get_configmenu(self): 
+		return {
+			"bank_file": {"type": "text","name": "Bank File","def": ''},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_adlib import rol as proj_adlib_rol
 		from objects.file import adlib_bnk
@@ -39,9 +44,11 @@ class input_adlib_rol(plugins.base):
 		globalstore.datapack.load('adlib_rol', './data/datapack/app/adlib_rol.xml')
 
 		native_insts = {}
-		if 'extra_file' in dawvert_intent.input_params:
+		bank_file = dawvert_intent.input_get_param('bank_file', '')
+
+		if bank_file:
 			adlibbnk_obj = adlib_bnk.bnk_file()
-			adlibbnk_obj.read_file(dawvert_intent.input_params['extra_file'])
+			adlibbnk_obj.read_file(bank_file)
 			for instnum, used in enumerate(adlibbnk_obj.used):
 				if used:
 					instname = adlibbnk_obj.names[instnum].replace(" ", "").upper()

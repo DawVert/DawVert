@@ -129,6 +129,7 @@ class input_famitracker_txt(plugins.base):
 
 						if insttype == 'dpcm':
 							inst_obj.is_drum = True
+							inst_obj.is_multinote_drum = True
 							plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'sampler', 'multi')
 							plugin_obj.role = 'synth'
 							inst_obj.plugslots.set_synth(synthid)
