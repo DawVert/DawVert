@@ -237,6 +237,11 @@ class input_notessimo_v3(plugins.base):
 		in_dict['plugin_included'] = ['universal:midi']
 		in_dict['projtype'] = 'mi'
 		
+	def get_configmenu(self): 
+		return {
+			"sharp_bug": {"type": "bool","name": "Recreate Sharp/Flat Bug","def": True}
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_uncommon import notessimo_v3 as proj_notessimo_v3
 
@@ -256,6 +261,8 @@ class input_notessimo_v3(plugins.base):
 		globalstore.datapack.load('notessimo_v3', './data/datapack/app/notessimo_v3.xml')
 		
 		extpath_path = os.path.join(dawvert_intent.path_external_data, 'notessimo_v3', 'notessimo_v3_data.zip')
+
+		sharp_bug = dawvert_intent.input_get_param('sharp_bug', True)
 
 		# ---------- File ----------
 		project_obj = proj_notessimo_v3.notev3_file()
@@ -288,10 +295,16 @@ class input_notessimo_v3(plugins.base):
 
 			for nnn in sheet_data.get_allnotes():
 				out_note, out_key, out_oct = nnn.get_key_nooffs()
-				inum = 0
-				if nnn.sharp: inum = 1
-				if nnn.flat: inum = 2
-				noteoffs = sheetnoteofs[inum][1][out_key]
+				if sharp_bug: 
+					inum = 0
+					if nnn.sharp: inum = 1
+					if nnn.flat: inum = 2
+					noteoffs = sheetnoteofs[inum][1][out_key]
+				else:
+					if nnn.sharp: noteoffs = 1
+					elif nnn.flat: noteoffs = -1
+					else: noteoffs = 0
+
 				dur = nnn.dur*4 if not np.isnan(nnn.dur) else 1
 				cvpj_notelist.add_m(nnn.inst, nnn.pos*2, dur, out_note+noteoffs, 1, None)
 				if nnn.inst not in used_insts: used_insts.append(nnn.inst)

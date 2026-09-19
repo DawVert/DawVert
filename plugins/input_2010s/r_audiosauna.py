@@ -184,7 +184,7 @@ class input_audiosanua(plugins.base):
 					if fldso:
 						for param_id, dset_param in fldso.params.iter():
 							outval = as_device.params[param_id] if param_id in as_device.params else None
-							plugin_obj.dset_param__add(param_id, outval, dset_param)
+							plugin_obj.datapack_param__add(param_id, outval, dset_param)
 
 					setasdr(plugin_obj, 'vol', as_device.params, False, 'attack', 'decay', 'release', 'sustain')
 

@@ -28,10 +28,10 @@ def do_fx(convproj_obj, fxdata):
 		if numtype == '2':
 			fxtype = 'native'
 			fxname = numdata
-		if numtype == '3':
+		elif numtype == '3':
 			fxtype = 'vst2'
 			fxdata = numdata.split(' ', 3)
-		if numtype == '4':
+		elif numtype == '4':
 			fxtype = 'vst3'
 			fxdata = numdata.split(' ', 3)
 
