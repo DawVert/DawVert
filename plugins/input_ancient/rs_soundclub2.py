@@ -42,6 +42,11 @@ class input_soundclub2(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single']
 		in_dict['projtype'] = 'rs' 
 		
+	def get_configmenu(self): 
+		return {
+			"panlvl": {"type": "float","name": "Pan Amount","def": 1.0,"min": 0.0,"max": 1.0},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import audio_data
 		from objects.file_proj_past import soundclub2 as proj_soundclub2
@@ -61,6 +66,8 @@ class input_soundclub2(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 		
+		panlvl = dawvert_intent.input_get_param('panlvl', 1.0)
+
 		for instnum, sn2_inst_obj in enumerate(project_obj.instruments):
 			cvpj_instid = 'sn2_'+str(instnum)
 
@@ -162,7 +169,7 @@ class input_soundclub2(plugins.base):
 				if panpoints:
 					autopoints_obj = placement_obj.add_autopoints('pan')
 					for p, v in panpoints.items():
-						autopoints_obj.points__add_normal(p, v, 0, None)
+						autopoints_obj.points__add_normal(p, v*panlvl, 0, None)
 
 			scenedurs.append(scenedur)
 

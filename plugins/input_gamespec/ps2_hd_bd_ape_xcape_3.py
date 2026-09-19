@@ -164,6 +164,11 @@ class input_petaporon(plugins.base):
 		in_dict['plugin_included'] = ['universal:midi']
 		in_dict['projtype'] = 'cm'
 
+	def get_configmenu(self): 
+		return {
+			"sampfile": {"type": "text","name": "VAG Sample File (.BD)","def": ''},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import audio_data
 
@@ -186,7 +191,8 @@ class input_petaporon(plugins.base):
 			path_hd = os.path.splitext(dawvert_intent.input_file)[0]+'.hd'
 			apeinst_obj.load_from_file(path_hd)
 	
-			path_bd = os.path.splitext(dawvert_intent.input_file)[0]+'.bd'
+			in_bd = dawvert_intent.input_get_param('sampfile', '')
+			path_bd = os.path.splitext(dawvert_intent.input_file)[0]+'.bd' if not in_bd else in_bd
 			sample_obj.load_from_file(path_bd)
 
 		convproj_obj.do_actions.append('do_addloop')

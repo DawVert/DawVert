@@ -22,6 +22,11 @@ class input_color_art(plugins.base):
 		usable_meg = 'Pillow is not installed. do "pip install pillow"' if not usable else ''
 		return usable, usable_meg
 
+	def get_configmenu(self): 
+		return {
+			"size": {"type": "int","name": "Max Size","def": 28,"min": 8,"max": 80},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from PIL import Image
 		convproj_obj.type = 'r'
@@ -35,8 +40,10 @@ class input_color_art(plugins.base):
 
 		w, h = im.size
 
-		if h > 28:
-			downsize = 28/h
+		minsize = dawvert_intent.input_get_param('size', 28)
+
+		if h > minsize:
+			downsize = minsize/h
 			newsize = (int(im.width*downsize), int(im.height*downsize))
 			im = im.resize(newsize, Image.LANCZOS)
 			w, h = newsize

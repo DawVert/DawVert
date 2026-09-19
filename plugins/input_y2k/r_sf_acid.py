@@ -35,6 +35,21 @@ class input_acid_old(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
+	def get_configmenu(self): 
+		return {
+			"groupby": {
+				"type": "enum",
+				"name": "Group By",
+				"def": "mixed",
+				"choices": [
+					{"id": "none", "name": 'None'},
+					{"id": "sample", "name": 'Sample'},
+					{"id": "drum", "name": 'NoPitch'},
+					{"id": "mixed", "name": 'Mixed'}
+				]
+			}
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import colors
 		from objects.file_proj_past import sony_acid as sony_acid
@@ -55,6 +70,8 @@ class input_acid_old(plugins.base):
 		traits_obj.auto_types = ['pl_points','nopl_ticks']
 
 		samplefolder = dawvert_intent.path_samples['extracted']
+
+		groupby = dawvert_intent.input_get_param('groupby', 'none')
 
 		# project
 		ppq = project_obj.ppq
@@ -100,9 +117,11 @@ class input_acid_old(plugins.base):
 
 		# tracks
 		used_sends = []
+		tracks = {}
 		for tracknum, track in enumerate(project_obj.tracks):
 			cvpj_trackid = 'track_'+str(tracknum)
 			track_obj = convproj_obj.track__add(cvpj_trackid, 'audio', 1, False)
+			tracks[cvpj_trackid] = track_obj
 			color = colordata.getcolornum(track.color)
 			track_obj.visual.name = track.name
 			track_obj.visual.color.set_int(color)
@@ -299,6 +318,64 @@ class input_acid_old(plugins.base):
 					preset_obj = fx.preset_obj
 					extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 					extmanu_obj.dx__replace_data(preset_obj.id, preset_obj.data)
+
+		group_samp = {}
+		group_isdrum = [[],[]]
+
+		if groupby!='none':
+			for tracknum, track in enumerate(project_obj.tracks):
+				cvpj_trackid = 'track_'+str(tracknum)
+
+				samplename = None
+				if not project_obj.audios: samplename = track.path
+				if samplename not in group_samp: group_samp[samplename] = []
+				group_samp[samplename].append(cvpj_trackid)
+
+				isdrum = 1 not in track.flags
+				group_isdrum[isdrum].append(cvpj_trackid)
+
+			grouptype = None
+
+			if groupby=='sample': grouptype = 'sample'
+			if groupby=='drum': grouptype = 'drum'
+			if groupby=='mixed': grouptype = 'mixed'
+
+			if grouptype=='mixed':
+				tn_melodic, tn_drum = group_isdrum
+				if len(tn_drum)>1:
+					track_obj = convproj_obj.fx__group__add('drums')
+					track_obj.visual.name = 'Drums/SFX'
+					for x in tn_drum: tracks[x].group = 'drums'
+
+				for k, v in group_samp.items():
+					v = [x for x in v if x in tn_melodic]
+					if len(v)>1:
+						groupid = str(k)
+						track_obj = convproj_obj.fx__group__add(groupid)
+						track_obj.visual.name = tracks[v[0]].visual.name
+						for x in v: tracks[x].group = groupid
+
+
+			if grouptype=='sample':
+				for k, v in group_samp.items():
+					groupid = str(k)
+					track_obj = convproj_obj.fx__group__add(groupid)
+					if len(v)>1:
+						track_obj.visual.name = tracks[v[0]].visual.name
+						for x in v: tracks[x].group = groupid
+
+			if grouptype=='drum':
+				tn_melodic, tn_drum = group_isdrum
+
+				if len(tn_melodic)>1:
+					track_obj = convproj_obj.fx__group__add('melody')
+					track_obj.visual.name = 'Melody'
+					for x in tn_melodic: tracks[x].group = 'melody'
+
+				if len(tn_drum)>1:
+					track_obj = convproj_obj.fx__group__add('drums')
+					track_obj.visual.name = 'Drums/SFX'
+					for x in tn_drum: tracks[x].group = 'drums'
 
 		convproj_obj.automation.set_persist_all(False)
 

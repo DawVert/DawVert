@@ -12,9 +12,6 @@ import plugins
 import gzip
 import os
 
-DEBUG_DISABLE_PLACEMENTS = False
-DEBUG_DISABLE_SAMPLER = False
-	
 def sampleref__get(convproj_obj, alssampleref_obj, dawvert_intent):
 	filename = alssampleref_obj.FileRef.Path
 	sampleref_obj = convproj_obj.sampleref__add(filename, filename, 'win')
@@ -95,7 +92,7 @@ def do_automation(convproj_obj, AutomationEnvelopes):
 					else:
 						convproj_obj.timesig = [(alsevent.Value%99)+1, 2**(alsevent.Value//99)]
 
-def do_devices(x_trackdevices, track_id, track_obj, convproj_obj, dawvert_intent):
+def do_devices(x_trackdevices, track_id, track_obj, convproj_obj, dawvert_intent, DEBUG_DISABLE_SAMPLER):
 	global vector_shapesdata
 
 	middlenote = 0
@@ -381,6 +378,12 @@ class input_ableton(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single','universal:sampler:multi','universal:sampler:slicer','native:ableton']
 		in_dict['projtype'] = 'r'
 
+	def get_configmenu(self): 
+		return {
+			"no_placements": {"type": "bool","name": "Disable Placements","def": False,"group": 'debug'},
+			"no_sampler": {"type": "bool","name": "Disable Sampler","def": False,"group": 'debug'}
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import colors
 		from objects.file_proj import ableton as proj_ableton
@@ -417,6 +420,9 @@ class input_ableton(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		DEBUG_DISABLE_PLACEMENTS = dawvert_intent.input_get_param('no_placements', False)
+		DEBUG_DISABLE_SAMPLER = dawvert_intent.input_get_param('no_sampler', False)
+
 		mastermixer = project_obj.MasterTrack.DeviceChain.Mixer
 
 		mas_track_vol = doparam(mastermixer.Volume, 'Volume', 'float', 0, ['master', 'vol'], None)
@@ -449,7 +455,7 @@ class input_ableton(plugins.base):
 		convproj_obj.track_master.params.add('pan', mas_track_pan, 'float')
 		convproj_obj.params.add('bpm', tempo, 'float')
 		convproj_obj.track_master.latency_offset = calc_lattime(project_obj.MasterTrack.TrackDelay)
-		do_devices(project_obj.MasterTrack.DeviceChain.devices, None, convproj_obj.track_master, convproj_obj, dawvert_intent)
+		do_devices(project_obj.MasterTrack.DeviceChain.devices, None, convproj_obj.track_master, convproj_obj, dawvert_intent, DEBUG_DISABLE_SAMPLER)
 
 		returnid = 0
 
@@ -732,7 +738,7 @@ class input_ableton(plugins.base):
 					track_obj.sends.add('return_'+str(sendid), sendautoid, sendlevel)
 					sendcount += 1
 
-			middlenote, issampler = do_devices(als_track.DeviceChain.devices, track_id, track_obj, convproj_obj, dawvert_intent)
+			middlenote, issampler = do_devices(als_track.DeviceChain.devices, track_id, track_obj, convproj_obj, dawvert_intent, DEBUG_DISABLE_SAMPLER)
 
 			track_obj.datavals.add('middlenote', middlenote)
 

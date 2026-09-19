@@ -10,7 +10,8 @@ from functions import xtramath
 from objects import globalstore
 from objects import regions
 
-dpcm_rate_arr = [4181.71,4709.93,5264.04,5593.04,6257.95,7046.35,7919.35,8363.42,9419.86,11186.1,12604.0,13982.6,16884.6,21306.8,24858.0,33143.9]
+dpcm_rate_arr_ntsc = [4181.71,4709.93,5264.04,5593.04,6257.95,7046.35,7919.35,8363.42,9419.86,11186.1,12604.0,13982.6,16884.6,21306.8,24858.0,33143.9]
+dpcm_rate_arr_pal = [4177.40,4696.63,5261.41,5579.22,6023.94,7044.94,7917.18,8397.01,9446.63,11233.8,12595.5,14089.9,16965.4,21315.5,25191.0,33252.1]
 
 def NoteToMidi(keytext):
 	l_key = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -141,10 +142,9 @@ def create_inst(convproj_obj, vol, WaveType, fst_Instrument, fx_num):
 
 	if WaveType in ['VRC7FM']: inst_obj.datavals.add('middlenote', 12)
 
-def create_dpcm_inst(DPCMMappings, DPCMSamples, fst_instrument, fx_num):
+def create_dpcm_inst(DPCMMappings, DPCMSamples, fst_instrument, fx_num, dpcm_freqlist):
 	from objects import audio_data
 	global samplefolder
-	global dpcm_rate_arr
 
 	instname = fst_instrument.Name if fst_instrument != None else None
 	cvpj_instid = make_instid(fx_num, 'DPCM', instname)
@@ -161,9 +161,10 @@ def create_dpcm_inst(DPCMMappings, DPCMSamples, fst_instrument, fx_num):
 
 	inst_obj.plugslots.set_synth(synthid)
 
-	for key, dpcmmap in DPCMMappings.data.items():
-		dpcm_pitch = int(dpcmmap['Pitch'])
-		dpcm_sample = dpcmmap['Sample']
+	for dpcmmap in DPCMMappings:
+		key = NoteToMidi(dpcmmap.Note)
+		dpcm_pitch = dpcmmap.Pitch
+		dpcm_sample = dpcmmap.Sample
 
 		if dpcm_sample in DPCMSamples:
 			dpcm_obj = DPCMSamples[dpcm_sample]
@@ -172,7 +173,7 @@ def create_dpcm_inst(DPCMMappings, DPCMSamples, fst_instrument, fx_num):
 			sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
 			audio_obj = audio_data.audio_obj()
 			audio_obj.decode_from_codec('dpcm', dpcm_obj.data_bytes)
-			audio_obj.rate = dpcm_rate_arr[dpcm_pitch]
+			audio_obj.rate = dpcm_freqlist[dpcm_pitch]
 			audio_obj.to_file_wav(filename)
 			
 			sampleref_obj.set_fileformat('wav')
@@ -186,14 +187,6 @@ def create_dpcm_inst(DPCMMappings, DPCMSamples, fst_instrument, fx_num):
 			layer_obj.samplepartid = 'drum_%i' % key
 			sp_obj = plugin_obj.samplepart_add(layer_obj.samplepartid)
 			sp_obj.sampleref = filename
-
-def NoteToMidi(keytext):
-	l_key = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-	s_octave = (int(keytext[-1])-5)*12
-	lenstr = len(keytext)
-	t_key = keytext[:-1]
-	s_key = l_key.index(t_key)
-	return s_key + s_octave
 
 def get_instshape(InstShape):
 	if InstShape == 'Square1': return 'Square1'
@@ -267,7 +260,7 @@ def parse_notes(cvpj_notelist, fs_notes, chiptype, NoteLength, arpeggios, fxchan
 								cvpj_notelist.last_arpeggio(multikeys_r)
 
 			else:
-				t_key = notedata.Value + 24
+				t_key = NoteToMidi(notedata.Value) + 24
 				instid = make_instid(fxchan, 'DPCM', notedata.Instrument)
 				cvpj_notelist.add_m(instid, t_position, t_duration, t_key, 1, None)
 	cvpj_notelist.only_one()
@@ -302,6 +295,18 @@ class input_famistudio(plugins.base):
 		in_dict['plugin_included'] = ['chip:epsm_rhythm','chip:fds','chip:fm:epsm','chip:fm:vrc7','chip:namco163_famistudio','universal:sampler:multi','universal:synth-osc']
 		in_dict['projtype'] = 'mi'
 		
+	def get_configmenu(self): 
+		return {
+			"dpcm_freq": {
+				"type": "enum",
+				"name": "DPCM NTSC/PAL",
+				"choices": [
+					{"id": "ntsc", "name": 'NTSC'},
+					{"id": "pal", "name": 'PAL'}
+				]
+			}
+		}
+
 	def parse(self, i_convproj_obj, dawvert_intent):
 		from objects.file_proj import famistudiotxt as proj_famistudiotxt
 		
@@ -335,6 +340,9 @@ class input_famistudio(plugins.base):
 		if fst_currentsong.Name: convproj_obj.metadata.name = fst_currentsong.Name
 
 		NoteLength = fst_currentsong.NoteLength
+
+		dpcm_sel = dawvert_intent.input_get_param('dpcm_freq', 'ntsc')
+		dpcm_freqlist = dpcm_rate_arr_ntsc if dpcm_sel=='ntsc' else dpcm_rate_arr_pal
 
 		# ------------------------------------------ tempoblocks ------------------------------------------
 
@@ -440,9 +448,9 @@ class input_famistudio(plugins.base):
 
 			if wavetype == 'DPCM':
 				if instname:
-					create_dpcm_inst(fmi.DPCMMappings, project_obj.DPCMSamples, fmi, fxchan)
+					create_dpcm_inst(fmi.DPCMMappings, project_obj.DPCMSamples, fmi, fxchan, dpcm_freqlist)
 				else:
-					create_dpcm_inst(project_obj.DPCMMappings, project_obj.DPCMSamples, fmi, fxchan)
+					create_dpcm_inst(project_obj.DPCMMappings, project_obj.DPCMSamples, fmi, fxchan, dpcm_freqlist)
 			else:
 				if fmi:
 					create_inst(convproj_obj, xtramath.from_db(outvol), wavetype, fmi, fxchan)

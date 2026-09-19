@@ -19,6 +19,13 @@ class input_ex_basic_pitch(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['placement_loop'] = ['loop', 'loop_off', 'loop_adv']
 
+	def get_configmenu(self): 
+		return {
+			"colors": {"type": "bool","name": "Track Colors","def": True},
+			"numchars": {"type": "int","name": "# of Singers","def": 2,"min": 2,"max": 8},
+			"numnotes": {"type": "int","name": "# of Notes","def": 4,"min": 4,"max": 32},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		convproj_obj.type = 'r'
 
@@ -44,8 +51,9 @@ class input_ex_basic_pitch(plugins.base):
 		fnf_events = funkin_json['events'] if 'events' in funkin_json else {}
 		fnf_notes = funkin_json['notes'].copy() if 'notes' in funkin_json else {}
 
-		numchars = 2
-		numnotes = 4
+		numchars = dawvert_intent.input_get_param('numchars', 2)
+		numnotes = dawvert_intent.input_get_param('numnotes', 4)
+		colors_on = dawvert_intent.input_get_param('colors', True)
 		charcolors = [[0.22, 0.70, 0.82], [0.69, 0.40, 0.81]]
 
 		endsong = 0
@@ -57,7 +65,7 @@ class input_ex_basic_pitch(plugins.base):
 				trackid = notedif+str(x)
 				track_obj = convproj_obj.track__add(trackid, 'instrument', 1, False)
 				track_obj.visual.name = 'pyr_'+str(x)+','+notedif
-				track_obj.visual.color.set_float(charcolors[(numchars-x)-1])
+				if colors_on: track_obj.visual.color.set_float(charcolors[(numchars-x)-1])
 				placement_obj = track_obj.placements.add_notes()
 				trackchar.append(placement_obj)
 

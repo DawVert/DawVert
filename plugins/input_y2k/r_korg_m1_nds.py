@@ -23,6 +23,11 @@ class input_korg_m1_nds(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
+	def get_configmenu(self): 
+		return {
+			"no_swing": {"type": "bool","name": "Disable Swing","def": False},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_past import korg_m1_nds as proj_korg_m1_nds
 
@@ -87,6 +92,7 @@ class input_korg_m1_nds(plugins.base):
 
 		return_obj.plugslots.slots_audio.append('trackfx')
 
+		no_swing = dawvert_intent.input_get_param('no_swing', False)
 
 		for num, channel_obj in enumerate(projsong_obj.channels):
 			cvpj_trackid = str(num)
@@ -133,5 +139,5 @@ class input_korg_m1_nds(plugins.base):
 				time_obj.set_posdur(p_start, p_steps)
 				cvpj_notelist = placement_obj.notelist
 				for note in block_obj.notes:
-					oswing = ((swing-50)/50) if (note.offset%2) else 0
+					oswing = (((swing-50)/50) if (note.offset%2) else 0) if not no_swing else 0
 					cvpj_notelist.add_r(note.offset+oswing, note.length, (note.pitch-128)-60, note.velocity/15, None)

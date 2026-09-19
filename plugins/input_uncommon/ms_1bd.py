@@ -142,10 +142,11 @@ class input_1bitdragon(plugins.base):
 					placement_obj.visual.name = block_obj.drums[4-drumnum].preset
 					time_obj = placement_obj.time
 					time_obj.set_posdur(0, 128)
+					cvpj_notelist = placement_obj.notelist
 					for pos, notedata in drumdata:
 						dur = notedata['duration'] if 'duration' in notedata else 1
 						vol = notedata['velocity'] if 'velocity' in notedata else 1
-						placement_obj.notelist.add_m(ids_drums[4-drumnum], pos, dur, 0, vol, None)
+						cvpj_notelist.add_m(ids_drums[4-drumnum], pos, dur, 0, vol, None)
 
 			scenepl_obj = convproj_obj.scene__add_pl()
 			scenepl_obj.position = curpos

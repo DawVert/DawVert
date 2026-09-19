@@ -87,6 +87,11 @@ class input_kristal(plugins.base):
 		stretch_obj.timing.set__real_rate(bpm, 1)
 		stretch_obj.preserve_pitch = True
 
+	def get_configmenu(self): 
+		return {
+			"only_used": {"type": "bool","name": "Only Used Tracks","def": False},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_past import kristal as proj_kristal
 		from objects import audio_data
@@ -107,6 +112,8 @@ class input_kristal(plugins.base):
 		bpmmul = 1
 		bpm = 120
 
+		only_used = dawvert_intent.input_get_param('only_used', False)
+
 		if project_obj.globalinserts:
 			for icid, inpart in project_obj.globalinserts:
 				if icid == 'CTransport':
@@ -126,15 +133,17 @@ class input_kristal(plugins.base):
 						if inp.chunkdata[0] == 'CCrystalInput':
 							for ch_track, ch_data in inp.chunkdata[1].tracks:
 								if ch_track=='CAudioTrack':
-									cvpj_trackid = 'track_'+str(tracknum)
-									track_obj = convproj_obj.track__add(cvpj_trackid, 'audio', 1, False)
-									tracknums[tracknum] = track_obj
-									track_obj.visual.name = ch_data.name
-									self.audio_channels = 2 if 0 in ch_data.flags else 1
 									#if 8 in ch_data.flags:
 									#	track_obj.armed.on = True
 									#	track_obj.armed.in_audio = True
 										
+									if not only_used or ch_data.parts:
+										cvpj_trackid = 'track_'+str(tracknum)
+										track_obj = convproj_obj.track__add(cvpj_trackid, 'audio', 1, False)
+										track_obj.visual.name = ch_data.name
+										track_obj.audio_channels = 2 if 0 in ch_data.flags else 1
+										tracknums[tracknum] = track_obj
+
 									for cid, part in ch_data.parts:
 										if cid == 'CAudioPart': 
 											placement_obj = track_obj.placements.add_nested_audio()

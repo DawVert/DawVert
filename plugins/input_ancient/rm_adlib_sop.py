@@ -27,6 +27,7 @@ class input_sop(plugins.base):
 	def get_configmenu(self): 
 		return {
 			"endtxt_on": {"type": "bool","name": "Add OP Type to Track name","def": True},
+			"panlvl": {"type": "float","name": "Pan Amount","def": 1.0,"min": 0.0,"max": 1.0},
 		}
 
 	def parse(self, convproj_obj, dawvert_intent):
@@ -59,14 +60,15 @@ class input_sop(plugins.base):
 			inst_obj.is_drum = opli.perc_type!=0
 			opli.to_cvpj(convproj_obj, cvpj_instname)
 
-		for tracknum, soptrack in enumerate(project_obj.tracks):
+		endtxt_on = dawvert_intent.input_get_param('endtxt_on', True)
+		panlvl = dawvert_intent.input_get_param('panlvl', 1.0)
 
+		for tracknum, soptrack in enumerate(project_obj.tracks):
 			cvpj_trackid = str(tracknum)
 			track_obj = convproj_obj.track__add(cvpj_trackid, 'instruments', 0, False)
 			track_obj.visual.name = '#'+str(cvpj_trackid)
 			track_obj.visual.color.set_float(maincolor)
 			
-			endtxt_on = dawvert_intent.input_get_param('endtxt_on', True)
 			if endtxt_on:
 				trackname_endtext = endtxt[soptrack.chanmode]
 				track_obj.visual.name += ' '+str()+trackname_endtext
@@ -81,7 +83,7 @@ class input_sop(plugins.base):
 					convproj_obj.automation.add_autotick(['track', cvpj_trackid, 'vol'], 'float', curtick, event[2]/127)
 
 				elif event[1] == 'PAN': 
-					convproj_obj.automation.add_autotick(['track', cvpj_trackid, 'pan'], 'float', curtick, panvals[event[2]%3])
+					convproj_obj.automation.add_autotick(['track', cvpj_trackid, 'pan'], 'float', curtick, panvals[event[2]%3]*panlvl)
 
 				elif event[1] == 'INST': 
 					instpos.append([curtick, str(event[2])])

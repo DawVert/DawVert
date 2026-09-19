@@ -138,7 +138,7 @@ class input_piyopiyo(plugins.base):
 		track_obj.is_drum = True
 		track_obj.plugslots.set_synth(pluginid)
 
-		if dawvert_intent.input_get_param('use_samples', 1):
+		if dawvert_intent.input_get_param('use_samples', True):
 			try:
 				external_dat = external_data_zip()
 				external_dat.load_data(os.path.join(dawvert_intent.path_external_data, 'piyopiyo', 'piyopiyo.zip'))
