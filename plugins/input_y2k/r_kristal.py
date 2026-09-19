@@ -89,7 +89,7 @@ class input_kristal(plugins.base):
 
 	def get_configmenu(self): 
 		return {
-			"only_used": {"type": "bool","name": "Only Used Tracks","def": False},
+			"unused_tracks": {"type": "bool","name": "Use Unused Tracks","def": True},
 		}
 
 	def parse(self, convproj_obj, dawvert_intent):
@@ -112,7 +112,7 @@ class input_kristal(plugins.base):
 		bpmmul = 1
 		bpm = 120
 
-		only_used = dawvert_intent.input_get_param('only_used', False)
+		unused_tracks = dawvert_intent.input_get_param('unused_tracks', True)
 
 		if project_obj.globalinserts:
 			for icid, inpart in project_obj.globalinserts:
@@ -137,7 +137,7 @@ class input_kristal(plugins.base):
 									#	track_obj.armed.on = True
 									#	track_obj.armed.in_audio = True
 										
-									if not only_used or ch_data.parts:
+									if unused_tracks or ch_data.parts:
 										cvpj_trackid = 'track_'+str(tracknum)
 										track_obj = convproj_obj.track__add(cvpj_trackid, 'audio', 1, False)
 										track_obj.visual.name = ch_data.name

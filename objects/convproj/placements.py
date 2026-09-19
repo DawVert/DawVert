@@ -603,7 +603,7 @@ class cvpj_placements:
 				new_notespl_obj.notelist = copy.deepcopy(nle_obj.notelist)
 				new_notespl_obj.visual = nle_obj.visual
 				new_notespl_obj.timesig_auto = nle_obj.timesig_auto.copy()
-				new_notespl_obj.timemarkers = nle_obj.timemarkers.copy()
+				new_notespl_obj.timemarkers = copy.deepcopy(nle_obj.timemarkers)
 				new_notespl_obj.visual_roll = nle_obj.visual_roll.copy()
 
 			self.pl_notes.data.append(new_notespl_obj)
