@@ -26,6 +26,16 @@ class input_korg_m1_nds(plugins.base):
 	def get_configmenu(self): 
 		return {
 			"no_swing": {"type": "bool","name": "Disable Swing","def": False},
+			"groupby": {
+				"type": "enum",
+				"name": "Group By",
+				"def": "instset",
+				"group": "grouping",
+				"choices": [
+					{"id": "none", "name": 'None'},
+					{"id": "instset", "name": 'Inst Category'}
+				]
+			},
 		}
 
 	def parse(self, convproj_obj, dawvert_intent):
@@ -48,6 +58,9 @@ class input_korg_m1_nds(plugins.base):
 		
 		convproj_obj.params.add('bpm', projsong_obj.tempo, 'float')
 		convproj_obj.metadata.name = projsong_obj.name
+
+		no_swing = dawvert_intent.input_get_param('no_swing', False)
+		groupby = dawvert_intent.input_get_param('groupby', 'instset')
 
 		# ------------------------------------------ tempoblocks ------------------------------------------
 
@@ -92,7 +105,8 @@ class input_korg_m1_nds(plugins.base):
 
 		return_obj.plugslots.slots_audio.append('trackfx')
 
-		no_swing = dawvert_intent.input_get_param('no_swing', False)
+		do_group_inst = groupby=='instset'
+		if do_group_inst: grouptrks = {}
 
 		for num, channel_obj in enumerate(projsong_obj.channels):
 			cvpj_trackid = str(num)
@@ -112,6 +126,11 @@ class input_korg_m1_nds(plugins.base):
 							numstart = [int(x) for x in dset_cat_obj.data['numstarts'].split('|')][channel_obj.cat]
 							realpatch = numstart+channel_obj.patch
 							dset_obj = dset_cat_obj.objects.get(str(realpatch))
+							if 'group' in dset_obj.data and do_group_inst:
+								groupname = dset_obj.data['group']
+								if groupname:
+									if groupname not in grouptrks: grouptrks[groupname] = []
+									grouptrks[groupname].append(track_obj)
 							if dset_obj: track_obj.visual.name = dset_obj.visual.name
 							plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'korg_m1', instset)
 							track_obj.plugslots.set_synth(pluginid)
@@ -141,3 +160,13 @@ class input_korg_m1_nds(plugins.base):
 				for note in block_obj.notes:
 					oswing = (((swing-50)/50) if (note.offset%2) else 0) if not no_swing else 0
 					cvpj_notelist.add_r(note.offset+oswing, note.length, (note.pitch-128)-60, note.velocity/15, None)
+
+		if do_group_inst:
+			groupnum = 1
+			for k, v in grouptrks.items():
+				if len(v)>1:
+					groupid = str(groupnum)
+					track_obj = convproj_obj.fx__group__add(groupid)
+					track_obj.visual.name = k
+					for x in v: x.group = groupid
+					groupnum += 1

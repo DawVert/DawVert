@@ -26,6 +26,11 @@ class input_orgyana(plugins.base):
 		detectdef_obj.headers.append([0, b'Org-02'])
 		detectdef_obj.headers.append([0, b'Org-03'])
 
+	def get_configmenu(self): 
+		return {
+			"use_groups": {"type": "bool","name": "Enable Groups","def": True, "group": "grouping"},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_uncommon import orgyana as proj_orgyana
 		from objects import colors
@@ -41,6 +46,8 @@ class input_orgyana(plugins.base):
 		globalstore.datapack.load('orgyana', './data/datapack/app/orgyana.xml')
 		colordata = colors.colorset.from_datapack('orgyana', 'track', 'orgmaker_2')
 
+		use_groups = dawvert_intent.input_get_param('use_groups', True)
+
 		project_obj = proj_orgyana.orgyana_project()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
@@ -52,12 +59,14 @@ class input_orgyana(plugins.base):
 		orgsamp_obj = proj_orgyana.orgyana_orgsamp()
 		if os.path.exists(orgsamp_filename): orgsamp_obj.load_from_file(orgsamp_filename)
 
+		drum_tracks = []
+
 		for tracknum, orgtrack_obj in enumerate(project_obj.tracks):
 			if len(orgtrack_obj.notes) != 0:
-
 				idval = 'org_'+str(tracknum)
 				track_obj = convproj_obj.track__add(idval, 'instrument', 0, False)
 				if tracknum > 7: 
+					drum_tracks.append(track_obj)
 					track_obj.visual.from_datapack('orgyana', 'drums', str(orgtrack_obj.instrument), False)
 					track_obj.is_drum = True
 					if orgsamp_obj.loaded:
@@ -132,6 +141,15 @@ class input_orgyana(plugins.base):
 								convproj_obj.automation.add_autopoint(pan_autoid, 'float', pos+0.25, pan, 'normal')
 						last_pan_pos = pos
 						last_pan_val = pan
+
+		if use_groups:
+			convproj_obj.fxtype = 'groupreturn'
+
+			track_obj = convproj_obj.fx__group__add('drums')
+			track_obj.visual.name = 'Drums/SFX'
+			
+			for track_obj in drum_tracks:
+				track_obj.group = 'drums'
 
 		convproj_obj.do_actions.append('do_addloop')
 		convproj_obj.do_actions.append('do_singlenotelistcut')

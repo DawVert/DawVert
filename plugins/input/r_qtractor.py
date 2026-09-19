@@ -53,6 +53,11 @@ class input_midi(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
+	def get_configmenu(self): 
+		return {
+			"swap_bg_fg": {"type": "bool","name": "Swap BG/FG colors","def": False, "group": "visual"}
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import qtractor as proj_qtractor
 		convproj_obj.fxtype = 'groupreturn'
@@ -70,6 +75,7 @@ class input_midi(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		swap_bg_fg = dawvert_intent.input_get_param('swap_bg_fg', False)
 
 		ppq = project_obj.properties.ticks_per_beat
 		tempo = project_obj.properties.tempo
@@ -102,10 +108,17 @@ class input_midi(plugins.base):
 				track_obj = convproj_obj.track__add(cvpj_trackid, 'instrument', 1, False)
 
 			track_obj.visual.name = qtrack.name
-			if qtrack.view.background_color:
+			if qtrack.view.background_color and qtrack.view.foreground_color:
+				if not swap_bg_fg:
+					track_obj.visual.color.set_hex(qtrack.view.background_color)
+					track_obj.visual.altcolor_add('fg').set_hex(qtrack.view.foreground_color)
+				else:
+					track_obj.visual.color.set_hex(qtrack.view.foreground_color)
+					track_obj.visual.altcolor_add('fg').set_hex(qtrack.view.background_color)
+			elif qtrack.view.background_color:
 				track_obj.visual.color.set_hex(qtrack.view.background_color)
-			if qtrack.view.foreground_color: 
-				track_obj.visual.altcolor_add('fg').set_hex(qtrack.view.foreground_color)
+			elif qtrack.view.foreground_color:
+				track_obj.visual.color.set_hex(qtrack.view.foreground_color)
 
 			if qtrack.view.height:
 				track_obj.visual_ui.height = qtrack.view.height/96

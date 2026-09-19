@@ -21,7 +21,7 @@ class input_ex_basic_pitch(plugins.base):
 
 	def get_configmenu(self): 
 		return {
-			"colors": {"type": "bool","name": "Track Colors","def": True},
+			"colors": {"type": "bool","name": "Track Colors","def": True, "group": "visual"},
 			"numchars": {"type": "int","name": "# of Singers","def": 2,"min": 2,"max": 8},
 			"numnotes": {"type": "int","name": "# of Notes","def": 4,"min": 4,"max": 32},
 		}

@@ -26,8 +26,8 @@ class input_sop(plugins.base):
 
 	def get_configmenu(self): 
 		return {
-			"endtxt_on": {"type": "bool","name": "Add OP Type to Track name","def": True},
 			"panlvl": {"type": "float","name": "Pan Amount","def": 1.0,"min": 0.0,"max": 1.0},
+			"endtxt_on": {"type": "bool","name": "Add OP Type to Track name","def": True, "group": "visual"},
 		}
 
 	def parse(self, convproj_obj, dawvert_intent):

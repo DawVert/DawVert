@@ -41,6 +41,7 @@ class input_acid_old(plugins.base):
 				"type": "enum",
 				"name": "Group By",
 				"def": "mixed",
+				"group": "grouping",
 				"choices": [
 					{"id": "none", "name": 'None'},
 					{"id": "sample", "name": 'Sample'},
@@ -342,18 +343,23 @@ class input_acid_old(plugins.base):
 
 			if grouptype=='mixed':
 				tn_melodic, tn_drum = group_isdrum
-				if len(tn_drum)>1:
-					track_obj = convproj_obj.fx__group__add('drums')
-					track_obj.visual.name = 'Drums/SFX'
-					for x in tn_drum: tracks[x].group = 'drums'
 
-				for k, v in group_samp.items():
-					v = [x for x in v if x in tn_melodic]
-					if len(v)>1:
-						groupid = str(k)
-						track_obj = convproj_obj.fx__group__add(groupid)
-						track_obj.visual.name = tracks[v[0]].visual.name
-						for x in v: tracks[x].group = groupid
+
+				if group_isdrum:
+					if len(tn_melodic)>3:
+						if len(tn_drum)>1:
+							track_obj = convproj_obj.fx__group__add('drums')
+							track_obj.visual.name = 'Drums/SFX'
+							for x in tn_drum: tracks[x].group = 'drums'
+
+				if tn_melodic:
+					for k, v in group_samp.items():
+						v = [x for x in v if x in tn_melodic]
+						if len(v)>1:
+							groupid = str(k)
+							track_obj = convproj_obj.fx__group__add(groupid)
+							track_obj.visual.name = tracks[v[0]].visual.name
+							for x in v: tracks[x].group = groupid
 
 
 			if grouptype=='sample':

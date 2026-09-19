@@ -24,6 +24,21 @@ class input_onlinesequencer(plugins.base):
 		in_dict['plugin_included'] = ['universal:midi','native:onlineseq','universal:synth-osc']
 		in_dict['projtype'] = 'r'
 
+	def get_configmenu(self): 
+		return {
+			"groupby": {
+				"type": "enum",
+				"name": "Group By",
+				"def": "instset",
+				"group": "grouping",
+				"choices": [
+					{"id": "none", "name": 'None'},
+					{"id": "inst", "name": 'Instrument Type'},
+					{"id": "instset", "name": 'Instrument Category'}
+				]
+			},
+			"groupmin": {"type": "int","name": "Group if more then","def": 3,"min": 0,"max": 10, "group": "grouping"},
+		}
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import onlineseq as proj_onlineseq
 		from objects.inst_params import fx_delay
@@ -45,6 +60,9 @@ class input_onlinesequencer(plugins.base):
 		project_obj = proj_onlineseq.onlineseq_project()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		groupby = dawvert_intent.input_get_param('groupby', 'instset')
+		groupmin = dawvert_intent.input_get_param('groupmin', 3)
 
 		used_fx = {}
 		synthdata = {}
@@ -220,11 +238,30 @@ class input_onlinesequencer(plugins.base):
 			for key, pos, dur, inst, vol in notes: 
 				cvpj_notelist.add_r(pos, dur, key-60, vol, {})
 
-		for k, v in multig.items():
-			if len(v)>1:
-				group_obj = convproj_obj.fx__group__add(str(k))
-				group_obj.visual.from_datapack('onlineseq', 'inst', str(k), True)
-				for x in v: x.group = str(k)
+		if groupby=='inst':
+			for k, v in multig.items():
+				if len(v)>groupmin:
+					group_obj = convproj_obj.fx__group__add(str(k))
+					group_obj.visual.from_datapack('onlineseq', 'inst', str(k), True)
+					for x in v: x.group = str(k)
+
+		elif groupby=='instset':
+			dset_cat_obj = globalstore.datapack.get_cat('onlineseq', 'inst')
+
+			catgrp = {}
+			for k, v in multig.items():
+				dset_obj = dset_cat_obj.objects.get(str(k))
+				if 'group' in dset_obj.data:
+					catname = dset_obj.data['group']
+					if catname not in catgrp: catgrp[catname] = []
+					catgrp[catname] += v
+
+			for k, v in catgrp.items():
+				dset_obj = dset_cat_obj.objects.get(str(k))
+				if len(v)>groupmin:
+					group_obj = convproj_obj.fx__group__add(k)
+					group_obj.visual.name = k
+					for x in v: x.group = str(k)
 
 		convproj_obj.timesig = [project_obj.numerator, 4]
 		convproj_obj.do_actions.append('do_addloop')

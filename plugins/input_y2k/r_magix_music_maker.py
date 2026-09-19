@@ -24,8 +24,8 @@ class input_old_magix_maker(plugins.base):
 
 	def get_configmenu(self): 
 		return {
-			"swap_bg_fg": {"type": "bool","name": "Swap BG/FG colors","def": False},
-			"unused_sends": {"type": "bool","name": "Use Unused Send/Returns","def": False}
+			"unused_sends": {"type": "bool","name": "Use Unused Send/Returns","def": False},
+			"swap_bg_fg": {"type": "bool","name": "Swap BG/FG colors","def": False, "group": "visual"},
 		}
 
 	def parse(self, convproj_obj, dawvert_intent):
@@ -96,7 +96,7 @@ class input_old_magix_maker(plugins.base):
 			bg_color = list(data_objc.bg_color[0:3])
 			fg_color = list(data_objc.fg_color[0:3])
 
-			if swap_bg_fg:
+			if not swap_bg_fg:
 				placement_obj.visual.color.set_int(bg_color)
 				placement_obj.visual.altcolor_add('fg').set_int(fg_color)
 			else:

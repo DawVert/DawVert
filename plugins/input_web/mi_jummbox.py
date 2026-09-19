@@ -287,8 +287,7 @@ class input_jummbox(plugins.base):
 
 		jummbox_key = 0
 		if not dawvert_intent.input_get_param('transpose_ignore', False):
-			if jummbox_obj.key in noteoffset:
-				jummbox_key = noteoffset[jummbox_obj.key]
+			if jummbox_obj.key in noteoffset: jummbox_key = noteoffset[jummbox_obj.key]
 		
 		jummbox_obj.get_durpos()
 		durpos = jummbox_obj.get_durpos()

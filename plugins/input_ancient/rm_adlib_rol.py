@@ -24,7 +24,7 @@ class input_adlib_rol(plugins.base):
 
 	def get_configmenu(self): 
 		return {
-			"bank_file": {"type": "text","name": "Bank File","def": ''},
+			"bank_file": {"type": "text","name": "Bank File","def": 'STANDARD.BNK'},
 		}
 
 	def parse(self, convproj_obj, dawvert_intent):
