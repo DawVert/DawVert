@@ -622,7 +622,9 @@ class output_lmms(plugins.base):
 
 					encode_fxchain(samptrack_obj.fxchain, track_obj, trackname, autoloc)
 
-		for num, fxchannel_obj in cvpj_obj.fx__chan__iter():
+		fxrack_obj = cvpj_obj.fxrack
+
+		for num, fxchannel_obj in fxrack_obj.iter():
 			autoloc = ['fxmixer', str(num)]
 			autoname = 'FX' + str(num)
 

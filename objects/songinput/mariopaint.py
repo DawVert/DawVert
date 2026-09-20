@@ -89,12 +89,14 @@ class mariopaint_song():
 
 		used_inst = cvpj_notelist.get_used_inst()
 
+		fxrack_obj = convproj_obj.fxrack
+		
 		for instnum, instname in enumerate(used_inst): 
 			inst_obj = convproj_obj.instrument__add(instname)
 			inst_obj.visual.from_datapack('mariopaint', 'inst', instname, True)
 			plugin_obj = convproj_obj.plugin__add(instname, 'universal', 'mariopaint', None)
 			plugin_obj.midi_fallback__add_from_datapack('mariopaint', 'inst', instname)
-			fxchan_data = convproj_obj.fx__chan__add(instnum+1)
+			fxchan_data = fxrack_obj.add(instnum+1)
 			fxchan_data.visual = copy.deepcopy(inst_obj.visual)
 			inst_obj.fxrack_channel = instnum+1
 			

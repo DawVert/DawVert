@@ -28,6 +28,7 @@ from objects.convproj import videoref
 from objects.convproj import sampleref
 from objects.convproj import realdevices
 from objects.convproj import placements_marker
+from objects.convproj import fxrack
 
 from functions.convproj_types import convert_r2m
 from functions.convproj_types import convert_ri2mi
@@ -112,15 +113,6 @@ class groupassoc():
 				yield x
 				for d in self.iter(x[0]):
 					yield d
-
-class cvpj_fxchannel:
-	def __init__(self):
-		self.visual = visual.cvpj_visual()
-		self.visual_ui = visual.cvpj_visual_ui()
-		self.params = params.cvpj_paramset()
-		self.plugslots = tracks.cvpj_plugslots()
-		self.sends = sends.cvpj_sends()
-		self.latency_offset = 0
 
 class cvpj_scene:
 	def __init__(self, time_ppq, projid):
@@ -267,7 +259,7 @@ class cvpj_project:
 		self.track_returns = {}
 
 		# fxrack
-		self.fxrack = {}
+		self.fxrack = fxrack.cvpj_fxrack()
 
 		# route
 		self.trackroute = {}
@@ -701,59 +693,6 @@ class cvpj_project:
 		for s in sflist: del self.samplerefs[s]
 
 # --------------------------------------------------------- FX ---------------------------------------------------------
-
-	def fx__chan__add(self, fxnum):
-		logger_project.info('FX Channel - '+str(fxnum))
-		if fxnum not in self.fxrack: self.fxrack[fxnum] = cvpj_fxchannel()
-		return self.fxrack[fxnum]
-
-	def fx__chan__get(self, fxnum):
-		return self.fxrack[fxnum] if fxnum in self.fxrack else None
-
-	def fx__chan__remove(self, fxnum):
-		if fxnum in self.fxrack:
-			del self.fxrack[fxnum]
-			return True
-		else:
-			return False
-
-	def fx__chan__iter(self):
-		for num, fxchannel_obj in self.fxrack.items():
-			yield num, fxchannel_obj
-
-	def fx__chan__clear(self):
-		self.fxrack = {}
-
-	def fx__chan__removeloopcrash(self):
-		targalredy = {}
-		crashfounds = []
-		for fx_num, fxchannel_obj in self.fxrack.items():
-			sendtargs = [x[0] for x in fxchannel_obj.sends.iter()]
-			for target in sendtargs:
-				if target not in targalredy: targalredy[target] = []
-				targalredy[target].append(fx_num)
-				iscrash = False
-				if fx_num in targalredy:
-					if target in targalredy[fx_num]: 
-						crashfounds.append([target,fx_num])
-		for target,fx_num in crashfounds:
-			del self.fxrack[target].sends.data[fx_num]
-
-	def fx__chan__remove_unused(self):
-		unused_fx = list(self.fxrack)
-		for trackid, track_obj in self.track_data.items():
-			if track_obj.fxrack_channel in unused_fx: unused_fx.remove(track_obj.fxrack_channel)
-
-		for n, d in self.fxrack.items():
-			if d.visual or d.visual_ui or d.plugslots.slots_audio or d.plugslots.slots_mixer:
-				if n in unused_fx: unused_fx.remove(n)
-			if d.sends.to_master_active:
-				if 0 in unused_fx: unused_fx.remove(0)
-			for i in list(d.sends.data):
-				if i in unused_fx: unused_fx.remove(i)
-
-		for x in unused_fx: del self.fxrack[x]
-		logger_project.info('Removed '+str(len(unused_fx))+' FX Channels')
 
 
 	def fx__route__add(self, trackid):

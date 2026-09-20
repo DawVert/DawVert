@@ -93,7 +93,8 @@ class input_notessimo_v2(plugins.base):
 							if nnn.pan: cvpj_notelist.last_add_pan(nnn.pan)
 
 		# ---------- fxchan ----------
-		fxchan_data = convproj_obj.fx__chan__add(1)
+		fxrack_obj = convproj_obj.fxrack
+		fxchan_data = fxrack_obj.add(1)
 		fxchan_data.visual.name = 'Drums'
 
 		# ---------- insts ----------
@@ -105,7 +106,7 @@ class input_notessimo_v2(plugins.base):
 			midifound = inst_obj.midi.out_inst.from_datapack('notessimo_v2', 'inst', cvpj_instid)
 			inst_obj.fxrack_channel = 1 if inst_obj.midi.out_inst.drum else fxnum
 			if midifound:
-				fxchan_data = convproj_obj.fx__chan__add(fxnum)
+				fxchan_data = fxrack_obj.add(fxnum)
 				fxchan_data.visual.name = inst_obj.visual.name
 				fxchan_data.visual.color = inst_obj.visual.color.copy()
 				fxnum += 1

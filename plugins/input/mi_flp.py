@@ -774,8 +774,10 @@ class input_flp(plugins.base):
 		#exit()
 
 		# ---------- mixer ----------
+		fxrack_obj = convproj_obj.fxrack
+		
 		for mixer_id, mixer_obj in flp_obj.mixer.items():
-			fxchannel_obj = convproj_obj.fx__chan__add(mixer_id)
+			fxchannel_obj = fxrack_obj.add(mixer_id)
 			fxchannel_obj.latency_offset = mixer_obj.latency
 			if mixer_obj.name: fxchannel_obj.visual.name = mixer_obj.name
 			if mixer_obj.color: 

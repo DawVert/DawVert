@@ -782,10 +782,11 @@ class input_lmms(plugins.base):
 		lmms_decode_tracks(convproj_obj, song_obj.trackcontainer.tracks, False, 'LMMS_Track')
 
 		# ---------- fx channels ----------
+		fxrack_obj = convproj_obj.fxrack
 		for channum, lmms_fxchannel in song_obj.fxmixer.fxchannels.items():
 			chan_vol = doparam(lmms_fxchannel.volume, 'float', None, ['fxmixer', str(channum), 'vol'])
 
-			fxchannel_obj = convproj_obj.fx__chan__add(channum)
+			fxchannel_obj = fxrack_obj.add(channum)
 			if lmms_fxchannel.name: fxchannel_obj.visual.name = lmms_fxchannel.name
 			fxchannel_obj.params.add('vol', chan_vol, 'float')
 			fxchannel_obj.params.add('enabled', lmms_fxchannel.muted.value, 'bool')

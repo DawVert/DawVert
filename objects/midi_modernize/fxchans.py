@@ -59,7 +59,9 @@ class fxchans_maker:
 		import objects.midi_modernize.ctrls as ctrls
 		calcval = ctrls.calcval
 
-		fxchannel_obj = convproj_obj.fx__chan__add(0)
+		fxrack_obj = convproj_obj.fxrack
+		
+		fxchannel_obj = fxrack_obj.add(0)
 		fxchannel_obj.visual.name = "Master"
 		fxchannel_obj.visual.color.set_float([0.3, 0.3, 0.3])
 
@@ -72,7 +74,7 @@ class fxchans_maker:
 
 				chan_cc = curd_channel['val_cc']
 
-				fxchannel_obj = convproj_obj.fx__chan__add(fxnum)
+				fxchannel_obj = fxrack_obj.add(fxnum)
 
 				fxchannel_obj.params.add('enabled', True, 'float')
 				fxchannel_obj.params.add('vol', calcval(chan_cc[7], 7), 'float')
@@ -98,7 +100,7 @@ class fxchans_maker:
 					fxchannel_obj.plugslots.slots_audio.append(chorus_pluginid)
 
 			if np.any(self.data_channel[p]['fx__reverb__used']):
-				reverb_fxchannel_obj = convproj_obj.fx__chan__add(fxnum)
+				reverb_fxchannel_obj = fxrack_obj.add(fxnum)
 				reverb_fxchannel_obj.visual.name = 'Reverb'
 				reverb_fxchannel_obj.visual_ui.other['docked'] = 1
 				idval = id(reverb_fxchannel_obj)

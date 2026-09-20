@@ -560,13 +560,14 @@ class output_cvpjs(plugins.base):
 			flp_obj.initfxvals.initvals[fxptxt+'eq2_width'] = 17500
 			flp_obj.initfxvals.initvals[fxptxt+'eq3_width'] = 17500
 
-		convproj_obj.fx__chan__removeloopcrash()
+		fxrack_obj = convproj_obj.fxrack
+		fxrack_obj.removeloopcrash()
 
-		if 0 not in convproj_obj.fxrack:
+		if 0 not in fxrack_obj:
 			fl_fxchan = flp_obj.mixer[0]
 			fl_fxchan.docked_center, fl_fxchan.docked_pos = False, False
 
-		for fx_num, fxchannel_obj in convproj_obj.fx__chan__iter():
+		for fx_num, fxchannel_obj in fxrack_obj.iter():
 			if fx_num in flp_obj.mixer:
 				fl_fxchan = flp_obj.mixer[fx_num]
 				fl_fxchan.latency = fxchannel_obj.latency_offset

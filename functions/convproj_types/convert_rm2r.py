@@ -12,6 +12,7 @@ logger_project = logging.getLogger('project')
 def convert(convproj_obj):
 	logger_project.info('ProjType Convert: RegularMultiple > Regular')
 
+	fxrack_obj = convproj_obj.fxrack
 	useable_plugins = convproj_obj.plugins
 	convproj_obj.plugins = {}
 
@@ -97,7 +98,7 @@ def convert(convproj_obj):
 		for fxid in track_obj.plugslots.slots_audio:
 			used_plugins.append(fxid)
 
-	for num, fxchannel_obj in convproj_obj.fxrack.items():
+	for num, fxchannel_obj in fxrack_obj.items():
 		used_plugins += fxchannel_obj.plugslots.slots_audio
 
 	used_plugins = set(used_plugins)

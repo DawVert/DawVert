@@ -190,6 +190,13 @@ class cvpj_plugslots:
 		for x in self.slots_synths: yield 'synth', x
 		for x in self.slots_audio: yield 'audio', x
 
+	def audiofx_move_from(self, other_plugslots):
+		self.slots_audio = other_plugslots.slots_audio.copy()
+		self.slots_mixer = other_plugslots.slots_mixer.copy()
+		self.slots_audio_enabled = other_plugslots.slots_audio_enabled
+		other_plugslots.slots_audio = []
+		other_plugslots.slots_mixer = []
+
 class cvpj_instrument:
 	__slots__ = ['visual','params','datavals','midi','fxrack_channel','pluginid','is_drum','is_multinote_drum','plugslots','group','latency_offset','visual_keynotes']
 	def __init__(self):

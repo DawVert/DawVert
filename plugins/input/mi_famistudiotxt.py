@@ -366,9 +366,11 @@ class input_famistudio(plugins.base):
 		tempoblocks.to_cvpj(convproj_obj)
 
 		# ---------- fx ----------
+		fxrack_obj = convproj_obj.fxrack
+
 		chantypes = [fst_channel.Type for fst_channel in fst_currentsong.Channels]
 		for n, x in enumerate(chantypes):
-			fxchannel_obj = convproj_obj.fx__chan__add(n+1)
+			fxchannel_obj = fxrack_obj.add(n+1)
 			wavetype = get_instshape(x)
 			if not fxchannel_obj.visual.from_datapack('famistudio', 'chip', wavetype, True):
 				fxchannel_obj.visual.name = x

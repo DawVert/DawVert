@@ -9,6 +9,7 @@ logger_project = logging.getLogger('project')
 def convert(convproj_obj, change_instnames):
 	logger_project.info('ProjType Convert: RegularMultiple > Multiple')
 
+	fxrack_obj = convproj_obj.fxrack
 	useable_plugins = convproj_obj.plugins
 	convproj_obj.plugins = {}
 
@@ -72,7 +73,7 @@ def convert(convproj_obj, change_instnames):
 					for nlp in playlist_obj.placements.pl_notes:
 						nlp.notelist.appendtxt_inst('rm2m__'+trackid+'__', '')
 
-	for fxnum, fxchan_obj in convproj_obj.fxrack.items():
+	for fxnum, fxchan_obj in fxrack_obj.items():
 		for x in fxchan_obj.plugslots.slots_audio: used_plugins.append(x)
 
 	for plugid in used_plugins:

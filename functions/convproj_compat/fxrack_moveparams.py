@@ -4,6 +4,7 @@
 from functions import data_values
 
 def process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
+	fxrack_obj = convproj_obj.fxrack
 
 	if convproj_obj.type in ['ri','r']:
 		if in_compat == out_compat: return False
@@ -13,7 +14,7 @@ def process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
 				if track_obj.fxrack_channel not in fx_trackids: fx_trackids[track_obj.fxrack_channel] = []
 				fx_trackids[track_obj.fxrack_channel].append([trackid, track_obj])
 
-			for fx_num, fxchannel_obj in convproj_obj.fxrack.items():
+			for fx_num, fxchannel_obj in fxrack_obj.items():
 				if fx_num != 0:
 					paramlist = fxchannel_obj.params.list()
 					if 'vol' in paramlist: paramlist.remove('vol')

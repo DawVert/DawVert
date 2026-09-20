@@ -71,12 +71,14 @@ class multi_patsong:
 
 		used_inst = {}
 
+		fxrack_obj = convproj_obj.fxrack
+		
 		for ch_num, chan_obj in enumerate(self.channels):
 			playlist_obj = convproj_obj.playlist__add(ch_num, True, False)
 			if chan_obj.name: playlist_obj.visual.name = chan_obj.name
 			if chan_obj.color: playlist_obj.visual.color.set_float(chan_obj.color)
 
-			fxchannel_obj = convproj_obj.fx__chan__add(ch_num+1)
+			fxchannel_obj = fxrack_obj.add(ch_num+1)
 			if self.datapack_name and self.datapack_cat:
 				fxchannel_obj.visual.from_datapack(self.datapack_name, self.datapack_cat, chan_obj.insttype, True)
 				playlist_obj.visual.from_datapack(self.datapack_name, self.datapack_cat, chan_obj.insttype, False)

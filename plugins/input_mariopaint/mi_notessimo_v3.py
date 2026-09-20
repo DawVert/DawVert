@@ -319,7 +319,8 @@ class input_notessimo_v3(plugins.base):
 			sheetrealsize[sheet_id] = cvpj_notelist.get_dur()
 
 		# ---------- master track ----------
-		fxchan_data = convproj_obj.fx__chan__add(0)
+		fxrack_obj = convproj_obj.fxrack
+		fxchan_data = fxrack_obj.add(0)
 		incolor(notet_cursong_data.color, fxchan_data.visual)
 		fxchan_data.params.add('vol', xtramath.from_db(notet_cursong_data.volume/3), 'float')
 		fxchan_data.params.add('pan', notet_cursong_data.pan, 'float')
@@ -346,7 +347,7 @@ class input_notessimo_v3(plugins.base):
 				firstlayer = False
 
 		# ---------- drum fx ----------
-		fxchan_data = convproj_obj.fx__chan__add(1)
+		fxchan_data = fxrack_obj.add(1)
 		fxchan_data.visual.name = 'Drums'
 
 		# ---------- inst ----------

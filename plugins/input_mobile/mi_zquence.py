@@ -12,7 +12,8 @@ def text_float(c):
 	return float(c.replace(',', '.'))
 
 def do_mixer(convproj_obj, num, mixerchan):
-	fxchannel_obj = convproj_obj.fx__chan__add(num)
+	fxrack_obj = convproj_obj.fxrack
+	fxchannel_obj = fxrack_obj.add(num)
 	mixerattrib = mixerchan.attrib
 	if 'Volyme' in mixerattrib: 
 		fxchannel_obj.params.add('vol', text_float(mixerattrib['Volyme']), 'float')
