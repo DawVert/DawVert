@@ -32,23 +32,34 @@ class input_sop(plugins.base):
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_adlib import sop as proj_adlib_sop
-
-		convproj_obj.type = 'rm'
 		
-		traits_obj = convproj_obj.traits
-		traits_obj.auto_types = ['nopl_ticks']
-		traits_obj.track_nopl = True
-
 		project_obj = proj_adlib_sop.adlib_sop_project()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj params ----------
+		endtxt_on = dawvert_intent.input_get_param('endtxt_on', True)
+		panlvl = dawvert_intent.input_get_param('panlvl', 1.0)
+
+		# ---------- convproj init ----------
 		convproj_obj.set_timings(project_obj.tickBeat)
+		convproj_obj.type = 'rm'
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
+
+		traits_obj = convproj_obj.traits
+		traits_obj.auto_types = ['nopl_ticks']
+		traits_obj.track_nopl = True
+
+		# ---------- metadata ----------
 		convproj_obj.metadata.name = project_obj.title
 		convproj_obj.metadata.comment_text = project_obj.comment
-		convproj_obj.params.add('bpm', project_obj.basicTempo, 'float')
 
-		# Instruments
+		# ---------- transport ----------
+		convproj_obj.params.add('bpm', project_obj.basicTempo, 'float')
+		convproj_obj.timesig = [project_obj.beatMeasure, 4]
+
+		# ---------- insts ----------
 		sop_data_inst = []
 		for instnum, opli in enumerate(project_obj.insts):
 			cvpj_instname = str(instnum)
@@ -60,9 +71,7 @@ class input_sop(plugins.base):
 			inst_obj.is_drum = opli.perc_type!=0
 			opli.to_cvpj(convproj_obj, cvpj_instname)
 
-		endtxt_on = dawvert_intent.input_get_param('endtxt_on', True)
-		panlvl = dawvert_intent.input_get_param('panlvl', 1.0)
-
+		# ---------- tracks ----------
 		for tracknum, soptrack in enumerate(project_obj.tracks):
 			cvpj_trackid = str(tracknum)
 			track_obj = convproj_obj.track__add(cvpj_trackid, 'instruments', 0, False)
@@ -96,13 +105,10 @@ class input_sop(plugins.base):
 
 			cvpj_notelist.add_instpos(instpos)
 
+		# ---------- control track ----------
 		for event in project_obj.controltrack:
 			curtick += event[0]
 			if event[1] == 'TEMPO': 
 				convproj_obj.automation.add_autotick(['main', 'bpm'], 'float', curtick, event[2])
 			if event[1] == 'GVOL': 
 				convproj_obj.automation.add_autotick(['master', 'vol'], 'float', curtick, event[2]/127)
-
-		convproj_obj.timesig = [project_obj.beatMeasure, 4]
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')

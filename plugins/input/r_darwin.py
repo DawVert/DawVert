@@ -33,8 +33,15 @@ class input_darwin(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import darwin as proj_darwin
 
+		project_obj = proj_darwin.darwin_project()
+
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'
+		convproj_obj.set_timings(480)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_stretch = []
@@ -43,20 +50,18 @@ class input_darwin(plugins.base):
 		traits_obj.placement_loop = []
 		traits_obj.time_seconds = False
 
-		convproj_obj.set_timings(480)
-
-		project_obj = proj_darwin.darwin_project()
-
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
+		# ---------- metadata ----------
 		convproj_obj.metadata.name = project_obj.name
 
+		# ---------- transport ----------
+		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
+
+		# ---------- master track ----------
 		track_master = convproj_obj.track_master
 		do_track_params(project_obj.masterTrack, track_master.params)
 		do_track_visual(project_obj.masterTrack, track_master.visual)
 
+		# ---------- tracks ----------
 		for dw_track in project_obj.tracks:
 			if not dw_track.isFolder:
 				track_obj = convproj_obj.track__add(str(dw_track.id), 'instrument', 1, False)

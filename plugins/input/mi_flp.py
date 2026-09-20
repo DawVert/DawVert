@@ -211,19 +211,18 @@ class input_flp(plugins.base):
 		from objects.file_proj import flp as proj_flp
 		from objects.inst_params import fx_delay
 
-		convproj_obj.fxtype = 'rack'
-		convproj_obj.type = 'mi'
+		flp_obj = proj_flp.flp_project()
 
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_filetypes = ['wav','flac','ogg','mp3','wv','ds','wav_codec']
-		traits_obj.audio_stretch = ['rate']
-		traits_obj.auto_types = ['pl_ticks', 'pl_points']
-		traits_obj.fxchain_mixer = True
-		traits_obj.fxrack_params = ['enabled','vol','pan']
-		traits_obj.placement_cut = True
-		traits_obj.plugin_ext = ['vst2', 'vst3', 'clap']
-		traits_obj.plugin_ext_arch = [32, 64]
-		traits_obj.plugin_ext_platforms = ['win']
+		if dawvert_intent.input_mode == 'file':
+			flp_obj.read(dawvert_intent.input_file)
+
+		if flp_obj.zipped:
+			for filename in flp_obj.zipfile.namelist():
+				if not filename.endswith('.flp'):
+					try:
+						flp_obj.zipfile.extract(filename, path=dawvert_intent.path_samples['extracted'], pwd=None)
+					except PermissionError:
+						pass
 
 		fileref_global = fileref.cvpj_fileref_global
 
@@ -274,36 +273,51 @@ class input_flp(plugins.base):
 		fileref_global.add_prefix_extend('flstudio_factory:fl_64_21', 'flstudio_data:fl_64_21', ['Data'])
 		fileref_global.add_prefix_extend('flstudio_factory:fl_64_24', 'flstudio_data:fl_64_24', ['Data'])
 
-		flp_obj = proj_flp.flp_project()
-
-		if dawvert_intent.input_mode == 'file':
-			flp_obj.read(dawvert_intent.input_file)
-
-		if flp_obj.zipped:
-			for filename in flp_obj.zipfile.namelist():
-				if not filename.endswith('.flp'):
-					try:
-						flp_obj.zipfile.extract(filename, path=dawvert_intent.path_samples['extracted'], pwd=None)
-					except PermissionError:
-						pass
-
 		globalstore.datapack.load('fl_studio', './data/datapack/app/fl_studio.xml')
 
 		wrapper_plugids = []
 
+		# ---------- convproj init ----------
+		convproj_obj.fxtype = 'rack'
+		convproj_obj.type = 'mi'
 		convproj_obj.set_timings(flp_obj.ppq)
+		convproj_obj.do_actions.append('do_lanefit')
+		convproj_obj.do_actions.append('do_addloop')
+
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_filetypes = ['wav','flac','ogg','mp3','wv','ds','wav_codec']
+		traits_obj.audio_stretch = ['rate']
+		traits_obj.auto_types = ['pl_ticks', 'pl_points']
+		traits_obj.fxchain_mixer = True
+		traits_obj.fxrack_params = ['enabled','vol','pan']
+		traits_obj.placement_cut = True
+		traits_obj.plugin_ext = ['vst2', 'vst3', 'clap']
+		traits_obj.plugin_ext_arch = [32, 64]
+		traits_obj.plugin_ext_platforms = ['win']
+
+		# ---------- metadata ----------
+		if flp_obj.title: convproj_obj.metadata.name = flp_obj.title
+		if flp_obj.author: convproj_obj.metadata.author = flp_obj.author
+		if flp_obj.genre: convproj_obj.metadata.genre = flp_obj.genre
+		if flp_obj.url: convproj_obj.metadata.url = flp_obj.url
+		if flp_obj.comment: convproj_obj.metadata.comment_text = flp_obj.comment
+		convproj_obj.metadata.show = flp_obj.showinfo
+
+		# ---------- transport ----------
 		convproj_obj.timesig[0] = flp_obj.numerator
 		convproj_obj.timesig[1] = int(((flp_obj.denominator/4)**-1)*4)
 
-		convproj_obj.params.add('pitch', flp_obj.mainpitch/100, 'float')
 		convproj_obj.params.add('bpm', flp_obj.tempo, 'float')
-		convproj_obj.params.add('shuffle', flp_obj.shuffle/128, 'float')
 
+		# ---------- params ----------
+		convproj_obj.params.add('pitch', flp_obj.mainpitch/100, 'float')
+		convproj_obj.params.add('shuffle', flp_obj.shuffle/128, 'float')
 		convproj_obj.params.add('vol', flp_obj.initfxvals.initvals['main/vol']/12800 if 'main/vol' in flp_obj.initfxvals.initvals else 1, 'float')
 
 		#for x in flp_obj.startvals.initvals.items():
 		#	print(x)
 
+		# ---------- channels ----------
 		id_inst = {}
 		id_auto = {}
 		id_pat = {}
@@ -509,6 +523,7 @@ class input_flp(plugins.base):
 
 			instdata_chans.append(spdata)
 
+		# ---------- patterns ----------
 		autoticks_pat = {}
 		autoticks_pl = {}
 
@@ -588,6 +603,7 @@ class input_flp(plugins.base):
 
 		temp_pl_track = {}
 
+		# ---------- arrangements ----------
 		if len(flp_obj.arrangements) != 0:
 			fl_arrangement = flp_obj.arrangements[0]
 
@@ -757,6 +773,7 @@ class input_flp(plugins.base):
 		#print(flp_obj.initfxvals.initvals)
 		#exit()
 
+		# ---------- mixer ----------
 		for mixer_id, mixer_obj in flp_obj.mixer.items():
 			fxchannel_obj = convproj_obj.fx__chan__add(mixer_id)
 			fxchannel_obj.latency_offset = mixer_obj.latency
@@ -884,13 +901,12 @@ class input_flp(plugins.base):
 		#		cvpj_l_playlist["1"]['placements_notes'] = []
 		#		cvpj_l_playlist["1"]['placements_notes'].append(arrangementitemJ)
 
-		convproj_obj.do_actions.append('do_lanefit')
-		convproj_obj.do_actions.append('do_addloop')
 
 		convproj_obj.transport.loop_end = convproj_obj.get_dur()
 
 		convproj_obj.automation.attempt_after()
 
+		# ---------- movequeue automation ----------
 		movequeue = []
 		movequeue_points = []
 
@@ -913,13 +929,6 @@ class input_flp(plugins.base):
 
 		for autopath, to_autopath in movequeue_points:
 			convproj_obj.automation.move(autopath, to_autopath)
-
-		if flp_obj.title: convproj_obj.metadata.name = flp_obj.title
-		if flp_obj.author: convproj_obj.metadata.author = flp_obj.author
-		if flp_obj.genre: convproj_obj.metadata.genre = flp_obj.genre
-		if flp_obj.url: convproj_obj.metadata.url = flp_obj.url
-		if flp_obj.comment: convproj_obj.metadata.comment_text = flp_obj.comment
-		convproj_obj.metadata.show = flp_obj.showinfo
 
 		if dawvert_intent.input_mode == 'file':
 			convproj_obj.sampleref__searchmissing(dawvert_intent.input_file)

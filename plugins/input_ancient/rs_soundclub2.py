@@ -51,14 +51,6 @@ class input_soundclub2(plugins.base):
 		from objects import audio_data
 		from objects.file_proj_past import soundclub2 as proj_soundclub2
 		
-		convproj_obj.type = 'rs'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.track_lanes = True
-		traits_obj.audio_filetypes = ['wav']
-
-		convproj_obj.set_timings(4)
-
 		project_obj = proj_soundclub2.sn2_song()
 
 		if dawvert_intent.input_mode == 'file':
@@ -66,8 +58,21 @@ class input_soundclub2(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 		
+		# ---------- convproj params ----------
 		panlvl = dawvert_intent.input_get_param('panlvl', 1.0)
 
+		# ---------- convproj init ----------
+		convproj_obj.type = 'rs'
+		convproj_obj.set_timings(4)
+
+		traits_obj = convproj_obj.traits
+		traits_obj.track_lanes = True
+		traits_obj.audio_filetypes = ['wav']
+
+		# ---------- metadata ----------
+		convproj_obj.metadata.comment_text = project_obj.comment
+		
+		# ---------- instruments ----------
 		for instnum, sn2_inst_obj in enumerate(project_obj.instruments):
 			cvpj_instid = 'sn2_'+str(instnum)
 
@@ -99,9 +104,9 @@ class input_soundclub2(plugins.base):
 				if sn2_inst_obj.loopstart != -1: 
 					sp_obj.loop_start = sn2_inst_obj.loopstart
 					sp_obj.loop_active = True
-					
+				
+		# ---------- patterns ----------	
 		scenedurs = []
-
 		for patnum, sn2_pat_obj in enumerate(project_obj.patterns):
 			sceneid = str(patnum)
 			scene_obj = convproj_obj.scene__add(sceneid)
@@ -173,8 +178,10 @@ class input_soundclub2(plugins.base):
 
 			scenedurs.append(scenedur)
 
+		# ---------- sequence ----------
 		globaltempo = decode_tempo(project_obj.tempo)
-
+		outtempo = globaltempo
+		
 		curpos = 0
 		for pat_num in project_obj.sequence:
 			size = scenedurs[pat_num]
@@ -194,16 +201,14 @@ class input_soundclub2(plugins.base):
 
 			curpos += size
 
-		outtempo = globaltempo
-
 		if len(project_obj.sequence):
 			vstart = project_obj.patterns[project_obj.sequence[0]].tempos 
 			if vstart: 
 				startpoint = vstart[0]
 				if startpoint[0] == 0: outtempo = decode_tempopl(startpoint[1], globaltempo)
 
-		convproj_obj.metadata.comment_text = project_obj.comment
-		
-		convproj_obj.timesig = [project_obj.ts_num, project_obj.ts_denum]
+		# ---------- transport ----------
 		convproj_obj.params.add('bpm', outtempo, 'float')
+		convproj_obj.timesig = [project_obj.ts_num, project_obj.ts_denum]
+
 		#convproj_obj.do_actions.append('arranger_from_scene')

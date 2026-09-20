@@ -49,33 +49,44 @@ class input_hydrogen(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single']
 		in_dict['projtype'] = 'mi'
 
+	def get_configmenu(self): 
+		return {
+			"pb_track": {"type": "bool","name": "Playback Track Enabled","def": True,"group": "debug"},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_drummach import hydrogen as proj_hydrogen
 		from objects import colors
 		from objects.convproj import fileref
 
-		convproj_obj.type = 'mi'
-		convproj_obj.fxtype = 'none'
-		convproj_obj.set_timings(48)
-
-		traits_obj = convproj_obj.traits
-		traits_obj.auto_types = ['nopl_points']
-
 		project_obj = proj_hydrogen.hydrogen_song()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 		
-		external_dats = {}
-
 		globalstore.datapack.load('hydrogen', './data/datapack/app/hydrogen.xml')
 		color_pattern = colors.colorset.from_datapack('hydrogen', 'pattern', 'main')
 		color_track = colors.colorset.from_datapack('hydrogen', 'track', 'main')
 
+		# ---------- convproj params ----------
+		pb_track = dawvert_intent.input_get_param('pb_track', True)
+
+		# ---------- convproj init ----------
+		convproj_obj.type = 'mi'
+		convproj_obj.fxtype = 'none'
+		convproj_obj.set_timings(48)
+		convproj_obj.do_actions.append('do_sorttracks')
+		convproj_obj.do_actions.append('do_addloop')
+
+		traits_obj = convproj_obj.traits
+		traits_obj.auto_types = ['nopl_points']
+
+		# ---------- metadata ----------
 		convproj_obj.metadata.name = project_obj.name
 		convproj_obj.metadata.author = project_obj.author
 		convproj_obj.metadata.comment_text = project_obj.notes
 		convproj_obj.metadata.data['license'] = project_obj.license
 
+		# ---------- transport ----------
 		bpm = project_obj.bpm
 
 		if project_obj.BPMTimeLine:
@@ -85,12 +96,14 @@ class input_hydrogen(plugins.base):
 				if bpmtl.bar == 0: bpm = bpmtl.bpm
 
 		convproj_obj.params.add('bpm', bpm , 'float')
+
+		# ---------- bpm master track ----------
 		convproj_obj.track_master.params.add('vol', project_obj.volume, 'float')
 		convproj_obj.track_master.params.add('enabled', not project_obj.isMuted, 'float')
 
+		# ---------- bpm playback track ----------
 		plnum = 0
-
-		if project_obj.playbackTrackFilename:
+		if project_obj.playbackTrackFilename and pb_track:
 			playlist_obj = convproj_obj.playlist__add(plnum, 1, True)
 			playlist_obj.visual.from_datapack('hydrogen', 'track', 'playback', False)
 			sampleref_obj = convproj_obj.sampleref__add('playbackTrack', project_obj.playbackTrackFilename, None)
@@ -107,16 +120,20 @@ class input_hydrogen(plugins.base):
 				time_obj.set_posdur(0, dur_sec*48*2*(bpm/120))
 			plnum += 1
 
+		# ---------- markers ----------
 		for tag in project_obj.timeLineTag:
 			timemarker_obj = convproj_obj.timemarker__add()
 			timemarker_obj.time.set_pos(tag.bar*48*4)
 			timemarker_obj.visual.name = tag.tag
 
+		# ---------- automation ----------
 		for autopath in project_obj.automationPaths:
 			if autopath.adjust == 'velocity':
 				for p, v in autopath.points.items():
 					convproj_obj.automation.add_autopoint(['master', 'vol'], 'float', p*48*4, v, 'normal')
 
+		# ---------- instruments ----------
+		external_dats = {}
 		for instrument in project_obj.instrumentList:
 			inst_obj = convproj_obj.instrument__add(str(instrument.id))
 			inst_obj.visual.name = instrument.name
@@ -175,6 +192,7 @@ class input_hydrogen(plugins.base):
 			#inst_obj.sends.add('return__2', None, instrument.FX3Level)
 			#inst_obj.sends.add('return__3', None, instrument.FX4Level)
 
+		# ---------- patterns ----------
 		for n, pattern in enumerate(project_obj.patternList):
 			nle_obj = convproj_obj.notelistindex__add(pattern.name)
 			nle_obj.visual.name = pattern.name
@@ -188,8 +206,8 @@ class input_hydrogen(plugins.base):
 				cvpj_notelist.add_m(str(note.instrument), note.position, 12, 0, note.velocity, extra if extra else None)
 				cvpj_notelist.last_add_pan(note.pan)
 
+		# ---------- placement mode ----------
 		maxdup = min([len(x) for x in project_obj.patternSequence]) if project_obj.patternSequence else 0
-
 		if maxdup > 1 or PL_MODE:
 			for n, pattern in enumerate(project_obj.patternList):
 				playlist_obj = convproj_obj.playlist__add(plnum, 1, True)
@@ -212,9 +230,6 @@ class input_hydrogen(plugins.base):
 					cvpj_placement.fromindex = fromindex
 					time_obj = cvpj_placement.time
 					time_obj.set_posdur(p*48*4, pattern.size)
-
-		convproj_obj.do_actions.append('do_sorttracks')
-		convproj_obj.do_actions.append('do_addloop')
 
 		#for sendnum in range(4):
 		#	returnid = 'return__'+str(sendnum)

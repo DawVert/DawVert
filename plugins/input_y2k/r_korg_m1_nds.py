@@ -47,11 +47,11 @@ class input_korg_m1_nds(plugins.base):
 
 		projsong_obj = project_obj.songs[dawvert_intent.songnum]
 
+		globalstore.datapack.load('korg_m1d', './data/datapack/realsynth/korg_m1d.xml')
+
 		# ---------- convproj params ----------
 		no_swing = dawvert_intent.input_get_param('no_swing', False)
 		groupby = dawvert_intent.input_get_param('groupby', 'instset')
-
-		globalstore.datapack.load('korg_m1d', './data/datapack/realsynth/korg_m1d.xml')
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'

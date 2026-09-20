@@ -196,6 +196,19 @@ class input_sequel3(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
+		project_obj = proj_sequel.sequel_project()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		seq_project = project_obj.obj_project
+		obj_devices = project_obj.obj_devices.data
+		data_root = seq_project.data_root
+		project_attributes = data_root.additional_attributes
+		colorset = project_attributes['EvCo'] if 'EvCo' else {}
+
+		globalids = proj_sequel.globalids
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'
 
@@ -208,21 +221,10 @@ class input_sequel3(plugins.base):
 		traits_obj.track_arranger = True
 		traits_obj.notepl_pitch = True
 
-		project_obj = proj_sequel.sequel_project()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		seq_project = project_obj.obj_project
-		obj_devices = project_obj.obj_devices.data
-		data_root = seq_project.data_root
-		project_attributes = data_root.additional_attributes
-		colorset = project_attributes['EvCo'] if 'EvCo' else project_attributes
-
 		timebase = 480
 		convproj_obj.set_timings(timebase)
 
-		globalids = proj_sequel.globalids
-
+		# ---------- transport ----------
 		if 'Transport' in obj_devices:
 			Transport = obj_devices['Transport']
 			if 'Cycle Left' in Transport:
@@ -232,7 +234,7 @@ class input_sequel3(plugins.base):
 				if 'Time' in Transport['Cycle Right']:
 					convproj_obj.transport.loop_end = Transport['Cycle Right']['Time']
 
-
+		# ---------- tempo track ----------
 		tempoid = data_root.tempo_track.idnum
 		if tempoid in globalids:
 			tempo_track = proj_sequel.get_object(globalids[tempoid])
@@ -240,6 +242,7 @@ class input_sequel3(plugins.base):
 			#for tempoevent in tempo_track.tempoevent:
 			#	convproj_obj.automation.add_autotick(['main', 'bpm'], 'float', 0, tempoevent.bpm)
 
+		# ---------- tracks ----------
 		tracklist = data_root.node
 		for num, track in enumerate(tracklist.tracks):
 			tracknum = 'track_'+str(num)

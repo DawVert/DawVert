@@ -125,18 +125,6 @@ class input_serato(plugins.base):
 		from objects.file_proj import serato as proj_serato
 		from objects.convproj import sample_entry
 
-		convproj_obj.type = 'ms'
-		convproj_obj.fxtype = 'groupreturn'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_filetypes = ['wav']
-		traits_obj.audio_stretch = ['rate']
-		traits_obj.auto_types = ['pl_points']
-
-		convproj_obj.set_timings(960)
-
-		useaudioclips = True
-
 		project_obj = proj_serato.serato_song()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
@@ -144,11 +132,32 @@ class input_serato(plugins.base):
 		fileref_global = fileref.cvpj_fileref_global
 		fileref_global.add_prefix('serato_content', 'win', contentpath)
 
+		useaudioclips = True
+
 		sample_data = {}
 
 		eq_track = {}
 		eq_defined = []
 
+		# ---------- convproj init ----------
+		convproj_obj.type = 'ms'
+		convproj_obj.fxtype = 'groupreturn'
+		convproj_obj.set_timings(960)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('arranger_from_scene')
+
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_filetypes = ['wav']
+		traits_obj.audio_stretch = ['rate']
+		traits_obj.auto_types = ['pl_points']
+
+		# ---------- metadata ----------
+		if 'name' in project_obj.metadata: convproj_obj.metadata.name = project_obj.metadata['name']
+		if 'artist' in project_obj.metadata: convproj_obj.metadata.author = project_obj.metadata['artist']
+		if 'genre' in project_obj.metadata: convproj_obj.metadata.genre = project_obj.metadata['genre']
+		if 'label' in project_obj.metadata: convproj_obj.metadata.comment_text = project_obj.metadata['label']
+
+		# ---------- scene_decks ----------
 		for num, scene_deck in enumerate(project_obj.scene_decks):
 			cvpj_trackid = 'track_'+str(num+1)
 
@@ -337,7 +346,7 @@ class input_serato(plugins.base):
 				track_obj.params.add('enabled', (scene_strip.mute) if scene_strip.mute is not None else True, 'bool')
 				do_chan_strip(eq_defined, convproj_obj, cvpj_trackid, scene_strip, track_obj.plugslots.slots_audio)
 
-
+		# ---------- scenes ----------
 		for num, scene in enumerate(project_obj.scenes):
 			sceneid = 'scene_'+str(num+1)
 			scene_obj = convproj_obj.scene__add(sceneid)
@@ -557,10 +566,14 @@ class input_serato(plugins.base):
 											if 'pitch_shift' in cuedata: samplepart_copy.pitch += cuedata['pitch_shift']
 											if 'reverse' in cuedata: samplepart_copy.reverse = cuedata['reverse']
 
+		# ---------- transport ----------
 		convproj_obj.transport.loop_active = project_obj.arrangement.loop_active
 		convproj_obj.transport.loop_start = project_obj.arrangement.loop_start
 		convproj_obj.transport.loop_end = project_obj.arrangement.loop_end
 		
+		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
+		
+		# ---------- tracks ----------
 		for arrangement in project_obj.arrangement.tracks:
 			if arrangement.type == 'scene':
 				for clip in arrangement.clips:
@@ -580,14 +593,5 @@ class input_serato(plugins.base):
 				master_obj.datavals.add('pan_mode', 'stereo')
 				do_chan_strip(eq_defined, convproj_obj, 'master', master_strip, master_obj.plugslots.slots_audio)
 
-		if 'name' in project_obj.metadata: convproj_obj.metadata.name = project_obj.metadata['name']
-		if 'artist' in project_obj.metadata: convproj_obj.metadata.author = project_obj.metadata['artist']
-		if 'genre' in project_obj.metadata: convproj_obj.metadata.genre = project_obj.metadata['genre']
-		if 'label' in project_obj.metadata: convproj_obj.metadata.comment_text = project_obj.metadata['label']
-
 		#for trackid, track_obj in convproj_obj.track__iter():
 		#	print(track_obj.plugslots.slots_audio)
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('arranger_from_scene')
-		convproj_obj.params.add('bpm', project_obj.bpm, 'float')

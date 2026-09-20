@@ -560,29 +560,8 @@ class input_tracktion_edit(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import tracktion_edit as proj_tracktion_edit
 		from objects.file_proj import tracktion_project as proj_tracktion_project
-		global cvpj_l
 
-		convproj_obj.fxtype = 'groupreturn'
-		convproj_obj.type = 'r'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_stretch = ['rate', 'warp']
-		traits_obj.auto_types = ['nopl_points']
-		traits_obj.placement_cut = True
-		traits_obj.placement_loop = ['loop', 'loop_off', 'loop_adv']
-		traits_obj.plugin_ext = ['vst2', 'vst3']
-		traits_obj.plugin_ext_arch = [64]
-		traits_obj.plugin_ext_platforms = ['win', 'unix']
-		traits_obj.set_time_seconds(True)
-		traits_obj.time_seconds_tempo = False
-		traits_obj.time_seconds_timesig = False
-		traits_obj.track_hybrid = True
-		traits_obj.track_arranger = True
-
-		convproj_obj.set_timings(4.0)
-
-		globalstore.datapack.load('waveform', './data/datapack/app/waveform.xml')
-
+		# ---------- file load ----------
 		samples = {}
 		videos = {}
 		project_obj = proj_tracktion_edit.tracktion_edit()
@@ -635,18 +614,42 @@ class input_tracktion_edit(plugins.base):
 			except:
 				pass
 
-
 		if not software_mode:
 			logger_input.error('Not a Valid File.')
 			exit()
 
+		globalstore.datapack.load('waveform', './data/datapack/app/waveform.xml')
+
+		# ---------- convproj init ----------
+		convproj_obj.fxtype = 'groupreturn'
+		convproj_obj.type = 'r'
+
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_stretch = ['rate', 'warp']
+		traits_obj.auto_types = ['nopl_points']
+		traits_obj.placement_cut = True
+		traits_obj.placement_loop = ['loop', 'loop_off', 'loop_adv']
+		traits_obj.plugin_ext = ['vst2', 'vst3']
+		traits_obj.plugin_ext_arch = [64]
+		traits_obj.plugin_ext_platforms = ['win', 'unix']
+		traits_obj.set_time_seconds(True)
+		traits_obj.time_seconds_tempo = False
+		traits_obj.time_seconds_timesig = False
+		traits_obj.track_hybrid = True
+		traits_obj.track_arranger = True
+
+		convproj_obj.set_timings(4.0)
+
+		# ---------- samples ----------
 		for sid, spath in samples.items(): 
 			sampleref_obj = convproj_obj.sampleref__add(sid, spath, None)
 
+		# ---------- videos ----------
 		for sid, spath in videos.items(): 
 			videoref_obj = convproj_obj.videoref__add(sid, spath, None)
 			videoref_obj.search_local(dawvert_intent.input_folder)
 
+		# ---------- tempo auto ----------
 		if project_obj.temposequence.tempo:
 			pos, tempo = next(iter(project_obj.temposequence.tempo.items()))
 			convproj_obj.params.add('bpm', tempo[0], 'float')
@@ -662,6 +665,7 @@ class input_tracktion_edit(plugins.base):
 		#	for pos, timesig in project_obj.temposequence.timesig.items():
 		#		convproj_obj.timesig_auto.add_point(pos*4, timesig)
 
+		# ---------- arranger track ----------
 		for arrclip in project_obj.arrangertrack.clips:
 			timemarker_obj = convproj_obj.arranger.add()
 			timemarker_obj.time.set_posdur(arrclip.start, arrclip.length)
@@ -669,6 +673,7 @@ class input_tracktion_edit(plugins.base):
 			timemarker_obj.visual.name = str(arrclip.name)
 			do_color(timemarker_obj.visual, arrclip.colour)
 
+		# ---------- marker track ----------
 		for markclip in project_obj.markertrack.clips:
 			timemarker_obj = convproj_obj.timemarker__add()
 			#if not markclip.sync:
@@ -677,9 +682,11 @@ class input_tracktion_edit(plugins.base):
 			timemarker_obj.visual.name = str(markclip.name)
 			do_color(timemarker_obj.visual, markclip.colour)
 
+		# ---------- master plugin ----------
 		for wf_plugin in project_obj.masterplugins:
 			do_plugin(convproj_obj, wf_plugin, convproj_obj.track_master, software_mode)
 
+		# ---------- transport ----------
 		transport_obj = project_obj.transport
 
 		convproj_obj.transport.loop_active = bool(transport_obj.looping)
@@ -689,6 +696,7 @@ class input_tracktion_edit(plugins.base):
 		convproj_obj.transport.current_pos = transport_obj.position
 		convproj_obj.transport.is_seconds = True
 		
+		# ---------- tracks ----------
 		tracknum = 0
 		counter_track = counter.counter(1000, '')
 
@@ -708,6 +716,7 @@ class input_tracktion_edit(plugins.base):
 		valda_returns = []
 		valda_returns_usednums = []
 
+		# ---------- sends/returns ----------
 		for busNum, trackid, track_obj in gr_returns:
 			if trackid in valda_returns:
 				store_obj.gr_valid = False

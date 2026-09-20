@@ -720,6 +720,16 @@ class input_lmms(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import lmms as proj_lmms
 
+		# ---------- file load ----------
+
+		project_obj = proj_lmms.lmms_project()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		head_obj = project_obj.head
+		song_obj = project_obj.song
+
+		# --------------------
 		global autoid_assoc
 		global bbpld
 
@@ -729,8 +739,10 @@ class input_lmms(plugins.base):
 
 		globalstore.datapack.load('lmms', './data/datapack/app/lmms.xml')
 
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'r'
+		convproj_obj.set_timings(48)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav','flac','ogg','mp3']
@@ -742,36 +754,34 @@ class input_lmms(plugins.base):
 		traits_obj.plugin_ext_platforms = ['win', 'unix']
 		traits_obj.track_lanes = True
 
-		convproj_obj.set_timings(48)
-
-		project_obj = proj_lmms.lmms_project()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		head_obj = project_obj.head
-		song_obj = project_obj.song
-
-		add_window_data(song_obj.trackcontainer.window, convproj_obj, 'main', 'tracklist')
-
+		# ---------- transport ----------
 		timesig_numerator = int(doparam(head_obj.timesig_numerator, 'float', None, None))
 		timesig_denominator = int(doparam(head_obj.timesig_denominator, 'float', None, None))
-		cvpj_vol = float(doparam(head_obj.mastervol, 'float', [0, 0.01], ['main', 'vol']))
-		cvpj_pitch = doparam(head_obj.masterpitch, 'float', None, ['main', 'pitch'])
-		cvpj_bpm = doparam(head_obj.bpm, 'float', None, ['main', 'bpm'])
-
 		self.timesig = [timesig_numerator, timesig_denominator]
+		cvpj_bpm = doparam(head_obj.bpm, 'float', None, ['main', 'bpm'])
 		convproj_obj.params.add('bpm', cvpj_bpm, 'float')
+
+		convproj_obj.transport.loop_active = bool(int(song_obj.timeline.lpstate))
+		convproj_obj.transport.loop_start = song_obj.timeline.lp0pos
+		convproj_obj.transport.loop_end = song_obj.timeline.lp1pos
+		
+		# ---------- master params ----------
+		cvpj_pitch = doparam(head_obj.masterpitch, 'float', None, ['main', 'pitch'])
+		cvpj_vol = float(doparam(head_obj.mastervol, 'float', [0, 0.01], ['main', 'vol']))
 		convproj_obj.params.add('vol', cvpj_vol, 'float')
 		convproj_obj.params.add('pitch', cvpj_pitch, 'float')
 
+		# ---------- metadata ----------
 		if song_obj.projectnotes.text:
 			if len(song_obj.projectnotes.text): 
 				convproj_obj.metadata.comment_text = song_obj.projectnotes.text
 				convproj_obj.metadata.comment_datatype = 'html'
 				add_window_data(song_obj.projectnotes.window, convproj_obj, 'main', 'project_notes')
 
+		# ---------- tracks ----------
 		lmms_decode_tracks(convproj_obj, song_obj.trackcontainer.tracks, False, 'LMMS_Track')
 
+		# ---------- fx channels ----------
 		for channum, lmms_fxchannel in song_obj.fxmixer.fxchannels.items():
 			chan_vol = doparam(lmms_fxchannel.volume, 'float', None, ['fxmixer', str(channum), 'vol'])
 
@@ -797,19 +807,16 @@ class input_lmms(plugins.base):
 					fx_amount = doparam(amount_obj, 'float', None, ['send', send_id, 'amount'])
 					fxchannel_obj.sends.add(target_id, send_id, fx_amount)
 
+		# ---------- automation ----------
 		autoid_assoc.output(convproj_obj)
 
+		# ---------- window data ----------
+		add_window_data(song_obj.trackcontainer.window, convproj_obj, 'main', 'tracklist')
 		add_window_data(song_obj.fxmixer.window, convproj_obj, 'main', 'fxmixer')
 		add_window_data(song_obj.ControllerRackView, convproj_obj, 'main', 'controller_rack_view')
 		add_window_data(song_obj.pianoroll, convproj_obj, 'main', 'piano_roll')
 		add_window_data(song_obj.automationeditor, convproj_obj, 'main', 'automation_editor')
 		add_window_data(song_obj.projectnotes.window, convproj_obj, 'main', 'project_notes')
-
-		convproj_obj.transport.loop_active = bool(int(song_obj.timeline.lpstate))
-		convproj_obj.transport.loop_start = song_obj.timeline.lp0pos
-		convproj_obj.transport.loop_end = song_obj.timeline.lp1pos
-		
-		#convproj_obj.do_actions.append('force_addloop')
 
 def get_xml_tree(path):
 	with open(path, 'rb') as file:

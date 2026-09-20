@@ -499,6 +499,14 @@ class input_zenbeats(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import zenbeats as proj_zenbeats
 
+		project_obj = proj_zenbeats.zenbeats_song()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		globalstore.datapack.load('zenbeats', './data/datapack/app/zenbeats.xml')
+		colordata = colors.colorset.from_datapack('zenbeats', 'global', 'main')
+
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.type = 'r'
 
@@ -513,13 +521,7 @@ class input_zenbeats(plugins.base):
 
 		convproj_obj.set_timings(1.0)
 
-		globalstore.datapack.load('zenbeats', './data/datapack/app/zenbeats.xml')
-		colordata = colors.colorset.from_datapack('zenbeats', 'global', 'main')
-
-		project_obj = proj_zenbeats.zenbeats_song()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
+		# ---------- transport ----------
 		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
 		convproj_obj.timesig = [project_obj.time_signature_numerator, project_obj.time_signature_denominator]
 
@@ -528,6 +530,7 @@ class input_zenbeats(plugins.base):
 		convproj_obj.transport.loop_end = project_obj.loop_end
 		convproj_obj.transport.current_pos = project_obj.play_start_marker
 
+		# ---------- tracks init ----------
 		added_samples = []
 
 		master_id = None
@@ -555,6 +558,7 @@ class input_zenbeats(plugins.base):
 				do_rack(convproj_obj, project_obj, convproj_obj.track_master, zb_track, ['master'], dawvert_intent)
 				do_visual(convproj_obj.track_master.visual, zb_track.visual, zb_track.color_index, colordata)
 
+		# ---------- tracks ----------
 		for zb_track in project_obj.tracks:
 			master_id = zb_track.sub_track_master_track_uid
 			if master_id in track_groups or master_id==None:
@@ -641,5 +645,3 @@ class input_zenbeats(plugins.base):
 
 				#else:
 				#	print(zb_track.type, zb_track.visual.name)
-
-		#exit()

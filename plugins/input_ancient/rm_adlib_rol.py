@@ -31,21 +31,15 @@ class input_adlib_rol(plugins.base):
 		from objects.file_proj_adlib import rol as proj_adlib_rol
 		from objects.file import adlib_bnk
 
-		convproj_obj.type = 'rm'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.auto_types = ['nopl_ticks']
-		traits_obj.track_nopl = True
-
 		project_obj = proj_adlib_rol.adlib_rol_project()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
 		globalstore.datapack.load('adlib_rol', './data/datapack/app/adlib_rol.xml')
 
+		# ---------- bank file ----------
 		native_insts = {}
 		bank_file = dawvert_intent.input_get_param('bank_file', '')
-
 		if bank_file:
 			adlibbnk_obj = adlib_bnk.bnk_file()
 			adlibbnk_obj.read_file(bank_file)
@@ -54,15 +48,26 @@ class input_adlib_rol(plugins.base):
 					instname = adlibbnk_obj.names[instnum].replace(" ", "").upper()
 					native_insts[instname] = adlibbnk_obj.get_inst_index(instnum)
 
+		# ---------- convproj params ----------
+		convproj_obj.type = 'rm'
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
 		convproj_obj.set_timings(project_obj.tickBeat)
+
+		traits_obj = convproj_obj.traits
+		traits_obj.auto_types = ['nopl_ticks']
+		traits_obj.track_nopl = True
+
+		# ---------- transport ----------
+		convproj_obj.timesig = [project_obj.beatMeasure, 4]
 
 		bpm = project_obj.track_tempo.tempo
 		convproj_obj.params.add('bpm', bpm, 'float')
 		for pos, bpmmod in project_obj.track_tempo.events: 
 			convproj_obj.automation.add_autotick(['main', 'bpm'], 'float', pos, bpmmod*bpm)
 
+		# ---------- tracks ----------
 		used_voices = []
-
 		for tracknum, rol_track in enumerate(project_obj.tracks):
 			cvpj_trackid = 'track'+str(tracknum+1)
 			track_obj = convproj_obj.track__add(cvpj_trackid, 'instruments', 0, False)
@@ -84,6 +89,7 @@ class input_adlib_rol(plugins.base):
 			for pos, val in rol_track.volume.events: convproj_obj.automation.add_autotick(['track', cvpj_trackid, 'vol'], 'float', pos, val)
 			for pos, val in rol_track.pitch.events: convproj_obj.automation.add_autotick(['track', cvpj_trackid, 'pitch'], 'float', pos, val)
 
+		# ---------- insts ----------
 		for used_voice in used_voices:
 			instname_upper = used_voice.upper()
 			inst_obj = convproj_obj.instrument__add(instname_upper)
@@ -99,7 +105,3 @@ class input_adlib_rol(plugins.base):
 				plugin_obj.midi.from_datapack('adlib_rol', 'inst', instname_upper)
 				plugin_obj.midi.to_visual(inst_obj.visual, False)
 			inst_obj.plugslots.set_synth(instname_upper)
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')
-		convproj_obj.timesig = [project_obj.beatMeasure, 4]

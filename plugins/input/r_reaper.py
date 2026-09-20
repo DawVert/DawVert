@@ -184,9 +184,13 @@ class input_reaper(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		rpp_project = project_obj.project
+
 		globalstore.datapack.load('reaper', './data/datapack/app/reaper.xml')
 
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
+		convproj_obj.set_timings(4.0)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav','flac','ogg','mp3']
@@ -202,14 +206,12 @@ class input_reaper(plugins.base):
 		traits_obj.track_hybrid = True
 		traits_obj.notepl_pitch = True
 
-		convproj_obj.set_timings(4.0)
-
-		rpp_project = project_obj.project
-
+		# ---------- metadata ----------
 		convproj_obj.metadata.name = rpp_project.title.get()
 		convproj_obj.metadata.author = rpp_project.author.get()
 		convproj_obj.metadata.comment_text = '\n'.join(rpp_project.notes_data)
 
+		# ---------- transport ----------
 		bpm = rpp_project.tempo['tempo']
 		convproj_obj.params.add('bpm', bpm, 'float')
 		tempomul = bpm/120
@@ -219,8 +221,17 @@ class input_reaper(plugins.base):
 		loop_start = rpp_project.selection['start']
 		loop_size = rpp_project.selection['end']
 
+		if loop_active and loop_size:
+			convproj_obj.transport.loop_active = loop_active
+			convproj_obj.transport.loop_start = loop_start
+			convproj_obj.transport.loop_end = loop_size
+
+		convproj_obj.transport.is_seconds = True
+		convproj_obj.transport.current_pos = rpp_project.cursor.get()
+
 		convproj_obj.freq = rpp_project.samplerate.get()
 
+		# ---------- pooled env ----------
 		pooledenvs = dict([[x.id.get(), x] for x in rpp_project.pooledenvs])
 
 		tempoenvex = rpp_project.tempoenvex
@@ -231,15 +242,7 @@ class input_reaper(plugins.base):
 				if len(point)>6:
 					if point[2]: autopoint_obj['tension'] = -point[6]
 
-		convproj_obj.transport.is_seconds = True
-
-		convproj_obj.transport.current_pos = rpp_project.cursor.get()
-
-		if loop_active and loop_size:
-			convproj_obj.transport.loop_active = loop_active
-			convproj_obj.transport.loop_start = loop_start
-			convproj_obj.transport.loop_end = loop_size
-
+		# ---------- markers/regions ----------
 		markerdatas = {}
 		regiondatas = {}
 
@@ -263,6 +266,7 @@ class input_reaper(plugins.base):
 				if marker[1]: timemarker_obj.visual.name = marker[1]
 				if marker[3]: timemarker_obj.visual.color.set_int(reaper_color_to_cvpj_color(marker[3], True))
 
+		# ---------- master track ----------
 		track_obj = convproj_obj.track_master
 		track_obj.params.add('vol', rpp_project.master_volume['vol'], 'float')
 		track_obj.params.add('pan', rpp_project.master_volume['pan'], 'float')
@@ -274,6 +278,7 @@ class input_reaper(plugins.base):
 			track_obj.params.add('splitpan_left', rpp_project.master_volume['left'], 'float')
 			track_obj.params.add('splitpan_right', rpp_project.master_volume['right'], 'float')
 
+		# ---------- tracks ----------
 		used_trackids = []
 		track_cvpjids = []
 		track_cvpjdata = []
@@ -804,6 +809,7 @@ class input_reaper(plugins.base):
 
 			track_obj.placements.sort()
 
+		# ---------- groups/routes ----------
 		groups_valid = True
 		groups_returns = {}
 		sends_data = {}
@@ -831,7 +837,6 @@ class input_reaper(plugins.base):
 				else:
 					groups_valid = False
 					#print('groups_valid invalid: items in return,',rpp_track_obj.name.get())
-
 
 		if groups_valid:
 			convproj_obj.fxtype = 'groupreturn'
@@ -892,7 +897,6 @@ class input_reaper(plugins.base):
 
 				if bus_state == 2:
 					cur_groups = cur_groups[:bus_depth]
-
 		else:
 			convproj_obj.fxtype = 'route'
 	
@@ -911,4 +915,5 @@ class input_reaper(plugins.base):
 					send_obj = sends_obj.add(to_track, None, rpp_auxrecv_obj['vol'])
 					send_obj.params.add('pan', rpp_auxrecv_obj['pan'], 'float')
 
+		# ---------- automation ----------
 		convproj_obj.automation.set_persist_all(False)

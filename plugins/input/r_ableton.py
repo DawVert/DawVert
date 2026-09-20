@@ -389,16 +389,29 @@ class input_ableton(plugins.base):
 		from objects.file_proj import ableton as proj_ableton
 		from objects import auto_id
 
+		globalstore.datapack.load('ableton', './data/datapack/app/ableton.xml')
+		colordata = colors.colorset.from_datapack('ableton', 'track', 'main')
+
+		project_obj = proj_ableton.ableton_liveset()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
 		global autoid_assoc
 		global timesigid
 		global vector_shapesdata
 		
 		vector_shapesdata = None
 
-		xmlstring = ""
+		autoid_assoc = auto_id.convproj2autoid(4)
 
+		# ---------- convproj params ----------
+		DEBUG_DISABLE_PLACEMENTS = dawvert_intent.input_get_param('no_placements', False)
+		DEBUG_DISABLE_SAMPLER = dawvert_intent.input_get_param('no_sampler', False)
+
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.type = 'r'
+		convproj_obj.set_timings(4.0)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav','flac','ogg','mp3']
@@ -410,34 +423,19 @@ class input_ableton(plugins.base):
 		traits_obj.plugin_ext_arch = [32, 64]
 		traits_obj.plugin_ext_platforms = ['win', 'unix']
 
-		convproj_obj.set_timings(4.0)
-		autoid_assoc = auto_id.convproj2autoid(4)
-
-		globalstore.datapack.load('ableton', './data/datapack/app/ableton.xml')
-		colordata = colors.colorset.from_datapack('ableton', 'track', 'main')
-
-		project_obj = proj_ableton.ableton_liveset()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		DEBUG_DISABLE_PLACEMENTS = dawvert_intent.input_get_param('no_placements', False)
-		DEBUG_DISABLE_SAMPLER = dawvert_intent.input_get_param('no_sampler', False)
-
+		# ---------- master track ----------
 		mastermixer = project_obj.MasterTrack.DeviceChain.Mixer
-
 		mas_track_vol = doparam(mastermixer.Volume, 'Volume', 'float', 0, ['master', 'vol'], None)
 		mas_track_pan = doparam(mastermixer.Pan, 'Pan', 'float', 0, ['master', 'pan'], None)
-		tempo = doparam(mastermixer.Tempo, 'Tempo', 'float', 120, ['main', 'bpm'], None)
-		tempomul = tempo/120
 
-		timesigid = int(project_obj.MasterTrack.DeviceChain.Mixer.TimeSignature.AutomationTarget.id)
-
+		# ---------- markers ----------
 		for _, loc in project_obj.Locators.items():
 			timemarker_obj = convproj_obj.timemarker__add()
 			timemarker_obj.visual.name = loc.Name
 			timemarker_obj.time.set_pos(loc.Time)
 			if loc.Annotation: timemarker_obj.visual.comment = loc.Annotation
 
+		# ---------- transport ----------
 		transport_obj = project_obj.Transport
 
 		convproj_obj.transport.loop_active = bool(transport_obj.LoopOn)
@@ -445,6 +443,12 @@ class input_ableton(plugins.base):
 		convproj_obj.transport.loop_end = transport_obj.LoopLength
 		convproj_obj.transport.current_pos = transport_obj.CurrentTime
 
+		tempo = doparam(mastermixer.Tempo, 'Tempo', 'float', 120, ['main', 'bpm'], None)
+		tempomul = tempo/120
+
+		timesigid = int(project_obj.MasterTrack.DeviceChain.Mixer.TimeSignature.AutomationTarget.id)
+
+		# ---------- master track ----------
 		do_automation(convproj_obj, project_obj.MasterTrack.AutomationEnvelopes)
 
 		convproj_obj.track_master.visual.name = project_obj.MasterTrack.Name.EffectiveName
@@ -466,8 +470,8 @@ class input_ableton(plugins.base):
 				"HidLoopStart", "HidLoopEnd"]:
 				print(  str(x)[0:11].ljust(12), end=' ' )
 			print()
-
-							
+		
+		# ---------- tracks ----------			
 		for tracktype, als_track in project_obj.Tracks:
 			track_mixer = als_track.DeviceChain.Mixer
 

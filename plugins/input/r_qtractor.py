@@ -60,8 +60,18 @@ class input_midi(plugins.base):
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import qtractor as proj_qtractor
+
+		project_obj = proj_qtractor.qtractor_project()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		# ---------- convproj params ----------
+		swap_bg_fg = dawvert_intent.input_get_param('swap_bg_fg', False)
+
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.type = 'r'
+		convproj_obj.set_timings(4.0)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']
@@ -69,14 +79,7 @@ class input_midi(plugins.base):
 		traits_obj.notes_midi = True
 		traits_obj.set_time_seconds(True)
 
-		convproj_obj.set_timings(4.0)
-
-		project_obj = proj_qtractor.qtractor_project()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		swap_bg_fg = dawvert_intent.input_get_param('swap_bg_fg', False)
-
+		# ---------- transport ----------
 		ppq = project_obj.properties.ticks_per_beat
 		tempo = project_obj.properties.tempo
 		tempomul = tempo/120
@@ -91,6 +94,7 @@ class input_midi(plugins.base):
 		#for audioid, filename in project_obj.files.audio_list.items():
 		#	sampleref_obj = convproj_obj.sampleref__add(audioid, filename, None)
 
+		# ---------- devices ----------
 		for device_obj in project_obj.devices:
 			if isinstance(device_obj, proj_qtractor.qtractor_audio_engine):
 				audio_bus = device_obj.audio_bus
@@ -99,6 +103,7 @@ class input_midi(plugins.base):
 				track_obj.params.add('pan', audio_bus.output_panning, 'float')
 				do_plugins(convproj_obj, audio_bus.output_plugins, track_obj)
 
+		# ---------- tracks ----------
 		for tracknum, qtrack in enumerate(project_obj.tracks):
 			cvpj_trackid = str(tracknum)
 

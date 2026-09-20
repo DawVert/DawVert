@@ -65,7 +65,13 @@ class input_zmaestro(plugins.base):
 
 		globalstore.datapack.load('z_maestro', './data/datapack/app/z_maestro.xml')
 
+		project_obj = proj_z_maestro.zmaestro_song()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
+		convproj_obj.set_timings(0.25)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_stretch = ['rate']
@@ -73,26 +79,26 @@ class input_zmaestro(plugins.base):
 		traits_obj.auto_types = ['nopl_points']
 		traits_obj.placement_loop = ['loop']
 
-		convproj_obj.set_timings(0.25)
-
-		project_obj = proj_z_maestro.zmaestro_song()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
+		# ---------- metadata ----------
 		convproj_obj.metadata.name = project_obj.name
 		convproj_obj.metadata.author = project_obj.author
 		convproj_obj.metadata.comment_text = project_obj.comments
+
+		# ---------- transport ----------
 		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
 		convproj_obj.transport.loop_start = project_obj.loopstart
 		convproj_obj.transport.loop_end = project_obj.loopstart+project_obj.looplength
 		convproj_obj.transport.loop_active = project_obj.loopenabled
 
+		# ---------- key marker ----------
 		if project_obj.key in keynums:
 			timemarker_obj = convproj_obj.timemarker__add_key(keynums[project_obj.key])
 
+		# ---------- automation ----------
 		do_automation(convproj_obj, '', 'vol', project_obj.volumetimeline, project_obj.usevolumetimeline)
 		do_automation(convproj_obj, '', 'pan', project_obj.pantimeline, project_obj.usepantimeline)
 
+		# ---------- tracks ----------
 		is_any_headphones = any([x[1].headphones for x in project_obj.tracks])
 
 		for tracknum, md in enumerate(project_obj.tracks):

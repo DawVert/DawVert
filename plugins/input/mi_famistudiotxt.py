@@ -314,14 +314,10 @@ class input_famistudio(plugins.base):
 		global convproj_obj
 		convproj_obj = i_convproj_obj
 
-		convproj_obj.fxtype = 'rack'
-		convproj_obj.type = 'mi'
+		project_obj = proj_famistudiotxt.famistudiotxt_project()
 
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_filetypes = ['wav']
-		traits_obj.auto_types = ['nopl_points', 'pl_points']
-
-		convproj_obj.set_timings(4.0)
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
 		globalstore.datapack.load('famistudio', './data/datapack/app/famistudio.xml')
 		samplefolder = dawvert_intent.path_samples['extracted']
@@ -329,23 +325,34 @@ class input_famistudio(plugins.base):
 		defualt_pattern_color = get_gcolor('famistudio', 'defualt', 'pattern')
 		defualt_track_color = get_gcolor('famistudio', 'defualt', 'track')
 
-		project_obj = proj_famistudiotxt.famistudiotxt_project()
-
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
 		fst_currentsong = project_obj.Songs[dawvert_intent.songnum]
 
-		if fst_currentsong.Color: convproj_obj.track_master.visual.color.set_hex(fst_currentsong.Color)
-		if fst_currentsong.Name: convproj_obj.metadata.name = fst_currentsong.Name
+		# ---------- convproj init ----------
+		convproj_obj.fxtype = 'rack'
+		convproj_obj.type = 'mi'
+		convproj_obj.set_timings(4.0)
+		convproj_obj.do_actions.append('do_addloop')
 
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_filetypes = ['wav']
+		traits_obj.auto_types = ['nopl_points', 'pl_points']
+
+		# --------------------
 		NoteLength = fst_currentsong.NoteLength
 
 		dpcm_sel = dawvert_intent.input_get_param('dpcm_freq', 'ntsc')
 		dpcm_freqlist = dpcm_rate_arr_ntsc if dpcm_sel=='ntsc' else dpcm_rate_arr_pal
 
-		# ------------------------------------------ tempoblocks ------------------------------------------
+		# ---------- metadata ----------
+		if not convproj_obj.metadata.name:
+			if project_obj.Name: convproj_obj.metadata.name = project_obj.Name
+		if project_obj.Author: convproj_obj.metadata.author = project_obj.Author
+		if project_obj.Copyright: convproj_obj.metadata.copyright = project_obj.Copyright
 
+		if fst_currentsong.Color: convproj_obj.track_master.visual.color.set_hex(fst_currentsong.Color)
+		if fst_currentsong.Name: convproj_obj.metadata.name = fst_currentsong.Name
+
+		# ---------- tempoblocks ----------
 		tempoblocks = regions.posdurblocks(fst_currentsong.Length, fst_currentsong.PatternLength, fst_currentsong.get_bpm())
 
 		for d in fst_currentsong.PatternCustomSettings: 
@@ -358,8 +365,7 @@ class input_famistudio(plugins.base):
 		tempoblocks.proc()
 		tempoblocks.to_cvpj(convproj_obj)
 
-		# ------------------------------------------ FX ------------------------------------------
-
+		# ---------- fx ----------
 		chantypes = [fst_channel.Type for fst_channel in fst_currentsong.Channels]
 		for n, x in enumerate(chantypes):
 			fxchannel_obj = convproj_obj.fx__chan__add(n+1)
@@ -404,8 +410,7 @@ class input_famistudio(plugins.base):
 				plugin_obj.filter.freq = TrebleRolloffHz+6000
 				fxchannel_obj.plugslots.slots_audio.append(fx_id)
 
-		# ------------------------------------------ instruments ------------------------------------------
-
+		# ---------- instruments ----------
 		instnames = dict([[x.Name, x] for x in project_obj.Instruments])
 
 		used_instgroups = []
@@ -455,8 +460,7 @@ class input_famistudio(plugins.base):
 				if fmi:
 					create_inst(convproj_obj, xtramath.from_db(outvol), wavetype, fmi, fxchan)
 
-		# ------------------------------------------ song ------------------------------------------
-
+		# ---------- song ----------
 		for channum, fst_channel in enumerate(fst_currentsong.Channels):
 			fxchan = channum+1
 			playlistnum = str(fxchan)
@@ -511,10 +515,3 @@ class input_famistudio(plugins.base):
 
 				if patid in fst_channel.Patterns:
 					make_auto(convproj_obj, fst_channel.Patterns[patid], NoteLength, tempoblocks[pattime]['notemul'], time_obj.get_pos(), time_obj.get_dur(), fxchan)
-
-		if not convproj_obj.metadata.name:
-			if project_obj.Name: convproj_obj.metadata.name = project_obj.Name
-		if project_obj.Author: convproj_obj.metadata.author = project_obj.Author
-		if project_obj.Copyright: convproj_obj.metadata.copyright = project_obj.Copyright
-
-		convproj_obj.do_actions.append('do_addloop')

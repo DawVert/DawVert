@@ -423,33 +423,7 @@ class input_dawproject(plugins.base):
 		from objects.file_proj import dawproject as proj_dawproject
 		from objects import auto_id
 
-		convproj_obj.type = 'r'
-		convproj_obj.fxtype = 'groupreturn'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_filetypes = ['wav', 'mp3', 'ogg', 'flac']
-		traits_obj.audio_nested = True
-		traits_obj.audio_stretch = ['warp']
-		traits_obj.auto_types = ['nopl_points']
-		traits_obj.placement_cut = True
-		traits_obj.placement_loop = ['loop', 'loop_eq', 'loop_off', 'loop_adv', 'loop_adv_off']
-		traits_obj.plugin_ext = ['vst2', 'vst3', 'clap']
-		traits_obj.plugin_ext_arch = [32, 64]
-		traits_obj.plugin_ext_platforms = ['win', 'unix']
-		traits_obj.track_hybrid = True
-
-		convproj_obj.set_timings(1.0)
-
-		global autoid_assoc
-		global samplefolder
-		global trackdata
-		global zip_data
-
-		trackdata = {}
-
-		autoid_assoc = auto_id.convproj2autoid(48)
-
-		samplefolder = dawvert_intent.path_samples['extracted']
+		# ---------- file load ----------
 
 		project_obj = proj_dawproject.dawproject_song()
 		try:
@@ -469,13 +443,59 @@ class input_dawproject(plugins.base):
 
 		project_obj.load_from_data(xmldata.decode())
 
+		# --------------------
+		global autoid_assoc
+		global samplefolder
+		global trackdata
+		global zip_data
+
+		trackdata = {}
+		autoid_assoc = auto_id.convproj2autoid(48)
+		samplefolder = dawvert_intent.path_samples['extracted']
+
+		# ---------- convproj init ----------
+		convproj_obj.type = 'r'
+		convproj_obj.fxtype = 'groupreturn'
+		convproj_obj.set_timings(1.0)
+
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_filetypes = ['wav', 'mp3', 'ogg', 'flac']
+		traits_obj.audio_nested = True
+		traits_obj.audio_stretch = ['warp']
+		traits_obj.auto_types = ['nopl_points']
+		traits_obj.placement_cut = True
+		traits_obj.placement_loop = ['loop', 'loop_eq', 'loop_off', 'loop_adv', 'loop_adv_off']
+		traits_obj.plugin_ext = ['vst2', 'vst3', 'clap']
+		traits_obj.plugin_ext_arch = [32, 64]
+		traits_obj.plugin_ext_platforms = ['win', 'unix']
+		traits_obj.track_hybrid = True
+
+		# ---------- metadata ----------
+		dp_obj = project_obj.metadata
+		meta_obj = convproj_obj.metadata
+
+		if 'Title' in dp_obj: meta_obj.name = dp_obj['Title']
+		if 'Artist' in dp_obj: meta_obj.author = dp_obj['Artist']
+		if 'Album' in dp_obj: meta_obj.album = dp_obj['Album']
+		if 'OriginalArtist' in dp_obj: meta_obj.original_author = dp_obj['OriginalArtist']
+		if 'Songwriter' in dp_obj: meta_obj.songwriter = dp_obj['Songwriter']
+		if 'Producer' in dp_obj: meta_obj.producer = dp_obj['Producer']
+		if 'Year' in dp_obj: meta_obj.t_year = int(dp_obj['Year'])
+		if 'Genre' in dp_obj: meta_obj.genre = dp_obj['Genre']
+		if 'Copyright' in dp_obj: meta_obj.copyright = dp_obj['Copyright']
+		if 'Comment' in dp_obj: meta_obj.comment_text = dp_obj['Comment']
+		
+		# ---------- transport ----------
 		dp_timesig = project_obj.transport.TimeSignature
 		convproj_obj.timesig[0] = int(dp_timesig.numerator)
 		convproj_obj.timesig[1] = int(dp_timesig.denominator)
 
 		do_param(convproj_obj, convproj_obj.params, project_obj.transport.Tempo, 'bpm', None, 'float', ['main', 'bpm'])
+
+		# ---------- tracks ----------
 		do_tracks(convproj_obj, project_obj.tracks, None)
 
+		# ---------- automation ----------
 		for lane in project_obj.arrangement.lanes.lanes:
 			if lane.track in trackdata:
 				track_obj = trackdata[lane.track]
@@ -513,17 +533,3 @@ class input_dawproject(plugins.base):
 		autoid_assoc.output(convproj_obj)
 
 		convproj_obj.automation.attempt_after()
-
-		dp_obj = project_obj.metadata
-		meta_obj = convproj_obj.metadata
-
-		if 'Title' in dp_obj: meta_obj.name = dp_obj['Title']
-		if 'Artist' in dp_obj: meta_obj.author = dp_obj['Artist']
-		if 'Album' in dp_obj: meta_obj.album = dp_obj['Album']
-		if 'OriginalArtist' in dp_obj: meta_obj.original_author = dp_obj['OriginalArtist']
-		if 'Songwriter' in dp_obj: meta_obj.songwriter = dp_obj['Songwriter']
-		if 'Producer' in dp_obj: meta_obj.producer = dp_obj['Producer']
-		if 'Year' in dp_obj: meta_obj.t_year = int(dp_obj['Year'])
-		if 'Genre' in dp_obj: meta_obj.genre = dp_obj['Genre']
-		if 'Copyright' in dp_obj: meta_obj.copyright = dp_obj['Copyright']
-		if 'Comment' in dp_obj: meta_obj.comment_text = dp_obj['Comment']

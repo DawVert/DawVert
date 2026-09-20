@@ -47,7 +47,17 @@ class input_magda(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import magda as proj_magda
 
+
+		project_obj = proj_magda.magda_session()
+
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		projprop = project_obj.project
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
+		convproj_obj.set_timings(1.0)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav','flac','ogg','mp3']
@@ -61,15 +71,7 @@ class input_magda(plugins.base):
 		traits_obj.time_seconds = False
 		traits_obj.track_hybrid = True
 
-		convproj_obj.set_timings(1.0)
-
-		project_obj = proj_magda.magda_session()
-
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		projprop = project_obj.project
-
+		# ---------- transport ----------
 		tempo = projprop.tempo
 		timesig = projprop.timeSignature
 		convproj_obj.metadata.name = projprop.name
@@ -81,6 +83,7 @@ class input_magda(plugins.base):
 		convproj_obj.transport.loop_start = loopd.startBeats
 		convproj_obj.transport.loop_end = loopd.endBeats
 
+		# ---------- tracks ----------
 		sends_all = [] # send > [src, target, level, tomaster, sendautoid, native, prefader]
 		send_nums = []
 		sends_nomaster = []
@@ -118,6 +121,7 @@ class input_magda(plugins.base):
 				}
 				sends_all.append(outsend)
 
+		# ---------- sends ----------
 		for x in sends_all:
 			x['to_send'] = x['target'] in send_nums
 			if (x['to_send']==True) and (x['native']==False): x['is_standard'] = True
@@ -196,6 +200,7 @@ class input_magda(plugins.base):
 				for send in senddata:
 					send_obj = sends_obj.add(str(send['target']), send['sendautoid'], send['level'])
 
+		# ---------- clips ----------
 		for x in project_obj.clips:
 			trackid = x.trackId
 			if trackid in numassoc_norm:
@@ -289,6 +294,7 @@ class input_magda(plugins.base):
 										warp_obj.points__add_beatsec(warpTime*2, sourcetime*(120/tempo))
 									warp_obj.fix__remove_dupe_sec()
 
+		# ---------- automation ----------
 		for x in project_obj.automation.lanes:
 			target = x.target
 			targtype = target.type

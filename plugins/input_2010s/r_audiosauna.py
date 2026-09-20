@@ -60,35 +60,39 @@ class input_audiosanua(plugins.base):
 		from objects.file_proj_past import audiosauna as proj_audiosauna
 		from objects.convproj import fileref
 
-		global cvpj_l
+		project_obj = proj_audiosauna.audiosauna_song()
+		if dawvert_intent.input_mode == 'file':
+			zip_data = project_obj.load_from_file(dawvert_intent.input_file)
+		samplefolder = dawvert_intent.path_samples['extracted']
 
+		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'audiosauna', ['audiosauna'])
+		globalstore.datapack.load('audiosauna', './data/datapack/app/audiosauna.xml')
+		colordata = colors.colorset.from_datapack('audiosauna', 'track', 'main')
+
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.type = 'r'
+		convproj_obj.set_timings(128)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.placement_cut = True
 		traits_obj.placement_loop = ['loop', 'loop_off', 'loop_adv', 'loop_adv_off']
 		traits_obj.audio_filetypes = ['wav', 'mp3']
 
-		convproj_obj.set_timings(128)
-
-		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'audiosauna', ['audiosauna'])
-
-		# ------------------------------------------ Start ------------------------------------------
-		globalstore.datapack.load('audiosauna', './data/datapack/app/audiosauna.xml')
-		colordata = colors.colorset.from_datapack('audiosauna', 'track', 'main')
-
-		project_obj = proj_audiosauna.audiosauna_song()
-		if dawvert_intent.input_mode == 'file':
-			zip_data = project_obj.load_from_file(dawvert_intent.input_file)
-		samplefolder = dawvert_intent.path_samples['extracted']
-
-		# ------------------------------------------ Main ------------------------------------------
+		# ---------- transport ----------
+		convproj_obj.transport.current_pos = max(0, project_obj.appPlayHeadPosition)
+		convproj_obj.transport.loop_active = project_obj.appUseLoop
+		convproj_obj.transport.loop_start = project_obj.appLoopStart
+		convproj_obj.transport.loop_end = project_obj.appLoopEnd
 		convproj_obj.params.add('bpm', project_obj.appTempo, 'float')
+
+		# ---------- master track ----------
 		convproj_obj.track_master.visual.name = 'Master'
 		convproj_obj.track_master.params.add('vol', project_obj.appMasterVolume/100, 'float')
 
-		# ------------------------------------------ Tape Delay ------------------------------------------
+		# ---------- master fx ----------
+
+		# Tape Delay
 		return_obj = convproj_obj.track_master.fx__return__add('audiosauna_send_tape_delay')
 		return_obj.visual.name = 'Tape Delay'
 		return_obj.params.add('vol', project_obj.dlyLevel/100, 'float')
@@ -108,7 +112,7 @@ class input_audiosanua(plugins.base):
 		plugin_obj.params.add_named("sync", project_obj.dlySync, 'bool', "Sync")
 		return_obj.plugslots.slots_audio.append(pluginid)
 
-		# ------------------------------------------ Reverb ------------------------------------------
+		# Reverb
 		return_obj = convproj_obj.track_master.fx__return__add('audiosauna_send_reverb')
 		return_obj.visual.name = 'Reverb'
 		return_obj.params.add('vol', project_obj.rvbLevel/100, 'float')
@@ -125,7 +129,7 @@ class input_audiosanua(plugins.base):
 		
 		return_obj.plugslots.slots_audio.append(pluginid)
 
-		# ------------------------------------------ Tracks ------------------------------------------
+		# ---------- tracks ----------
 		for as_channum, as_chan in project_obj.channels.items():
 			cvpj_trackid = 'audiosanua'+str(as_channum)
 			track_obj = convproj_obj.track__add(cvpj_trackid, 'instrument', 1, False)
@@ -348,8 +352,3 @@ class input_audiosanua(plugins.base):
 				lfo_obj.prop.shape = g_lfo_shape
 				lfo_obj.time.set_seconds(g_lfo_speed)
 				lfo_obj.amount = c_lfo_amount
-
-		convproj_obj.transport.current_pos = max(0, project_obj.appPlayHeadPosition)
-		convproj_obj.transport.loop_active = project_obj.appUseLoop
-		convproj_obj.transport.loop_start = project_obj.appLoopStart
-		convproj_obj.transport.loop_end = project_obj.appLoopEnd

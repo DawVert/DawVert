@@ -40,17 +40,20 @@ class input_petaporon(plugins.base):
 
 		globalstore.datapack.load('acid_machine_2', './data/datapack/app/acid_machine_2.xml')
 
+		proj_song = project_obj.song
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'ri'
 		convproj_obj.set_timings(4)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.track_nopl = True
 
-		proj_song = project_obj.song
-
+		# ---------- transport ----------
 		if 'tempo' in proj_song.pglobal:
 			convproj_obj.params.add('bpm', proj_song.pglobal['tempo'], 'float')
 
+		# ---------- instruments ----------
 		idinstnum_assoc = []
 		tracks = {}
 		for instid, instdata in proj_song.instruments.items():
@@ -63,6 +66,7 @@ class input_petaporon(plugins.base):
 			tracks[instid] = track_obj
 			idinstnum_assoc.append(instid)
 
+		# ---------- patterns ----------
 		for instid, patterns in proj_song.patterns.items():
 			track_obj = tracks[instid]
 			for patnum, pattern in patterns.items():
@@ -85,6 +89,7 @@ class input_petaporon(plugins.base):
 				time_obj.set_posdur(int(pos)*16, 16)
 				placement_obj.fromindex = str(num)
 
+		# ---------- fx units ----------
 		for instnum, fxUnits in proj_song.fxUnits.items():
 			instid = idinstnum_assoc[instnum-1]
 			track_obj = tracks[instid]
@@ -105,6 +110,7 @@ class input_petaporon(plugins.base):
 							if dset_param: plugin_obj.dset_param__add(str(num), control, dset_param)
 							else: plugin_obj.params.add(str(num), control, 'float')
 
+		# ---------- mixer ----------
 		for instnum, mixdata in enumerate(proj_song.mixer):
 			if instnum<len(idinstnum_assoc):
 				instid = idinstnum_assoc[instnum]

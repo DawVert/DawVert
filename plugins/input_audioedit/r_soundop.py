@@ -89,6 +89,16 @@ class input_soundop(plugins.base):
 		from objects import colors
 		from objects.convproj import fileref
 
+		project_obj = proj_soundop.soundop_proj()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+		
+		globalstore.datapack.load('soundop', './data/datapack/app/soundop.xml')
+
+		projformat = project_obj.Format
+		samplerate = projformat['SampleRate'] if 'SampleRate' in projformat else 44100
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'none'
 
@@ -97,18 +107,9 @@ class input_soundop(plugins.base):
 		traits_obj.placement_loop = ['loop']
 		traits_obj.set_time_seconds(True)
 
-		globalstore.datapack.load('soundop', './data/datapack/app/soundop.xml')
-
-		project_obj = proj_soundop.soundop_proj()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-		
-		projformat = project_obj.Format
-
-		samplerate = projformat['SampleRate'] if 'SampleRate' in projformat else 44100
-
 		convproj_obj.set_timings(samplerate)
 
+		# ---------- sample files ----------
 		sampleref_ids = {}
 		for file in project_obj.Files:
 			sampleref_obj = convproj_obj.sampleref__add(str(file.FileID), file.FilePath, None)
@@ -118,6 +119,7 @@ class input_soundop(plugins.base):
 			sampleref_obj.search_local(dawvert_intent.input_folder)
 			sampleref_ids[file.FileID] = sampleref_obj
 
+		# ---------- tracks ----------
 		for track in project_obj.Tracks:
 			cvpj_trackid = str(track.ID)
 
