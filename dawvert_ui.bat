@@ -1,0 +1,1 @@
+python3 dawvert_ui.py %*
