@@ -43,16 +43,18 @@ class input_cvpj_f(plugins.base):
 				exit()
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj init ----------
 		convproj_obj.set_timings(96)
-		trackchannel = 0
-
-		metadata_obj = convproj_obj.metadata
-
 		traits_obj = convproj_obj.traits
 		traits_obj.fxrack_params = ['vol','pan','pitch']
 		traits_obj.auto_types = ['nopl_ticks']
 		traits_obj.audio_filetypes = ['wav']
 		traits_obj.track_hybrid = True
+
+		metadata_obj = convproj_obj.metadata
+
+		# ---------- data ----------
+		trackchannel = 0
 
 		if project_obj.version == 2:
 			convproj_obj.fxtype = 'rack'

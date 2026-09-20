@@ -25,23 +25,27 @@ class input_midsequer(plugins.base):
 
 		project_obj = midsequer.midsequer_project()
 
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cs'
+		convproj_obj.set_timings(24)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
 
 		traits_obj = convproj_obj.traits
 		traits_obj.fxrack_params = ['vol','pan','pitch']
 		traits_obj.auto_types = ['nopl_ticks']
 		traits_obj.track_nopl = True
 
-		convproj_obj.set_timings(24)
-
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
+		# ---------- transport ----------
 		master = project_obj.sng.data.mstr
 		convproj_obj.params.add('bpm', master.tempo, 'float')
 		convproj_obj.timesig_auto.add_point(0, master.tim_sig)
 
+		# ---------- tracks ----------
 		for n, track in enumerate(project_obj.sng.data.tracks):
 			trackinfo = track.ini
 			trackevents = track.evts
@@ -59,6 +63,3 @@ class input_midsequer(plugins.base):
 				for e in trackevents:
 					if isinstance(e, midsequer.midsequer_event_note):
 						events_obj.add_note_dur(e.time, n, e.note, e.vel, e.dur)
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')

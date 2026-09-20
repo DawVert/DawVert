@@ -32,6 +32,15 @@ class input_old_magix_maker(plugins.base):
 		from objects import colors
 		from objects.file_proj_past import magix_music_maker
 
+		project_obj = magix_music_maker.root_group()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		# ---------- convproj params ----------
+		swap_bg_fg = dawvert_intent.input_get_param('swap_bg_fg', False)
+		unused_sends = dawvert_intent.input_get_param('unused_sends', True)
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'
 
@@ -41,10 +50,18 @@ class input_old_magix_maker(plugins.base):
 		traits_obj.audio_filetypes = ['wav']
 		traits_obj.track_hybrid = True
 
-		project_obj = magix_music_maker.root_group()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+		def do_color(data_objc, placement_obj):
+			bg_color = list(data_objc.bg_color[0:3])
+			fg_color = list(data_objc.fg_color[0:3])
 
+			if not swap_bg_fg:
+				placement_obj.visual.color.set_int(bg_color)
+				placement_obj.visual.altcolor_add('fg').set_int(fg_color)
+			else:
+				placement_obj.visual.color.set_int(fg_color)
+				placement_obj.visual.altcolor_add('fg').set_int(bg_color)
+
+		# ---------- transport ----------
 		sample_time = 44100//2
 		sample_rate = 44100
 
@@ -62,6 +79,7 @@ class input_old_magix_maker(plugins.base):
 
 		convproj_obj.set_timings(sample_time*tempomul)
 
+		# ---------- audio and video ref ----------
 		sampleref_objs = {}
 		videoref_objs = {}
 		data_phys = project_obj.data_phys
@@ -89,20 +107,7 @@ class input_old_magix_maker(plugins.base):
 						videoref_obj.search_local(dawvert_intent.input_folder)
 						videoref_objs[n] = videoref_obj
 
-		swap_bg_fg = dawvert_intent.input_get_param('swap_bg_fg', False)
-		unused_sends = dawvert_intent.input_get_param('unused_sends', True)
-
-		def do_color(data_objc, placement_obj):
-			bg_color = list(data_objc.bg_color[0:3])
-			fg_color = list(data_objc.fg_color[0:3])
-
-			if not swap_bg_fg:
-				placement_obj.visual.color.set_int(bg_color)
-				placement_obj.visual.altcolor_add('fg').set_int(fg_color)
-			else:
-				placement_obj.visual.color.set_int(fg_color)
-				placement_obj.visual.altcolor_add('fg').set_int(bg_color)
-
+		# ---------- tracks and sends ----------
 		aux1_used = unused_sends
 		aux2_used = unused_sends
 
@@ -278,5 +283,3 @@ class input_old_magix_maker(plugins.base):
 		if aux2_used:
 			return_obj = convproj_obj.track_master.fx__return__add('aux2')
 			return_obj.visual.name = 'FX '+str(2)
-
-		#self.loop_end = 0

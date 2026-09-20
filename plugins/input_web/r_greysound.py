@@ -57,18 +57,6 @@ class input_greysound(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import greysound as proj_greysound
 
-		convproj_obj.type = 'r'
-		convproj_obj.fxtype = 'route'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_stretch = []
-		traits_obj.placement_cut = False
-		traits_obj.placement_loop = []
-		traits_obj.time_seconds = False
-		traits_obj.auto_types = ['nopl_points']
-
-		convproj_obj.set_timings(960)
-
 		session_obj = proj_greysound.greysound_session()
 		session_loaded = False
 		zip_data = None
@@ -96,10 +84,21 @@ class input_greysound(plugins.base):
 				except json.decoder.JSONDecodeError as t:
 					raise ProjectFileParserException('greysound: JSON parsing error: '+str(t))
 
-
 		globalstore.datapack.load('greysound', './data/datapack/app/greysound.xml')
 
+		# ---------- convproj init ----------
+		convproj_obj.type = 'r'
+		convproj_obj.fxtype = 'route'
+		convproj_obj.set_timings(960)
 
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_stretch = []
+		traits_obj.placement_cut = False
+		traits_obj.placement_loop = []
+		traits_obj.time_seconds = False
+		traits_obj.auto_types = ['nopl_points']
+
+		# ---------- transport ----------
 		convproj_obj.transport.loop_active = session_obj.loopEnabled
 
 		loopRange = session_obj.loopRange
@@ -117,9 +116,11 @@ class input_greysound(plugins.base):
 
 		convproj_obj.params.add('bpm', session_obj.tempo, 'float')
 
+		# ---------- metadata ----------
 		if 'name' in session_obj.metadata:
 			convproj_obj.metadata.name = session_obj.metadata['name']
 
+		# ---------- tracks ----------
 		gs_trackids = {}
 		trackorder = {}
 		routesends = {}
@@ -165,11 +166,15 @@ class input_greysound(plugins.base):
 
 			gs_trackids[gs_track.id] = track_obj
 
+		convproj_obj.track_order = [str(trackorder[x]) for x in sorted(trackorder)]
+
+		# ---------- clips ----------
 		for clip in session_obj.clips:
 			sampleref_obj = convproj_obj.sampleref__add(clip.id, clip.filename, 'win')
 			sampleref_obj.set_dur_sec(clip.durationSec)
 			extract_audio(clip, sampleref_obj, dawvert_intent, zip_data)
 
+		# ---------- regions ----------
 		for region in session_obj.regions:
 			track_obj = gs_trackids[region.trackId]
 
@@ -209,6 +214,7 @@ class input_greysound(plugins.base):
 			if 'ticks' in reg_offs: time_obj.set_offset(reg_offs['ticks'])
 			elif 'millis' in reg_offs: time_obj.set_offset_real(reg_offs['millis']/1000)
 
+		# ---------- sends ----------
 		for send in session_obj.sends:
 			if send.sourceTrackId not in routesends: routesends[send.sourceTrackId] = [True, []]
 			routesends[send.sourceTrackId][1].append(send)
@@ -221,6 +227,7 @@ class input_greysound(plugins.base):
 				send_obj = sends_obj.add(str(x.destinationTrackId), None, clipGain(x.levelDb))
 				send_obj.params.add('pan', x.channelPans[0], 'float')
 
+		# ---------- fx inserts ----------
 		fxslots = {}
 		for insert in session_obj.inserts:
 			if insert.trackId not in fxslots: fxslots[insert.trackId] = {}
@@ -241,12 +248,14 @@ class input_greysound(plugins.base):
 				for param_id, dset_param in globalstore.datapack.get_params('greysound', 'plugin', dpackpluginname):
 					plugin_obj.datapack_param__add(param_id, fxparams[param_id] if param_id in fxparams else None, dset_param)
 
+		# ---------- markers ----------
 		for gs_marker in session_obj.markers:
 			if 'ticks' in gs_marker.position:
 				timemarker_obj = convproj_obj.timemarker__add()
 				if gs_marker.name: timemarker_obj.visual.name = gs_marker.name
 				timemarker_obj.time.set_pos(gs_marker.position['ticks'])
 
+		# ---------- audioDeviceSnapshots ----------
 		for devdata in session_obj.audioDeviceSnapshots:
 			device_id = devdata['id'] if 'id' in devdata else None
 			device_label = devdata['label'] if 'label' in devdata else None
@@ -259,10 +268,9 @@ class input_greysound(plugins.base):
 					device_obj = convproj_obj.realdevices.add_audio_out(device_id)
 					device_obj.visual.name = device_label
 
+		# ---------- midiDeviceSnapshots ----------
 		for devdata in session_obj.midiDeviceSnapshots:
 			device_id = devdata['id'] if 'id' in devdata else None
 			if device_id and device_kind:
 				device_obj = convproj_obj.realdevices.add_midi(device_id)
 				device_obj.visual.name = devdata['label'] if 'label' in devdata else None
-
-		convproj_obj.track_order = [str(trackorder[x]) for x in sorted(trackorder)]

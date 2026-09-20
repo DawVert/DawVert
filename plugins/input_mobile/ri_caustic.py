@@ -115,8 +115,18 @@ class input_cvpj_r(plugins.base):
 		from objects import audio_data
 		from objects.file_proj_past import caustic as proj_caustic
 		
+		project_obj = proj_caustic.caustic_project()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		globalstore.datapack.load('caustic', './data/datapack/app/caustic.xml')
+
+		samplefolder = dawvert_intent.path_samples['extracted']
+
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.type = 'ri'
+		convproj_obj.do_actions.append('do_addloop')
 
 		traits_obj = convproj_obj.traits
 		traits_obj.placement_cut = True
@@ -128,14 +138,11 @@ class input_cvpj_r(plugins.base):
 
 		convproj_obj.set_timings(1.0)
 
-		globalstore.datapack.load('caustic', './data/datapack/app/caustic.xml')
+		# ---------- transport ----------
+		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
+		convproj_obj.timesig = [project_obj.numerator, 4]
 
-		project_obj = proj_caustic.caustic_project()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		samplefolder = dawvert_intent.path_samples['extracted']
-
+		# ---------- mixer ----------
 		mixer_tracks = [mixertrack() for x in range(14)]
 
 		for mixnum, ctrldata in enumerate(project_obj.mixr.controls):
@@ -154,6 +161,7 @@ class input_cvpj_r(plugins.base):
 			mixer_tracks[paramnum].mute = bool(project_obj.mixr.solo_mute[paramnum*2])
 			mixer_tracks[paramnum].solo = bool(project_obj.mixr.solo_mute[(paramnum*2)+1])
 
+		# ---------- tracks/machines ----------
 		cvpj_tracks = []
 
 		for machnum, machine in enumerate(project_obj.machines):
@@ -432,6 +440,7 @@ class input_cvpj_r(plugins.base):
 			plugin_obj.params.add('width', mixer_tracks[machnum].width, 'float')
 			track_obj.plugslots.slots_mixer.append(width_plugid)
 		
+		# ---------- sequences ----------
 		for x in project_obj.seqn.parts:
 			x['key'] = x['key']%100 + (x['key']//100)*16
 
@@ -458,16 +467,17 @@ class input_cvpj_r(plugins.base):
 			#			time_obj = autopl_obj.time
 			#			time_obj.set_posdur(position, duration)
 
+		# ---------- automation: tempo ----------
 		bpm_auto_obj = convproj_obj.automation.create(['main', 'bpm'], 'float', True)
 		for pos, val in project_obj.seqn.tempoauto: bpm_auto_obj.add_autopoint(pos, val, None)
 
+		# ---------- automation: mach ----------
 		for machnum, machauto in enumerate(project_obj.seqn.auto_mach):
 			for ctrlid, s_machauto in machauto.data.items():
-
 				twopoints = [[float(x['pos']), float(x['val'])] for x in s_machauto]
-
 				convproj_obj.automation.add_autopoints_twopoints(['plugin', 'machine'+str(machnum+1), str(ctrlid)], 'float', twopoints)
 
+		# ---------- automation: mixer ----------
 		for fxsetnum, machauto in enumerate(project_obj.seqn.auto_mixer):
 			fxsetnum = fxsetnum*7
 			for ctrlid, s_machauto in machauto.data.items():
@@ -489,6 +499,7 @@ class input_cvpj_r(plugins.base):
 						for x in twopoints: x[1] = (x[1]-0.5)*2
 					convproj_obj.automation.add_autopoints_twopoints(autoloc, 'float', twopoints)
 
+		# ---------- automation: fx ----------
 		for fxsetnum, machauto in enumerate(project_obj.seqn.auto_fx):
 			fxsetnum = fxsetnum*7
 			for ctrlid, s_machauto in machauto.data.items():
@@ -505,8 +516,8 @@ class input_cvpj_r(plugins.base):
 				else: 
 					convproj_obj.automation.add_autopoints_twopoints(['plugin', cvpj_fx_autoid, str(autofx_ctrl)], 'float', twopoints)
 
+		# ---------- automation: master fx ----------
 		master_fxchaindata = []
-
 		add_caustic_fx(convproj_obj, convproj_obj.track_master, project_obj.mstr.fxslots, 'master_slot')
 
 		master_controls_data = project_obj.mstr.controls.data
@@ -558,10 +569,7 @@ class input_cvpj_r(plugins.base):
 
 			if autoloc: convproj_obj.automation.add_autopoints_twopoints(autoloc, 'float', twopoints)
 
+		# ---------- master track ----------
 		convproj_obj.track_master.params.add('vol', master_controls_data[39], 'float')
 		convproj_obj.track_master.visual.name = 'Master'
 		convproj_obj.track_master.visual.color.set_float([0.52, 0.52, 0.52])
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
-		convproj_obj.timesig = [project_obj.numerator, 4]
-

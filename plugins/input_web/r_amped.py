@@ -343,31 +343,23 @@ class input_amped(plugins.base):
 		from objects.file_proj import amped as proj_amped
 
 		global samplefolder
-
+		
+		# ---------- file load: ZIP ----------
 		try:
 			if dawvert_intent.input_mode == 'file':
 				zip_data = zipfile.ZipFile(dawvert_intent.input_file, 'r')
 		except zipfile.BadZipFile as t:
 			raise ProjectFileParserException('amped: Bad ZIP File: '+str(t))
 
-		convproj_obj.type = 'r'
+		# ---------- file load: project ----------
+		try:
+			jsonproject = zip_data.read('amped-studio-project.json')
+		except KeyError as t:
+			raise ProjectFileParserException('amped: amped-studio-project.json not found')
+		amped_project = json.loads(jsonproject)
+		amped_obj = proj_amped.amped_project(amped_project)
 
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_filetypes = ['wav', 'mp3', 'ogg', 'flac']
-		traits_obj.audio_nested = True
-		traits_obj.audio_stretch = ['rate']
-		traits_obj.auto_types = ['nopl_points']
-		traits_obj.placement_cut = True
-		traits_obj.track_hybrid = True
-		traits_obj.track_lanes = True
-
-		convproj_obj.set_timings(1.0)
-
-		globalstore.datapack.load('amped', './data/datapack/app/amped.xml')
-		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.xml')
-
-		samplefolder = dawvert_intent.path_samples['extracted']
-
+		# ---------- file load: filenames ----------
 		try:
 			jsonfilenames = zip_data.read('filenames.json')
 		except KeyError as t:
@@ -382,25 +374,39 @@ class input_amped(plugins.base):
 				os.rename(old_file,new_file)
 			sampleref_obj = convproj_obj.sampleref__add(str(amped_filename), new_file, None)
 
-		try:
-			jsonproject = zip_data.read('amped-studio-project.json')
-		except KeyError as t:
-			raise ProjectFileParserException('amped: amped-studio-project.json not found')
+		# -------------------------------------------
+		globalstore.datapack.load('amped', './data/datapack/app/amped.xml')
+		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.xml')
 
-		amped_project = json.loads(jsonproject)
-		amped_obj = proj_amped.amped_project(amped_project)
+		samplefolder = dawvert_intent.path_samples['extracted']
+
+		# ---------- convproj init ----------
+		convproj_obj.type = 'r'
+		convproj_obj.set_timings(1.0)
+
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_filetypes = ['wav', 'mp3', 'ogg', 'flac']
+		traits_obj.audio_nested = True
+		traits_obj.audio_stretch = ['rate']
+		traits_obj.auto_types = ['nopl_points']
+		traits_obj.placement_cut = True
+		traits_obj.track_hybrid = True
+		traits_obj.track_lanes = True
+
+		# ---------- transport ----------
 		convproj_obj.params.add('bpm', amped_obj.tempo, 'float')
 		convproj_obj.timesig = [amped_obj.timesig_num, amped_obj.timesig_den]
-
-		convproj_obj.track_master.params.add('vol', amped_obj.masterTrack.volume, 'float')
 
 		convproj_obj.transport.loop_active = amped_obj.loop_active
 		convproj_obj.transport.loop_start = amped_obj.loop_start
 		convproj_obj.transport.loop_end = amped_obj.loop_end
 		convproj_obj.transport.current_pos = amped_obj.playheadPosition
 
+		# ---------- master track ----------
+		convproj_obj.track_master.params.add('vol', amped_obj.masterTrack.volume, 'float')
 		encode_devices(convproj_obj, amped_obj.masterTrack.devices, convproj_obj.track_master, None)
 
+		# ---------- tracks ----------
 		for amped_track in amped_obj.tracks:
 			amped_tr_id = str(amped_track.id)
 			amped_armed = amped_track.armed if amped_track.armed else None

@@ -51,19 +51,21 @@ class input_mariopaint_mss(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.songinput import mariopaint
 
+		try: 
+			if dawvert_intent.input_mode == 'file':
+				tree = ET.parse(dawvert_intent.input_file)
+		except ET.ParseError as t:
+			raise ProjectFileParserException('mariopaint_mss: XML parsing error: '+str(t))
+
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'rm'
 
 		traits_obj = convproj_obj.traits
 		traits_obj.track_nopl = True
 
+		# ---------- song ----------
 		mariopaint_obj = mariopaint.mariopaint_song()
-
-		try: 
-			if dawvert_intent.input_mode == 'file':
-				tree = ET.parse(dawvert_intent.input_file)
-		except ET.ParseError as t:
-			raise ProjectFileParserException('mariopaint_mss: XML parsing error: '+str(t))
 
 		root = tree.getroot()
 

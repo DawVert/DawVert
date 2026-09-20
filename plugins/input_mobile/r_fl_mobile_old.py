@@ -32,20 +32,22 @@ class input_fl_mobile_old(plugins.base):
 
 		project_obj = fl_mobile_xew.oldflm_song()
 
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
+		convproj_obj.set_timings(48)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
 
 		traits_obj = convproj_obj.traits
 		traits_obj.track_nopl = True
 
-		convproj_obj.set_timings(48)
-
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
+		# ---------- transport ----------
 		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
 		
-		instplugs = {}
-
+		# ---------- tracks ----------
 		for xe_tr in project_obj.tracks:
 			idval = 'track'+str(xe_tr.numid)
 			track_obj = convproj_obj.track__add(idval, 'instrument', 0, False)
@@ -70,6 +72,3 @@ class input_fl_mobile_old(plugins.base):
 							cvpj_notelist.last_add_auto('pitch', p, val)
 						pp = p
 						if n.dur<p: break
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')

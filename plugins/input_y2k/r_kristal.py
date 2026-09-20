@@ -46,6 +46,9 @@ def do_plugchunk(fx_slot, fxid, chunkdata, convproj_obj, plugslots):
 	except:
 		pass
 
+def do_part_visual(visual_obj, k_part):
+	visual_obj.name = k_part.name
+	visual_obj.color.set_int(k_part.color[0:3])
 
 class input_kristal(plugins.base):
 	def is_dawvert_plugin(self):
@@ -94,26 +97,24 @@ class input_kristal(plugins.base):
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_past import kristal as proj_kristal
-		from objects import audio_data
 
+		project_obj = proj_kristal.kristal_song()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		# ---------- convproj params ----------
+		unused_tracks = dawvert_intent.input_get_param('unused_tracks', True)
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']
 		traits_obj.audio_nested = True
 
-		project_obj = proj_kristal.kristal_song()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		tracknum = 0
-		tracknums = {}
-
+		# ---------- transport ----------
 		bpmmul = 1
 		bpm = 120
-
-		unused_tracks = dawvert_intent.input_get_param('unused_tracks', True)
-
 		if project_obj.globalinserts:
 			for icid, inpart in project_obj.globalinserts:
 				if icid == 'CTransport':
@@ -125,6 +126,17 @@ class input_kristal(plugins.base):
 
 		convproj_obj.set_timings((44100/2)*bpmmul)
 
+		# ---------- metadata ----------
+		if project_obj.infodata:
+			for n, t in enumerate(project_obj.infodata.data):
+				if n == 0: convproj_obj.metadata.name = t
+				if n == 1: convproj_obj.metadata.author = t
+				if n == 2: convproj_obj.metadata.comment_text = t+'\n\n'
+				if n == 3: convproj_obj.metadata.comment_text += t
+
+		# ---------- clips ----------
+		tracknum = 0
+		tracknums = {}
 		if project_obj.audio_input:
 			inum, indata = project_obj.audio_input
 			for inp in indata:
@@ -149,8 +161,7 @@ class input_kristal(plugins.base):
 											placement_obj = track_obj.placements.add_nested_audio()
 											time_obj = placement_obj.time
 											time_obj.set_posdur(part.position, part.duration)
-											placement_obj.visual.name = part.name
-											placement_obj.visual.color.set_int(part.color[0:3])
+											do_part_visual(placement_obj.visual, part)
 											placement_obj = placement_obj.add()
 											placement_obj.muted = 0 in part.flags
 											placement_obj.locked = 1 in part.flags
@@ -160,8 +171,7 @@ class input_kristal(plugins.base):
 											time_obj = placement_obj.time
 											time_obj.set_posdur(part.position, part.duration)
 											time_obj.set_offset(part.offset)
-											placement_obj.visual.name = part.name
-											placement_obj.visual.color.set_int(part.color[0:3])
+											do_part_visual(placement_obj.visual, part)
 											placement_obj.muted = 0 in part.flags
 											placement_obj.locked = 1 in part.flags
 											for icid, inpart in part.parts:
@@ -171,13 +181,7 @@ class input_kristal(plugins.base):
 
 									tracknum += 1
 
-		if project_obj.infodata:
-			for n, t in enumerate(project_obj.infodata.data):
-				if n == 0: convproj_obj.metadata.name = t
-				if n == 1: convproj_obj.metadata.author = t
-				if n == 2: convproj_obj.metadata.comment_text = t+'\n\n'
-				if n == 3: convproj_obj.metadata.comment_text += t
-
+		# ---------- tracks ----------
 		channum = 0
 		if project_obj.globalinserts:
 			for icid, inpart in project_obj.globalinserts:
@@ -189,9 +193,15 @@ class input_kristal(plugins.base):
 						track_obj.params.add('vol', inpart.vol, 'float')
 						track_obj.params.add('pan', (inpart.pan-0.5)*2, 'float')
 					channum += 1
-				if icid == 'CMetronome':
-					convproj_obj.params.add('bpm', inpart.bpm, 'float')
 
+		# ---------- master fx ----------
+		if project_obj.master:
+			for fx_num, fx_slot in enumerate(project_obj.master[1]):
+				fxid = 'master_fx_'+str(fx_num)
+				chunkdata = fx_slot.bindata
+				do_plugchunk(fx_slot, fxid, chunkdata, convproj_obj, convproj_obj.track_master.plugslots)
+
+		# ---------- mixer ----------
 		if project_obj.mixer:
 			for num, data in enumerate(project_obj.mixer[1]):
 				if num in tracknums:
@@ -203,9 +213,3 @@ class input_kristal(plugins.base):
 						do_plugchunk(fx_slot, fxid, chunkdata, convproj_obj, track_obj.plugslots)
 					fxid = 'track_'+str(tracknum)+'_fx_eq'
 					do_plugchunk(fx_eq, fxid, chunkdata, convproj_obj, track_obj.plugslots)
-
-		if project_obj.master:
-			for fx_num, fx_slot in enumerate(project_obj.master[1]):
-				fxid = 'master_fx_'+str(fx_num)
-				chunkdata = fx_slot.bindata
-				do_plugchunk(fx_slot, fxid, chunkdata, convproj_obj, convproj_obj.track_master.plugslots)

@@ -102,6 +102,14 @@ class input_fruitytracks(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_past import fruitytracks as proj_fruitytracks
 
+		project_obj = proj_fruitytracks.ftr_song()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		# ---------- convproj params ----------
+		pan_auto = dawvert_intent.input_get_param('pan_auto', 'auto')
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(4.0)
 
@@ -112,16 +120,7 @@ class input_fruitytracks(plugins.base):
 		traits_obj.audio_stretch = ['rate']
 		traits_obj.auto_types = ['pl_points']
 
-		project_obj = proj_fruitytracks.ftr_song()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
-		convproj_obj.track_master.params.add('vol', project_obj.vol/128, 'float')
-
-		bpmdiv = 120/project_obj.bpm
-		bpmticks = 5512
-
+		# ---------- metadata ----------
 		if project_obj.title: convproj_obj.metadata.name = project_obj.title
 		if project_obj.url: convproj_obj.metadata.url = project_obj.url
 		if project_obj.comment:
@@ -129,13 +128,19 @@ class input_fruitytracks(plugins.base):
 			convproj_obj.metadata.comment_datatype = 'rtf'
 		convproj_obj.metadata.show = project_obj.showinfo
 
+		# ---------- transport ----------
+		bpmdiv = 120/project_obj.bpm
+		bpmticks = 5512
+
+		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
+		convproj_obj.track_master.params.add('vol', project_obj.vol/128, 'float')
+
 		if project_obj.loopend:
 			convproj_obj.transport.loop_active = True
 			convproj_obj.transport.loop_start = calc_tick_val(bpmdiv, project_obj.loopstart)
 			convproj_obj.transport.loop_end = calc_tick_val(bpmdiv, project_obj.loopstart+project_obj.loopend)
 
-		pan_auto = dawvert_intent.input_get_param('pan_auto', 'auto')
-
+		# ---------- tracks ----------
 		for tracknum, ftr_track in enumerate(project_obj.tracks):
 			trackid = str(tracknum)
 			track_obj = convproj_obj.track__add(trackid, 'audio', 1, False)
@@ -149,12 +154,13 @@ class input_fruitytracks(plugins.base):
 
 				fxid = trackid+'_'+str(pid)
 				splitfile = flplug.name.split('.')
+
 				plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'fruitytracks', splitfile[0].lower())
 				plugin_obj.visual.name = splitfile[0]
 				plugin_obj.datavals.add('file', flplug.name)
-				for n, v in enumerate(flplug.params): plugin_obj.params.add(str(n), v, 'float')
 				plugin_obj.role = 'fx'
 				plugin_obj.fxdata_add(bool(flplug.enabled), None)
+				for n, v in enumerate(flplug.params): plugin_obj.params.add(str(n), v, 'float')
 				track_obj.plugslots.slots_audio.append(fxid)
 
 			for ftr_clip in ftr_track.clips:
@@ -220,4 +226,5 @@ class input_fruitytracks(plugins.base):
 				else:
 					make_auto(convproj_obj, addauto_obj)
 
+		# ---------- automation ----------
 		convproj_obj.automation.set_persist_all(False)

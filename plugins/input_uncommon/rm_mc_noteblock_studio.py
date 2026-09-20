@@ -52,35 +52,41 @@ class input_gt_mnbs(plugins.base):
 		from objects.file_proj import nbs as proj_nbs
 		from objects.convproj import fileref
 
+		globalstore.datapack.load('noteblockstudio', './data/datapack/app/noteblockstudio.xml')
+
+		# ---------- load file: project ----------
+		project_obj = proj_nbs.nbs_song()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		# ---------- load file: external_dat ----------
+		external_dat = external_data_zip()
+		external_dat.load_data(os.path.join(dawvert_intent.path_external_data, 'mnbs', 'samples.zip'))
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'rm'
 		convproj_obj.set_timings(4.0)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
 		
 		traits_obj = convproj_obj.traits
 		traits_obj.track_nopl = True
 		traits_obj.audio_filetypes = ['wav']
 
-		project_obj = proj_nbs.nbs_song()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		external_dat = external_data_zip()
-		external_dat.load_data(os.path.join(dawvert_intent.path_external_data, 'mnbs', 'samples.zip'))
-
-		globalstore.datapack.load('noteblockstudio', './data/datapack/app/noteblockstudio.xml')
-
+		# ---------- transport ----------
 		tempo = (project_obj.tempo/800)*120
-
 		outtempo, notelen = xtramath.get_lower_tempo(tempo, 1, 180)
+		convproj_obj.params.add('bpm', outtempo, 'float')
+		convproj_obj.timesig = [project_obj.numerator, 4]
 
+		# ---------- metadata ----------
 		convproj_obj.metadata.name = project_obj.name
 		convproj_obj.metadata.author = project_obj.author
 		convproj_obj.metadata.original_author = project_obj.orgauthor
 		convproj_obj.metadata.comment_text = project_obj.description
-		convproj_obj.params.add('bpm', outtempo, 'float')
-		convproj_obj.timesig = [project_obj.numerator, 4]
 
+		# ---------- layers ----------
 		used_inst = []
-
 		for nbs_layer, layer_obj in enumerate(project_obj.layers):
 			cvpj_trackid = str(nbs_layer+1)
 			track_obj = convproj_obj.track__add(cvpj_trackid, 'instruments', 1, False)
@@ -98,6 +104,7 @@ class input_gt_mnbs(plugins.base):
 				if note_obj.pan!=100: cvpj_notelist.last_add_pan((note_obj.pan/100)-1)
 				if note_obj.pitch: cvpj_notelist.last_add_finepitch(note_obj.pitch)
 
+		# ---------- insts ----------
 		for instnum in used_inst:
 			instid = 'NoteBlock'+str(instnum)
 			inst_obj = convproj_obj.instrument__add(instid)
@@ -125,6 +132,7 @@ class input_gt_mnbs(plugins.base):
 					isdrum = int(dpobj.data['isdrum'])
 					if isdrum: inst_obj.is_drum = True
 
+		# ---------- custom insts ----------
 		custominstid = 16
 		for custominstid, custom_obj in enumerate(project_obj.custom):
 			instid = 'NoteBlock'+str(custominstid+16)
@@ -137,6 +145,3 @@ class input_gt_mnbs(plugins.base):
 				sampleref_obj.search_local(dawvert_intent.input_folder)
 			plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, 10, 1)
 			inst_obj.plugslots.set_synth(instid)
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')

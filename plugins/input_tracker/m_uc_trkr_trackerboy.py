@@ -60,18 +60,21 @@ class input_trackerboy(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		convproj_obj.fxtype = 'rack'
-		
 		samplefolder = dawvert_intent.path_samples['extracted']
 
 		globalstore.datapack.load('trackerboy', './data/datapack/app/trackerboy.xml')
 
 		tbm_cursong = project_obj.songs[dawvert_intent.songnum]
 
+		# ---------- convproj init ----------
+		convproj_obj.fxtype = 'rack'
+
+		# ---------- metadata ----------
 		if project_obj.title: convproj_obj.metadata.name = project_obj.title
 		if project_obj.artist: convproj_obj.metadata.author = project_obj.artist
 		if project_obj.copyright: convproj_obj.metadata.copyright = project_obj.copyright
 
+		# ---------- tracker init ----------
 		patterndata_obj = pat_multi.multi_patsong()
 		patterndata_obj.num_rows = tbm_cursong.rows
 		patterndata_obj.datapack_name = 'trackerboy'
@@ -81,6 +84,7 @@ class input_trackerboy(plugins.base):
 		patterndata_obj.add_channel('wavetable')
 		patterndata_obj.add_channel('noise')
 
+		# ---------- orders ----------
 		for n, x in enumerate(tbm_cursong.orders):
 			patterndata_obj.orders[n] = list(x)
 
@@ -98,10 +102,12 @@ class input_trackerboy(plugins.base):
 					for fx_p, fx_v in d_fx:
 						parse_fx_event(d_pos, pat_obj, fx_p, fx_v)
 
+		# ---------- bpm ----------
 		tempo = speed_to_tempo(60, tbm_cursong.speed)*20
 		convproj_obj.params.add('bpm', tempo, 'float')
-		used_insts = patterndata_obj.to_cvpj(convproj_obj, tempo, 6)
 
+		# ---------- insts ----------
+		used_insts = patterndata_obj.to_cvpj(convproj_obj, tempo, 6)
 		for instname, instnums in used_insts.items():
 			for chinst in instnums:
 				instnum, channum = chinst

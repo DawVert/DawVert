@@ -34,10 +34,6 @@ class input_mod(plugins.base):
 		from objects import globalstore
 		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.xml')
 		
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_filetypes = ['wav']
-		traits_obj.auto_types = ['pl_points', 'pl_ticks']
-
 		project_obj = proj_mod.mod_song()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file, IGNORE_ERRORS): exit()
@@ -46,8 +42,15 @@ class input_mod(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
+		# ---------- convproj init ----------
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_filetypes = ['wav']
+		traits_obj.auto_types = ['pl_points', 'pl_ticks']
+
+		# ---------- metadata ----------
 		convproj_obj.metadata.name = project_obj.title
 
+		# ---------- tracker init ----------
 		tracker_obj = convproj_obj.main__create_tracker_single()
 		tracker_obj.set_num_chans(project_obj.num_chans)
 		tracker_obj.mainvisual.from_datapack('tracker_various', 'mod', 'main', True)
@@ -56,6 +59,7 @@ class input_mod(plugins.base):
 		tracker_obj.orders = project_obj.l_order
 		tracker_obj.use_starttempo = True
 
+		# ---------- samples ----------
 		for num, sample_obj in enumerate(project_obj.samples):
 			strnum = str(num+1)
 
@@ -91,6 +95,7 @@ class input_mod(plugins.base):
 				sp_obj.loop_active = loopstart != 0 and loopend != 2
 				sp_obj.loop_start = loopstart
 
+		# ---------- patterns ----------
 		for num_pat, pat_data in enumerate(project_obj.patterns):
 			pattern_obj = tracker_obj.pattern_add(num_pat, 64)
 			for num_row, row_data in enumerate(pat_data.data):

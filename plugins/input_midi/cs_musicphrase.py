@@ -27,22 +27,23 @@ class input_musicphrase(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj init ----------
 		convproj_obj.set_timings(96)
-
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cs'
-
-		metadata_obj = convproj_obj.metadata
 
 		traits_obj = convproj_obj.traits
 		traits_obj.fxrack_params = ['vol','pan','pitch']
 		traits_obj.auto_types = ['nopl_ticks']
 
-		convproj_obj.metadata.name = project_obj.name 
-		convproj_obj.metadata.copyright = project_obj.copyright
-		convproj_obj.metadata.author = project_obj.author
-		convproj_obj.metadata.comment_text = project_obj.comment
+		# ---------- metadata ----------
+		metadata_obj = convproj_obj.metadata
+		metadata_obj.name = project_obj.name 
+		metadata_obj.copyright = project_obj.copyright
+		metadata_obj.author = project_obj.author
+		metadata_obj.comment_text = project_obj.comment
 
+		# ---------- transport ----------
 		convproj_obj.transport.current_pos = project_obj.curpos/256
 		convproj_obj.transport.loop_active = bool(project_obj.loop_on)
 		convproj_obj.transport.loop_start = project_obj.loop_start/256
@@ -50,6 +51,7 @@ class input_musicphrase(plugins.base):
 
 		convproj_obj.params.add('bpm', (project_obj.tempo/3072000)*120, 'float')
 
+		# ---------- tracks ----------
 		track_pl = []
 		for n, mpxl_track in enumerate(project_obj.tracks):
 			track_obj = convproj_obj.track__add(str(n), 'midi', 1, False)

@@ -31,18 +31,17 @@ class input_cvpj_f(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj init ----------
 		convproj_obj.set_timings(192)
-
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cs'
-
-		metadata_obj = convproj_obj.metadata
 
 		traits_obj = convproj_obj.traits
 		traits_obj.fxrack_params = ['vol','pan','pitch']
 		traits_obj.auto_types = ['nopl_ticks']
 		traits_obj.track_arranger = True
 
+		# ---------- tracks and arranger ----------
 		arranger_valid = -1
 		arranger_data = []
 
@@ -60,6 +59,7 @@ class input_cvpj_f(plugins.base):
 				arranger_valid = n
 			track_pl.append(track_obj)
 
+		# ---------- clips ----------
 		for evo_clip in project_obj.clips:
 			track_obj = track_pl[evo_clip.tracknum]
 			placement_obj = track_obj.placements.add_midi()

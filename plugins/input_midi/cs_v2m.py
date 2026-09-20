@@ -27,20 +27,25 @@ class input_v2m(plugins.base):
 		from objects.file_proj_past import v2m as proj_v2m
 		from objects import colors
 
+		project_obj = proj_v2m.v2m_song()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		# ---------- convproj init ----------
+		convproj_obj.set_timings(project_obj.timediv)
+
+		# ---------- transport ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cs'
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
 
 		traits_obj = convproj_obj.traits
 		traits_obj.fxrack_params = ['vol','pan','pitch']
 		traits_obj.auto_types = ['nopl_ticks']
 		traits_obj.track_nopl = True
 
-		project_obj = proj_v2m.v2m_song()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		convproj_obj.set_timings(project_obj.timediv)
-
+		# ---------- control track ----------
 		track_obj = convproj_obj.track__add('control', 'midi', 1, False)
 		events_obj = track_obj.placements.midievents
 
@@ -50,6 +55,7 @@ class input_v2m(plugins.base):
 			events_obj.add_timesig(cp, int(p['num']), int(p['den']))
 			events_obj.add_tempo(cp, float(500000/p['usecs'])*120)
 
+		# ---------- tracks ----------
 		for n, track in enumerate(project_obj.tracks):
 			track_obj = convproj_obj.track__add(str(n), 'midi', 1, False)
 			track_obj.visual.name = 'Track #'+str(n)
@@ -75,6 +81,3 @@ class input_v2m(plugins.base):
 					events_obj.add_note_on(cur_pos, n, cur_note, note[2]&127)
 				else:
 					events_obj.add_note_off_vel(cur_pos, n, cur_note, note[2]&127)
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')

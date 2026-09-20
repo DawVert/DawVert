@@ -23,23 +23,27 @@ class input_petaporon(plugins.base):
 		from objects.file_proj import flipperzero as proj_flipperzero
 		from functions import note_data
 
-		traits_obj = convproj_obj.traits
-		traits_obj.track_nopl = True
-
-		convproj_obj.type = 'r'
-		convproj_obj.set_timings(1.0)
-
 		project_obj = proj_flipperzero.fmf_song()
 
 		if dawvert_intent.input_mode == 'file':
 			project_obj.load_from_file(dawvert_intent.input_file)
 
+		# ---------- convproj init ----------
+		convproj_obj.type = 'r'
+		convproj_obj.do_actions.append('do_singlenotelistcut')
+		convproj_obj.set_timings(1.0)
+		traits_obj = convproj_obj.traits
+		traits_obj.track_nopl = True
+
+		# ---------- transport ----------
 		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
 
+		# ---------- track ----------
 		track_obj = convproj_obj.track__add('flipper', 'instrument', 0, False)
 		track_obj.visual.name = 'Flipper Zero'
 		track_obj.visual.color.set_float([0.94, 0.58, 0.23])
 
+		# ---------- notes ----------
 		curpos = 0
 		for note in project_obj.notes:
 			notedur = (project_obj.duration)*(1/note.duration)
@@ -49,5 +53,3 @@ class input_petaporon(plugins.base):
 				notekey = note_data.keyletter_to_note(note.key, note.octave-5)
 				track_obj.placements.notelist.add_r(curpos, notedur, notekey, 1, None)
 			curpos += notedur
-
-		convproj_obj.do_actions.append('do_singlenotelistcut')

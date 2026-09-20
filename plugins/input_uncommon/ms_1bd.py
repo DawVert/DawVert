@@ -59,9 +59,6 @@ class input_1bitdragon(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_uncommon import onebitdragon as proj_1bitdragon
 
-		convproj_obj.set_timings(4)
-		convproj_obj.type = 'ms'
-
 		project_obj = proj_1bitdragon.onebitd_song()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
@@ -72,6 +69,23 @@ class input_1bitdragon(plugins.base):
 		globalstore.datapack.load('1bitdragon', './data/datapack/app/1bitdragon.xml')
 		colordata = colors.colorset.from_datapack('1bitdragon', 'track', 'main')
 
+		# ---------- convproj init ----------
+		convproj_obj.set_timings(4)
+		convproj_obj.do_actions.append('do_lanefit')
+		convproj_obj.type = 'ms'
+
+		# ---------- transport ----------
+		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
+
+		# ---------- master track ----------
+		convproj_obj.track_master.params.add('vol', project_obj.volume, 'float')
+		plugin_obj = convproj_obj.plugin__add('master-reverb', 'simple', 'reverb', None)
+		plugin_obj.role = 'fx'
+		plugin_obj.visual.name = 'Reverb'
+		plugin_obj.fxdata_add(project_obj.reverb, 0.5)
+		convproj_obj.track_master.plugslots.slots_audio.append('master-reverb')
+
+		# ---------- scale ----------
 		onebitd_scaleId = project_obj.scaleId
 		onebitd_scaletype = (onebitd_scaleId//12)
 		onebitd_scalekey = onebitd_scaleId-(onebitd_scaletype*12)
@@ -86,6 +100,7 @@ class input_1bitdragon(plugins.base):
 
 		scale_keys = [x for x in note_scale if x<12]
 
+		# ---------- tracks ----------
 		track_data = []
 		for plnum in range(9):
 			track_obj = convproj_obj.track__add(str(plnum), 'instruments', 1, False)
@@ -99,8 +114,8 @@ class input_1bitdragon(plugins.base):
 
 		note_scale = [x+note_ts+onebitd_scalekey for x in note_scale]
 
+		# ---------- blocks ----------
 		instnames = []
-
 		used_inst = {}
 		used_drums = {}
 		curpos = 0
@@ -155,6 +170,7 @@ class input_1bitdragon(plugins.base):
 
 			curpos += 128
 
+		# ---------- insts ----------
 		for instid, instdata in used_inst.items():
 			instname = instdata.preset
  
@@ -188,13 +204,4 @@ class input_1bitdragon(plugins.base):
 			#	instnames.append(instname)
 			#inst_obj.datavals.add('middlenote', -3)
 
-		convproj_obj.do_actions.append('do_lanefit')
 
-		convproj_obj.track_master.params.add('vol', project_obj.volume, 'float')
-		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
-
-		plugin_obj = convproj_obj.plugin__add('master-reverb', 'simple', 'reverb', None)
-		plugin_obj.role = 'fx'
-		plugin_obj.visual.name = 'Reverb'
-		plugin_obj.fxdata_add(project_obj.reverb, 0.5)
-		convproj_obj.track_master.plugslots.slots_audio.append('master-reverb')

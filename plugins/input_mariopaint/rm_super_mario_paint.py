@@ -33,20 +33,22 @@ class input_mariopaint_smp(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.songinput import mariopaint
 
-		convproj_obj.fxtype = 'rack'
-		convproj_obj.type = 'rm'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.track_nopl = True
-
-		mariopaint_obj = mariopaint.mariopaint_song()
-
 		if dawvert_intent.input_mode == 'file':
 			f_smp = open(dawvert_intent.input_file, 'r')
 		try:
 			lines_smp = f_smp.readlines()
 		except UnicodeDecodeError:
 			raise ProjectFileParserException('mariopaint_smp: File is not text')
+
+		# ---------- convproj init ----------
+		convproj_obj.fxtype = 'rack'
+		convproj_obj.type = 'rm'
+
+		traits_obj = convproj_obj.traits
+		traits_obj.track_nopl = True
+
+		# ---------- song ----------
+		mariopaint_obj = mariopaint.mariopaint_song()
 
 		for num, line in enumerate(lines_smp):
 			t_smp_values = line.rstrip().split(',')

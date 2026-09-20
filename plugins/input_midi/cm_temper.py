@@ -26,6 +26,12 @@ class input_cvpj_f(plugins.base):
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_past import temper as proj_temper
+
+		project_obj = proj_temper.temper_song()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cm'
 
@@ -36,10 +42,7 @@ class input_cvpj_f(plugins.base):
 
 		convproj_obj.set_timings(6716)
 
-		project_obj = proj_temper.temper_song()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
+		# ---------- meta_track ----------
 		curpos = 0
 		for metaevent in project_obj.meta_track:
 			curpos += metaevent.td
@@ -52,6 +55,7 @@ class input_cvpj_f(plugins.base):
 				if not curpos: convproj_obj.timesig = [metaevent.beats, metaevent.beat_value]
 				convproj_obj.timesig_auto.add_point(curpos, [metaevent.beats, metaevent.beat_value])
 
+		# ---------- tracks ----------
 		for tracknum, tmp_track in enumerate(project_obj.track):
 			cvpj_trackid = 'track_'+str(tracknum)
 			track_obj = convproj_obj.track__add(cvpj_trackid, 'midi', 1, False)

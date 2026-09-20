@@ -55,18 +55,11 @@ class input_mariopaint_msq(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.songinput import mariopaint
 
-		convproj_obj.fxtype = 'rack'
-		convproj_obj.type = 'rm'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.track_nopl = True
-
-		mariopaint_obj = mariopaint.mariopaint_song()
-
-		msq_values = {}
 		if dawvert_intent.input_mode == 'file':
 			f_msq = open(dawvert_intent.input_file, 'r')
 
+		msq_values = {}
+		
 		try:
 			lines_msq = f_msq.readlines()
 			for n, line in enumerate(lines_msq):
@@ -76,6 +69,17 @@ class input_mariopaint_msq(plugins.base):
 				msq_values[msq_name] = fmf_val
 		except UnicodeDecodeError:
 			raise ProjectFileParserException('mariopaint_msq: File is not text')
+
+		# ---------- convproj init ----------
+		convproj_obj.fxtype = 'rack'
+		convproj_obj.type = 'rm'
+
+		traits_obj = convproj_obj.traits
+		traits_obj.track_nopl = True
+
+		# ---------- song ----------
+
+		mariopaint_obj = mariopaint.mariopaint_song()
 
 		if 'TIME44' in msq_values: 
 			mariopaint_obj.measure = 4 if msq_values['TIME44'] == 'TRUE' else 2

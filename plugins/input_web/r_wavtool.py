@@ -412,20 +412,7 @@ class input_wavtool(plugins.base):
 		global zip_data
 		global samplefolder
 
-		convproj_obj.fxtype = 'route'
-		convproj_obj.type = 'r'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_filetypes = ['wav','flac','ogg','mp3']
-		traits_obj.audio_stretch = ['warp', 'rate']
-		traits_obj.auto_types = ['nopl_points']
-		traits_obj.placement_cut = True
-		traits_obj.placement_loop = ['loop', 'loop_eq', 'loop_off', 'loop_adv']
-		traits_obj.plugin_ext = ['vst2', 'vst3']
-		traits_obj.plugin_ext_arch = [64]
-		traits_obj.plugin_ext_platforms = ['win']
-
-		convproj_obj.set_timings(1.0)
+		# ---------- file load ----------
 
 		try:
 			if dawvert_intent.input_mode == 'file':
@@ -444,8 +431,45 @@ class input_wavtool(plugins.base):
 		wt_proj = json.loads(t_wavtool_project)
 		wavtool_obj = proj_wavtool.wavtool_project(wt_proj)
 
-		for trackid, wavtool_track in wavtool_obj.tracks.items(): 
+		# ---------- convproj init ----------
+		convproj_obj.fxtype = 'route'
+		convproj_obj.type = 'r'
+		convproj_obj.set_timings(1.0)
 
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_filetypes = ['wav','flac','ogg','mp3']
+		traits_obj.audio_stretch = ['warp', 'rate']
+		traits_obj.auto_types = ['nopl_points']
+		traits_obj.placement_cut = True
+		traits_obj.placement_loop = ['loop', 'loop_eq', 'loop_off', 'loop_adv']
+		traits_obj.plugin_ext = ['vst2', 'vst3']
+		traits_obj.plugin_ext_arch = [64]
+		traits_obj.plugin_ext_platforms = ['win']
+
+		# ---------- metadata ----------
+		convproj_obj.metadata.name = wavtool_obj.name
+		
+		# ---------- transport ----------
+		convproj_obj.timesig = [wavtool_obj.beatNumerator, wavtool_obj.beatDenominator]
+		convproj_obj.params.add('bpm', wavtool_obj.bpm, 'float')
+
+		convproj_obj.transport.loop_active = wavtool_obj.loopEnabled
+		convproj_obj.transport.loop_start = wavtool_obj.loopStart
+		convproj_obj.transport.loop_end = wavtool_obj.loopEnd
+
+		# ---------- master track ----------
+		convproj_obj.track_master.visual.name = 'Master'
+		convproj_obj.track_master.visual.color.set_float([0.14, 0.14, 0.14])
+		convproj_obj.track_master.params.add('vol', 1, 'float')
+
+		# ---------- bpm automation ----------
+		for x in wavtool_obj.bpmAutomation:
+			point_tempo = x['value'] if 'value' in x else 120
+			point_time = x['time'] if 'time' in x else 0
+			convproj_obj.automation.add_autopoint(['main','bpm'], 'float', point_time, point_tempo, 'instant')
+
+		# ---------- tracks ----------
+		for trackid, wavtool_track in wavtool_obj.tracks.items(): 
 			logger_input.info(''+wavtool_track.type+' Track: '+wavtool_track.name)
 			if wavtool_track.type == 'MIDI':
 				track_obj = convproj_obj.track__add(trackid, 'instrument', 1, False)
@@ -541,21 +565,3 @@ class input_wavtool(plugins.base):
 						time_obj.set_offset(wavtool_clip.readStart)
 
 				add_devices(convproj_obj, track_obj, trackid, wavtool_obj.devices)
-
-		convproj_obj.track_master.visual.name = 'Master'
-		convproj_obj.track_master.visual.color.set_float([0.14, 0.14, 0.14])
-		convproj_obj.track_master.params.add('vol', 1, 'float')
-
-		convproj_obj.timesig = [wavtool_obj.beatNumerator, wavtool_obj.beatDenominator]
-		convproj_obj.params.add('bpm', wavtool_obj.bpm, 'float')
-
-		convproj_obj.transport.loop_active = wavtool_obj.loopEnabled
-		convproj_obj.transport.loop_start = wavtool_obj.loopStart
-		convproj_obj.transport.loop_end = wavtool_obj.loopEnd
-
-		for x in wavtool_obj.bpmAutomation:
-			point_tempo = x['value'] if 'value' in x else 120
-			point_time = x['time'] if 'time' in x else 0
-			convproj_obj.automation.add_autopoint(['main','bpm'], 'float', point_time, point_tempo, 'instant')
-
-		convproj_obj.metadata.name = wavtool_obj.name

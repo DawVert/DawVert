@@ -60,16 +60,17 @@ class input_zquence(plugins.base):
 
 		project_obj = zquence.zquence_song()
 
-		convproj_obj.fxtype = 'rack'
-		convproj_obj.type = 'mi'
-
-		traits_obj = convproj_obj.traits
-
-		convproj_obj.set_timings(96)
-
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj init ----------
+		convproj_obj.fxtype = 'rack'
+		convproj_obj.type = 'mi'
+		convproj_obj.set_timings(96)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
+
+		# ---------- mixers ----------
 		mixercount = 0
 		mixerassoc = {}
 		if project_obj.mixers:
@@ -87,6 +88,22 @@ class input_zquence(plugins.base):
 						do_mixer(convproj_obj, mixercount, mixerchan)
 						mixercount += 1
 
+		# ---------- transport ----------
+		if project_obj.globals:
+			zglobals = project_obj.globals.attrib
+
+			if 'BPM' in zglobals:
+				convproj_obj.params.add('bpm', int(zglobals['BPM']), 'float')
+			if 'CycleStartPosition' in zglobals:
+				convproj_obj.transport.loop_start = int(zglobals['CycleStartPosition'])
+			if 'CycleEndPosition' in zglobals:
+				convproj_obj.transport.loop_end = int(zglobals['CycleEndPosition'])
+			if 'TimeSignatureDenominator' in zglobals:
+				convproj_obj.timesig[0] = int(zglobals['TimeSignatureDenominator'])
+			if 'TimeSignatureNumerator' in zglobals:
+				convproj_obj.timesig[1] = int(zglobals['TimeSignatureNumerator'])
+
+		# ---------- tracks ----------
 		synthgrpassoc = {}
 		if project_obj.tracks:
 			for track in project_obj.tracks:
@@ -153,8 +170,7 @@ class input_zquence(plugins.base):
 															sp_obj = plugin_obj.samplepart_add(layer_obj.samplepartid)
 															sp_obj.sampleref = file
 
-
-
+		# ---------- patterns ----------
 		if project_obj.patterns:
 			for pattern in project_obj.patterns:
 				patternattrib = pattern.attrib
@@ -196,6 +212,7 @@ class input_zquence(plugins.base):
 
 													cvpj_notelist.add_m(instid, note_TickStart, note_TickLength, note_NoteKey-60, note_Velocity/127, None if not note_Pan else {'pan': note_Pan})
 
+		# ---------- references ----------
 		if project_obj.references:
 			playlist_stor = {}
 
@@ -217,20 +234,3 @@ class input_zquence(plugins.base):
 				placement_obj.fromindex = ref_ReferencedToPattern_PatternName
 				time_obj = placement_obj.time
 				time_obj.set_posdur(ref_Start, ref_GraphicLength)
-
-		if project_obj.globals:
-			zglobals = project_obj.globals.attrib
-
-			if 'BPM' in zglobals:
-				convproj_obj.params.add('bpm', int(zglobals['BPM']), 'float')
-			if 'CycleStartPosition' in zglobals:
-				convproj_obj.transport.loop_start = int(zglobals['CycleStartPosition'])
-			if 'CycleEndPosition' in zglobals:
-				convproj_obj.transport.loop_end = int(zglobals['CycleEndPosition'])
-			if 'TimeSignatureDenominator' in zglobals:
-				convproj_obj.timesig[0] = int(zglobals['TimeSignatureDenominator'])
-			if 'TimeSignatureNumerator' in zglobals:
-				convproj_obj.timesig[1] = int(zglobals['TimeSignatureNumerator'])
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')

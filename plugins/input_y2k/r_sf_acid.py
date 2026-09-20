@@ -60,7 +60,14 @@ class input_acid_old(plugins.base):
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
 		globalstore.datapack.load('sony_acid', './data/datapack/app/sony_acid.xml')
+		colordata = colors.colorset.from_datapack('sony_acid', 'track', 'acid_1')
 
+		samplefolder = dawvert_intent.path_samples['extracted']
+
+		# ---------- convproj params ----------
+		groupby = dawvert_intent.input_get_param('groupby', 'none')
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'
 
@@ -70,21 +77,23 @@ class input_acid_old(plugins.base):
 		traits_obj.audio_stretch = ['rate']
 		traits_obj.auto_types = ['pl_points','nopl_ticks']
 
-		samplefolder = dawvert_intent.path_samples['extracted']
-
-		groupby = dawvert_intent.input_get_param('groupby', 'none')
-
-		# project
+		# ---------- metadata ----------
+		convproj_obj.metadata.name = project_obj.name
+		convproj_obj.metadata.author = project_obj.artist
+		convproj_obj.metadata.original_author = project_obj.createdBy
+		convproj_obj.metadata.comment_text = project_obj.comments
+		convproj_obj.metadata.copyright = project_obj.copyright
+		
+		# ---------- transport ----------
 		ppq = project_obj.ppq
 		convproj_obj.set_timings(ppq)
 
-		colordata = colors.colorset.from_datapack('sony_acid', 'track', 'acid_1')
 		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
 		convproj_obj.transport.loop_active = bool(project_obj.loop_enable)
 		convproj_obj.transport.loop_start = project_obj.loop_start
 		convproj_obj.transport.loop_end = project_obj.loop_end
 
-		# tempo and key
+		# ---------- tempo/keys ----------
 		songroot = project_obj.root_note
 		auto_basenotes = {}
 		rootnote_auto = regions.rootnote_stor()
@@ -105,18 +114,18 @@ class input_acid_old(plugins.base):
 					else:
 						auto_basenotes[0] = int(x['base_note'])
 
+		for pos in list(auto_basenotes): rootnote_auto.add_pos(pos)
+		rootnote_auto.add_notes(auto_basenotes)
+		timemarker_obj = convproj_obj.timemarker__add_key(auto_basenotes[0]-60)
+
+		# ---------- markers ----------
 		for marker in project_obj.markers:
 			timemarker_obj = convproj_obj.timemarker__add()
 			timemarker_obj.time.set_pos(marker.pos)
 			timemarker_obj.visual.name = marker.text if marker.text else '[%i]' % marker.id
 			timemarker_obj.visual.color.set_int([255,0,0])
 
-		timemarker_obj = convproj_obj.timemarker__add_key(auto_basenotes[0]-60)
-
-		for pos in list(auto_basenotes): rootnote_auto.add_pos(pos)
-		rootnote_auto.add_notes(auto_basenotes)
-
-		# tracks
+		# ---------- tracks ----------
 		used_sends = []
 		tracks = {}
 		for tracknum, track in enumerate(project_obj.tracks):
@@ -299,6 +308,7 @@ class input_acid_old(plugins.base):
 			if stretch_type not in [1, 3]:
 				track_obj.placements.pl_audio.remove_overlaps()
 
+		# ---------- sends ----------
 		send_fx = {}
 		for fx in project_obj.fx_dx:
 			if fx.fx_num not in send_fx: send_fx[fx.fx_num] = []
@@ -320,6 +330,7 @@ class input_acid_old(plugins.base):
 					extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 					extmanu_obj.dx__replace_data(preset_obj.id, preset_obj.data)
 
+		# ---------- grouping ----------
 		group_samp = {}
 		group_isdrum = [[],[]]
 
@@ -383,10 +394,5 @@ class input_acid_old(plugins.base):
 					track_obj.visual.name = 'Drums/SFX'
 					for x in tn_drum: tracks[x].group = 'drums'
 
+		# ---------- automation ----------
 		convproj_obj.automation.set_persist_all(False)
-
-		convproj_obj.metadata.name = project_obj.name
-		convproj_obj.metadata.author = project_obj.artist
-		convproj_obj.metadata.original_author = project_obj.createdBy
-		convproj_obj.metadata.comment_text = project_obj.comments
-		convproj_obj.metadata.copyright = project_obj.copyright

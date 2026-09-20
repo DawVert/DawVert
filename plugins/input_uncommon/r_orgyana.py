@@ -36,31 +36,46 @@ class input_orgyana(plugins.base):
 		from objects import colors
 		from objects import audio_data
 
+		# ---------- load file: project ----------
+		project_obj = proj_orgyana.orgyana_project()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		# ---------- load file: orgsamp ----------
+		orgsamp_filename = os.path.join(dawvert_intent.path_external_data, 'orgyana', 'orgsamp.dat')
+		orgsamp_obj = proj_orgyana.orgyana_orgsamp()
+		if os.path.exists(orgsamp_filename): orgsamp_obj.load_from_file(orgsamp_filename)
+
+		orgdrum_sob = {}
+
+		# ---------- datapack ----------
+		globalstore.datapack.load('orgyana', './data/datapack/app/orgyana.xml')
+		colordata = colors.colorset.from_datapack('orgyana', 'track', 'orgmaker_2')
+
+		# ---------- convproj params ----------
+		use_groups = dawvert_intent.input_get_param('use_groups', True)
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(4)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
 
 		traits_obj = convproj_obj.traits
 		traits_obj.auto_types = ['nopl_points']
 		traits_obj.track_nopl = True
 
-		globalstore.datapack.load('orgyana', './data/datapack/app/orgyana.xml')
-		colordata = colors.colorset.from_datapack('orgyana', 'track', 'orgmaker_2')
+		# ---------- transport ----------
+		convproj_obj.params.add('bpm', (1/(project_obj.wait/122))*122, 'float')
+		convproj_obj.timesig = [project_obj.stepsperbar, project_obj.beatsperstep]
 
-		use_groups = dawvert_intent.input_get_param('use_groups', True)
+		if project_obj.loop_beginning != 0: 
+			convproj_obj.transport.loop_active = True
+			convproj_obj.transport.loop_start = project_obj.loop_beginning
+			convproj_obj.transport.loop_end = project_obj.loop_end
 
-		project_obj = proj_orgyana.orgyana_project()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		orgsamp_filename = os.path.join(dawvert_intent.path_external_data, 'orgyana', 'orgsamp.dat')
-
-		orgdrum_sob = {}
-
-		orgsamp_obj = proj_orgyana.orgyana_orgsamp()
-		if os.path.exists(orgsamp_filename): orgsamp_obj.load_from_file(orgsamp_filename)
-
+		# ---------- tracks ----------
 		drum_tracks = []
-
 		for tracknum, orgtrack_obj in enumerate(project_obj.tracks):
 			if len(orgtrack_obj.notes) != 0:
 				idval = 'org_'+str(tracknum)
@@ -142,6 +157,7 @@ class input_orgyana(plugins.base):
 						last_pan_pos = pos
 						last_pan_val = pan
 
+		# ---------- grouping ----------
 		if use_groups:
 			convproj_obj.fxtype = 'groupreturn'
 
@@ -150,13 +166,3 @@ class input_orgyana(plugins.base):
 			
 			for track_obj in drum_tracks:
 				track_obj.group = 'drums'
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')
-		convproj_obj.params.add('bpm', (1/(project_obj.wait/122))*122, 'float')
-		convproj_obj.timesig = [project_obj.stepsperbar, project_obj.beatsperstep]
-
-		if project_obj.loop_beginning != 0: 
-			convproj_obj.transport.loop_active = True
-			convproj_obj.transport.loop_start = project_obj.loop_beginning
-			convproj_obj.transport.loop_end = project_obj.loop_end

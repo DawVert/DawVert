@@ -40,17 +40,19 @@ class input_openmpt(plugins.base):
 		openmpt_obj.load_lib()
 		openmpt_obj.openmpt_module_create_from_memory2(moduledata)
 
-		metadata = openmpt_obj.get_metadata()
-		if 'title' in metadata: convproj_obj.metadata.name = metadata['title']
-		if 'artist' in metadata: convproj_obj.metadata.author = metadata['artist']
-		if 'message' in metadata: convproj_obj.metadata.comment_text = metadata['message']
-
 		num_channels = openmpt_obj.openmpt_module_get_num_channels()
 		num_instruments = openmpt_obj.openmpt_module_get_num_instruments()
 		num_samples = openmpt_obj.openmpt_module_get_num_samples()
 		num_patterns = openmpt_obj.openmpt_module_get_num_patterns()
 		uses_instruments = bool(num_instruments)
 
+		# ---------- metadata ----------
+		metadata = openmpt_obj.get_metadata()
+		if 'title' in metadata: convproj_obj.metadata.name = metadata['title']
+		if 'artist' in metadata: convproj_obj.metadata.author = metadata['artist']
+		if 'message' in metadata: convproj_obj.metadata.comment_text = metadata['message']
+
+		# ---------- tracker init ----------
 		tracker_obj = convproj_obj.main__create_tracker_single()
 		tracker_obj.set_num_chans(num_channels)
 		tracker_obj.maincolor = [0.6, 0.6, 0.6]
@@ -59,6 +61,7 @@ class input_openmpt(plugins.base):
 		tracker_obj.orders = openmpt_obj.get_orderlist()
 		tracker_obj.use_starttempo = True
 
+		# ---------- instruments ----------
 		if num_instruments:
 			for num in range(num_instruments):
 				inst_obj = tracker_obj.add_inst(convproj_obj, num, None)
@@ -68,6 +71,7 @@ class input_openmpt(plugins.base):
 				inst_obj = tracker_obj.add_inst(convproj_obj, num, None)
 				inst_obj.visual.name = openmpt_obj.openmpt_module_get_sample_name(num).decode()
 			
+		# ---------- patterns ----------
 		for num_pat in range(num_patterns):
 			num_rows = openmpt_obj.openmpt_module_get_pattern_num_rows(num_pat)
 			pattern_obj = tracker_obj.pattern_add(num_pat, num_rows)

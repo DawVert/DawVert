@@ -95,18 +95,6 @@ class input_soundation(plugins.base):
 		from objects.file_proj import soundation as proj_soundation
 		global convproj_obj
 
-		convproj_obj = i_convproj_obj
-
-		convproj_obj.fxtype = 'route'
-		convproj_obj.type = 'r'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_filetypes = ['wav','flac','ogg','mp3']
-		traits_obj.auto_types = ['nopl_points']
-		traits_obj.placement_cut = True
-		traits_obj.placement_loop = ['loop', 'loop_eq', 'loop_off', 'loop_adv']
-		traits_obj.audio_stretch = ['rate']
-
 		soundation_obj = None
 
 		try:
@@ -135,12 +123,26 @@ class input_soundation(plugins.base):
 		globalstore.datapack.load('soundation', './data/datapack/app/soundation.xml')
 		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.xml')
 
+		convproj_obj = i_convproj_obj
+		
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		timeSignaturesplit = soundation_obj.timeSignature.split('/')
+		# ---------- convproj init ----------
+		convproj_obj.fxtype = 'route'
+		convproj_obj.type = 'r'
 
 		timing = 22050*(120/soundation_obj.bpm)
 		convproj_obj.set_timings(timing)
+
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_filetypes = ['wav','flac','ogg','mp3']
+		traits_obj.auto_types = ['nopl_points']
+		traits_obj.placement_cut = True
+		traits_obj.placement_loop = ['loop', 'loop_eq', 'loop_off', 'loop_adv']
+		traits_obj.audio_stretch = ['rate']
+
+		# ---------- transport ----------
+		timeSignaturesplit = soundation_obj.timeSignature.split('/')
 
 		convproj_obj.timesig = [int(timeSignaturesplit[0]), int(timeSignaturesplit[1])]
 		convproj_obj.params.add('bpm', soundation_obj.bpm, 'float')
@@ -149,6 +151,7 @@ class input_soundation(plugins.base):
 		convproj_obj.transport.loop_start = soundation_obj.loopStart
 		convproj_obj.transport.loop_end = soundation_obj.loopEnd
 
+		# ---------- tracks ----------
 		tracknum = 0
 		for soundation_channel in soundation_obj.channels:
 			tracknum_hue = (tracknum/-11) - 0.2

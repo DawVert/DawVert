@@ -172,14 +172,12 @@ class input_petaporon(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import audio_data
 
-		convproj_obj.fxtype = 'rack'
-		convproj_obj.type = 'cm'
+		samplefolder = dawvert_intent.path_samples['extracted']
 
-		traits_obj = convproj_obj.traits
-		traits_obj.fxrack_params = ['vol','pan','pitch']
-		traits_obj.auto_types = ['nopl_ticks']
-		traits_obj.track_nopl = True
+		# ---------- convproj params ----------
+		in_bd = dawvert_intent.input_get_param('sampfile', '')
 
+		# ---------- load project ----------
 		midiread_obj = reader_midifile_class()
 
 		apeinst_obj = apeescape()
@@ -191,15 +189,21 @@ class input_petaporon(plugins.base):
 			path_hd = os.path.splitext(dawvert_intent.input_file)[0]+'.hd'
 			apeinst_obj.load_from_file(path_hd)
 	
-			in_bd = dawvert_intent.input_get_param('sampfile', '')
 			path_bd = os.path.splitext(dawvert_intent.input_file)[0]+'.bd' if not in_bd else in_bd
 			sample_obj.load_from_file(path_bd)
 
+		# ---------- convproj init ----------
+		convproj_obj.fxtype = 'rack'
+		convproj_obj.type = 'cm'
 		convproj_obj.do_actions.append('do_addloop')
 		convproj_obj.do_actions.append('do_singlenotelistcut')
 
-		samplefolder = dawvert_intent.path_samples['extracted']
+		traits_obj = convproj_obj.traits
+		traits_obj.fxrack_params = ['vol','pan','pitch']
+		traits_obj.auto_types = ['nopl_ticks']
+		traits_obj.track_nopl = True
 
+		# ---------- inst ----------
 		custinst_obj = convproj_obj.main__add_midi_custom_inst()
 		custinst_obj.bank = 0
 		custinst_obj.bank_hi = 0

@@ -30,12 +30,6 @@ class input_hypnospace_hsm(plugins.base):
 		from objects.file_proj_vgm import hypnospace_hsm as proj_hypnospace_hsm
 		from objects.convproj import fileref
 
-		convproj_obj.type = 'ms'
-		convproj_obj.set_timings(4)
-
-		traits_obj = convproj_obj.traits
-		traits_obj.placement_cut = True
-
 		project_obj = proj_hypnospace_hsm.hsm_song()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
@@ -45,13 +39,26 @@ class input_hypnospace_hsm(plugins.base):
 
 		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'hypnospace_hsm', ['hypnospace_hsm'])
 
+		# ---------- convproj init ----------
+		convproj_obj.type = 'ms'
+		convproj_obj.set_timings(4)
+
+		traits_obj = convproj_obj.traits
+		traits_obj.placement_cut = True
+
+		# ---------- transport ----------
+		convproj_obj.params.add('bpm', project_obj.patterns[0].header[0], 'float')
+
+		# ---------- metadata ----------
 		if project_obj.title: convproj_obj.metadata.name = project_obj.title
 		if project_obj.artist: convproj_obj.metadata.author = project_obj.artist
 
+		# ---------- tracks ----------
 		for tracknum in range(5):
 			track_obj = convproj_obj.track__add('track_'+str(tracknum), 'instruments', 1, False)
 			track_obj.visual.name = 'Track #%s' % str(tracknum+1)
 
+		# ---------- samples ----------
 		for num, sample in enumerate(project_obj.samples):
 			instid = 'inst_'+str(num)
 			inst_obj = convproj_obj.instrument__add(instid)
@@ -67,10 +74,8 @@ class input_hypnospace_hsm(plugins.base):
 			#a_predelay, a_attack, a_hold, a_decay, a_sustain, a_release, a_amount
 			plugin_obj.env_asdr_add('vol', 0, 0, 0, sample.decay/4, 1, 0, 1)
 
-		convproj_obj.params.add('bpm', project_obj.patterns[0].header[0], 'float')
-
+		# ---------- patterns ----------
 		firstpat = project_obj.patterns[0]
-
 		for patnum, pattern_obj in enumerate(project_obj.patterns):
 			tempo, steps, highlight, color = pattern_obj.header
 
@@ -98,6 +103,7 @@ class input_hypnospace_hsm(plugins.base):
 							if note_active:
 								cvpj_notelist.last_extend(1)
 
+		# ---------- scene ----------
 		curpos = 0
 		for patnum in project_obj.patternorder:
 			patdur = project_obj.patterns[patnum-1].header[1]

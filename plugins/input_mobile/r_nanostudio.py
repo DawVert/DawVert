@@ -28,12 +28,18 @@ class input_nanostudio_v1(plugins.base):
 		from objects.file_proj_past import nanostudio as proj_nanostudio
 		from objects import audio_data
 
+		project_obj = proj_nanostudio.nanostudio_song()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_folder(dawvert_intent.input_file): exit()
+
 		samplefolder = dawvert_intent.path_samples['extracted']
 
 		globalstore.datapack.load('nanostudio_v1', './data/datapack/app/nanostudio_v1.xml')
 		colordata = colors.colorset.from_datapack('nanostudio_v1', 'clips', 'main')
 
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
+		convproj_obj.set_timings(256.0)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']
@@ -41,16 +47,11 @@ class input_nanostudio_v1(plugins.base):
 		traits_obj.placement_loop = ['loop']
 		traits_obj.track_lanes = True
 
-		convproj_obj.set_timings(256.0)
-
-		project_obj = proj_nanostudio.nanostudio_song()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_folder(dawvert_intent.input_file): exit()
-
+		# ---------- transport ----------
 		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
 
+		# ---------- tracks ----------
 		track_data = {}
-
 		for instnum, ns_inst in project_obj.instruments.items():
 			cvpj_trackid = 'track_'+str(instnum)
 
@@ -125,6 +126,7 @@ class input_nanostudio_v1(plugins.base):
 									else: plugin_obj.datavals.add(key, val)
 							track_obj.plugin_autoplace(plugin_obj, fxid)
 
+		# ---------- clips ----------
 		repeatnum = {}
 		for tracknum, clips in project_obj.clips:
 			if tracknum not in repeatnum: repeatnum[tracknum] = 0

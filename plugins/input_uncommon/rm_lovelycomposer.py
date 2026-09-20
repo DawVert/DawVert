@@ -160,12 +160,6 @@ class input_lc(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_uncommon import lovelycomposer as proj_lovelycomposer
 
-		convproj_obj.type = 'rm'
-		convproj_obj.set_timings(4.0)
-
-		traits_obj = convproj_obj.traits
-		traits_obj.auto_types = ['pl_points']
-
 		project_obj = proj_lovelycomposer.LCMusic()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
@@ -173,8 +167,16 @@ class input_lc(plugins.base):
 		globalstore.datapack.load('lovelycomposer', './data/datapack/app/lovelycomposer.xml')
 		colordata = colors.colorset.from_datapack('lovelycomposer', 'track', 'main')
 
-		# ------------------------------------------ tempoblocks ------------------------------------------
+		# ---------- convproj init ----------
+		convproj_obj.type = 'rm'
+		convproj_obj.set_timings(4.0)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_sorttracks')
 
+		traits_obj = convproj_obj.traits
+		traits_obj.auto_types = ['pl_points']
+
+		# ---------- tempoblocks ----------
 		voi_notes, voi_chord = project_obj.get_channel(0)
 		tempoblocks = regions.posdurblocks(len(voi_notes), 32, decode_tempo(project_obj.speed))
 		for n, voi_note in enumerate(voi_notes):
@@ -183,11 +185,14 @@ class input_lc(plugins.base):
 		tempoblocks.proc()
 		tempoblocks.to_cvpj(convproj_obj)
 
-		# ------------------------------------------ song ------------------------------------------
+		# ---------- main params ----------
+		convproj_obj.params.add('pitch', float(project_obj.mixer_transpose), 'float')
 
+		# ---------- metadata ----------
 		if project_obj.title: convproj_obj.metadata.name = project_obj.title
 		if project_obj.editor: convproj_obj.metadata.author = project_obj.editor
 
+		# ---------- tracks ----------
 		for tracknum in range(5):
 			cvpj_instid = str(tracknum+1)
 			color = colordata.getcolornum(tracknum)
@@ -348,12 +353,3 @@ class input_lc(plugins.base):
 				inst_obj = convproj_obj.instrument__add('chord')
 				inst_obj.visual.name = 'Chord'
 				inst_obj.visual.color.set_int(color)
-	
-		patternlen = []
-		voi_notes, voi_chord = project_obj.get_channel(tracknum)
-
-		auto_bpm_obj = convproj_obj.automation.create(['main','bpm'], 'float', True)
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_sorttracks')
-		convproj_obj.params.add('pitch', float(project_obj.mixer_transpose), 'float')

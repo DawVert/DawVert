@@ -41,6 +41,19 @@ class input_korg_m1_nds(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_past import korg_m1_nds as proj_korg_m1_nds
 
+		project_obj = proj_korg_m1_nds.korg_m1_proj()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		projsong_obj = project_obj.songs[dawvert_intent.songnum]
+
+		# ---------- convproj params ----------
+		no_swing = dawvert_intent.input_get_param('no_swing', False)
+		groupby = dawvert_intent.input_get_param('groupby', 'instset')
+
+		globalstore.datapack.load('korg_m1d', './data/datapack/realsynth/korg_m1d.xml')
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.set_timings(4.0)
@@ -48,22 +61,10 @@ class input_korg_m1_nds(plugins.base):
 		traits_obj = convproj_obj.traits
 		traits_obj.auto_types = ['pl_ticks']
 
-		project_obj = proj_korg_m1_nds.korg_m1_proj()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		globalstore.datapack.load('korg_m1d', './data/datapack/realsynth/korg_m1d.xml')
-
-		projsong_obj = project_obj.songs[dawvert_intent.songnum]
-		
-		convproj_obj.params.add('bpm', projsong_obj.tempo, 'float')
+		# ---------- metadata ----------
 		convproj_obj.metadata.name = projsong_obj.name
 
-		no_swing = dawvert_intent.input_get_param('no_swing', False)
-		groupby = dawvert_intent.input_get_param('groupby', 'instset')
-
-		# ------------------------------------------ tempoblocks ------------------------------------------
-
+		# ---------- tempoblocks ----------
 		tempoblocks = regions.posdurblocks(99, projsong_obj.steps, projsong_obj.tempo)
 		for n, x in enumerate(projsong_obj.blockTempos):
 			if x: tempoblocks.set_tempo(n, x)
@@ -72,9 +73,7 @@ class input_korg_m1_nds(plugins.base):
 		tempoblocks.proc()
 		tempoblocks.to_cvpj(convproj_obj)
 
-		# ------------------------------------------ song ------------------------------------------
-
-		swing = projsong_obj.swing
+		# ---------- fx ----------
 
 		return_obj = convproj_obj.track_master.fx__return__add('trackfx')
 		return_obj.visual.name = 'FX'
@@ -104,6 +103,9 @@ class input_korg_m1_nds(plugins.base):
 			param_obj.add_range(0, 127)
 
 		return_obj.plugslots.slots_audio.append('trackfx')
+
+		# ---------- channels ----------
+		swing = projsong_obj.swing
 
 		do_group_inst = groupby=='instset'
 		if do_group_inst: grouptrks = {}
@@ -161,6 +163,7 @@ class input_korg_m1_nds(plugins.base):
 					oswing = (((swing-50)/50) if (note.offset%2) else 0) if not no_swing else 0
 					cvpj_notelist.add_r(note.offset+oswing, note.length, (note.pitch-128)-60, note.velocity/15, None)
 
+		# ---------- grouping ----------
 		if do_group_inst:
 			groupnum = 1
 			for k, v in grouptrks.items():

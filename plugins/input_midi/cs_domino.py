@@ -27,26 +27,30 @@ class input_domino(plugins.base):
 		from objects.file_proj import domino as proj_domino
 		from objects import colors
 
+		project_obj = proj_domino.dms_project()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		globalstore.datapack.load('midi', './data/datapack/app/midi.xml')
+		colordata = colors.colorset.from_datapack('midi', 'track', 'domino')
+
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cs'
+		convproj_obj.set_timings(project_obj.ppq)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
 
 		traits_obj = convproj_obj.traits
 		traits_obj.fxrack_params = ['vol','pan','pitch']
 		traits_obj.auto_types = ['nopl_ticks']
 		traits_obj.track_nopl = True
 
-		globalstore.datapack.load('midi', './data/datapack/app/midi.xml')
-		colordata = colors.colorset.from_datapack('midi', 'track', 'domino')
-
-		project_obj = proj_domino.dms_project()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		convproj_obj.set_timings(project_obj.ppq)
-
+		# ---------- metadata ----------
 		convproj_obj.metadata.name = project_obj.name
 		convproj_obj.metadata.copyright = project_obj.copyright
 
+		# ---------- tracks ----------
 		for n, track in enumerate(project_obj.tracks):
 			channel = track.channel
 			track_obj = convproj_obj.track__add(str(n), 'midi', 1, False)
@@ -81,6 +85,3 @@ class input_domino(plugins.base):
 
 			for x in track.tempos:
 				events_obj.add_tempo(x.pos, x.val)
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')

@@ -51,15 +51,22 @@ class input_petaporon(plugins.base):
 		except json.decoder.JSONDecodeError as t:
 			raise ProjectFileParserException('petaporon: JSON parsing error: '+str(t))
 
+		globalstore.datapack.load('petaporon', './data/datapack/app/petaporon.xml')
+		colordata = colors.colorset.from_datapack('petaporon', 'inst', 'main')
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
+		convproj_obj.do_actions.append('do_singlenotelistcut')
 		convproj_obj.set_timings(4)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.track_nopl = True
 
-		globalstore.datapack.load('petaporon', './data/datapack/app/petaporon.xml')
-		colordata = colors.colorset.from_datapack('petaporon', 'inst', 'main')
+		# ---------- transport ----------
+		if 't' in petapo_data: convproj_obj.params.add('bpm', petapo_data['t'], 'float')
+		if 'c' in petapo_data: convproj_obj.timesig[0] = petapo_data['c']
 
+		# ---------- tracks ----------
 		peta_notelists = [[] for _ in range(10)]
 		if 'n' in petapo_data:
 			peta_notedata = petapo_data['n'].encode('ascii')
@@ -77,6 +84,7 @@ class input_petaporon(plugins.base):
 		else:
 			logger_input.info('notes data not found')
 
+		# ---------- insts ----------
 		peta_instset = petapo_data['i'] if 'i' in petapo_data else None
 		for instnum in range(10):
 			instid = 'petaporon'+str(instnum)
@@ -117,7 +125,3 @@ class input_petaporon(plugins.base):
 			cvpj_notelist = track_obj.placements.notelist
 
 			for n in peta_notelists[instnum]: cvpj_notelist.add_r(n[0], n[1], n[2], 1, None)
-
-		convproj_obj.do_actions.append('do_singlenotelistcut')
-		if 't' in petapo_data: convproj_obj.params.add('bpm', petapo_data['t'], 'float')
-		if 'c' in petapo_data: convproj_obj.timesig[0] = petapo_data['c']

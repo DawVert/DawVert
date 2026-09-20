@@ -30,8 +30,16 @@ class input_famitracker_txt(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		samplefolder = dawvert_intent.path_samples['extracted']
+
+		globalstore.datapack.load('chip_nes', './data/datapack/app/chip_nes.xml')
+
+		cur_song = project_obj.song[0]
+
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 
+		# ---------- metadata ----------
 		if project_obj.title: convproj_obj.metadata.name = project_obj.title
 		if project_obj.author: convproj_obj.metadata.author = project_obj.author
 		if project_obj.copyright: 
@@ -39,14 +47,9 @@ class input_famitracker_txt(plugins.base):
 			else: convproj_obj.metadata.copyright = project_obj.copyright
 		if project_obj.comment: convproj_obj.metadata.comment_text = '\n'.join(project_obj.comment)
 
-		samplefolder = dawvert_intent.path_samples['extracted']
-
-		globalstore.datapack.load('chip_nes', './data/datapack/app/chip_nes.xml')
-
-		cur_song = project_obj.song[0]
-
 		if cur_song.name != 'New song': convproj_obj.metadata.name = cur_song.name
 
+		# ---------- tracker init ----------
 		patterndata_obj = pat_multi.multi_patsong()
 		patterndata_obj.num_rows = cur_song.patlen
 		patterndata_obj.datapack_name = 'chip_nes'
@@ -81,6 +84,7 @@ class input_famitracker_txt(plugins.base):
 			for _ in range(project_obj.n163channels):
 				patterndata_obj.add_channel('n163')
 
+		# ---------- patterns ----------
 		for patnum, ftpatobj in cur_song.patterns.items():
 
 			for channum, chandata in ftpatobj.patdata.items():
@@ -102,12 +106,13 @@ class input_famitracker_txt(plugins.base):
 						elif fx_type == 7: pat_obj.cell_fx_mod(row_num, fx_type, fx_val)
 						elif fx_type == 'D': pat_obj.cell_g_param(row_num, 'skip_pattern', fx_val)
 
+		# ---------- orders ----------
 		for chnum, orders in cur_song.orders.items():
 			if chnum<len(patterndata_obj.orders):
 				patterndata_obj.orders[chnum] = orders
 
+		# ---------- insts ----------
 		used_insts = patterndata_obj.to_cvpj(convproj_obj, cur_song.tempo, cur_song.speed)
-
 		for instname, instnums in used_insts.items():
 			for chinst in instnums:
 				instnum, channum = chinst

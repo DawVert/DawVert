@@ -25,25 +25,25 @@ class input_notessimo_v2(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_uncommon import notessimo_v2 as proj_notessimo_v2
 
-		global used_insts
-		used_insts = []
-
-		# ---------- CVPJ Start ----------
-		convproj_obj.fxtype = 'rack'
-		convproj_obj.type = 'ms'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.auto_types = ['pl_points']
-
-		convproj_obj.set_timings(4.0)
-
-		globalstore.datapack.load('notessimo_v2', './data/datapack/app/notessimo_v2.xml')
-		
-		# ---------- File ----------
 		project_obj = proj_notessimo_v2.notev2_song()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		globalstore.datapack.load('notessimo_v2', './data/datapack/app/notessimo_v2.xml')
+
+		global used_insts
+		used_insts = []
+
+		# ---------- convproj init ----------
+		convproj_obj.fxtype = 'rack'
+		convproj_obj.type = 'ms'
+		convproj_obj.set_timings(4.0)
+		convproj_obj.do_actions.append('do_lanefit')
+
+		traits_obj = convproj_obj.traits
+		traits_obj.auto_types = ['pl_points']
+
+		# ---------- metadata ----------
 		convproj_obj.metadata.name = project_obj.name
 		convproj_obj.metadata.author = project_obj.author
 
@@ -58,11 +58,13 @@ class input_notessimo_v2(plugins.base):
 			convproj_obj.metadata.t_year = int(t_year)
 		except: pass
 
+		# ---------- tracks ----------
 		cvpj_tracks = []
 		for layernum in range(9):
 			track_obj = convproj_obj.track__add(str(layernum+1), 'instruments', 1, False) 
 			track_obj.visual.name = 'Layer #'+str(layernum+1)
 
+		# ---------- patterns ----------
 		tempo_len = []
 		used_insts = []
 		for pat_num, x in enumerate(project_obj.patterns):
@@ -90,9 +92,11 @@ class input_notessimo_v2(plugins.base):
 							cvpj_notelist.add_m(str(nnn.inst), (nnn.pos)*notelen, (nnn.dur/4)*notelen, nnn.get_note(), nnn.vol, None)
 							if nnn.pan: cvpj_notelist.last_add_pan(nnn.pan)
 
+		# ---------- fxchan ----------
 		fxchan_data = convproj_obj.fx__chan__add(1)
 		fxchan_data.visual.name = 'Drums'
 
+		# ---------- insts ----------
 		fxnum = 2
 		for used_inst in used_insts:
 			cvpj_instid = str(used_inst)
@@ -106,8 +110,10 @@ class input_notessimo_v2(plugins.base):
 				fxchan_data.visual.color = inst_obj.visual.color.copy()
 				fxnum += 1
 
+		# ---------- bpm auto ----------
 		auto_bpm_obj = convproj_obj.automation.create(['main','bpm'], 'float', True)
 		
+		# ---------- scene ----------
 		curpos = 0
 		for pat_num in project_obj.order:
 			tempo, notelen = tempo_len[pat_num]
@@ -118,5 +124,3 @@ class input_notessimo_v2(plugins.base):
 			scenepl_obj.id = str(pat_num)
 			auto_bpm_obj.add_all(curpos, tempo_len[pat_num][0], size)
 			curpos += size
-
-		convproj_obj.do_actions.append('do_lanefit')

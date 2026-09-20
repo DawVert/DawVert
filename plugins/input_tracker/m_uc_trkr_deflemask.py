@@ -25,28 +25,34 @@ class input_deflemask(plugins.base):
 		from objects.file_proj_tracker import deflemask as proj_deflemask
 		from objects.tracker import pat_multi
 		from objects import audio_data
+
 		project_obj = proj_deflemask.deflemask_project()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		convproj_obj.fxtype = 'rack'
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
 		globalstore.datapack.load('furnace', './data/datapack/app/furnace.xml')
 
+		# ---------- convproj init ----------
+		convproj_obj.fxtype = 'rack'
+
+		# ---------- tracker init ----------
 		patterndata_obj = pat_multi.multi_patsong()
 		patterndata_obj.num_rows = project_obj.total_rows_per_pattern
 		patterndata_obj.datapack_name = 'furnace'
 		patterndata_obj.datapack_cat = 'chip'
 
+		# ---------- metadata ----------
 		if project_obj.song_name: convproj_obj.metadata.name = project_obj.song_name
 		if project_obj.song_author: convproj_obj.metadata.author = project_obj.song_author
 
+		# ---------- channel name ----------
 		for num, name in enumerate(project_obj.chantype):
 			chan_obj = patterndata_obj.add_channel(name)
 			chan_obj.name = project_obj.channames[num]
 
+		# ---------- channels ----------
 		for channum, dmf_chan in enumerate(project_obj.channels):
 			patterndata_obj.orders[channum] = list(dmf_chan.orders)
 			chantype = project_obj.chantype[channum]
@@ -87,8 +93,7 @@ class input_deflemask(plugins.base):
 								if fx_type == 13:
 									pat_obj.cell_g_param(r_row, 'pattern_jump', 0)
 
-		used_insts = patterndata_obj.to_cvpj(convproj_obj, 150, project_obj.ticktime2)
-
+		# ---------- samples ----------
 		sampleparts = []
 		for n, sample_obj in enumerate(project_obj.samples):
 			wave_path = samplefolder + str(n).zfill(2) + '.wav'
@@ -105,6 +110,9 @@ class input_deflemask(plugins.base):
 				sampleparts.append([sampleid, sample_obj])
 			else:
 				sampleparts.append([None, None])
+
+		# ---------- insts ----------
+		used_insts = patterndata_obj.to_cvpj(convproj_obj, 150, project_obj.ticktime2)
 
 		for instname, instnums in used_insts.items():
 			for chinst in instnums:

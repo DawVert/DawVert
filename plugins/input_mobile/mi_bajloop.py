@@ -29,22 +29,26 @@ class input_fl_mobile_old(plugins.base):
 
 		project_obj = bajloops.bajloop_file()
 
-		traits_obj = convproj_obj.traits
-		traits_obj.auto_types = ['nopl_points']
-
-		convproj_obj.type = 'mi'
-
-		convproj_obj.set_timings(8)
-
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		convproj_obj.metadata.name = project_obj.name
-		convproj_obj.metadata.comment_text = project_obj.info
+		# ---------- convproj init ----------
+		convproj_obj.type = 'mi'
+		convproj_obj.set_timings(8)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_lanefit')
+		traits_obj = convproj_obj.traits
+		traits_obj.auto_types = ['nopl_points']
+
+		# ---------- transport ----------
 		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
 
-		samplefolder = dawvert_intent.path_samples['extracted']
+		# ---------- metadata ----------
+		convproj_obj.metadata.name = project_obj.name
+		convproj_obj.metadata.comment_text = project_obj.info
 		
+		# ---------- samples ----------
+		samplefolder = dawvert_intent.path_samples['extracted']
 		for num, samp in enumerate(project_obj.samples):
 			samplerefid = str(num)
 			wave_path = samplefolder+samplerefid+'.wav'
@@ -59,6 +63,7 @@ class input_fl_mobile_old(plugins.base):
 			audio_obj.to_sampleref_obj(sampleref_obj)
 			audio_obj.to_file_wav(wave_path)
 
+		# ---------- insts ----------
 		for num, binst in enumerate(project_obj.insts):
 			samplenum = int(binst.sample_num)-1
 			samp = project_obj.samples[samplenum]
@@ -81,6 +86,7 @@ class input_fl_mobile_old(plugins.base):
 				sp_obj.loop_active = True
 			inst_obj.plugslots.set_synth(pluginid)
 
+		# ---------- patterns ----------
 		patsize = {}
 		for num, bpattern in enumerate(project_obj.patterns):
 			if len(bpattern.events):
@@ -94,6 +100,7 @@ class input_fl_mobile_old(plugins.base):
 				nl_dur = cvpj_notelist.get_dur()
 				patsize[num+1] = (nl_dur/32).__ceil__()
 
+		# ---------- placements ----------
 		playlist_stor = {}
 		for num in range(8):
 			playlist_stor[num] = {}
@@ -112,6 +119,7 @@ class input_fl_mobile_old(plugins.base):
 				time_obj = placement_obj.time
 				time_obj.set_posdur(pos*32, 32*s)
 
+		# ---------- autos ----------
 		for tracknum, paramnum, data in project_obj.autos:
 			a_loc = None
 			v_add = 0
@@ -130,6 +138,3 @@ class input_fl_mobile_old(plugins.base):
 					pos = (pos-256)/8
 					val = v_add+(val/v_div)
 					auto_obj.add_autopoint(pos, val, None)
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_lanefit')

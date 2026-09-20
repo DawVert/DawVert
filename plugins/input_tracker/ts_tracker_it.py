@@ -102,10 +102,6 @@ class input_it(plugins.base):
 		from objects import globalstore
 		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.xml')
 
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_filetypes = ['wav']
-		traits_obj.auto_types = ['pl_points', 'pl_ticks']
-
 		project_obj = proj_it.it_song()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
@@ -142,23 +138,36 @@ class input_it(plugins.base):
 				logger_input.info("IT: Ripping/Decompressing Sample #" + str(n))
 				sample.rip_sample(samplefolder, wave_path)
 
+		# ---------- convproj init ----------
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_filetypes = ['wav']
+		traits_obj.auto_types = ['pl_points', 'pl_ticks']
+
+		# ---------- tracker init ----------
 		tracker_obj = convproj_obj.main__create_tracker_single()
 		tracker_obj.set_num_chans(64)
 		tracker_obj.mainvisual.from_datapack('tracker_various', 'it', 'main', True)
 		tracker_obj.tempo = project_obj.tempo
 		tracker_obj.speed = project_obj.speed
 
+		# ---------- metadata ----------
+		convproj_obj.metadata.name = project_obj.title
+		convproj_obj.metadata.comment_text = project_obj.songmessage
+
+		# ---------- orders ----------
 		table_orders = list(project_obj.l_order.copy())
 		while -2 in table_orders: table_orders.remove(-2)
 		while -1 in table_orders: table_orders.remove(-1)
 		tracker_obj.orders = table_orders
 
+		# ---------- timepoints ----------
 		breakcounts = [0]
 		for x in project_obj.l_order:
 			if x not in [-1, -2]: breakcounts.append(0)
 			else: breakcounts[-1] += 1
 		tracker_obj.timepoints = [n for n, x in enumerate(breakcounts) if x]
 
+		# ---------- patterns ----------
 		for patnum, itpat_obj in enumerate(project_obj.patterns):
 			if itpat_obj.used:
 				pattern_obj = tracker_obj.pattern_add(patnum, itpat_obj.rows)
@@ -186,17 +195,20 @@ class input_it(plugins.base):
 						if cell_commandtype == 20: pattern_obj.cell_g_param(cell_channel, rownum, 'tempo', cell_commandval)
 						if cell_commandtype == 26: pattern_obj.cell_param(cell_channel, rownum, 'pan', ((cell_commandval/255)-0.5)*2)
 
-		if project_obj.ompt_cnam:
-			for n, t in enumerate(project_obj.ompt_cnam):
-				if t: tracker_obj.channels[n].name = t
-
+		# ---------- pattern names ----------
 		if project_obj.ompt_pnam:
 			for n, t in enumerate(project_obj.ompt_pnam):
 				if t: project_obj.patterns[n].name = t
 
+		# ---------- plugins ----------
 		if project_obj.plugins:
 			for fxnum, plugdata in project_obj.plugins.items():
 				plugdata.to_cvpj(fxnum, convproj_obj)
+
+		# ---------- channels ----------
+		if project_obj.ompt_cnam:
+			for n, t in enumerate(project_obj.ompt_cnam):
+				if t: tracker_obj.channels[n].name = t
 
 		if project_obj.ompt_chfx:
 			for n, t in enumerate(project_obj.ompt_chfx):
@@ -210,6 +222,7 @@ class input_it(plugins.base):
 
 		track_volume = 0.3
 
+		# ---------- insts ----------
 		if it_useinst:
 			for instrumentcount, it_inst in enumerate(project_obj.instruments):
 				cvpj_instname = get_name(it_inst.name, it_inst.dosfilename)
@@ -339,8 +352,3 @@ class input_it(plugins.base):
 				inst_obj.params.add('vol', track_volume, 'float')
 
 		convproj_obj.track_master.params.add('vol', project_obj.globalvol/128, 'float')
-
-		# ------------- Song Message -------------
-
-		convproj_obj.metadata.name = project_obj.title
-		convproj_obj.metadata.comment_text = project_obj.songmessage

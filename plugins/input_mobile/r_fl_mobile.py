@@ -33,10 +33,26 @@ class input_fl_mobile(plugins.base):
 		from objects.file_proj_mobile import fl_mobile as proj_fl_mobile
 		from objects.file import adlib_bnk
 		from objects.convproj import fileref
-		fileref_global = fileref.cvpj_fileref_global
 
+		project_obj = proj_fl_mobile.flm_project()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		samplefolder = dawvert_intent.path_samples['extracted']
+
+		fileref_global = fileref.cvpj_fileref_global
+		fileref_global.add_prefix('flmobile_factory:fl_24_64', 'win', "C:\\Program Files\\Image-Line\\FL Studio 2024\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
+		fileref_global.add_prefix('flmobile_factory:fl_21_32', 'win', "C:\\Program Files (x86)\\Image-Line\\FL Studio 21\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
+		fileref_global.add_prefix('flmobile_factory:fl_21_64', 'win', "C:\\Program Files\\Image-Line\\FL Studio 21\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
+		fileref_global.add_prefix('flmobile_factory:fl_20_32', 'win', "C:\\Program Files (x86)\\Image-Line\\FL Studio 20\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
+		fileref_global.add_prefix('flmobile_factory:fl_20_64', 'win', "C:\\Program Files\\Image-Line\\FL Studio 20\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
+
+		globalstore.datapack.load('fl_mobile', './data/datapack/app/fl_mobile.xml')
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'route'
+		convproj_obj.set_timings(1.0)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.auto_types = ['pl_points']
@@ -45,26 +61,22 @@ class input_fl_mobile(plugins.base):
 		traits_obj.audio_filetypes = ['wav','mp3']
 		traits_obj.audio_stretch = ['rate']
 
-		convproj_obj.set_timings(1.0)
-
-		fileref_global.add_prefix('flmobile_factory:fl_24_64', 'win', "C:\\Program Files\\Image-Line\\FL Studio 2024\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
-		fileref_global.add_prefix('flmobile_factory:fl_21_32', 'win', "C:\\Program Files (x86)\\Image-Line\\FL Studio 21\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
-		fileref_global.add_prefix('flmobile_factory:fl_21_64', 'win', "C:\\Program Files\\Image-Line\\FL Studio 21\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
-		fileref_global.add_prefix('flmobile_factory:fl_20_32', 'win', "C:\\Program Files (x86)\\Image-Line\\FL Studio 20\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
-		fileref_global.add_prefix('flmobile_factory:fl_20_64', 'win', "C:\\Program Files\\Image-Line\\FL Studio 20\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
-
-		samplefolder = dawvert_intent.path_samples['extracted']
-
-		project_obj = proj_fl_mobile.flm_project()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		globalstore.datapack.load('fl_mobile', './data/datapack/app/fl_mobile.xml')
-
+		# ---------- transport ----------
 		tempomul = 120/project_obj.tempo
+		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
 
+		if project_obj.space_start or project_obj.space_end:
+			if project_obj.space_end != project_obj.space_start:
+				convproj_obj.transport.loop_active = True
+				convproj_obj.transport.loop_start = project_obj.space_start
+				convproj_obj.transport.loop_end = project_obj.space_end
+
+		# ---------- metadata ----------
+		convproj_obj.metadata.name = project_obj.meta_title
+		convproj_obj.metadata.author = project_obj.meta_artist
+
+		# ---------- tracks ----------
 		sorttracks = {}
-
 		tracks = [(project_obj.racks[n], x) for n, x in enumerate(project_obj.channels)]
 		for n, d in enumerate(tracks):
 			flm_rack, flm_channel = d
@@ -293,18 +305,7 @@ class input_fl_mobile(plugins.base):
 								time_obj = autopl_obj.time
 								time_obj.set_posdur(startpos, maxdur)
 								time_obj.set_loop_data(flm_clip.cut_start%flm_clip.loop_end, 0, flm_clip.loop_end)
-
-		convproj_obj.metadata.name = project_obj.meta_title
-		convproj_obj.metadata.author = project_obj.meta_artist
-		if project_obj.space_start or project_obj.space_end:
-			if project_obj.space_end != project_obj.space_start:
-				convproj_obj.transport.loop_active = True
-				convproj_obj.transport.loop_start = project_obj.space_start
-				convproj_obj.transport.loop_end = project_obj.space_end
-
 		convproj_obj.track_order = [sorttracks[x] for x in sorted(list(sorttracks))]
-
-		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
 
 def extract_audio(audioname, zip_data):
 	audio_filename = None

@@ -35,13 +35,6 @@ class input_cvpj_f(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from functions import note_data
 
-		traits_obj = convproj_obj.traits
-		traits_obj.track_nopl = True
-		traits_obj.auto_types = ['nopl_points']
-
-		convproj_obj.type = 'r'
-		convproj_obj.set_timings(4)
-
 		if dawvert_intent.input_mode == 'file':
 			bytestream = open(dawvert_intent.input_file, 'r')
 		
@@ -58,19 +51,33 @@ class input_cvpj_f(plugins.base):
 		#if 'debug' in dawvert_intent:
 		#	with open(input_file+'_pritty', "w") as fileout: json.dump(mmc_main, fileout, indent=4, sort_keys=True)
 
-		mmc_tracks = mmc_main["Tracks"]
-		mmc_bpm = getvalue(mmc_main, 'Bpm', 120)
+		# ---------- convproj init ----------
+		convproj_obj.type = 'r'
+		convproj_obj.set_timings(4)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
+
+		traits_obj = convproj_obj.traits
+		traits_obj.track_nopl = True
+		traits_obj.auto_types = ['nopl_points']
+
+		# ---------- key ----------
 		mmc_key = getvalue(mmc_main, 'Key', 0)
 		mmc_scale = scaletable[getvalue(mmc_main, 'Scale', 0)]
 		mmc_melooffset = getvalue(mmc_main, 'MelodyOffset', 0)
 
+		# ---------- transport ----------
+		mmc_bpm = getvalue(mmc_main, 'Bpm', 120)
 		mmc_bpm, notelen = xtramath.get_lower_tempo(mmc_bpm, 1, 200)
+		convproj_obj.params.add('bpm', mmc_bpm, 'float')
 
+		# ---------- master track ----------
 		convproj_obj.track_master.visual.name = 'MAS'
 		convproj_obj.track_master.visual.color.set_float(maincolor)
 		convproj_obj.track_master.params.add('vol', getvalue(mmc_main, 'MasterVolume', 0.5)*1.5, 'float')
-		convproj_obj.params.add('bpm', mmc_bpm, 'float')
 
+		# ---------- tracks ----------
+		mmc_tracks = mmc_main["Tracks"]
 		for tracknum, mmc_track in enumerate(mmc_tracks):
 			cvpj_instid = 'CH'+str(tracknum)
 
@@ -99,7 +106,4 @@ class input_cvpj_f(plugins.base):
 
 				cvpj_notelist.add_r(notepos, notedur, notekey, notevol, None)
 				cvpj_notelist.last_add_pan(notepan)
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')
 

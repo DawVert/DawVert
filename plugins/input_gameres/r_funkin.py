@@ -27,13 +27,6 @@ class input_ex_basic_pitch(plugins.base):
 		}
 
 	def parse(self, convproj_obj, dawvert_intent):
-		convproj_obj.type = 'r'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.placement_loop = ['loop', 'loop_off', 'loop_adv']
-
-		convproj_obj.set_timings(600)
-		convproj_obj.params.add('bpm', 120, 'float')
 
 		if dawvert_intent.input_mode == 'file':
 			bytestream = open(dawvert_intent.input_file, 'r', encoding='utf8')
@@ -47,6 +40,16 @@ class input_ex_basic_pitch(plugins.base):
 			logger_input.error('funkin: JSON parsing error: '+str(t))
 			exit()
 
+		# ---------- convproj init ----------
+		convproj_obj.type = 'r'
+		convproj_obj.set_timings(600)
+		convproj_obj.params.add('bpm', 120, 'float')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
+
+		traits_obj = convproj_obj.traits
+		traits_obj.placement_loop = ['loop', 'loop_off', 'loop_adv']
+
+		# ---------- data ----------
 		fnf_scrollSpeed = funkin_json['scrollSpeed'] if 'scrollSpeed' in funkin_json else {}
 		fnf_events = funkin_json['events'] if 'events' in funkin_json else {}
 		fnf_notes = funkin_json['notes'].copy() if 'notes' in funkin_json else {}
@@ -86,5 +89,3 @@ class input_ex_basic_pitch(plugins.base):
 				del note['t']
 
 				if 'k' in note: del note['k']
-
-		convproj_obj.do_actions.append('do_singlenotelistcut')

@@ -72,13 +72,6 @@ class input_pxtone(plugins.base):
 		from objects import audio_data
 		from objects.file_proj_uncommon import pxtone as proj_pxtone
 		
-		convproj_obj.type = 'rm'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.auto_types = ['nopl_ticks']
-		traits_obj.track_nopl = True
-		traits_obj.audio_filetypes = ['wav','ogg']
-
 		project_obj = proj_pxtone.ptcop_song()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
@@ -89,11 +82,34 @@ class input_pxtone(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
+		# ---------- convproj init ----------
+		convproj_obj.type = 'rm'
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
+
+		traits_obj = convproj_obj.traits
+		traits_obj.auto_types = ['nopl_ticks']
+		traits_obj.track_nopl = True
+		traits_obj.audio_filetypes = ['wav','ogg']
+
 		timebase = 480
 		if project_obj.header == b'PTCOLLAGE-071119': timebase = 480
 		if project_obj.header == b'PTTUNE--20071119': timebase = 48
 		convproj_obj.set_timings(timebase)
 
+		# ---------- metadata ----------
+		if project_obj.title: convproj_obj.metadata.name = project_obj.title
+		if project_obj.comment: convproj_obj.metadata.comment_text = project_obj.comment
+
+		# ---------- transport ----------
+		convproj_obj.params.add('bpm', project_obj.master.beattempo, 'float')
+
+		if project_obj.master.repeat != 0: 
+			convproj_obj.transport.loop_active = True
+			convproj_obj.transport.loop_start = project_obj.master.repeat
+			convproj_obj.transport.loop_end = project_obj.master.last
+
+		# ---------- voices ----------
 		for voicenum, voice_obj in project_obj.voices.items():
 			cvpj_instid = 'ptcop_'+str(voicenum)
 			inst_obj = convproj_obj.instrument__add(cvpj_instid)
@@ -143,6 +159,7 @@ class input_pxtone(plugins.base):
 
 			inst_obj.params.add('vol', cvpj_instvol, 'float')
 
+		# ---------- tracks ----------
 		for unitnum, unit_obj in enumerate(project_obj.units):
 			unit_notes = project_obj.events.data[np.where(project_obj.events.data['unitnum'] == unitnum)[0]]
 
@@ -162,15 +179,3 @@ class input_pxtone(plugins.base):
 				if e['eventnum'] == 12: unitstream.voice(e['value'])
 				if e['eventnum'] == 14: unitstream.pitch(e['d_position'], e['value'])
 				if e['eventnum'] == 15: unitstream.pan(e['d_position'], e['value'])
-
-		if project_obj.master.repeat != 0: 
-			convproj_obj.transport.loop_active = True
-			convproj_obj.transport.loop_start = project_obj.master.repeat
-			convproj_obj.transport.loop_end = project_obj.master.last
-
-		if project_obj.title: convproj_obj.metadata.name = project_obj.title
-		if project_obj.comment: convproj_obj.metadata.comment_text = project_obj.comment
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')
-		convproj_obj.params.add('bpm', project_obj.master.beattempo, 'float')

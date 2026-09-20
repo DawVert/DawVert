@@ -253,20 +253,6 @@ class input_jummbox(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import jummbox as proj_jummbox
 
-		convproj_obj.type = 'mi'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_filetypes = ['wav']
-		traits_obj.auto_types = ['pl_points']
-
-		globalstore.datapack.load('beepbox', './data/datapack/app/beepbox.xml')
-
-		colors_pitch = colors.colorset.from_datapack('beepbox', 'inst', 'beepbox_dark')
-		colors_drums = colors.colorset.from_datapack('beepbox', 'drums', 'beepbox_dark')
-
-		rawchipwaves_obj = rawchipwaves()
-		rawchipwaves_obj.load_from_file(os.path.join('data_main','text','beepbox_shapes.txt')) 
-
 		if dawvert_intent.input_mode == 'file':
 			bytestream = open(dawvert_intent.input_file, 'r', encoding='utf8')
 
@@ -279,22 +265,44 @@ class input_jummbox(plugins.base):
 
 		jummbox_obj = proj_jummbox.jummbox_project(jummbox_json)
 
+		colors_pitch = colors.colorset.from_datapack('beepbox', 'inst', 'beepbox_dark')
+		colors_drums = colors.colorset.from_datapack('beepbox', 'drums', 'beepbox_dark')
+
+		rawchipwaves_obj = rawchipwaves()
+		rawchipwaves_obj.load_from_file(os.path.join('data_main','text','beepbox_shapes.txt')) 
+
+		globalstore.datapack.load('beepbox', './data/datapack/app/beepbox.xml')
+
+		durpos = jummbox_obj.get_durpos()
+
+		# ---------- convproj params ----------
+		transpose_ignore = dawvert_intent.input_get_param('transpose_ignore', False)
+
+		# ---------- convproj init ----------
+		convproj_obj.type = 'mi'
+		convproj_obj.do_actions.append('do_addloop')
 		convproj_obj.set_timings(8*(jummbox_obj.beatsPerBar/8))
 
-		convproj_obj.params.add('bpm', jummbox_obj.beatsPerMinute, 'float')
-		convproj_obj.track_master.params.add('vol', jummbox_obj.masterGain, 'float')
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_filetypes = ['wav']
+		traits_obj.auto_types = ['pl_points']
+
+		# ---------- metadata ----------
 		if jummbox_obj.name: convproj_obj.metadata.name = jummbox_obj.name
 
+		# ---------- others ----------
 		jummbox_key = 0
-		if not dawvert_intent.input_get_param('transpose_ignore', False):
+		if not transpose_ignore:
 			if jummbox_obj.key in noteoffset: jummbox_key = noteoffset[jummbox_obj.key]
 		
-		jummbox_obj.get_durpos()
-		durpos = jummbox_obj.get_durpos()
+		# ---------- transport ----------
+		convproj_obj.params.add('bpm', jummbox_obj.beatsPerMinute, 'float')
+		convproj_obj.track_master.params.add('vol', jummbox_obj.masterGain, 'float')
 
 		convproj_obj.timesig = [4,8]
 		convproj_obj.timemarker__from_patlenlist(durpos, jummbox_obj.introBars)
 
+		# ---------- channels ----------
 		for channum, bb_chan in enumerate(jummbox_obj.channels):
 			if bb_chan.type in ['pitch', 'drum']:
 				if bb_chan.type == 'pitch': bb_color = colors_pitch.getcolor()
@@ -538,5 +546,3 @@ class input_jummbox(plugins.base):
 		#	convproj_obj.transport.loop_end = loopbars if loopbars else patlentable[-1]
 
 		#convproj_obj.automation.sort()
-
-		convproj_obj.do_actions.append('do_addloop')

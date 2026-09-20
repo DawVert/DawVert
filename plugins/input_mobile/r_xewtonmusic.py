@@ -7,8 +7,6 @@ from objects.convproj import fileref
 from objects import globalstore
 import os
 
-INST_ENABLED = 1
-
 class input_xewton(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -26,32 +24,43 @@ class input_xewton(plugins.base):
 		in_dict['plugin_included'] = ['']
 		in_dict['projtype'] = 'r'
 
+	def get_configmenu(self): 
+		return {
+			"inst_on": {"type": "bool","name": "Instruments Enabled","def": True,"group": "debug"},
+		}
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_mobile import xewtonmusic
 		from objects import audio_data
 
 		project_obj = xewtonmusic.xewtonmusic_song_file()
 
-		convproj_obj.type = 'r'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.track_nopl = True
-
-		convproj_obj.set_timings(48)
-
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		convproj_obj.params.add('bpm', project_obj.header.tempo, 'float')
-		convproj_obj.timesig = [project_obj.header.timesig1, project_obj.header.timesig2]
-		
 		globalstore.datapack.load('xewton', './data/datapack/app/xewton.xml')
 
 		extpath_path = os.path.join(dawvert_intent.path_external_data, 'xewton')
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		instplugs = {}
+		# ---------- convproj params ----------
+		INST_ENABLED = dawvert_intent.input_get_param('inst_on', True)
 
+		# ---------- convproj init ----------
+		convproj_obj.type = 'r'
+		convproj_obj.set_timings(48)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
+
+		traits_obj = convproj_obj.traits
+		traits_obj.track_nopl = True
+
+		# ---------- transport ----------
+		convproj_obj.params.add('bpm', project_obj.header.tempo, 'float')
+		convproj_obj.timesig = [project_obj.header.timesig1, project_obj.header.timesig2]
+
+		# ---------- tracks ----------
+		instplugs = {}
 		for tracknim, xe_tr in project_obj.tracks.items():
 			idval = 'track'+str(tracknim)
 			track_obj = convproj_obj.track__add(idval, 'instrument', 0, False)
@@ -95,6 +104,7 @@ class input_xewton(plugins.base):
 						pp = p
 						if n.dur<p: break
 
+		# ---------- insts ----------
 		if INST_ENABLED:
 			for instnum, instdata in instplugs.items():
 				plugin_obj, tracks = instdata
@@ -144,5 +154,3 @@ class input_xewton(plugins.base):
 								sp_obj.loop_active = bool(s.loop_on)
 								sp_obj.trigger = 'oneshot' if isdrums else 'normal'
 	
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')

@@ -93,25 +93,32 @@ class input_ceol(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		# ---------- CVPJ Start ----------
-		convproj_obj.type = 'mi'
-		convproj_obj.set_timings(4)
-
-		traits_obj = convproj_obj.traits
-		traits_obj.auto_types = ['pl_points']
-
 		globalstore.datapack.load('boscaceoil', './data/datapack/app/boscaceoil.xml')
 		color_track = colors.colorset.from_datapack('boscaceoil', 'track', 'main')
 		color_main = colors.colorset.from_datapack('boscaceoil', 'main', 'main')
 
-		# ---------- Master FX ----------
+		# ---------- convproj init ----------
+		convproj_obj.type = 'mi'
+		convproj_obj.set_timings(4)
+		convproj_obj.do_actions.append('do_addloop')
+
+		traits_obj = convproj_obj.traits
+		traits_obj.auto_types = ['pl_points']
+
+		# ---------- transport ----------
+		convproj_obj.add_timesig_lengthbeat(project_obj.pattern_length, project_obj.bar_length)
+		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
+		convproj_obj.transport.loop_active = True
+		convproj_obj.transport.loop_start = project_obj.pattern_length*project_obj.loopstart
+		convproj_obj.transport.loop_end = project_obj.pattern_length*project_obj.loopend
+
+		# ---------- fx master ----------
 		convproj_obj.track_master.params.add('vol', 1, 'float')
 		convproj_obj.track_master.visual.from_datapack('boscaceoil', 'main', 'masterfx', False)
 
 		add_master_fx(convproj_obj, project_obj.effect_type, project_obj.effect_value)
 
-		# ---------- Instruments ----------
-
+		# ---------- insts ----------
 		t_key_offset = []
 		inst_filters = {}
 		inst_objs = {}
@@ -154,7 +161,7 @@ class input_ceol(plugins.base):
 				inst_filters[instnum] = add_filter(convproj_obj, instnum, ceol_inst_obj.cutoff, ceol_inst_obj.resonance)
 				inst_obj.plugslots.slots_audio.append(inst_filters[instnum])
 
-		# ---------- Patterns ----------
+		# ---------- patterns ----------
 		for patnum, ceol_pat_obj in enumerate(project_obj.patterns):
 			cvpj_pat_id = 'ceol_'+str(patnum).zfill(3)
 
@@ -188,14 +195,14 @@ class input_ceol(plugins.base):
 				visual_roll.scale_name = scale_name
 				visual_roll.scale_hide = True
 
+		# ---------- playlist color ----------
 		for num in range(8):
 			playlist_obj = convproj_obj.playlist__add(num, 1, True)
 			if color_track: 
 				playlist_obj.visual.color.set_int(color_track.getcolornum(num))
 				playlist_obj.visual.color.fx_allowed = ['saturate', 'brighter']
 
-		# ---------- Placement ----------
-
+		# ---------- placements ----------
 		prev_pl = None
 		for plpos, row_data in enumerate(project_obj.spots):
 			after_filter = [[-1, -1] for x in range(8)]
@@ -252,13 +259,5 @@ class input_ceol(plugins.base):
 
 			prev_pl = after_filter
 
-		# ---------- Output ----------
-		convproj_obj.add_timesig_lengthbeat(project_obj.pattern_length, project_obj.bar_length)
-		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
-		convproj_obj.do_actions.append('do_addloop')
-		
-		convproj_obj.transport.loop_active = True
-		convproj_obj.transport.loop_start = project_obj.pattern_length*project_obj.loopstart
-		convproj_obj.transport.loop_end = project_obj.pattern_length*project_obj.loopend
-
+		# ---------- automation ----------
 		convproj_obj.automation.set_persist_all(False)

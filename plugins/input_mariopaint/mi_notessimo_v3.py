@@ -249,36 +249,42 @@ class input_notessimo_v3(plugins.base):
 		global samplefolder
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		# ---------- CVPJ Start ----------
-		convproj_obj.fxtype = 'rack'
-		convproj_obj.type = 'mi'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.auto_types = ['pl_points']
-
-		convproj_obj.set_timings(4.0)
-
 		globalstore.datapack.load('notessimo_v3', './data/datapack/app/notessimo_v3.xml')
 		
-		extpath_path = os.path.join(dawvert_intent.path_external_data, 'notessimo_v3', 'notessimo_v3_data.zip')
-
-		sharp_bug = dawvert_intent.input_get_param('sharp_bug', True)
-
-		# ---------- File ----------
+		# ---------- file load: project ----------
 		project_obj = proj_notessimo_v3.notev3_file()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		maindata_obj = proj_notessimo_v3.notev3_file()
-		if os.path.exists(extpath_path): 
-			if maindata_obj.load_from_file(extpath_path): 
-				logger_input.info('loaded external data: "notessimo_v3.zip"')
 
 		songlist = list(project_obj.songs)
 
 		notet_cursong_id = songlist[dawvert_intent.songnum]
 		notet_cursong_data = project_obj.songs[notet_cursong_id]
 
+		# ---------- file load: ext data ----------
+		extpath_path = os.path.join(dawvert_intent.path_external_data, 'notessimo_v3', 'notessimo_v3_data.zip')
+
+		maindata_obj = proj_notessimo_v3.notev3_file()
+		if os.path.exists(extpath_path): 
+			if maindata_obj.load_from_file(extpath_path): 
+				logger_input.info('loaded external data: "notessimo_v3.zip"')
+
+		# ---------- convproj params ----------
+		sharp_bug = dawvert_intent.input_get_param('sharp_bug', True)
+
+		# ---------- convproj init ----------
+		convproj_obj.fxtype = 'rack'
+		convproj_obj.type = 'mi'
+		convproj_obj.set_timings(4.0)
+
+		traits_obj = convproj_obj.traits
+		traits_obj.auto_types = ['pl_points']
+
+		# ---------- metadata ----------
+		if notet_cursong_data.name: convproj_obj.metadata.name = notet_cursong_data.name
+		if notet_cursong_data.comments: convproj_obj.metadata.comment_text = notet_cursong_data.comments
+		
+		# ---------- sheets ----------
 		used_insts = []
 
 		sheetrealsize = {}
@@ -312,14 +318,16 @@ class input_notessimo_v3(plugins.base):
 
 			sheetrealsize[sheet_id] = cvpj_notelist.get_dur()
 
-		auto_bpm_obj = convproj_obj.automation.create(['main','bpm'], 'float', True)
-		firstlayer = True
-
+		# ---------- master track ----------
 		fxchan_data = convproj_obj.fx__chan__add(0)
 		incolor(notet_cursong_data.color, fxchan_data.visual)
 		fxchan_data.params.add('vol', xtramath.from_db(notet_cursong_data.volume/3), 'float')
 		fxchan_data.params.add('pan', notet_cursong_data.pan, 'float')
 		
+		# ---------- layers ----------
+		auto_bpm_obj = convproj_obj.automation.create(['main','bpm'], 'float', True)
+		firstlayer = True
+
 		for layer_id, layer_data in notet_cursong_data.layers.items():
 			if layer_data.spots:
 				playlist_obj = convproj_obj.playlist__add(layer_id, 1, True)
@@ -337,11 +345,10 @@ class input_notessimo_v3(plugins.base):
 
 				firstlayer = False
 
+		# ---------- drum fx ----------
 		fxchan_data = convproj_obj.fx__chan__add(1)
 		fxchan_data.visual.name = 'Drums'
 
+		# ---------- inst ----------
 		for used_inst in used_insts:
 			inst_manager.add_inst(convproj_obj, used_inst, project_obj, maindata_obj)
-
-		if notet_cursong_data.name: convproj_obj.metadata.name = notet_cursong_data.name
-		if notet_cursong_data.comments: convproj_obj.metadata.comment_text = notet_cursong_data.comments

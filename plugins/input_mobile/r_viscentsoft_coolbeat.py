@@ -62,8 +62,13 @@ class input_coolbeat(plugins.base):
 
 		project_obj = viscentsoft_coolbeat.coolbeat_root()
 
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'none'
 		convproj_obj.type = 'r'
+		convproj_obj.set_timings(480)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav', 'mp3']
@@ -71,15 +76,14 @@ class input_coolbeat(plugins.base):
 		traits_obj.placement_loop = ['loop']
 		traits_obj.audio_stretch = ['rate']
 
-		convproj_obj.set_timings(480)
-
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
+		# ---------- transport ----------
 		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
+
+		# ---------- master track ----------
 		convproj_obj.track_master.params.add('vol', project_obj.masterVolume, 'float')
 		convproj_obj.track_master.params.add('pan', calc_pan(project_obj.masterPan), 'float')
 
+		# ---------- automation: master ----------
 		for an, masterAuto in enumerate(project_obj.masterAutos):
 			if an == 0:
 				do_auto(convproj_obj, ['main', 'bpm'], 50, 300, masterAuto.sections, project_obj.tempo)
@@ -88,6 +92,7 @@ class input_coolbeat(plugins.base):
 			if an == 2:
 				do_auto(convproj_obj, ['master', 'pan'], -1, 1, masterAuto.sections, calc_pan(project_obj.masterPan))
 
+		# ---------- tracks ----------
 		for n, track in enumerate(project_obj.tracks):
 			trackid = 'track_'+str(n)
 			tracktype = track.type
@@ -169,4 +174,5 @@ class input_coolbeat(plugins.base):
 				if an == 1:
 					do_auto(convproj_obj, ['track', trackid, 'pan'], -1, 1, ta.sections, calc_pan(track.pan))
 
+		# ---------- automation ----------
 		convproj_obj.automation.set_persist_all(False)

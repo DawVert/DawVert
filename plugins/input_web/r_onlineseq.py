@@ -46,24 +46,32 @@ class input_onlinesequencer(plugins.base):
 		global onlseq_notelist
 		global onlseq_customnames
 
+		project_obj = proj_onlineseq.onlineseq_project()
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		globalstore.datapack.load('onlineseq', './data/datapack/app/onlineseq.xml')
+
+		# ---------- convproj params ----------
+		groupby = dawvert_intent.input_get_param('groupby', 'instset')
+		groupmin = dawvert_intent.input_get_param('groupmin', 3)
+
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.type = 'r'
+		convproj_obj.set_timings(4.0)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
 
 		traits_obj = convproj_obj.traits
 		traits_obj.auto_types = ['nopl_points']
 		traits_obj.track_nopl = True
 
-		convproj_obj.set_timings(4.0)
+		# ---------- transport ----------
+		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
+		convproj_obj.timesig = [project_obj.numerator, 4]
 
-		globalstore.datapack.load('onlineseq', './data/datapack/app/onlineseq.xml')
-
-		project_obj = proj_onlineseq.onlineseq_project()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		groupby = dawvert_intent.input_get_param('groupby', 'instset')
-		groupmin = dawvert_intent.input_get_param('groupmin', 3)
-
+		# ---------- tracks ----------
 		used_fx = {}
 		synthdata = {}
 		for instid, instparam in project_obj.params.items(): 
@@ -110,8 +118,8 @@ class input_onlinesequencer(plugins.base):
 					auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
 					for marker in markers: auto_obj.add_autopoint(marker.pos, marker.value/div, 'normal' if marker.type else 'instant')
 
+		# ---------- notes ----------
 		multig = {}
-
 		sep_notes = project_obj.seperate_notes(False)
 		for instid, notes in sep_notes.items():
 			s_used_fx = used_fx[instid] if instid in used_fx else []
@@ -238,6 +246,7 @@ class input_onlinesequencer(plugins.base):
 			for key, pos, dur, inst, vol in notes: 
 				cvpj_notelist.add_r(pos, dur, key-60, vol, {})
 
+		# ---------- grouping ----------
 		if groupby=='inst':
 			for k, v in multig.items():
 				if len(v)>groupmin:
@@ -262,8 +271,3 @@ class input_onlinesequencer(plugins.base):
 					group_obj = convproj_obj.fx__group__add(k)
 					group_obj.visual.name = k
 					for x in v: x.group = str(k)
-
-		convproj_obj.timesig = [project_obj.numerator, 4]
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')
-		convproj_obj.params.add('bpm', project_obj.bpm, 'float')

@@ -54,10 +54,6 @@ class input_xm(plugins.base):
 		from objects import globalstore
 		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.xml')
 		
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_filetypes = ['wav']
-		traits_obj.auto_types = ['pl_points', 'pl_ticks']
-
 		project_obj = proj_xm.xm_song()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
@@ -66,6 +62,12 @@ class input_xm(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 		
+		# ---------- convproj init ----------
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_filetypes = ['wav']
+		traits_obj.auto_types = ['pl_points', 'pl_ticks']
+
+		# ---------- tracker init ----------
 		tracker_obj = convproj_obj.main__create_tracker_single()
 		tracker_obj.set_num_chans(project_obj.num_channels)
 		tracker_obj.orders = project_obj.l_order
@@ -74,9 +76,11 @@ class input_xm(plugins.base):
 		tracker_obj.speed = project_obj.speed
 		tracker_obj.use_starttempo = True
 
+		# ---------- metadata ----------
 		convproj_obj.metadata.name = project_obj.title
 		convproj_obj.metadata.comment_text = '\r'.join([i.name for i in project_obj.instruments])
 
+		# ---------- patterns ----------
 		for patnum, xmpat_obj in enumerate(project_obj.patterns):
 			if xmpat_obj.used:
 				pattern_obj = tracker_obj.pattern_add(patnum, xmpat_obj.rows)
@@ -100,6 +104,11 @@ class input_xm(plugins.base):
 								panbrello_params['speed'], panbrello_params['depth'] = data_bytes.splitbyte(cell_param)
 								pattern_obj.cell_param(channel, rownum, 'panbrello', panbrello_params)
 
+		if project_obj.ompt_pnam:
+			for n, t in enumerate(project_obj.ompt_pnam):
+				if t: project_obj.patterns[n].name = t
+
+		# ---------- channels ----------
 		if project_obj.ompt_cnam:
 			for n, t in enumerate(project_obj.ompt_cnam):
 				if t: tracker_obj.channels[n].name = t
@@ -109,18 +118,16 @@ class input_xm(plugins.base):
 				r,g,b,u = t
 				if not u: tracker_obj.channels[n].color = [r/255,g/255,b/255]
 
-		if project_obj.ompt_pnam:
-			for n, t in enumerate(project_obj.ompt_pnam):
-				if t: project_obj.patterns[n].name = t
-
 		if project_obj.ompt_chfx:
 			for n, t in enumerate(project_obj.ompt_chfx):
 				if t: tracker_obj.channels[n].fx_plugins.append('FX'+str(t))
 
+		# ---------- plugins ----------
 		if project_obj.plugins:
 			for fxnum, plugdata in project_obj.plugins.items():
 				plugdata.to_cvpj(fxnum, convproj_obj)
 
+		# ---------- instruments ----------
 		if xmodits_exists == True:
 			if dawvert_intent.input_mode == 'file':
 				if dawvert_intent.input_file:
@@ -137,7 +144,6 @@ class input_xm(plugins.base):
 						except: pass
 
 		xm_cursamplenum = 1
-
 		for instnum, xm_inst in enumerate(project_obj.instruments):
 			inst_obj = tracker_obj.add_inst(convproj_obj, instnum, None)
 			inst_obj.visual.name = xm_inst.name

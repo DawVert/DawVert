@@ -35,6 +35,14 @@ class input_mmf(plugins.base):
 		from objects import audio_data
 		from objects.file_proj_past import mmf as proj_mmf
 
+		project_obj = proj_mmf.smaf_song()
+
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		samplefolder = dawvert_intent.path_samples['extracted']
+
+		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cm'
 
@@ -44,15 +52,9 @@ class input_mmf(plugins.base):
 		traits_obj.track_nopl = True
 		traits_obj.audio_filetypes = ['wav']
 
-		project_obj = proj_mmf.smaf_song()
-
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
 		convproj_obj.params.add('bpm', 120, 'float')
 
-		samplefolder = dawvert_intent.path_samples['extracted']
-
+		# ---------- tracks ----------
 		firstma2 = False
 		#if True in [isinstance(x, proj_mmf.smaf_track_ma2) for x in project_obj.tracks2]:
 
@@ -177,5 +179,3 @@ class input_mmf(plugins.base):
 		custinst_obj.visual.name = 'MA-3 Drum/Stream $patch$'
 		custinst_obj.visual.color.set_int([0,255,170])
 		custinst_obj.pluginid = 'drum_$patch$'
-
-		convproj_obj.params.add('bpm', 120, 'float')

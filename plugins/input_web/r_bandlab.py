@@ -35,8 +35,17 @@ class input_bandlab(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import bandlab as proj_bandlab
 
+		project_obj = proj_bandlab.bandlab_project()
+
+		if dawvert_intent.input_mode == 'file':
+			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+
+		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.xml')
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'
+		convproj_obj.set_timings(4.0)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav', 'mp3', 'flac', 'm4a']
@@ -47,29 +56,19 @@ class input_bandlab(plugins.base):
 		traits_obj.placement_loop = ['loop', 'loop_eq', 'loop_off', 'loop_adv', 'loop_adv_off']
 		traits_obj.time_seconds = False
 
-		convproj_obj.set_timings(4.0)
-
-		project_obj = proj_bandlab.bandlab_project()
-
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-
-		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.xml')
-
+		# ---------- transport ----------
 		bpm = 120
-		if 'bpm' in project_obj.metronome:
-			bpm = project_obj.metronome['bpm']
-
+		if 'bpm' in project_obj.metronome: bpm = project_obj.metronome['bpm']
 		convproj_obj.params.add('bpm', bpm, 'float')
-
-		convproj_obj.track_master.params.add('vol', project_obj.volume, 'float')
-
 		tempomul = 120/bpm
 
+		# ---------- master track ----------
+		convproj_obj.track_master.params.add('vol', project_obj.volume, 'float')
 		for blx_auxChannel in project_obj.auxChannels:
 			track_obj = convproj_obj.track_master.fx__return__add(blx_auxChannel.id)
 			track_obj.params.add('vol', blx_auxChannel.returnLevel, 'float')
 
+		# ---------- samples ----------
 		for blx_sample in project_obj.samples:
 			if not blx_sample.isMidi:
 				add_sample(convproj_obj, dawvert_intent, blx_sample)
@@ -81,6 +80,7 @@ class input_bandlab(plugins.base):
 					sampleref_obj = convproj_obj.sampleref__add(sample.id, file, None)
 					sampleref_obj.convert__path__fileformat()
 
+		# ---------- tracks ----------
 		blx_tracks = sorted(project_obj.tracks, key=lambda x: x.order, reverse=False)
 		
 		for blx_track in blx_tracks:

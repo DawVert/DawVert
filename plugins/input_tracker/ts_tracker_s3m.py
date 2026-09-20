@@ -30,10 +30,6 @@ class input_s3m(plugins.base):
 		from objects import globalstore
 		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.xml')
 
-		traits_obj = convproj_obj.traits
-		traits_obj.audio_filetypes = ['wav']
-		traits_obj.auto_types = ['pl_points', 'pl_ticks']
-
 		project_obj = proj_s3m.s3m_song()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
@@ -42,8 +38,14 @@ class input_s3m(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 		
+		# ---------- convproj init ----------
+		traits_obj = convproj_obj.traits
+		traits_obj.audio_filetypes = ['wav']
+		traits_obj.auto_types = ['pl_points', 'pl_ticks']
+
+		# ---------- tracker init ----------
 		t_orderlist = [x for x in project_obj.l_order.copy()[0:-1] if x != 255]
-		
+
 		tracker_obj = convproj_obj.main__create_tracker_single()
 		tracker_obj.set_num_chans(32)
 		tracker_obj.mainvisual.from_datapack('tracker_various', 's3m', 'main', True)
@@ -53,9 +55,11 @@ class input_s3m(plugins.base):
 
 		current_tempo = project_obj.tempo
 
-		tempo_slide = 0
-
-		# ------------- Instruments -------------
+		# ---------- metadata ----------
+		convproj_obj.metadata.name = project_obj.name
+		convproj_obj.metadata.comment_text = '\r'.join([i.name for i in project_obj.instruments])
+		
+		# ---------- instruments ----------
 		for s3m_numinst, s3m_inst in enumerate(project_obj.instruments):
 			cvpj_instid = TEXTSTART + str(s3m_numinst+1)
 
@@ -87,6 +91,8 @@ class input_s3m(plugins.base):
 
 				inst_obj.plugslots.set_synth(pluginid)
 
+		# ---------- patterns ----------
+		tempo_slide = 0
 		for patnum, s3mpat_obj in enumerate(project_obj.patterns):
 			pattern_obj = tracker_obj.pattern_add(patnum, 64)
 			for rownum, rowdatas in enumerate(s3mpat_obj.data):
@@ -125,8 +131,3 @@ class input_s3m(plugins.base):
 						if c_command == 26: 
 							pattern_obj.cell_param(c_channel, rownum, 'pan', ((c_info/128)-0.5)*2)
 						  
-		convproj_obj.metadata.name = project_obj.name
-		convproj_obj.metadata.comment_text = '\r'.join([i.name for i in project_obj.instruments])
-		
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_lanefit')

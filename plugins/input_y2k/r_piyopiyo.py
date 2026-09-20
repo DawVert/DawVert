@@ -90,23 +90,38 @@ class input_piyopiyo(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import colors
 		from objects.file_proj_past import piyopiyo as proj_piyopiyo
-		from objects.convproj import fileref
-		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'piyopiyo_wav', ['piyopiyo'])
-
-		convproj_obj.type = 'r'
-		convproj_obj.set_timings(4)
-
-		traits_obj = convproj_obj.traits
-		traits_obj.auto_types = ['nopl_ticks']
-		traits_obj.track_nopl = True
 
 		project_obj = proj_piyopiyo.piyopiyo_song()
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		from objects.convproj import fileref
+		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'piyopiyo_wav', ['piyopiyo'])
+
 		globalstore.datapack.load('piyopiyo', './data/datapack/app/piyopiyo.xml')
 		colordata = colors.colorset.from_datapack('piyopiyo', 'inst', 'main')
 
+		# ---------- convproj params ----------
+		use_samples = dawvert_intent.input_get_param('use_samples', True)
+		drum_notes_alt = dawvert_intent.input_get_param('drum_notes_alt', True)
+
+		# ---------- convproj init ----------
+		convproj_obj.type = 'r'
+		convproj_obj.set_timings(4)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
+
+		traits_obj = convproj_obj.traits
+		traits_obj.auto_types = ['nopl_ticks']
+		traits_obj.track_nopl = True
+
+		# ---------- transport ----------
+		convproj_obj.params.add('bpm', (120/project_obj.musicwait)*120, 'float')
+		convproj_obj.transport.loop_active = True
+		convproj_obj.transport.loop_start = project_obj.loopstart
+		convproj_obj.transport.loop_end = project_obj.loopend
+
+		# ---------- melody tracks ----------
 		for tracknum in range(3):
 			pmdtrack_obj = project_obj.tracks[tracknum]
 			keyoffset = (pmdtrack_obj.octave-2)*12
@@ -129,6 +144,7 @@ class input_piyopiyo(plugins.base):
 			track_obj.plugslots.set_synth(pluginid)
 			parse_notes(convproj_obj, idval, project_obj.notes_data[tracknum], track_obj, keyoffset)
 
+		# ---------- drum track ----------
 		track_obj = convproj_obj.track__add("3", 'instrument', False, False)
 		track_obj.visual.name = 'Drums'
 		track_obj.visual.color.set_int(colordata.getcolornum(3))
@@ -138,7 +154,7 @@ class input_piyopiyo(plugins.base):
 		track_obj.is_drum = True
 		track_obj.plugslots.set_synth(pluginid)
 
-		if dawvert_intent.input_get_param('use_samples', True):
+		if use_samples:
 			try:
 				external_dat = external_data_zip()
 				external_dat.load_data(os.path.join(dawvert_intent.path_external_data, 'piyopiyo', 'piyopiyo.zip'))
@@ -154,7 +170,7 @@ class input_piyopiyo(plugins.base):
 			except FileNotFoundError:
 				logger_input.warning('piyopiyo: extdata: ZIP file missing.')
 
-		if not dawvert_intent.input_get_param('drum_notes_alt', 0):
+		if not drum_notes_alt:
 			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
 			drumpad_obj.key = -12
 			drumpad_obj.visual.name = 'Bass 1'
@@ -254,11 +270,3 @@ class input_piyopiyo(plugins.base):
 			layer_obj.samplepartid = 'PIYOPIYO_SYMBAL1'
 			
 			parse_notes_drumalt(convproj_obj, '3', project_obj.notes_data[3], track_obj)
-
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')
-		convproj_obj.params.add('bpm', (120/project_obj.musicwait)*120, 'float')
-
-		convproj_obj.transport.loop_active = True
-		convproj_obj.transport.loop_start = project_obj.loopstart
-		convproj_obj.transport.loop_end = project_obj.loopend

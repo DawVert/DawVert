@@ -193,6 +193,33 @@ class input_acid_3(plugins.base):
 		from objects import colors
 		from objects.file_proj_past import new_acid
 
+		globalstore.datapack.load('sony_acid', './data/datapack/app/sony_acid.xml')
+		colordata = colors.colorset.from_datapack('sony_acid', 'track', 'acid_4')
+		
+		def do_orders_groups(riff_data, track_order, tracks_data, ingroup):
+			if not use_groups: ingroup = None
+			for regs_chunk, regs_name in riff_data.iter_wtypes():
+				if regs_name=='TrackSTrack':
+					def_data = regs_chunk.content
+					convproj_obj.track_order.append( 'track_'+str(def_data.tracknum) )
+					track_obj = tracks_data[def_data.tracknum]
+					track_obj.group = ingroup
+				if regs_name=='TrackSFolder':
+					def_data = regs_chunk.content
+					groupid = 'group_'+str(def_data.idnum)
+					if use_groups: 
+						group_obj = convproj_obj.fx__group__add(groupid)
+						group_obj.visual.name = def_data.name
+						group_obj.group = ingroup
+						group_obj.params.add('enabled', 4 not in def_data.flags, 'float')
+						group_obj.params.add('solo', 3 in def_data.flags, 'float')
+						group_obj.visual_track.group_expanded = 1 not in def_data.flags
+					do_orders_groups(def_data.inchunks, track_order, tracks_data, groupid)
+
+		# ---------- convproj params ----------
+		use_groups = dawvert_intent.input_get_param('use_groups', True)
+
+		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'
 
@@ -208,11 +235,7 @@ class input_acid_3(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
-		use_groups = dawvert_intent.input_get_param('use_groups', True)
-
-		globalstore.datapack.load('sony_acid', './data/datapack/app/sony_acid.xml')
-		colordata = colors.colorset.from_datapack('sony_acid', 'track', 'acid_4')
-		
+		# ---------- tempo/keys ----------
 		auto_basenotes = {}
 
 		tempo = 120
@@ -251,27 +274,8 @@ class input_acid_3(plugins.base):
 
 		version = 0
 
+		# ---------- rest ----------
 		tracks_data = {}
-
-		def do_orders_groups(riff_data, track_order, tracks_data, ingroup):
-			if not use_groups: ingroup = None
-			for regs_chunk, regs_name in riff_data.iter_wtypes():
-				if regs_name=='TrackSTrack':
-					def_data = regs_chunk.content
-					convproj_obj.track_order.append( 'track_'+str(def_data.tracknum) )
-					track_obj = tracks_data[def_data.tracknum]
-					track_obj.group = ingroup
-				if regs_name=='TrackSFolder':
-					def_data = regs_chunk.content
-					groupid = 'group_'+str(def_data.idnum)
-					if use_groups: 
-						group_obj = convproj_obj.fx__group__add(groupid)
-						group_obj.visual.name = def_data.name
-						group_obj.group = ingroup
-						group_obj.params.add('enabled', 4 not in def_data.flags, 'float')
-						group_obj.params.add('solo', 3 in def_data.flags, 'float')
-						group_obj.visual_track.group_expanded = 1 not in def_data.flags
-					do_orders_groups(def_data.inchunks, track_order, tracks_data, groupid)
 
 		for root_chunk, root_name in project_obj.root.iter_wtypes():
 			if root_name == 'MainData':
