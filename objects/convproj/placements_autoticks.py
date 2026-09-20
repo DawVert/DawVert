@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functions import xtramath
-from objects.convproj import placements
 from objects.convproj import autoticks
 from objects.convproj import visual
 from objects.convproj import time
+from objects.convproj import placements_base
 
 class cvpj_placements_autoticks:
 	__slots__ = ['data','type','time_ppq','val_type']
@@ -29,13 +29,13 @@ class cvpj_placements_autoticks:
 		return placement_obj
 
 	def sort(self):
-		self.data = placements.internal_sort(self.data)
+		self.data = placements_base.internal_sort(self.data)
 
 	def get_dur(self):
-		return placements.internal_get_dur(self.data)
+		return placements_base.internal_get_dur(self.data)
 
 	def get_start(self):
-		return placements.internal_get_start(self.data)
+		return placements_base.internal_get_start(self.data)
 
 	def change_timings(self, time_ppq):
 		for pl in self.data:
@@ -69,7 +69,7 @@ class cvpj_placement_autoticks:
 	__slots__ = ['time','muted','visual','data']
 
 	def __init__(self, time_ppq, val_type):
-		self.time = placements.cvpj_placement_timing(time_ppq)
+		self.time = placements_base.cvpj_placement_timing(time_ppq)
 		self.data = autoticks.cvpj_autoticks(time_ppq, val_type)
 		self.muted = False
 		self.visual = visual.cvpj_visual()

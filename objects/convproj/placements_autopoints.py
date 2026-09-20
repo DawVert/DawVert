@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functions import xtramath
-from objects.convproj import placements
 from objects.convproj import autopoints
 from objects.convproj import visual
+from objects.convproj import placements_base
 import copy
 
 class cvpj_placements_autopoints:
@@ -36,10 +36,10 @@ class cvpj_placements_autopoints:
 		self.data = new_a
 
 	def get_dur(self):
-		return placements.internal_get_dur(self.data)
+		return placements_base.internal_get_dur(self.data)
 
 	def get_start(self):
-		return placements.internal_get_start(self.data)
+		return placements_base.internal_get_start(self.data)
 
 	def add(self, val_type):
 		placement_obj = cvpj_placement_autopoints(self.time_ppq, self.val_type)
@@ -77,7 +77,7 @@ class cvpj_placements_autopoints:
 				x.data.edit_trimmove(0, x.time.get_dur())
 
 	def remove_loops(self, out__placement_loop):
-		self.data = placements.internal_removeloops(self.data, out__placement_loop)
+		self.data = placements_base.internal_removeloops(self.data, out__placement_loop)
 
 	def change_seconds(self, is_seconds, bpm, ppq):
 		for pl in self.data: 
@@ -99,7 +99,7 @@ class cvpj_placement_autopoints:
 	__slots__ = ['time','muted','visual','data']
 
 	def __init__(self, time_ppq, val_type):
-		self.time = placements.cvpj_placement_timing(time_ppq)
+		self.time = placements_base.cvpj_placement_timing(time_ppq)
 		self.data = autopoints.cvpj_autopoints(time_ppq, val_type)
 		self.muted = False
 		self.visual = visual.cvpj_visual()
