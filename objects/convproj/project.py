@@ -199,52 +199,79 @@ class cvpj_project_midi:
 class cvpj_project:
 	def __init__(self):
 		self.id = 'global'
+		self.params = params.cvpj_paramset()
 
+		# type and traits
 		self.type = None
 		self.fxtype = 'none'
 		self.traits = project_traits.cvpj_project_traits()
 
+		# time
 		self.time_ppq = 96
 		self.time_tempocalc = tempocalc.tempocalc_store(self)
 		tempocalc.global_stores[self.id] = self.time_tempocalc
 
+		# tracks
 		self.track_data = {}
 		self.track_order = []
 		self.track_master = tracks.cvpj_track('master', self.time_ppq, False, False)
-		self.track_returns = {}
-		self.plugins = {}
-		self.instruments = {}
-		self.instruments_order = []
-		self.sample_index = {}
-		self.notelist_index = {}
-		self.params = params.cvpj_paramset()
-		self.fxrack = {}
-		self.trackroute = {}
-		self.playlist = {}
-		self.timesig = [4,4]
-		self.do_actions = []
+
+		# markers and automation
 		self.timemarkers = placements_marker.cvpj_placements_marker(self.time_ppq)
 		self.arranger = placements_marker.cvpj_placements_marker(self.time_ppq)
-		self.metadata = visual.cvpj_metadata()
 		self.timesig_auto = autoticks.cvpj_autoticks(self.time_ppq, 'timesig')
-		self.transport = cvpj_transport(self.time_ppq)
+		self.automation = automation.cvpj_automation(self.time_ppq, self.id)
+
+		# file ref
 		self.filerefs = {}
 		self.samplerefs = {}
 		self.videorefs = {}
+
+		# others
+		self.plugins = {}
+		self.timesig = [4,4]
+		self.do_actions = []
+		self.metadata = visual.cvpj_metadata()
+		self.transport = cvpj_transport(self.time_ppq)
 		self.window_data = {}
-		self.automation = automation.cvpj_automation(self.time_ppq, self.id)
-		self.groups = {}
 		self.sample_folders = []
+		self.realdevices = realdevices.cvpj_realdevicelist()
+		self.freq = 44100
+		self._m2r_visual_playlist_first = False
+
+		# ------------------- cvpj type -------------------
+		# *Indexed
+		self.sample_index = {}
+		self.notelist_index = {}
+
+		# Multiple, MultipleIndexed and similar
+		self.playlist = {}
+		self.instruments = {}
+		self.instruments_order = []
+
+		# *Tracked
+		self.tracker_single = None
+
+		# *Scened
 		self.scenes = {}
 		self.scene_placements = []
-		self.tracker_single = None
+
+		# MIDI
 		self.midi = cvpj_project_midi()
 		self.midi_cust_inst = []
-		self.realdevices = realdevices.cvpj_realdevicelist()
 
-		self.freq = 44100
 
-		self._m2r_visual_playlist_first = False
+		# ------------------- fxtype -------------------
+		# groupreturn
+		self.groups = {}
+		self.track_returns = {}
+
+		# fxrack
+		self.fxrack = {}
+
+		# route
+		self.trackroute = {}
+
 
 # --------------------------------------------------------- MAIN ---------------------------------------------------------
 
