@@ -54,6 +54,7 @@ class gui_config():
 		self.main['dd_outpath'] = 'beside_original'
 		self.main['overwrite_out'] = False
 		self.main['auto_convert'] = False
+		self.main['language'] = 'english'
 
 		self.conversion = {}
 		self.conversion['splitter_mode'] = dawvert_intent.splitter_mode
@@ -61,10 +62,10 @@ class gui_config():
 		self.conversion['output_unused_nle'] = False
 
 		self.extplug = {}
-		self.extplug['out_foss'] = False
-		self.extplug['out_old'] = False
-		self.extplug['out_freeware'] = False
-		self.extplug['out_shareware'] = False
+		self.extplug['out_foss'] = True
+		self.extplug['out_old'] = True
+		self.extplug['out_freeware'] = True
+		self.extplug['out_shareware'] = True
 
 		self.soundfont = {}
 
@@ -133,9 +134,18 @@ dawvert_config = gui_config()
 miniconfmenu_store = ui_configmenu.miniconfmenu_store
 
 configdef_main = miniconfmenu_store()
+configdef_main.add_bool('language', False, 'Overwrite Output')
+cfgpart = configdef_main.add_enum('language', 'english', 'Language')
+cfgpart.add_choice('english','English')
+cfgpart.add_choice('japanese','日本語 (Japanese)')
+cfgpart.add_choice('russian','Русский (Russian)')
+cfgpart.add_choice('chinese_trad','正體字 (Traditional Chinese)')
+cfgpart.add_choice('chinese_simp','简化字 (Simplified Chinese)')
+
 configdef_main.add_bool('overwrite_out', False, 'Overwrite Output')
+configdef_main.set_group('dd', 'Drag/Drop')
 configdef_main.add_bool('auto_convert', False, 'Auto-Convert')
-cfgpart = configdef_main.add_enum('dd_outpath', False, 'Set DragDrop Out Path')
+cfgpart = configdef_main.add_enum('dd_outpath', 'out_file', 'Set Drag/Drop Out Path')
 cfgpart.add_choice('beside_original','Beside Original')
 cfgpart.add_choice('out_folder','In "output" folder')
 cfgpart.add_choice('out_file','Always out.')
@@ -736,6 +746,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 dawvert_config.load_file('config.json')
 app = QtWidgets.QApplication(sys.argv)
 window = MainWindow()
-#window.translate_from_ini('translation/chinese.ini')
+if 'language' in dawvert_config.main: window.translate_from_ini('translation/%s.ini' % dawvert_config.main['language'])
 window.show()
 app.exec()
