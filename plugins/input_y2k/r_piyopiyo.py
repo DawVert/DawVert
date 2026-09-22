@@ -81,11 +81,9 @@ class input_piyopiyo(plugins.base):
 		in_dict['plugin_included'] = ['universal:synth-osc','universal:sampler:multi']
 		in_dict['projtype'] = 'r'
 
-	def get_configmenu(self): 
-		return {
-			"use_samples": {"type": "bool","name": "Use Drum Samples","def": True},
-			"drum_notes_alt": {"type": "bool","name": "Alternate Drum Notes","def": True},
-		}
+	def get_configdef(self, configdef):
+		configdef.add_bool('use_samples', True, 'Use Drum Samples')
+		configdef.add_bool('drum_notes_alt', True, 'Alternate Drum Notes')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import colors

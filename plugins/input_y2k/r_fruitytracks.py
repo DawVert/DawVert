@@ -85,19 +85,12 @@ class input_fruitytracks(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
-	def get_configmenu(self): 
-		return {
-			"pan_auto": {
-				"type": "enum",
-				"name": "Pan Env",
-				"def": "auto",
-				"choices": [
-					{"id": "none", "name": 'None'},
-					{"id": "auto", "name": 'Auto'},
-					{"id": "clip", "name": 'Clip'},
-				]
-			}
-		}
+	def get_configdef(self, configdef):
+		cfgpart = configdef.add_enum('pan_auto', 'auto', 'Pan Env')
+		cfgpart.add_choice('none', 'None')
+		cfgpart.add_choice('auto', 'Auto')
+		cfgpart.add_choice('clip', 'Clip')
+		cfgpart.add_choice('mixed', 'Mixed')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_past import fruitytracks as proj_fruitytracks

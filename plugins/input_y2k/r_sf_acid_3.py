@@ -184,10 +184,8 @@ class input_acid_3(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
-	def get_configmenu(self): 
-		return {
-			"use_groups": {"type": "bool","name": "Enable Groups","def": True},
-		}
+	def get_configdef(self, configdef):
+		configdef.add_bool('use_groups', True, 'Enable Groups')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import colors

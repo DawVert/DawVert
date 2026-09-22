@@ -491,10 +491,9 @@ class input_zenbeats(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
-	def get_configmenu(self): 
-		return {
-			"disable_zc1": {"type": "bool","name": "Disable ZC1","def": False,"group": 'debug'},
-		}
+	def get_configdef(self, configdef):
+		configdef.set_group('debug', 'Debug')
+		configdef.add_bool('disable_zc1', False, 'Disable ZC1')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import zenbeats as proj_zenbeats

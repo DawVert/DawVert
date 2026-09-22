@@ -35,21 +35,13 @@ class input_acid_old(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
-	def get_configmenu(self): 
-		return {
-			"groupby": {
-				"type": "enum",
-				"name": "Group By",
-				"def": "mixed",
-				"group": "grouping",
-				"choices": [
-					{"id": "none", "name": 'None'},
-					{"id": "sample", "name": 'Sample'},
-					{"id": "drum", "name": 'NoPitch'},
-					{"id": "mixed", "name": 'Mixed'}
-				]
-			}
-		}
+	def get_configdef(self, configdef):
+		configdef.set_group('grouping', 'Grouping')
+		cfgpart = configdef.add_enum('groupby', 'mixed', 'Group By')
+		cfgpart.add_choice('none', 'None')
+		cfgpart.add_choice('sample', 'Sample')
+		cfgpart.add_choice('drum', 'NoPitch')
+		cfgpart.add_choice('mixed', 'Mixed')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import colors

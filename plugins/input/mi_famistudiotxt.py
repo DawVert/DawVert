@@ -295,17 +295,10 @@ class input_famistudio(plugins.base):
 		in_dict['plugin_included'] = ['chip:epsm_rhythm','chip:fds','chip:fm:epsm','chip:fm:vrc7','chip:namco163_famistudio','universal:sampler:multi','universal:synth-osc']
 		in_dict['projtype'] = 'mi'
 		
-	def get_configmenu(self): 
-		return {
-			"dpcm_freq": {
-				"type": "enum",
-				"name": "DPCM NTSC/PAL",
-				"choices": [
-					{"id": "ntsc", "name": 'NTSC'},
-					{"id": "pal", "name": 'PAL'}
-				]
-			}
-		}
+	def get_configdef(self, configdef):
+		cfgpart = configdef.add_enum('dpcm_freq', 'ntsc', 'DPCM NTSC/PAL')
+		cfgpart.add_choice('ntsc', 'NTSC')
+		cfgpart.add_choice('pal', 'PAL')
 
 	def parse(self, i_convproj_obj, dawvert_intent):
 		from objects.file_proj import famistudiotxt as proj_famistudiotxt

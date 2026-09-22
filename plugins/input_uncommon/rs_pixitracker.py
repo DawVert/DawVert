@@ -26,10 +26,8 @@ class input_cvpj_f(plugins.base):
 	def get_detect_info(self, detectdef_obj):
 		detectdef_obj.headers.append([0, b'PIXIMOD1'])
 
-	def get_configmenu(self): 
-		return {
-			"tracker_mode": {"type": "bool","name": "Tracker Mode","def": 1},
-		}
+	def get_configdef(self, configdef):
+		configdef.add_bool('tracker_mode', False, 'Tracker Mode')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import audio_data

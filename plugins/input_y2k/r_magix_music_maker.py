@@ -22,11 +22,10 @@ class input_old_magix_maker(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
-	def get_configmenu(self): 
-		return {
-			"unused_sends": {"type": "bool","name": "Use Unused Send/Returns","def": False},
-			"swap_bg_fg": {"type": "bool","name": "Swap BG/FG colors","def": False, "group": "visual"},
-		}
+	def get_configdef(self, configdef):
+		configdef.add_bool('unused_sends', False, 'Use Unused Send/Returns')
+		configdef.set_group('visual', 'Visual')
+		configdef.add_bool('swap_bg_fg', False, 'Swap BG/FG colors')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import colors

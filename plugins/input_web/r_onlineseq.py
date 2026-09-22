@@ -24,21 +24,15 @@ class input_onlinesequencer(plugins.base):
 		in_dict['plugin_included'] = ['universal:midi','native:onlineseq','universal:synth-osc']
 		in_dict['projtype'] = 'r'
 
-	def get_configmenu(self): 
-		return {
-			"groupby": {
-				"type": "enum",
-				"name": "Group By",
-				"def": "instset",
-				"group": "grouping",
-				"choices": [
-					{"id": "none", "name": 'None'},
-					{"id": "inst", "name": 'Instrument Type'},
-					{"id": "instset", "name": 'Instrument Category'}
-				]
-			},
-			"groupmin": {"type": "int","name": "Group if more then","def": 3,"min": 0,"max": 10, "group": "grouping"},
-		}
+	def get_configdef(self, configdef):
+		configdef.set_group('grouping', 'Grouping')
+		cfgpart = configdef.add_enum('groupby', 'instset', 'Group By')
+		cfgpart.add_choice('none', 'None')
+		cfgpart.add_choice('inst', 'Instrument')
+		cfgpart.add_choice('instset', 'Instrument Category')
+		cfgpart = configdef.add_int('groupmin', 3, 'Group if more then')
+		cfgpart.set_range(0, 10)
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import onlineseq as proj_onlineseq
 		from objects.inst_params import fx_delay

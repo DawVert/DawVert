@@ -4,6 +4,7 @@ import glob
 import logging
 from importlib import util
 from external.easybinrw import easybinrw
+from objects.ui import ui_configmenu
 
 logger_plugins = logging.getLogger('plugins')
 
@@ -278,7 +279,7 @@ class dv_plugin:
 		self.priority = 100
 		self.usable = True
 		self.usable_meg = ''
-		self.configmenu = None
+		self.configdef = None
 		self.detectdef = dv_plugin_bindetect()
 
 	def propproc(self):
@@ -434,7 +435,10 @@ class base:
 
 				if 'get_priority' in dirobj: dvplug_obj.priority = in_object.get_priority()
 				if 'get_name' in dirobj: dvplug_obj.name = in_object.get_name()
-				if 'get_configmenu' in dirobj: dvplug_obj.configmenu = in_object.get_configmenu()
+				if 'get_configdef' in dirobj: 
+					configdef = ui_configmenu.miniconfmenu_store()
+					in_object.get_configdef(configdef)
+					dvplug_obj.configdef = configdef
 
 				if 'get_detect_info' in dirobj: 
 					dvplug_obj.detectdef.used = True

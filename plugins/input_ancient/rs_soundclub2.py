@@ -42,10 +42,9 @@ class input_soundclub2(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single']
 		in_dict['projtype'] = 'rs' 
 		
-	def get_configmenu(self): 
-		return {
-			"panlvl": {"type": "float","name": "Pan Amount","def": 1.0,"min": 0.0,"max": 1.0},
-		}
+	def get_configdef(self, configdef):
+		cfgpart = configdef.add_float('panlvl', 1.0, 'Pan Amount')
+		cfgpart.set_range(0.0, 1.0)
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import audio_data

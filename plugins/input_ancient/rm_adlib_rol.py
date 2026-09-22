@@ -22,10 +22,8 @@ class input_adlib_rol(plugins.base):
 		in_dict['plugin_included'] = ['chip:fm:opl2']
 		in_dict['projtype'] = 'rm'
 
-	def get_configmenu(self): 
-		return {
-			"bank_file": {"type": "text","name": "Bank File","def": 'STANDARD.BNK'},
-		}
+	def get_configdef(self, configdef):
+		configdef.add_text('bank_file', 'STANDARD.BNK', 'Bank File')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_adlib import rol as proj_adlib_rol

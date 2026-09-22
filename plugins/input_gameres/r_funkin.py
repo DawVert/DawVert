@@ -19,12 +19,13 @@ class input_ex_basic_pitch(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['placement_loop'] = ['loop', 'loop_off', 'loop_adv']
 
-	def get_configmenu(self): 
-		return {
-			"colors": {"type": "bool","name": "Track Colors","def": True, "group": "visual"},
-			"numchars": {"type": "int","name": "# of Singers","def": 2,"min": 2,"max": 8},
-			"numnotes": {"type": "int","name": "# of Notes","def": 4,"min": 4,"max": 32},
-		}
+	def get_configdef(self, configdef):
+		cfgpart = configdef.add_int('numchars', 2, '# of Singers')
+		cfgpart.set_range(2, 8)
+		cfgpart = configdef.add_int('numnotes', 4, '# of Notes')
+		cfgpart.set_range(4, 32)
+		configdef.set_group('visual', 'Visual')
+		configdef.add_bool('colors', True, 'Track Colors')
 
 	def parse(self, convproj_obj, dawvert_intent):
 

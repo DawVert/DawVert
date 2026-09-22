@@ -245,10 +245,8 @@ class input_jummbox(plugins.base):
 		in_dict['plugin_included'] = ['native:jummbox','universal:midi','universal:eq:bands','universal:delay','simple:distortion','universal:bitcrush','simple:chorus','simple:reverb']
 		in_dict['projtype'] = 'mi'
 
-	def get_configmenu(self): 
-		return {
-			"transpose_ignore": {"type": "bool","name": "Ignore Transpose","def": False},
-		}
+	def get_configdef(self, configdef):
+		configdef.add_bool('transpose_ignore', False, 'Ignore Transpose')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import jummbox as proj_jummbox

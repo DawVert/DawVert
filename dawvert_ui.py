@@ -63,41 +63,36 @@ dawvert_config__extplug['out_shareware'] = False
 
 dawvert_config__soundfont = {}
 
-configdef_main = {
-	"overwrite_out": {"type": "bool","name": "Overwrite Output","def": 0},
-	"auto_convert": {"type": "bool","name": "Auto-Convert","def": 0},
-	"dd_outpath": {
-		"type": "enum",
-		"name": "Set DragDrop Out Path",
-		"choices": [
-			{"id": "beside_original", "name": 'Beside Original'},
-			{"id": "out_folder", "name": 'In "output" folder'},
-			{"id": "out_file", "name": 'Always out.'}
-		]
-	}
-}
+miniconfmenu_store = ui_configmenu.miniconfmenu_store
 
-configdef_soundfont = {
-	"gm": {"type": "text","name": "GM","def": ''},
-	"xg": {"type": "text","name": "XG","def": ''},
-	"gs": {"type": "text","name": "GS","def": ''},
-	"mt32": {"type": "text","name": "MT32","def": ''},
-	"mariopaint": {"type": "text","name": "Mario Paint","def": ''},
-}
 
-configdef_conversion = {
-	"songnum": {"type": "int","name": "Song Number","def": 0},
-	"output_unused_nle": {"type": "bool","name": "MI2M: Output Unused Patterns","def": 0},
-	"splitter_mode": {"type": "int","name": "Mode","def": 0, "group": "splitter"},
-	"splitter_detect_start": {"type": "int","name": "Detect Start","def": 0, "group": "splitter"},
-}
+configdef_main = miniconfmenu_store()
+configdef_main.add_bool('overwrite_out', False, 'Overwrite Output')
+configdef_main.add_bool('auto_convert', False, 'Auto-Convert')
+cfgpart = configdef_main.add_enum('dd_outpath', False, 'Set DragDrop Out Path')
+cfgpart.add_choice('beside_original','Beside Original')
+cfgpart.add_choice('out_folder','In "output" folder')
+cfgpart.add_choice('out_file','Always out.')
 
-configdef_extplugs = {
-	"out_foss": {"type": "bool","name": "Use FOSS Plugins","def": 1},
-	"out_old": {"type": "bool","name": "Use Old Plugins","def": 1},
-	"out_freeware": {"type": "bool","name": "Use Freeware Plugins","def": 1},
-	"out_shareware": {"type": "bool","name": "Use Shareware Plugins","def": 1},
-}
+configdef_soundfont = miniconfmenu_store()
+configdef_soundfont.add_text("gm", '', "GM")
+configdef_soundfont.add_text("xg", '', "XG")
+configdef_soundfont.add_text("gs", '', "GS")
+configdef_soundfont.add_text("mt32", '', "MT32")
+configdef_soundfont.add_text("mariopaint", '', "Mario Paint")
+
+configdef_conversion = miniconfmenu_store()
+configdef_conversion.add_int('songnum', 0, 'Song Number')
+configdef_conversion.add_bool('output_unused_nle', False, 'MI2M: Output Unused Patterns')
+configdef_conversion.set_group('splitter', 'Notelist Splitter')
+configdef_conversion.add_int('splitter_mode', 0, 'Mode')
+configdef_conversion.add_int('splitter_detect_start', 0, 'Detect Start')
+
+configdef_extplugs = miniconfmenu_store()
+configdef_extplugs.add_bool('out_foss', True, 'Use FOSS Plugins')
+configdef_extplugs.add_bool('out_old', True, 'Use Old Plugins')
+configdef_extplugs.add_bool('out_freeware', True, 'Use Freeware Plugins')
+configdef_extplugs.add_bool('out_shareware', True, 'Use Shareware Plugins')
 
 def debugtxt(intxt):
 	if intxt == 'route': return 'RO'
@@ -274,7 +269,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 	def open_configmenu(self, name, _):
 		config_values = {}
-		config_def = {}
+		config_def = miniconfmenu_store()
 		window_title = 'Config'
 
 		if name=='main':
@@ -296,18 +291,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		if name=='input':
 			config_values = dawvert_intent.input_params
 			plugin_obj = dawvert_core.input_get_current_plug()
-			if plugin_obj is not None: config_def = plugin_obj.configmenu
+			if plugin_obj is not None: config_def = plugin_obj.configdef
 			window_title = 'Input Config'
 		if name=='output':
 			config_values = dawvert_intent.output_params
 			plugin_obj = dawvert_core.output_get_current_plug()
-			if plugin_obj is not None: config_def = plugin_obj.configmenu
+			if plugin_obj is not None: config_def = plugin_obj.configdef
 			window_title = 'Output Config'
 
-		miniconfmenu_store_obj = ui_configmenu.miniconfmenu_store()
-		miniconfmenu_store_obj.dict_load(config_def)
-
-		ui_configmenu_qt6.show_gui(miniconfmenu_store_obj, config_values, window_title)
+		if config_def is not None:
+			ui_configmenu_qt6.show_gui(config_def, config_values, window_title)
 
 	def __display_extplugcount(self):
 		vst2_count = globalstore.extplug.count('vst2')

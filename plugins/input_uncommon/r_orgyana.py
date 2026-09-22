@@ -26,10 +26,8 @@ class input_orgyana(plugins.base):
 		detectdef_obj.headers.append([0, b'Org-02'])
 		detectdef_obj.headers.append([0, b'Org-03'])
 
-	def get_configmenu(self): 
-		return {
-			"use_groups": {"type": "bool","name": "Enable Groups","def": True, "group": "grouping"},
-		}
+	def get_configdef(self, configdef):
+		configdef.add_bool('use_groups', True, 'Enable Groups')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_uncommon import orgyana as proj_orgyana

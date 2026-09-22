@@ -378,11 +378,10 @@ class input_ableton(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single','universal:sampler:multi','universal:sampler:slicer','native:ableton']
 		in_dict['projtype'] = 'r'
 
-	def get_configmenu(self): 
-		return {
-			"no_placements": {"type": "bool","name": "Disable Placements","def": False,"group": 'debug'},
-			"no_sampler": {"type": "bool","name": "Disable Sampler","def": False,"group": 'debug'}
-		}
+	def get_configdef(self, configdef):
+		configdef.set_group('debug', 'Debug')
+		configdef.add_bool('no_placements', False, 'Disable Placements')
+		configdef.add_bool('no_sampler', False, 'Disable Sampler')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import colors

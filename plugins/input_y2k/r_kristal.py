@@ -90,10 +90,8 @@ class input_kristal(plugins.base):
 		stretch_obj.timing.set__real_rate(bpm, 1)
 		stretch_obj.preserve_pitch = True
 
-	def get_configmenu(self): 
-		return {
-			"unused_tracks": {"type": "bool","name": "Use Unused Tracks","def": True},
-		}
+	def get_configdef(self, configdef):
+		configdef.add_bool('unused_tracks', True, 'Use Unused Tracks')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_past import kristal as proj_kristal

@@ -23,20 +23,12 @@ class input_korg_m1_nds(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
-	def get_configmenu(self): 
-		return {
-			"no_swing": {"type": "bool","name": "Disable Swing","def": False},
-			"groupby": {
-				"type": "enum",
-				"name": "Group By",
-				"def": "instset",
-				"group": "grouping",
-				"choices": [
-					{"id": "none", "name": 'None'},
-					{"id": "instset", "name": 'Inst Category'}
-				]
-			},
-		}
+	def get_configdef(self, configdef):
+		configdef.add_bool('no_swing', False, 'Disable Swing')
+		configdef.set_group('grouping', 'Grouping')
+		cfgpart = configdef.add_enum('groupby', 'instset', 'Group By')
+		cfgpart.add_choice('none', 'None')
+		cfgpart.add_choice('instset', 'Inst Category')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_past import korg_m1_nds as proj_korg_m1_nds

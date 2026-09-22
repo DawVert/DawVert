@@ -4,7 +4,8 @@
 from objects import globalstore
 import plugins
 
-dpcm_rate_arr = [4181.71,4709.93,5264.04,5593.04,6257.95,7046.35,7919.35,8363.42,9419.86,11186.1,12604.0,13982.6,16884.6,21306.8,24858.0,33143.9]
+dpcm_rate_arr_ntsc = [4181.71,4709.93,5264.04,5593.04,6257.95,7046.35,7919.35,8363.42,9419.86,11186.1,12604.0,13982.6,16884.6,21306.8,24858.0,33143.9]
+dpcm_rate_arr_pal = [4177.40,4696.63,5261.41,5579.22,6023.94,7044.94,7917.18,8397.01,9446.63,11233.8,12595.5,14089.9,16965.4,21315.5,25191.0,33252.1]
 
 class input_famitracker_txt(plugins.base):
 	def is_dawvert_plugin(self):
@@ -22,6 +23,11 @@ class input_famitracker_txt(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'm'
 
+	def get_configdef(self, configdef):
+		cfgpart = configdef.add_enum('dpcm_freq', 'ntsc', 'DPCM NTSC/PAL')
+		cfgpart.add_choice('ntsc', 'NTSC')
+		cfgpart.add_choice('pal', 'PAL')
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_tracker import famitracker as proj_famitracker
 		from objects.tracker import pat_multi
@@ -38,6 +44,10 @@ class input_famitracker_txt(plugins.base):
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
+
+		# --------------------
+		dpcm_sel = dawvert_intent.input_get_param('dpcm_freq', 'ntsc')
+		dpcm_freqlist = dpcm_rate_arr_ntsc if dpcm_sel=='ntsc' else dpcm_rate_arr_pal
 
 		# ---------- metadata ----------
 		if project_obj.title: convproj_obj.metadata.name = project_obj.title
@@ -145,7 +155,7 @@ class input_famitracker_txt(plugins.base):
 									dpcm_data = project_obj.dpcm[dpcm_key.id]
 									audio_obj = audio_data.audio_obj()
 									audio_obj.decode_from_codec('dpcm', dpcm_data.data)
-									audio_obj.rate = dpcm_rate_arr[dpcm_key.pitch]
+									audio_obj.rate = dpcm_freqlist[dpcm_key.pitch]
 									audio_obj.to_file_wav(filename)
 									sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
 									sampleref_obj.set_fileformat('wav')

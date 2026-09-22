@@ -49,10 +49,9 @@ class input_hydrogen(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single']
 		in_dict['projtype'] = 'mi'
 
-	def get_configmenu(self): 
-		return {
-			"pb_track": {"type": "bool","name": "Playback Track Enabled","def": True,"group": "debug"},
-		}
+	def get_configdef(self, configdef):
+		configdef.set_group('debug', 'Debug')
+		configdef.add_bool('pb_track', True, 'Playback Track Enabled')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_drummach import hydrogen as proj_hydrogen

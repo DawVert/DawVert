@@ -24,10 +24,9 @@ class input_xewton(plugins.base):
 		in_dict['plugin_included'] = ['']
 		in_dict['projtype'] = 'r'
 
-	def get_configmenu(self): 
-		return {
-			"inst_on": {"type": "bool","name": "Instruments Enabled","def": True,"group": "debug"},
-		}
+	def get_configdef(self, configdef):
+		configdef.set_group('debug', 'Debug')
+		configdef.add_bool('inst_on', True, 'Instruments Enabled')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_mobile import xewtonmusic

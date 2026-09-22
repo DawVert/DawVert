@@ -237,10 +237,8 @@ class input_notessimo_v3(plugins.base):
 		in_dict['plugin_included'] = ['universal:midi']
 		in_dict['projtype'] = 'mi'
 		
-	def get_configmenu(self): 
-		return {
-			"sharp_bug": {"type": "bool","name": "Recreate Sharp/Flat Bug","def": True}
-		}
+	def get_configdef(self, configdef):
+		configdef.add_bool('sharp_bug', True, 'Recreate Sharp/Flat Bug')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_uncommon import notessimo_v3 as proj_notessimo_v3

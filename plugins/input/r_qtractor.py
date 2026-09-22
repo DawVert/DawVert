@@ -53,10 +53,9 @@ class input_midi(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
-	def get_configmenu(self): 
-		return {
-			"swap_bg_fg": {"type": "bool","name": "Swap BG/FG colors","def": False, "group": "visual"}
-		}
+	def get_configdef(self, configdef):
+		configdef.set_group('visual', 'Visual')
+		configdef.add_bool('swap_bg_fg', False, 'Swap BG/FG colors')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import qtractor as proj_qtractor
