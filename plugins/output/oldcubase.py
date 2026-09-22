@@ -14,9 +14,6 @@ import math
 
 logpreset_def = b'\x00@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n\x00\x00\x00\x01\x00\x00\x00\x00\x00\n\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
-DEBUG_DISABLE_INST_TRACK = False
-DEBUG_DISABLE_AUDIO_TRACK = False
-
 def make_blank_slots(num, synthslots):
 	for x in range(num): synthslots.append({'State': 0})
 
@@ -64,6 +61,11 @@ class output_oldcubase(plugins.base):
 		in_dict['fxtype'] = 'groupreturn'
 		in_dict['notepl_pitch'] = True
 
+	def get_configdef(self, configdef):
+		configdef.set_group('debug', 'Debug')
+		configdef.add_bool('disable_inst', False, 'Disable Inst Track')
+		configdef.add_bool('disable_audio', False, 'Disable Audio Track')
+
 	def parse(self, convproj_obj, dawvert_intent):
 		global to_wide_string
 		global to_norm_string
@@ -79,6 +81,9 @@ class output_oldcubase(plugins.base):
 		sequel_list_string = proj_sequel.sequel_list_string
 		sequel_list_dict = proj_sequel.sequel_list_dict
 		sequel_list_obj = proj_sequel.sequel_list_obj
+
+		DEBUG_DISABLE_INST_TRACK = dawvert_intent.output_get_param('disable_inst', False)
+		DEBUG_DISABLE_AUDIO_TRACK = dawvert_intent.output_get_param('disable_audio', False)
 
 		timebase = 480
 

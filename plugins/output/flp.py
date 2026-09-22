@@ -132,6 +132,9 @@ class output_cvpjs(plugins.base):
 		in_dict['plugin_ext_platforms'] = ['win']
 		in_dict['projtype'] = 'mi'
 	
+	def get_configdef(self, configdef):
+		configdef.add_int('ppq', 96, 'PPQ')
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from bs4 import BeautifulSoup
 		from functions.dawspecific import flp_enc_plugins
@@ -145,7 +148,7 @@ class output_cvpjs(plugins.base):
 		num_fx = proj_flp.total_num_fx[flversion]
 		num_tracks = proj_flp.total_num_tracks[flversion]
 
-		ppq = 96
+		ppq = dawvert_intent.output_get_param('ppq', 96)
 		convproj_obj.change_timings(ppq)
 
 		globalstore.datapack.load('fl_studio', './data/datapack/app/fl_studio.xml')

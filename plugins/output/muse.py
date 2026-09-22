@@ -13,8 +13,6 @@ from functions import xtramath
 import logging
 logger_output = logging.getLogger('output')
 
-midiDivision = 384
-
 def addvalue(xmltag, name, value):
 	x_temp = ET.SubElement(xmltag, name)
 	x_temp.text = str(value)
@@ -285,12 +283,17 @@ class output_cvpj(plugins.base):
 		in_dict['notes_midi'] = True
 		in_dict['time_seconds_auto'] = True
 	
+	def get_configdef(self, configdef):
+		configdef.add_int('ppq', 384, 'PPQ')
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import muse as proj_muse
 		global tracknum
 		global synthidnum
 		tracknum = 1
 		synthidnum = 4
+
+		midiDivision = dawvert_intent.output_get_param('ppq', 384)
 
 		convproj_obj.change_timings(midiDivision)
 		muse_bpm = convproj_obj.params.get('bpm', 120).value
