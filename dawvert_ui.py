@@ -27,7 +27,9 @@ scriptfiledir = os.path.dirname(os.path.realpath(__file__))
 
 from objects.ui.ui_pyqt import Ui_MainWindow
 from objects.ui import ui_configmenu
-from objects.ui import ui_configmenu_qt6
+
+from objects.ui import ui_configmenu_qt6 as ui_configmenu_interface
+#from objects.ui import ui_configmenu_gtk3 as ui_configmenu_interface
 
 logging.disable(logging.INFO)
 
@@ -300,7 +302,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 			window_title = 'Output Config'
 
 		if config_def is not None:
-			ui_configmenu_qt6.show_gui(config_def, config_values, window_title)
+			ui_configmenu_interface.show_gui(config_def, config_values, window_title)
 
 	def __display_extplugcount(self):
 		vst2_count = globalstore.extplug.count('vst2')

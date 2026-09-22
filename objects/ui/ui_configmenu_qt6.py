@@ -35,11 +35,11 @@ class ConfigWindow(QWidget):
 		self.all_gridLayout = []
 		self.dict = {}
 
-	def add_group(self, name):
+	def add_group(self, name, label):
 		self.groupBox = QGroupBox()
 
 		self.groupBox.setObjectName(u"groupBox_"+name)
-		self.groupBox.setTitle(name)
+		self.groupBox.setTitle(label)
 		self.groupBox.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
 		self.groupBox.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
@@ -198,8 +198,10 @@ def show_gui(miniconfmenu_store_obj, dictval, windowtitle):
 		window.load_dict(dictval)
 		window.setWindowTitle(windowtitle)
 
+		groupnames = miniconfmenu_store_obj.groupnames
+
 		for k, v in sepparts.items():
-			window.add_group(k)
+			window.add_group(k, groupnames[k] if k in groupnames else k)
 			for vk, vv in v.items():
 				proptype = vv.type
 				if proptype=='text': window.add_control_text(vk, vv)
