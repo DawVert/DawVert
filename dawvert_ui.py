@@ -230,6 +230,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 	def __init__(self, *args, obj=None, **kwargs):
 		super(MainWindow, self).__init__(*args, **kwargs)
 
+		self.lab_cfg_main = "Main Config"
+		self.lab_cfg_soundfonts = "Soundfont Config"
+		self.lab_cfg_externalplugins = "External Plugs Config"
+		self.lab_cfg_conversion = "Conversion Config"
+		self.lab_cfg_inputplugin = "Input Config"
+		self.lab_cfg_outputplugin = "Output Config"
+
+		self.lab_stat_main = "Status: "
+		self.lab_stat_convert = "Converting"
+		self.lab_stat_notready = "Not Ready"
+		self.lab_stat_file_no_input = "No input file."
+		self.lab_stat_file_no_output = "No output file."
+		self.lab_stat_plug_no_input = "Input plugin not selected."
+		self.lab_stat_plug_no_output = "Output plugin not selected."
+		self.lab_stat_ow_no_input = "Not overwriting input file."
+		self.lab_stat_ow_no_output = "Not overwriting output file."
+		self.lab_stat_plug_dead_input = "Input Plugin Unusable"
+		self.lab_stat_plug_dead_output = "Output Plugin Unusable"
+		self.lab_stat_ready = "Ready"
+
 		wid = QtWidgets.QWidget(self)
 		self.ui = Ui_MainWindow()
 		self.ui.setupUi(wid)
@@ -269,6 +289,78 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.ui.ConfigOutput.clicked.connect(functools.partial(self.open_configmenu, 'output'))
 		self.ui.ConfigInput.clicked.connect(functools.partial(self.open_configmenu, 'input'))
 
+	def translate_from_ini(self, filename):
+		ui_o = self.ui
+
+		import configparser
+		config = configparser.ConfigParser()
+		config.read_file(open(filename))
+		if 'main' in config:
+			locpart = config['main']
+			if 'title' in locpart: self.setWindowTitle(locpart['title'])
+			if 'convert' in locpart: ui_o.ConvertButton.setText(locpart['convert'])
+			if 'group_input' in locpart: ui_o.InputGroup.setTitle(locpart['group_input'])
+			if 'group_output' in locpart: ui_o.OutputGroup.setTitle(locpart['group_output'])
+			if 'group_config' in locpart: ui_o.ConfigArea.setTitle(locpart['group_config'])
+
+		if 'input' in config:
+			locpart = config['input']
+			if 'file' in locpart: ui_o.InputTextFile.setText(locpart['file'])
+			if 'autodetect' in locpart: ui_o.AutoDetectButton.setText(locpart['autodetect'])
+			if 'inputplugin' in locpart: ui_o.label_4.setText(locpart['inputplugin'])
+			if 'pluginset' in locpart: ui_o.label_7.setText(locpart['pluginset'])
+
+		if 'output' in config:
+			locpart = config['output']
+			if 'file' in locpart: ui_o.OutputTextFile.setText(locpart['file'])
+			if 'samples' in locpart: ui_o.OutputSampleFile.setText(locpart['samples'])
+			if 'outputplugin' in locpart: ui_o.label_9.setText(locpart['outputplugin'])
+			if 'pluginset' in locpart: ui_o.label_8.setText(locpart['pluginset'])
+
+		if 'configbuttons' in config:
+			locpart = config['configbuttons']
+			if 'main' in locpart: ui_o.ConfigMain.setText(locpart['main'])
+			if 'soundfonts' in locpart: ui_o.ConfigSoundFont.setText(locpart['soundfonts'])
+			if 'externalplugins' in locpart: ui_o.ConfigExtPlug.setText(locpart['externalplugins'])
+			if 'conversion' in locpart: ui_o.ConfigConversion.setText(locpart['conversion'])
+			if 'inputplugin' in locpart: ui_o.ConfigInput.setText(locpart['inputplugin'])
+			if 'outputplugin' in locpart: ui_o.ConfigOutput.setText(locpart['outputplugin'])
+
+		if 'configwindows' in config:
+			locpart = config['configwindows']
+			if 'main' in locpart: self.lab_cfg_main = locpart['main']
+			if 'soundfonts' in locpart: self.lab_cfg_soundfonts = locpart['soundfonts']
+			if 'externalplugins' in locpart: self.lab_cfg_externalplugins = locpart['externalplugins']
+			if 'conversion' in locpart: self.lab_cfg_conversion = locpart['conversion']
+			if 'inputplugin' in locpart: self.lab_cfg_inputplugin = locpart['inputplugin']
+			if 'outputplugin' in locpart: self.lab_cfg_outputplugin = locpart['outputplugin']
+
+		if 'configwindows' in config:
+			locpart = config['configwindows']
+			if 'main' in locpart: self.lab_cfg_main = locpart['main']
+			if 'soundfonts' in locpart: self.lab_cfg_soundfonts = locpart['soundfonts']
+			if 'externalplugins' in locpart: self.lab_cfg_externalplugins = locpart['externalplugins']
+			if 'conversion' in locpart: self.lab_cfg_conversion = locpart['conversion']
+			if 'inputplugin' in locpart: self.lab_cfg_inputplugin = locpart['inputplugin']
+			if 'outputplugin' in locpart: self.lab_cfg_outputplugin = locpart['outputplugin']
+
+		if 'statustext' in config:
+			locpart = config['statustext']
+			if 'main' in locpart: self.lab_stat_main = locpart['main']+' '
+			if 'convert' in locpart: self.lab_stat_convert = locpart['convert']
+			if 'notready' in locpart: self.lab_stat_notready = locpart['notready']
+			if 'file_no_input' in locpart: self.lab_stat_file_no_input = locpart['file_no_input']
+			if 'file_no_output' in locpart: self.lab_stat_file_no_output = locpart['file_no_output']
+			if 'plug_no_input' in locpart: self.lab_stat_plug_no_input = locpart['plug_no_input']
+			if 'plug_no_output' in locpart: self.lab_stat_plug_no_output = locpart['plug_no_output']
+			if 'ow_no_input' in locpart: self.lab_stat_ow_no_input = locpart['ow_no_input']
+			if 'ow_no_output' in locpart: self.lab_stat_ow_no_output = locpart['ow_no_output']
+			if 'plug_dead_input' in locpart: self.lab_stat_plug_dead_input = locpart['plug_dead_input']
+			if 'plug_dead_output' in locpart: self.lab_stat_plug_dead_output = locpart['plug_dead_output']
+			if 'ready' in locpart: self.lab_stat_ready = locpart['ready']
+
+		self.__update_convst()
+		
 	def open_configmenu(self, name, _):
 		config_values = {}
 		config_def = miniconfmenu_store()
@@ -277,29 +369,29 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		if name=='main':
 			config_values = dawvert_config__main
 			config_def = configdef_main
-			window_title = 'Main Config'
+			window_title = self.lab_cfg_main
 		if name=='soundfont':
 			config_values = dawvert_config__soundfont
 			config_def = configdef_soundfont
-			window_title = 'Soundfont Config'
+			window_title = self.lab_cfg_soundfonts
 		if name=='extplug':
 			config_values = dawvert_config__extplug
 			config_def = configdef_extplugs
-			window_title = 'External Plugs Config'
+			window_title = self.lab_cfg_externalplugins
 		if name=='conversion':
 			config_values = dawvert_config__conversion
 			config_def = configdef_conversion
-			window_title = 'Conversion Config'
+			window_title = self.lab_cfg_conversion
 		if name=='input':
 			config_values = dawvert_intent.input_params
 			plugin_obj = dawvert_core.input_get_current_plug()
 			if plugin_obj is not None: config_def = plugin_obj.configdef
-			window_title = 'Input Config'
+			window_title = self.lab_cfg_inputplugin
 		if name=='output':
 			config_values = dawvert_intent.output_params
 			plugin_obj = dawvert_core.output_get_current_plug()
 			if plugin_obj is not None: config_def = plugin_obj.configdef
-			window_title = 'Output Config'
+			window_title = self.lab_cfg_outputplugin
 
 		if config_def is not None:
 			ui_configmenu_interface.show_gui(config_def, config_values, window_title)
@@ -408,24 +500,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 			self.ui.SubStatusText.setText('')
 			return False
 		elif not outstate:
-			if not DEBUG_VIEW: self.ui.StatusText.setText('Status: Not Ready')
-			else: self.ui.StatusText.setText('Status: Not Ready (DEBUG VIEW ON)')
-			if not dawvert_intent.input_file: self.ui.SubStatusText.setText('No input file.')
-			elif not dawvert_intent.output_file: self.ui.SubStatusText.setText('No output file.')
-			elif not inplug: self.ui.SubStatusText.setText('Input plugin not selected.')
-			elif not outplug: self.ui.SubStatusText.setText('Output plugin not selected.')
-			elif not not_same: self.ui.SubStatusText.setText('Not overwriting input file.')
-			elif not out_exists: self.ui.SubStatusText.setText('Not overwriting output file.')
+			if not DEBUG_VIEW: self.ui.StatusText.setText(self.lab_stat_main+self.lab_stat_notready)
+			else: self.ui.StatusText.setText(self.lab_stat_main+self.lab_stat_notready+' (DEBUG VIEW ON)')
+			if not dawvert_intent.input_file: self.ui.SubStatusText.setText(self.lab_stat_file_no_input)
+			elif not dawvert_intent.output_file: self.ui.SubStatusText.setText(self.lab_stat_file_no_output)
+			elif not inplug: self.ui.SubStatusText.setText(self.lab_stat_plug_no_input)
+			elif not outplug: self.ui.SubStatusText.setText(self.lab_stat_plug_no_output)
+			elif not not_same: self.ui.SubStatusText.setText(self.lab_stat_ow_no_input)
+			elif not out_exists: self.ui.SubStatusText.setText(self.lab_stat_ow_no_output)
 			elif not in_usable: 
-				self.ui.StatusText.setText('Status: Input Plugin Unusable')
+				self.ui.StatusText.setText(self.lab_stat_plug_dead_input)
 				self.ui.SubStatusText.setText(in_usable_msg)
 			elif not out_usable: 
-				self.ui.StatusText.setText('Status: Output Plugin Unusable')
+				self.ui.StatusText.setText(self.lab_stat_plug_dead_output)
 				self.ui.SubStatusText.setText(out_usable_msg)
 			return False
 		else:
-			if not DEBUG_VIEW: self.ui.StatusText.setText('Status: Ready')
-			else: self.ui.StatusText.setText('Status: Ready (DEBUG VIEW ON)')
+			if not DEBUG_VIEW: self.ui.StatusText.setText(self.lab_stat_main+self.lab_stat_ready)
+			else: self.ui.StatusText.setText(self.lab_stat_main+self.lab_stat_ready+' (DEBUG VIEW ON)')
 			self.ui.SubStatusText.setText('')
 			return True
 
@@ -565,5 +657,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 app = QtWidgets.QApplication(sys.argv)
 
 window = MainWindow()
+
+#window.translate_from_ini('translation/english.ini')
+
 window.show()
 app.exec()
