@@ -19,6 +19,7 @@ import os
 import sys
 import traceback
 import functools
+import json
 
 from objects.convproj import fileref
 fileref_global = fileref.cvpj_fileref_global
@@ -46,27 +47,90 @@ dawvert_intent.config_load('./__config/config.ini')
 
 dawvert_core = dv_core.core()
 
-dawvert_config__main = {}
-dawvert_config__main['songnum'] = dawvert_intent.songnum
-dawvert_config__main['dd_outpath'] = 'beside_original'
-dawvert_config__main['overwrite_out'] = False
-dawvert_config__main['auto_convert'] = False
+class gui_config():
+	def __init__(self):
+		self.main = {}
+		self.main['songnum'] = dawvert_intent.songnum
+		self.main['dd_outpath'] = 'beside_original'
+		self.main['overwrite_out'] = False
+		self.main['auto_convert'] = False
 
-dawvert_config__conversion = {}
-dawvert_config__conversion['splitter_mode'] = dawvert_intent.splitter_mode
-dawvert_config__conversion['splitter_detect_start'] = dawvert_intent.splitter_detect_start
-dawvert_config__conversion['output_unused_nle'] = False
+		self.conversion = {}
+		self.conversion['splitter_mode'] = dawvert_intent.splitter_mode
+		self.conversion['splitter_detect_start'] = dawvert_intent.splitter_detect_start
+		self.conversion['output_unused_nle'] = False
 
-dawvert_config__extplug = {}
-dawvert_config__extplug['out_foss'] = False
-dawvert_config__extplug['out_old'] = False
-dawvert_config__extplug['out_freeware'] = False
-dawvert_config__extplug['out_shareware'] = False
+		self.extplug = {}
+		self.extplug['out_foss'] = False
+		self.extplug['out_old'] = False
+		self.extplug['out_freeware'] = False
+		self.extplug['out_shareware'] = False
 
-dawvert_config__soundfont = {}
+		self.soundfont = {}
+
+		self.input_plugins = {}
+
+		self.output_plugins = {}
+
+	def save_in_plugin_config(self):
+		plugname = dawvert_core.input_get_current()
+		if plugname and dawvert_intent.input_params:
+			self.input_plugins[plugname] = dawvert_intent.input_params
+		dawvert_intent.input_params = {}
+
+	def get_in_plugin_config(self):
+		dawvert_intent.input_params = {}
+		plugname = dawvert_core.input_get_current()
+		if plugname in self.input_plugins:
+			dawvert_intent.input_params = self.input_plugins[plugname]
+
+	def save_out_plugin_config(self):
+		plugname = dawvert_core.output_get_current()
+		if plugname and dawvert_intent.output_params:
+			self.output_plugins[plugname] = dawvert_intent.output_params
+		dawvert_intent.output_params = {}
+
+	def get_out_plugin_config(self):
+		dawvert_intent.output_params = {}
+		plugname = dawvert_core.output_get_current()
+		if plugname in self.output_plugins:
+			dawvert_intent.output_params = self.output_plugins[plugname]
+
+	def load_json(self, indict):
+		if 'main' in indict: self.main = indict['main']
+		if 'conversion' in indict: self.conversion = indict['conversion']
+		if 'extplug' in indict: self.extplug = indict['extplug']
+		if 'soundfont' in indict: self.soundfont = indict['soundfont']
+		if 'input_plugins' in indict: self.input_plugins = indict['input_plugins']
+		if 'output_plugins' in indict: self.output_plugins = indict['output_plugins']
+
+	def save_file(self, filename):
+		outdict = {}
+		outdict['main'] = self.main
+		outdict['conversion'] = self.conversion
+		outdict['extplug'] = self.extplug
+		outdict['soundfont'] = self.soundfont
+		outdict['input_plugins'] = self.input_plugins
+		outdict['output_plugins'] = self.output_plugins
+
+		with open(filename, 'w') as f:
+		    json.dump(outdict, f, indent=4)
+
+	def load_file(self, filename):
+		injson = {}
+
+		if os.path.exists(filename):
+			try:
+				with open(filename) as f:
+					injson = json.load(f)
+			except:
+				pass
+
+		self.load_json(injson)
+
+dawvert_config = gui_config()
 
 miniconfmenu_store = ui_configmenu.miniconfmenu_store
-
 
 configdef_main = miniconfmenu_store()
 configdef_main.add_bool('overwrite_out', False, 'Overwrite Output')
@@ -121,18 +185,18 @@ class ConversionWorker(QtCore.QObject):
 			file_name = os.path.splitext(os.path.basename(dawvert_intent.input_file))[0]
 
 			dawvert_intent.flags_compat = []
-			if 'output_unused_nle' in dawvert_config__conversion: dawvert_intent.flags_compat.append('mi2m-output-unused-nle')
-			dawvert_intent.splitter_mode = dawvert_config__conversion['splitter_mode']
-			dawvert_intent.splitter_detect_start = dawvert_config__conversion['splitter_detect_start']
+			if 'output_unused_nle' in dawvert_config.conversion: dawvert_intent.flags_compat.append('mi2m-output-unused-nle')
+			dawvert_intent.splitter_mode = dawvert_config.conversion['splitter_mode']
+			dawvert_intent.splitter_detect_start = dawvert_config.conversion['splitter_detect_start']
 
 			extplug_cat = []
-			if dawvert_config__extplug['out_foss']: extplug_cat.append('foss')
-			if dawvert_config__extplug['out_old']: extplug_cat.append('old')
-			if dawvert_config__extplug['out_freeware']: extplug_cat.append('nonfree')
-			if dawvert_config__extplug['out_shareware']: extplug_cat.append('shareware')
+			if dawvert_config.extplug['out_foss']: extplug_cat.append('foss')
+			if dawvert_config.extplug['out_old']: extplug_cat.append('old')
+			if dawvert_config.extplug['out_freeware']: extplug_cat.append('nonfree')
+			if dawvert_config.extplug['out_shareware']: extplug_cat.append('shareware')
 			dawvert_intent.extplug_cat = extplug_cat
 
-			if 'songnum' in dawvert_config__main: dawvert_intent.songnum = dawvert_config__main['songnum']
+			if 'songnum' in dawvert_config.main: dawvert_intent.songnum = dawvert_config.main['songnum']
 
 			if dawvert_intent.output_samples:
 				dawvert_intent.output_samples += '/'
@@ -229,7 +293,6 @@ DEBUG_VIEW = 0
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 	def __init__(self, *args, obj=None, **kwargs):
 		super(MainWindow, self).__init__(*args, **kwargs)
-
 		self.lab_cfg_main = "Main Config"
 		self.lab_cfg_soundfonts = "Soundfont Config"
 		self.lab_cfg_externalplugins = "External Plugs Config"
@@ -288,6 +351,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.ui.ConfigConversion.clicked.connect(functools.partial(self.open_configmenu, 'conversion'))
 		self.ui.ConfigOutput.clicked.connect(functools.partial(self.open_configmenu, 'output'))
 		self.ui.ConfigInput.clicked.connect(functools.partial(self.open_configmenu, 'input'))
+
+	def closeEvent(self, event):
+		dawvert_config.save_in_plugin_config()
+		dawvert_config.save_out_plugin_config()
+		dawvert_config.save_file('config.json')
+		event.accept()
 
 	def translate_from_ini(self, filename):
 		ui_o = self.ui
@@ -360,26 +429,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 			if 'ready' in locpart: self.lab_stat_ready = locpart['ready']
 
 		self.__update_convst()
-		
+
 	def open_configmenu(self, name, _):
 		config_values = {}
 		config_def = miniconfmenu_store()
 		window_title = 'Config'
 
 		if name=='main':
-			config_values = dawvert_config__main
+			config_values = dawvert_config.main
 			config_def = configdef_main
 			window_title = self.lab_cfg_main
 		if name=='soundfont':
-			config_values = dawvert_config__soundfont
+			config_values = dawvert_config.soundfont
 			config_def = configdef_soundfont
 			window_title = self.lab_cfg_soundfonts
 		if name=='extplug':
-			config_values = dawvert_config__extplug
+			config_values = dawvert_config.extplug
 			config_def = configdef_extplugs
 			window_title = self.lab_cfg_externalplugins
 		if name=='conversion':
-			config_values = dawvert_config__conversion
+			config_values = dawvert_config.conversion
 			config_def = configdef_conversion
 			window_title = self.lab_cfg_conversion
 		if name=='input':
@@ -410,14 +479,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 	def set_dd_output(self, f):
 		self.ui.InputFilePath.setText(f)
-		if dawvert_config__main['dd_outpath'] == 'beside_original':
+		if dawvert_config.main['dd_outpath'] == 'beside_original':
 			self.ui.OutputFilePath.setText(f.rsplit('.',1)[0])
 			self.ui.OutputSamplePath.setText(f.rsplit('.',1)[0]+'_samples')
-		if dawvert_config__main['dd_outpath'] == 'out_folder':
+		if dawvert_config.main['dd_outpath'] == 'out_folder':
 			outfile = os.path.join(globalstore.dawvert_script_path, 'output', os.path.basename(f))
 			self.ui.OutputFilePath.setText(outfile.rsplit('.',1)[0])
 			self.ui.OutputSamplePath.setText(outfile.rsplit('.',1)[0]+'_samples')
-		if dawvert_config__main['dd_outpath'] == 'out_file':
+		if dawvert_config.main['dd_outpath'] == 'out_file':
 			outfile = os.path.join(globalstore.dawvert_script_path, 'out')
 			self.ui.OutputFilePath.setText(outfile.rsplit('.',1)[0])
 			samplepath = os.path.join(globalstore.dawvert_script_path, '__samples', os.path.basename(f))
@@ -429,18 +498,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 			self.set_dd_output(files[0])
 			self.__do_auto_detect()
 			self.__change_output_path()
-			if dawvert_config__main['auto_convert']:
+			if dawvert_config.main['auto_convert']:
 				if self.__can_convert(): self.__do_convert()
 
 	def __change_dd_setting(self, num):
-		dawvert_config__main['dd_outpath'] = num
+		dawvert_config.main['dd_outpath'] = num
 
 	def __change_overwrite_setting(self, val):
-		dawvert_config__main['overwrite_out'] = val
+		dawvert_config.main['overwrite_out'] = val
 		self.__update_convst()
 
 	def __change_auto_convert_setting(self, val):
-		dawvert_config__main['auto_convert'] = val
+		dawvert_config.main['auto_convert'] = val
 
 	def __choose_input(self):
 		filename, _filter = QFileDialog.getOpenFileName(self, "Open File", "", "")
@@ -478,7 +547,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		inplug = dawvert_core.input_get_current()
 		outplug = dawvert_core.output_get_current()
 		not_same = dawvert_intent.input_file!=dawvert_intent.output_file
-		out_exists = (not os.path.exists(dawvert_intent.output_file)) or dawvert_config__main['overwrite_out']
+		out_exists = (not os.path.exists(dawvert_intent.output_file)) or dawvert_config.main['overwrite_out']
 		in_usable, in_usable_msg = dawvert_core.input_get_usable()
 		out_usable, out_usable_msg = dawvert_core.output_get_usable()
 		return bool(inplug and outplug and not_same and out_exists and in_usable and out_usable)
@@ -489,7 +558,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		inplug = dawvert_core.input_get_current()
 		outplug = dawvert_core.output_get_current()
 		not_same = dawvert_intent.input_file!=dawvert_intent.output_file
-		out_exists = (not os.path.exists(dawvert_intent.output_file)) or dawvert_config__main['overwrite_out']
+		out_exists = (not os.path.exists(dawvert_intent.output_file)) or dawvert_config.main['overwrite_out']
 		in_usable, in_usable_msg = dawvert_core.input_get_usable()
 		out_usable, out_usable_msg = dawvert_core.output_get_usable()
 		outstate = bool(inplug and outplug and not_same and out_exists and in_usable and out_usable)
@@ -534,17 +603,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.__change_input_plugin(0)
 
 	def __change_input_plugin(self, num):
+		dawvert_config.save_in_plugin_config()
+
 		pluginname = dawvert_core.input_get_plugins_index(num)
 		if pluginname: dawvert_core.input_set(pluginname)
 		else: 
 			plugnames = dawvert_core.input_get_plugins()
 			if plugnames: dawvert_core.input_set(plugnames[0])
 		self.__update_convst()
+		dawvert_config.get_in_plugin_config()
 
 	def __change_input_plugin_nofb(self, num):
+		dawvert_config.save_in_plugin_config()
+
 		pluginname = dawvert_core.input_get_plugins_index(num)
 		if pluginname: dawvert_core.input_set(pluginname)
 		self.__update_convst()
+		dawvert_config.get_in_plugin_config()
 
 	def __update_input_plugins(self):
 		self.ui.ListWidget_InPlugin.clear()
@@ -569,10 +644,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.__change_output_path()
 
 	def __change_output_plugin(self, num):
+		dawvert_config.save_out_plugin_config()
+
 		pluginname = dawvert_core.output_get_plugins_index(num)
 		if pluginname: dawvert_core.output_set(pluginname)
 		self.__update_convst()
 		self.__change_output_path()
+
+		dawvert_config.get_out_plugin_config()
 
 	def __change_output_path(self):
 		outfound = dawvert_core.output_get_current()
@@ -654,11 +733,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 			self.worker.update_ui.connect(self.__update_ui_ele_ext)
 			self.thread.start()
 
+dawvert_config.load_file('config.json')
 app = QtWidgets.QApplication(sys.argv)
-
 window = MainWindow()
-
-#window.translate_from_ini('translation/english.ini')
-
+#window.translate_from_ini('translation/chinese.ini')
 window.show()
 app.exec()
