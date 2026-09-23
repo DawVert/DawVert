@@ -455,9 +455,9 @@ class core:
 		self.convproj_obj = convproj.cvpj_project()
 		selected_plugin = self.currentplug_input.selected_plugin
 		plug_obj = selected_plugin.plug_obj
-		configmenu = selected_plugin.configmenu
-		if configmenu:
-			for k, v in configmenu.items():
+		configdef = selected_plugin.configdef
+		if configdef:
+			for k, v in configdef.items():
 				if ('def' in v) and (k not in dawvert_intent.input_params):
 					dawvert_intent.input_params[k] = v['def']
 

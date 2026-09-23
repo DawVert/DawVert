@@ -107,14 +107,14 @@ class output_soundation(plugins.base):
 	def parse(self, i_convproj_obj, dawvert_intent):
 		from objects.file_proj import soundation as proj_soundation
 
-		cvpj_tracks = convproj_obj.tracks
-		
 		global convproj_obj
 		global audio_id
 
 		audio_id = {}
 		convproj_obj = i_convproj_obj
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		globalstore.datapack.load('soundation', './data/datapack/app/soundation.xml')
 		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.xml')
 
