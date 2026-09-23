@@ -10,14 +10,15 @@ logger_compat = logging.getLogger('compat')
 
 def move_fx0_to_mastertrack(convproj_obj):
 	fxrack_obj = convproj_obj.fxrack
+	track_master = convproj_obj.track_master
 	if 0 in fxrack_obj:
 		fxchannel_obj = fxrack_obj[0]
 		convproj_obj.automation.move(['fxmixer','0','vol'], ['master', 'vol'])
 		convproj_obj.automation.move(['fxmixer','0','pan'], ['master', 'pan'])
-		fxchannel_obj.params.move(convproj_obj.track_master.params, 'vol')
-		fxchannel_obj.params.move(convproj_obj.track_master.params, 'pan')
-		convproj_obj.track_master.plugslots.audiofx_move_from(fxchannel_obj.plugslots)
-		convproj_obj.track_master.latency_offset = fxchannel_obj.latency_offset
+		fxchannel_obj.params.move(track_master.params, 'vol')
+		fxchannel_obj.params.move(track_master.params, 'pan')
+		track_master.plugslots.audiofx_move_from(fxchannel_obj.plugslots)
+		track_master.latency_offset = fxchannel_obj.latency_offset
 		del fxrack_obj[0]
 
 def track2fxrack(convproj_obj, data_obj, fxnum, defualtname, starttext, doboth, autoloc):
@@ -53,11 +54,12 @@ def track2fxrack(convproj_obj, data_obj, fxnum, defualtname, starttext, doboth, 
 DEBUGTXT = False
 
 def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
-	fxrack_obj = convproj_obj.fxrack
-
 	in_fxtype = convproj_obj.fxtype
 	out_fxtype = out_dawinfo.fxtype
-	#print('fxchange: '+in_fxtype+' > '+out_fxtype+' - Proj Type: '+convproj_obj.type)
+
+	fxrack_obj = convproj_obj.fxrack
+	track_master = convproj_obj.track_master
+
 	logger_compat.info('fxchange: '+in_fxtype+' > '+str(out_fxtype)+' - Proj Type: '+convproj_obj.type)
 
 	paramchange = in_dawinfo.fxrack_params.copy()
@@ -89,12 +91,12 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		if DEBUGTXT: print('FX CHANGE PROCESS 2')
 		logger_compat.info('fxchange: Master to FX 0')
 		fxchannel_obj = fxrack_obj.add(0)
-		fxchannel_obj.visual = copy.deepcopy(convproj_obj.track_master.visual)
-		fxchannel_obj.params = copy.deepcopy(convproj_obj.track_master.params)
-		fxchannel_obj.plugslots.audiofx_move_from(convproj_obj.track_master.plugslots)
+		fxchannel_obj.visual = copy.deepcopy(track_master.visual)
+		fxchannel_obj.params = copy.deepcopy(track_master.params)
+		fxchannel_obj.plugslots.audiofx_move_from(track_master.plugslots)
 		convproj_obj.automation.move(['master','vol'], ['fxmixer','0','vol'])
 		convproj_obj.automation.move(['master','pan'], ['fxmixer','0','pan'])
-		fxchannel_obj.latency_offset = convproj_obj.track_master.latency_offset
+		fxchannel_obj.latency_offset = track_master.latency_offset
 		for count, iterval in enumerate(convproj_obj.instrument__iter()):
 			fxnum = count+1
 			inst_id, inst_obj = iterval
@@ -113,7 +115,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		if DEBUGTXT: print('FX CHANGE PROCESS 3')
 		tracknum = 1
 		
-		track2fxrack(convproj_obj, convproj_obj.track_master, 0, 'Master', '', True, ['master'])
+		track2fxrack(convproj_obj, track_master, 0, 'Master', '', True, ['master'])
 
 		for trackid, track_obj in convproj_obj.track__iter():
 			fxchannel_obj = track2fxrack(convproj_obj, track_obj, tracknum, '', '', True, ['track',trackid])
@@ -128,9 +130,9 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		t2m = trackfx_to_numdata.to_numdata()
 		output_ids = t2m.trackfx_to_numdata(convproj_obj, 1)
 		dict_returns = {}
-		for returnid, return_obj in convproj_obj.track_master.returns.items(): dict_returns[returnid] = return_obj
+		for returnid, return_obj in track_master.returns.items(): dict_returns[returnid] = return_obj
 
-		track2fxrack(convproj_obj, convproj_obj.track_master, 0, 'Master', '', True, ['master'])
+		track2fxrack(convproj_obj, track_master, 0, 'Master', '', True, ['master'])
 
 		for output_id in output_ids:
 			
@@ -422,7 +424,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 				convproj_obj.automation.move(['track',i,'pan'], ['track',oi,'pan'])
 			num += 1
 
-		for returnid, return_obj in convproj_obj.track_master.returns.items(): 
+		for returnid, return_obj in track_master.returns.items(): 
 			oi = 'RETURN_'+returnid
 			track_obj = convproj_obj.track__add(oi, 'fx', 1, 0)
 			track_obj.visual = return_obj.visual.copy()

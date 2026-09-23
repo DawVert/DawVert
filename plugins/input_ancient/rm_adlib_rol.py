@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import plugins
+import os
 
 from objects import globalstore
 
@@ -39,12 +40,13 @@ class input_adlib_rol(plugins.base):
 		native_insts = {}
 		bank_file = dawvert_intent.input_get_param('bank_file', '')
 		if bank_file:
-			adlibbnk_obj = adlib_bnk.bnk_file()
-			adlibbnk_obj.read_file(bank_file)
-			for instnum, used in enumerate(adlibbnk_obj.used):
-				if used:
-					instname = adlibbnk_obj.names[instnum].replace(" ", "").upper()
-					native_insts[instname] = adlibbnk_obj.get_inst_index(instnum)
+			if os.path.exists(bank_file):
+				adlibbnk_obj = adlib_bnk.bnk_file()
+				adlibbnk_obj.read_file(bank_file)
+				for instnum, used in enumerate(adlibbnk_obj.used):
+					if used:
+						instname = adlibbnk_obj.names[instnum].replace(" ", "").upper()
+						native_insts[instname] = adlibbnk_obj.get_inst_index(instnum)
 
 		# ---------- convproj params ----------
 		convproj_obj.type = 'rm'
