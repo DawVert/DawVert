@@ -6,12 +6,14 @@ def process(convproj_obj, in__placement_loop, out__placement_loop, out_type, daw
 	cond_action = ('do_addloop' in convproj_obj.do_actions)
 	cond_force = ('force_addloop' in convproj_obj.do_actions)
 
+	cvpj_tracks = convproj_obj.tracks
+
 	if (cond_loop and cond_action):
 		r_cond1 = (convproj_obj.type in ['r', 'ri'])
 		r_cond2 = (convproj_obj.type == 'rm' and out_type == 'rm')
 
 		if r_cond1 or r_cond2: 
-			for trackid, track_obj in convproj_obj.track__iter(): 
+			for trackid, track_obj in cvpj_tracks.iter(): 
 				track_obj.placements.add_loops(out__placement_loop)
 				for laneid, lane_obj in track_obj.lanes.items(): 
 					lane_obj.placements.add_loops(out__placement_loop)

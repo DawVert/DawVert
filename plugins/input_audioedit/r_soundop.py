@@ -98,6 +98,9 @@ class input_soundop(plugins.base):
 		projformat = project_obj.Format
 		samplerate = projformat['SampleRate'] if 'SampleRate' in projformat else 44100
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'none'
@@ -126,7 +129,7 @@ class input_soundop(plugins.base):
 			track_obj = None
 			if track.Type == 0:
 				autoloc_s = ['track', cvpj_trackid]
-				track_obj = convproj_obj.track__add(cvpj_trackid, 'audio', 1, False)
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
 			elif track.Type == 1:
 				autoloc_s = ['master']
 				track_obj = convproj_obj.track_master

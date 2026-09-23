@@ -61,6 +61,9 @@ class input_acid_old(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj params ----------
 		groupby = dawvert_intent.input_get_param('groupby', 'none')
 		colorscheme = dawvert_intent.input_get_param('colorscheme', 'acid_1')
@@ -130,7 +133,7 @@ class input_acid_old(plugins.base):
 		tracks = {}
 		for tracknum, track in enumerate(project_obj.tracks):
 			cvpj_trackid = 'track_'+str(tracknum)
-			track_obj = convproj_obj.track__add(cvpj_trackid, 'audio', 1, False)
+			track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
 			tracks[cvpj_trackid] = track_obj
 			color = colordata.getcolornum(track.color)
 			track_obj.visual.name = track.name

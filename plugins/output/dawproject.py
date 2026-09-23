@@ -766,6 +766,8 @@ class output_dawproject(plugins.base):
 		global dawproject_zip
 		global bpm
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		convproj_obj.change_timings(1.0)
 
 		project_obj = proj_dawproject.dawproject_song()
@@ -801,7 +803,7 @@ class output_dawproject(plugins.base):
 			else:
 				project_obj.tracks.append(dp_group)
 
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 
 			if track_obj.type in ['instrument', 'audio', 'hybrid']:
 				lane_obj = make_lane('track__'+trackid)

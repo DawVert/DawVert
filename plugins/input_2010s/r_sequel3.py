@@ -208,6 +208,9 @@ class input_sequel3(plugins.base):
 
 		globalids = proj_sequel.globalids
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'
@@ -281,7 +284,7 @@ class input_sequel3(plugins.base):
 				track_node = track.node
 				track_device = track.track_device
 
-				track_obj = convproj_obj.track__add(tracknum, 'instrument', 1, False)
+				track_obj = cvpj_tracks.add(tracknum, 'instrument', 1, False)
 				do_visual(track_obj, track, track_node, colorset)
 				do_params(track_obj, track_device)
 				do_effects(track_obj, track_device, convproj_obj)
@@ -322,7 +325,7 @@ class input_sequel3(plugins.base):
 				track_node = track.node
 				track_device = track.track_device
 
-				track_obj = convproj_obj.track__add(tracknum, 'audio', 1, False)
+				track_obj = cvpj_tracks.add(tracknum, 'audio', 1, False)
 				do_visual(track_obj, track, track_node, colorset)
 				do_params(track_obj, track_device)
 				do_effects(track_obj, track_device, convproj_obj)

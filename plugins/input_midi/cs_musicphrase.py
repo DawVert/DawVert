@@ -27,6 +27,9 @@ class input_musicphrase(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(96)
 		convproj_obj.fxtype = 'rack'
@@ -54,7 +57,7 @@ class input_musicphrase(plugins.base):
 		# ---------- tracks ----------
 		track_pl = []
 		for n, mpxl_track in enumerate(project_obj.tracks):
-			track_obj = convproj_obj.track__add(str(n), 'midi', 1, False)
+			track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
 			track_obj.visual.name = mpxl_track.name
 			track_obj.visual.color.set_int(list(mpxl_track.color[0:3]))
 			track_obj.params.add('enabled', not mpxl_track.mute, 'bool')

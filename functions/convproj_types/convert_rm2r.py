@@ -13,6 +13,7 @@ def convert(convproj_obj):
 	logger_project.info('ProjType Convert: RegularMultiple > Regular')
 
 	fxrack_obj = convproj_obj.fxrack
+	cvpj_tracks = convproj_obj.tracks
 	useable_plugins = convproj_obj.plugins
 	convproj_obj.plugins = {}
 
@@ -31,7 +32,7 @@ def convert(convproj_obj):
 
 	nonmultitrack = []
 	splitted_trks = {}
-	for trackid, track_obj in convproj_obj.track__iter():
+	for trackid, track_obj in cvpj_tracks.iter():
 
 		if track_obj.type == 'instruments':
 			splitted_pl = track_obj.placements.inst_split()

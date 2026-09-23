@@ -49,6 +49,9 @@ class input_fl_mobile(plugins.base):
 
 		globalstore.datapack.load('fl_mobile', './data/datapack/app/fl_mobile.xml')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'route'
@@ -106,7 +109,7 @@ class input_fl_mobile(plugins.base):
 			if tracktype == 'fx':
 				trackid = 'flm_track_'+str(flm_rack.fx_id)
 				sorttracks[flm_channel.order] = trackid
-				track_obj = convproj_obj.track__add(trackid, 'fx', 1, False)
+				track_obj = cvpj_tracks.add(trackid, 'fx', 1, False)
 				add_visual(track_obj.visual, flm_channel)
 				add_params(track_obj.params, flm_rack)
 				do_devices(devices_order, convproj_obj, flm_rack.devices, track_obj.plugslots, dawvert_intent.input_file, project_obj.zipfile, trackid)
@@ -114,7 +117,7 @@ class input_fl_mobile(plugins.base):
 			if tracktype == 'instrument':
 				trackid = 'flm_track_'+str(n)
 				sorttracks[flm_channel.order] = trackid
-				track_obj = convproj_obj.track__add(trackid, 'instrument', 1, False)
+				track_obj = cvpj_tracks.add(trackid, 'instrument', 1, False)
 				add_visual(track_obj.visual, flm_channel)
 				add_params(track_obj.params, flm_rack)
 				pluginid, plugin_obj = do_device(convproj_obj, flm_rack.devices_sampler, dawvert_intent.input_file, project_obj.zipfile, trackid, 2)
@@ -124,7 +127,7 @@ class input_fl_mobile(plugins.base):
 			if tracktype == 'audio':
 				trackid = 'flm_track_'+str(n)
 				sorttracks[flm_channel.order] = trackid
-				track_obj = convproj_obj.track__add(trackid, 'audio', 1, False)
+				track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
 				add_visual(track_obj.visual, flm_channel)
 				add_params(track_obj.params, flm_rack)
 				do_devices(devices_order, convproj_obj, flm_rack.devices, track_obj.plugslots, dawvert_intent.input_file, project_obj.zipfile, trackid)

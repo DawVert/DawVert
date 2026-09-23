@@ -42,6 +42,9 @@ class input_petaporon(plugins.base):
 
 		proj_song = project_obj.song
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'ri'
 		convproj_obj.set_timings(4)
@@ -58,7 +61,7 @@ class input_petaporon(plugins.base):
 		tracks = {}
 		for instid, instdata in proj_song.instruments.items():
 			machineName = instdata.machineName
-			track_obj = convproj_obj.track__add(instid, 'instrument', 1, True)
+			track_obj = cvpj_tracks.add(instid, 'instrument', 1, True)
 			track_obj.visual.from_datapack('acid_machine_2', 'plugin_inst', machineName, True)
 			plugin_obj = convproj_obj.plugin__add(instid, 'native', 'acidmach2', machineName)
 			plugin_obj.visual.from_datapack('acid_machine_2', 'plugin_inst', machineName, True)

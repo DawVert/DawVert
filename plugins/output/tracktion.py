@@ -435,6 +435,8 @@ class output_tracktion_edit(plugins.base):
 		from objects.file_proj import tracktion_edit as proj_tracktion_edit
 		from objects.file_proj import tracktion_project as proj_tracktion_project
 
+		cvpj_tracks = convproj_obj.tracks
+
 		convproj_obj.change_timings(4.0)
 
 		tr_projectid = gen_hexid('1')
@@ -556,7 +558,7 @@ class output_tracktion_edit(plugins.base):
 		groupassoc = {}
 		groupcounter = 20000
 
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 			wf_tracks = project_obj.tracks
 
 			if track_obj.group: wf_tracks = groups_data[track_obj.group].tracks

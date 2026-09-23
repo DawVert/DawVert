@@ -86,6 +86,9 @@ class input_greysound(plugins.base):
 
 		globalstore.datapack.load('greysound', './data/datapack/app/greysound.xml')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'route'
@@ -136,7 +139,7 @@ class input_greysound(plugins.base):
 				if gs_track.type == 'INSTRUMENT': track_type = 'instrument'
 				if gs_track.type == 'AUX': track_type = 'fx'
 				if gs_track.type == 'AUDIO': track_type = 'audio'
-				track_obj = convproj_obj.track__add(str(gs_track.id), track_type, 1, False)
+				track_obj = cvpj_tracks.add(str(gs_track.id), track_type, 1, False)
 				do_track_visual(gs_track, track_obj)
 				do_track_params(gs_track, track_obj)
 				track_obj.armed.on = gs_track.armed

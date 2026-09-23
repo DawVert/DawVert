@@ -431,6 +431,9 @@ class input_wavtool(plugins.base):
 		wt_proj = json.loads(t_wavtool_project)
 		wavtool_obj = proj_wavtool.wavtool_project(wt_proj)
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'route'
 		convproj_obj.type = 'r'
@@ -472,7 +475,7 @@ class input_wavtool(plugins.base):
 		for trackid, wavtool_track in wavtool_obj.tracks.items(): 
 			logger_input.info(''+wavtool_track.type+' Track: '+wavtool_track.name)
 			if wavtool_track.type == 'MIDI':
-				track_obj = convproj_obj.track__add(trackid, 'instrument', 1, False)
+				track_obj = cvpj_tracks.add(trackid, 'instrument', 1, False)
 				track_obj.visual.name = wavtool_track.name
 				track_obj.visual.color.set_hex(wavtool_track.color)
 				track_obj.params.add('vol', wavtool_track.gain, 'float')
@@ -491,7 +494,7 @@ class input_wavtool(plugins.base):
 				add_devices(convproj_obj, track_obj, trackid, wavtool_obj.devices)
 
 			if wavtool_track.type == 'Audio':
-				track_obj = convproj_obj.track__add(trackid, 'audio', 1, False)
+				track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
 				track_obj.visual.name = wavtool_track.name
 				track_obj.visual.color.set_hex(wavtool_track.color)
 				track_obj.params.add('vol', wavtool_track.gain, 'float')

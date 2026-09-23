@@ -69,6 +69,9 @@ class input_audiosanua(plugins.base):
 		globalstore.datapack.load('audiosauna', './data/datapack/app/audiosauna.xml')
 		colordata = colors.colorset.from_datapack('audiosauna', 'track', 'main')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.type = 'r'
@@ -132,7 +135,7 @@ class input_audiosanua(plugins.base):
 		# ---------- tracks ----------
 		for as_channum, as_chan in project_obj.channels.items():
 			cvpj_trackid = 'audiosanua'+str(as_channum)
-			track_obj = convproj_obj.track__add(cvpj_trackid, 'instrument', 1, False)
+			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 			track_obj.visual.name = as_chan.name
 			track_obj.visual.color.set_int(colordata.getcolornum(as_channum))
 			track_obj.visual.color.fx_allowed = ['saturate']

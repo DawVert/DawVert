@@ -380,6 +380,9 @@ class input_amped(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(1.0)
@@ -411,7 +414,7 @@ class input_amped(plugins.base):
 			amped_tr_id = str(amped_track.id)
 			amped_armed = amped_track.armed if amped_track.armed else None
 
-			track_obj = convproj_obj.track__add(amped_tr_id, 'hybrid', 1, False)
+			track_obj = cvpj_tracks.add(amped_tr_id, 'hybrid', 1, False)
 			track_obj.visual.name = amped_track.name
 			track_obj.visual.color.set_float(AMPED_COLORS[amped_track.color])
 			track_obj.visual.color.fx_allowed = ['saturate', 'brighter']

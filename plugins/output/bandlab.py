@@ -46,6 +46,8 @@ class output_bandlab(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import bandlab as proj_bandlab
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		logger_output = logging.getLogger('output')
 
 		convproj_obj.change_timings(1.0)
@@ -137,7 +139,7 @@ class output_bandlab(plugins.base):
 			project_obj.samples.append(bl_sample)
 
 		tracknum = 0
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 
 			if track_obj.type in ['instrument', 'midi', 'audio']:
 				blx_track = proj_bandlab.bandlab_track(None) 

@@ -42,6 +42,9 @@ class input_bandlab(plugins.base):
 
 		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.xml')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'
@@ -85,9 +88,9 @@ class input_bandlab(plugins.base):
 		
 		for blx_track in blx_tracks:
 			if blx_track.type == 'voice':
-				track_obj = convproj_obj.track__add(blx_track.id, 'audio', 1, False)
+				track_obj = cvpj_tracks.add(blx_track.id, 'audio', 1, False)
 			else:
-				track_obj = convproj_obj.track__add(blx_track.id, 'instrument', 1, False)
+				track_obj = cvpj_tracks.add(blx_track.id, 'instrument', 1, False)
 
 			if blx_track.soundbank:
 				if not track_obj.visual_inst.from_datapack('bandlab', 'inst', blx_track.soundbank, False):

@@ -42,6 +42,9 @@ class input_mmf(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cm'
@@ -106,7 +109,7 @@ class input_mmf(plugins.base):
 
 				midippq = 960
 				convproj_obj.set_timings(int(midippq*realtime))
-				track_obj = convproj_obj.track__add(str(n), 'midi', 1, False)
+				track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
 
 				curpos = 0
 				if track.sequence is not None:
@@ -136,7 +139,7 @@ class input_mmf(plugins.base):
 						drumnotes = used_drums[used_drums['value']==used_drumnum]
 
 						drumtrackid = '%i_drum_%i' % (n, used_drumnum)
-						track_obj = convproj_obj.track__add(drumtrackid, 'audio', 1, False)
+						track_obj = cvpj_tracks.add(drumtrackid, 'audio', 1, False)
 						track_obj.visual.name = 'Track #%i MA-3 Stream #%i' % (n+1, used_drumnum)
 						track_obj.visual.color.set_int([30,30,30])
 	

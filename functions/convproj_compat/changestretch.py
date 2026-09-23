@@ -6,6 +6,8 @@ from functions import data_values
 def process(convproj_obj, in__placement_audio_stretch, out__placement_audio_stretch, out_type, dawvert_intent):
 	target = None
 
+	cvpj_tracks = convproj_obj.tracks
+
 	if 'warp' in in__placement_audio_stretch and 'warp' not in out__placement_audio_stretch: target = 'rate'
 	elif 'rate' in in__placement_audio_stretch and 'rate' not in out__placement_audio_stretch: target = 'warp'
 	elif ('rate' in out__placement_audio_stretch and 'warp' in out__placement_audio_stretch): target = 'simplewarp2rate'
@@ -16,12 +18,12 @@ def process(convproj_obj, in__placement_audio_stretch, out__placement_audio_stre
 
 		if convproj_obj.type in ['r', 'rm']: 
 
-			#for trackid, track_obj in convproj_obj.track__iter(): 
+			#for trackid, track_obj in cvpj_tracks.iter(): 
 			#	track_obj.placements.all_stretch_set_pitch_nonsync()
 			#	for laneid, lane_obj in track_obj.lanes.items(): 
 			#		lane_obj.placements.all_stretch_set_pitch_nonsync()
 
-			for trackid, track_obj in convproj_obj.track__iter(): 
+			for trackid, track_obj in cvpj_tracks.iter(): 
 				track_obj.placements.changestretch(convproj_obj, target, tempo)
 				for laneid, lane_obj in track_obj.lanes.items(): 
 					lane_obj.placements.changestretch(convproj_obj, target, tempo)

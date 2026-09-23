@@ -5,6 +5,7 @@ from objects.convproj import placements
 from objects import notelist_splitter
 
 def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_intent):
+	cvpj_tracks = convproj_obj.tracks
 
 	if in__track_nopl == True and out__track_nopl == False:
 
@@ -14,14 +15,14 @@ def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_int
 
 			if 'do_singlenotelistcut' in convproj_obj.do_actions:
 				npsplit = notelist_splitter.cvpj_notelist_splitter(timesigblocks_obj, convproj_obj.time_ppq)
-				mplacements = [track_obj.placements for cvpj_trackid, track_obj in convproj_obj.track__iter()]
-				for cvpj_trackid, track_obj in convproj_obj.track__iter():
+				mplacements = [track_obj.placements for cvpj_trackid, track_obj in cvpj_tracks.iter()]
+				for cvpj_trackid, track_obj in cvpj_tracks.iter():
 					npsplit.add_plnl(track_obj.placements)
 				npsplit.process()
 				convproj_obj.calc_pl_tempo()
 				return True
 			else:
-				for cvpj_trackid, track_obj in convproj_obj.track__iter(): 
+				for cvpj_trackid, track_obj in cvpj_tracks.iter(): 
 					if track_obj.placements.notelist.count():
 						placement_obj = track_obj.placements.add_notes()
 						placement_obj.notelist = track_obj.placements.notelist.__copy__()

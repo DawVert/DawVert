@@ -50,6 +50,9 @@ class input_orgyana(plugins.base):
 		globalstore.datapack.load('orgyana', './data/datapack/app/orgyana.xml')
 		colordata = colors.colorset.from_datapack('orgyana', 'track', 'orgmaker_2')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj params ----------
 		use_groups = dawvert_intent.input_get_param('use_groups', True)
 
@@ -77,7 +80,7 @@ class input_orgyana(plugins.base):
 		for tracknum, orgtrack_obj in enumerate(project_obj.tracks):
 			if len(orgtrack_obj.notes) != 0:
 				idval = 'org_'+str(tracknum)
-				track_obj = convproj_obj.track__add(idval, 'instrument', 0, False)
+				track_obj = cvpj_tracks.add(idval, 'instrument', 0, False)
 				if tracknum > 7: 
 					drum_tracks.append(track_obj)
 					track_obj.visual.from_datapack('orgyana', 'drums', str(orgtrack_obj.instrument), False)

@@ -99,6 +99,9 @@ class input_fruitytracks(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj params ----------
 		pan_auto = dawvert_intent.input_get_param('pan_auto', 'auto')
 
@@ -136,7 +139,7 @@ class input_fruitytracks(plugins.base):
 		# ---------- tracks ----------
 		for tracknum, ftr_track in enumerate(project_obj.tracks):
 			trackid = str(tracknum)
-			track_obj = convproj_obj.track__add(trackid, 'audio', 1, False)
+			track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
 			track_obj.visual.name = ftr_track.name if ftr_track.name else 'Track '+str(tracknum)
 			track_obj.params.add('pan', (ftr_track.pan-64)/64, 'float')
 			track_obj.params.add('vol', ftr_track.vol/128, 'float')

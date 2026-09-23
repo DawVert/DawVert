@@ -31,6 +31,8 @@ class output_midi(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		import mido
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		metamsg = mido.MetaMessage
 		rmsg = mido.Message
 
@@ -72,7 +74,7 @@ class output_midi(plugins.base):
 			autotrack.insert(0, metamsg('track_name', name='Auto Track', time=0))
 			midiobj.tracks.append(autotrack)
 
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 			miditrack = mido.MidiTrack()
 			midi_trackname = track_obj.visual.name if track_obj.visual.name else ''
 			midi_trackcolor = track_obj.visual.color

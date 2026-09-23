@@ -107,6 +107,8 @@ class output_soundation(plugins.base):
 	def parse(self, i_convproj_obj, dawvert_intent):
 		from objects.file_proj import soundation as proj_soundation
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		global convproj_obj
 		global audio_id
 
@@ -160,7 +162,7 @@ class output_soundation(plugins.base):
 
 		sng_channels = []
 
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 			soundation_channel = proj_soundation.soundation_channel(None)
 
 			if track_obj.type == 'instrument': soundation_channel.type = 'instrument'

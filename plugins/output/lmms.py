@@ -370,6 +370,8 @@ class output_lmms(plugins.base):
 		global project_obj
 		global song_obj
 		
+		cvpj_tracks = i_cvpj_obj.tracks
+
 		cvpj_obj = i_cvpj_obj
 
 		globalstore.datapack.load('lmms', './data/datapack/app/lmms.xml')
@@ -394,7 +396,7 @@ class output_lmms(plugins.base):
 		head_obj.timesig_numerator.value = cvpj_obj.timesig[0]
 		head_obj.timesig_denominator.value = cvpj_obj.timesig[1]
 
-		for trackid, track_obj in cvpj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 			autoloc = ['track', trackid]
 			trackname = track_obj.visual.name if track_obj.visual.name else 'noname'
 			trackcolor = track_obj.visual.color

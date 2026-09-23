@@ -34,6 +34,9 @@ class input_domino(plugins.base):
 		globalstore.datapack.load('midi', './data/datapack/app/midi.xml')
 		colordata = colors.colorset.from_datapack('midi', 'track', 'domino')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cs'
@@ -53,7 +56,7 @@ class input_domino(plugins.base):
 		# ---------- tracks ----------
 		for n, track in enumerate(project_obj.tracks):
 			channel = track.channel
-			track_obj = convproj_obj.track__add(str(n), 'midi', 1, False)
+			track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
 			track_obj.visual.name = track.name
 			if track.color != 255:
 				track_obj.visual.color.set_int(colordata.getcolornum(track.color))

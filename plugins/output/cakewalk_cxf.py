@@ -334,6 +334,8 @@ class output_bandlab(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import cakewalk_cxf as proj_cakewalk_cxf
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		convproj_obj.change_timings(1.0)
 		
 		project_obj = proj_cakewalk_cxf.cxf_project()
@@ -383,7 +385,7 @@ class output_bandlab(plugins.base):
 				ids_obj.track_group[group_obj.group].append(['GROUP', groupid, group_obj])
 			else: ids_obj.track_nongroup.append(['GROUP', groupid, group_obj])
 
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 			if track_obj.group: 
 				if track_obj.group not in ids_obj.track_group: ids_obj.track_group[track_obj.group] = []
 				ids_obj.track_group[track_obj.group].append(['TRACK', trackid, track_obj])

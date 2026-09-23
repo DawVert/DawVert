@@ -502,12 +502,14 @@ def do_track(convproj_obj, wf_track, track_obj, store_obj, trackid):
 	track_obj.datavals.add('middlenote', middlenote)
 
 def do_tracks(convproj_obj, in_tracks, store_obj, groupid):
+	cvpj_tracks = convproj_obj.tracks
+		
 	from objects.file_proj import tracktion_edit as proj_tracktion_edit
 	for wf_track in in_tracks:
 		tracknum = store_obj.counter_track.get()
 		if isinstance(wf_track, proj_tracktion_edit.tracktion_track):
 			trackid = str(tracknum)
-			track_obj = convproj_obj.track__add(str(tracknum), 'hybrid', 1, False)
+			track_obj = cvpj_tracks.add(str(tracknum), 'hybrid', 1, False)
 			if groupid: track_obj.group = groupid
 			do_track(convproj_obj, wf_track, track_obj, store_obj, trackid)
 
@@ -620,6 +622,9 @@ class input_tracktion_edit(plugins.base):
 
 		globalstore.datapack.load('waveform', './data/datapack/app/waveform.xml')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.type = 'r'
@@ -743,7 +748,7 @@ class input_tracktion_edit(plugins.base):
 				return_obj.params = track_obj.params
 				return_obj.plugslots = track_obj.plugslots
 				convproj_obj.automation.move_everything(['track', returnid], ['return', returnid])
-				convproj_obj.track__del(returnid)
+				cvpj_tracks.remove(returnid)
 
 			for busNum, trackid, track_obj, wf_plugin in gr_sends_t+gr_sends_g:
 				if busNum in assoc_returnid:

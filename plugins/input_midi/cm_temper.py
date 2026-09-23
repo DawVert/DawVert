@@ -31,6 +31,9 @@ class input_cvpj_f(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cm'
@@ -58,7 +61,7 @@ class input_cvpj_f(plugins.base):
 		# ---------- tracks ----------
 		for tracknum, tmp_track in enumerate(project_obj.track):
 			cvpj_trackid = 'track_'+str(tracknum)
-			track_obj = convproj_obj.track__add(cvpj_trackid, 'midi', 1, False)
+			track_obj = cvpj_tracks.add(cvpj_trackid, 'midi', 1, False)
 			track_obj.params.add('enabled', tmp_track.mode!=1, 'bool')
 			track_obj.params.add('solo', tmp_track.mode!=2, 'bool')
 
@@ -109,7 +112,7 @@ class input_cvpj_f(plugins.base):
 						#	print(event)
 
 			elif tmp_track.audios:
-				track_obj = convproj_obj.track__add(str(tracknum), 'audio', 1, False)
+				track_obj = cvpj_tracks.add(str(tracknum), 'audio', 1, False)
 				track_obj.params.add('enabled', tmp_track.mode!=1, 'bool')
 				track_obj.params.add('solo', tmp_track.mode!=2, 'bool')
 				if tmp_track.customname: track_obj.visual.name = tmp_track.customname

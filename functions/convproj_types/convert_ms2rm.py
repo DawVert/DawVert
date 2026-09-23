@@ -9,6 +9,8 @@ logger_project = logging.getLogger('project')
 def convert(convproj_obj, out_dawinfo):
 	logger_project.info('ProjType Convert: MultipleScened > RegularMultiple')
 
+	cvpj_tracks = convproj_obj.tracks
+	
 	if 'arranger_from_scene' in convproj_obj.do_actions:
 		convproj_obj.traits.track_arranger = True
 
@@ -31,7 +33,7 @@ def convert(convproj_obj, out_dawinfo):
 			if scenepl.id in convproj_obj.scenes:
 				convproj_obj.automation.merge(convproj_obj.scenes[scenepl.id].automation, scenepl.position, scenepl.duration)
 
-	for trackid, track_obj in convproj_obj.track__iter():
+	for trackid, track_obj in cvpj_tracks.iter():
 		lanes = []
 
 		for _, v in track_obj.scenes.items():

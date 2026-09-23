@@ -505,6 +505,9 @@ class input_zenbeats(plugins.base):
 		globalstore.datapack.load('zenbeats', './data/datapack/app/zenbeats.xml')
 		colordata = colors.colorset.from_datapack('zenbeats', 'global', 'main')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.type = 'r'
@@ -562,7 +565,7 @@ class input_zenbeats(plugins.base):
 			master_id = zb_track.sub_track_master_track_uid
 			if master_id in track_groups or master_id==None:
 				if zb_track.type in [0, 1, 97]:
-					track_obj = convproj_obj.track__add(zb_track.uid, 'instrument', 1, False)
+					track_obj = cvpj_tracks.add(zb_track.uid, 'instrument', 1, False)
 					do_rack(convproj_obj, project_obj, track_obj, zb_track, ['track', zb_track.uid], dawvert_intent)
 					do_visual(track_obj.visual, zb_track.visual, zb_track.color_index, colordata)
 					if master_id: track_obj.group = master_id
@@ -601,7 +604,7 @@ class input_zenbeats(plugins.base):
 							if not zb_note.active: cvpj_notelist.last_flag('disabled')
 
 				if zb_track.type == 2:
-					track_obj = convproj_obj.track__add(zb_track.uid, 'audio', 1, False)
+					track_obj = cvpj_tracks.add(zb_track.uid, 'audio', 1, False)
 					do_rack(convproj_obj, project_obj, track_obj, zb_track, ['track', zb_track.uid], dawvert_intent)
 					do_visual(track_obj.visual, zb_track.visual, zb_track.color_index, colordata)
 					if master_id: track_obj.group = master_id

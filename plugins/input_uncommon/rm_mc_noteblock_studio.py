@@ -63,6 +63,9 @@ class input_gt_mnbs(plugins.base):
 		external_dat = external_data_zip()
 		external_dat.load_data(os.path.join(dawvert_intent.path_external_data, 'mnbs', 'samples.zip'))
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'rm'
 		convproj_obj.set_timings(4.0)
@@ -89,7 +92,7 @@ class input_gt_mnbs(plugins.base):
 		used_inst = []
 		for nbs_layer, layer_obj in enumerate(project_obj.layers):
 			cvpj_trackid = str(nbs_layer+1)
-			track_obj = convproj_obj.track__add(cvpj_trackid, 'instruments', 1, False)
+			track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 1, False)
 			track_obj.visual.name = layer_obj.name if layer_obj.name else 'Layer #'+cvpj_trackid
 			track_obj.params.add('vol', layer_obj.vol/100, 'float')
 			track_obj.params.add('pan', (layer_obj.stereo/100)-1, 'float')

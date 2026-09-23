@@ -55,6 +55,9 @@ class input_magda(plugins.base):
 
 		projprop = project_obj.project
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(1.0)
@@ -140,7 +143,7 @@ class input_magda(plugins.base):
 				cvpj_trackid = str(trackid)
 
 				if x.type==0:
-					track_obj = convproj_obj.track__add(cvpj_trackid, 'hybrid', 1, False)
+					track_obj = cvpj_tracks.add(cvpj_trackid, 'hybrid', 1, False)
 					do_track_base(x, track_obj)
 					numassoc_norm[trackid] = track_obj
 					numassoc_all[trackid] = ['track', cvpj_trackid]
@@ -168,7 +171,7 @@ class input_magda(plugins.base):
 
 				cvpj_trackid = str(trackid)
 
-				track_obj = convproj_obj.track__add(cvpj_trackid, 'hybrid', 1, False)
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'hybrid', 1, False)
 				do_track_base(x, track_obj)
 				numassoc_norm[trackid] = track_obj
 				numassoc_all[trackid] = ['track', cvpj_trackid]

@@ -30,6 +30,8 @@ class output_darwin(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import darwin as proj_darwin
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		convproj_obj.change_timings(480)
 		
 		project_obj = proj_darwin.darwin_project()
@@ -37,7 +39,7 @@ class output_darwin(plugins.base):
 		project_obj.masterTrack.volume = convproj_obj.track_master.params.get('vol', 1).value
 
 		tracknum = 0
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 			if track_obj.type in ['instrument']:
 				visual_obj = track_obj.visual
 				visual_inst_obj = track_obj.visual_inst

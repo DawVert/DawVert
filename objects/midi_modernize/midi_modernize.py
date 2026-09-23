@@ -78,7 +78,8 @@ class midi_modernize:
 
 
 	def from_cvpj__add_tracks(self, convproj_obj):
-		self.cvpj_tracks = [x for x in convproj_obj.track__iter_num()]
+		cvpj_tracks = convproj_obj.tracks
+		self.cvpj_tracks = [x for x in cvpj_tracks.iter_num()]
 		self.cvpj_tracks_midi = [x for x in self.cvpj_tracks if x[2].type == 'midi']
 		self.num_tracks = len(self.cvpj_tracks)
 		self.num_miditracks = len(self.cvpj_tracks_midi)
@@ -309,15 +310,17 @@ class midi_modernize:
 					cvpj_notelist.last_add_vol_off(float(n['vol_off'])/127)
 
 	def output_tracks(self, convproj_obj):
+		cvpj_tracks = convproj_obj.tracks
+	
 		if self.cvpj_tracks:
 			first_track = self.cvpj_tracks[0]
 	
 			if len(self.cvpj_tracks)==1:
 				firsttrack_obj = first_track[2]
-				convproj_obj.track__del(first_track[1])
+				cvpj_tracks.remove(first_track[1])
 				chanportlist = np.unique(self.used_inst['chanport'])
 				for chanport in chanportlist:
-					track_obj = convproj_obj.track__add('cm2rm_'+str(chanport), 'instruments', firsttrack_obj.uses_placements, firsttrack_obj.is_indexed)
+					track_obj = cvpj_tracks.add('cm2rm_'+str(chanport), 'instruments', firsttrack_obj.uses_placements, firsttrack_obj.is_indexed)
 					tracknotes = self.notes_data.filter_chanport(chanport)
 					portnum, channum = gfunc.split_channum(chanport, self.num_channels)
 					self.visstore_data.vis_fxchan[portnum][channum].to_cvpj_visual(track_obj.visual)

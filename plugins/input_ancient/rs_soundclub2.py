@@ -57,6 +57,9 @@ class input_soundclub2(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 		
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj params ----------
 		panlvl = dawvert_intent.input_get_param('panlvl', 1.0)
 
@@ -75,7 +78,7 @@ class input_soundclub2(plugins.base):
 		for instnum, sn2_inst_obj in enumerate(project_obj.instruments):
 			cvpj_instid = 'sn2_'+str(instnum)
 
-			track_obj = convproj_obj.track__add(cvpj_instid, 'instrument', 1, False)
+			track_obj = cvpj_tracks.add(cvpj_instid, 'instrument', 1, False)
 			track_obj.visual.name = sn2_inst_obj.name
 			track_obj.params.add('vol', 0.3, 'float')
 
@@ -122,7 +125,7 @@ class input_soundclub2(plugins.base):
 				else: repeatnotes[patvoice_obj.instid] += 1
 				laneid = str(repeatnotes[patvoice_obj.instid])
 				cvpj_instid = 'sn2_'+str(patvoice_obj.instid)
-				trscene_obj = convproj_obj.track__add_scene(cvpj_instid, sceneid, laneid)
+				trscene_obj = cvpj_tracks.add_scene(cvpj_instid, sceneid, laneid)
 				placement_obj = trscene_obj.add_notes()
 				placement_obj.visual.name = sn2_pat_obj.name
 

@@ -30,7 +30,9 @@ class to_numdata:
 		nogroup_trk = []
 		groups_inside = {}
 
-		for trackid, track_obj in convproj_obj.track__iter():
+		cvpj_tracks = convproj_obj.tracks
+
+		for trackid, track_obj in cvpj_tracks.iter():
 			if track_obj.group != None:
 				if track_obj.group not in group_trk: group_trk[track_obj.group] = []
 				group_trk[track_obj.group].append(trackid)

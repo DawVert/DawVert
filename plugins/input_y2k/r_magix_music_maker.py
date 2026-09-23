@@ -35,6 +35,9 @@ class input_old_magix_maker(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj params ----------
 		swap_bg_fg = dawvert_intent.input_get_param('swap_bg_fg', False)
 		unused_sends = dawvert_intent.input_get_param('unused_sends', True)
@@ -117,7 +120,7 @@ class input_old_magix_maker(plugins.base):
 
 				if data_trci is not None:
 					trackid = str(tracknum)
-					track_obj = convproj_obj.track__add(trackid, 'hybrid', 1, False)
+					track_obj = cvpj_tracks.add(trackid, 'hybrid', 1, False)
 
 					track_obj.visual.name = data_trci.name
 					track_obj.params.add('pan', data_trci.pan, 'float')

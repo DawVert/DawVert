@@ -41,6 +41,9 @@ class input_sop(plugins.base):
 		endtxt_on = dawvert_intent.input_get_param('endtxt_on', True)
 		panlvl = dawvert_intent.input_get_param('panlvl', 1.0)
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(project_obj.tickBeat)
 		convproj_obj.type = 'rm'
@@ -74,7 +77,7 @@ class input_sop(plugins.base):
 		# ---------- tracks ----------
 		for tracknum, soptrack in enumerate(project_obj.tracks):
 			cvpj_trackid = str(tracknum)
-			track_obj = convproj_obj.track__add(cvpj_trackid, 'instruments', 0, False)
+			track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 0, False)
 			track_obj.visual.name = '#'+str(cvpj_trackid)
 			track_obj.visual.color.set_float(maincolor)
 			

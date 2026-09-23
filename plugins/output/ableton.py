@@ -1252,13 +1252,14 @@ def add_track(convproj_obj, project_obj, trackid, track_obj):
 			numsend += 1
 
 def do_tracks(convproj_obj, project_obj, current_grouptab, track_group, groups_used, debugtxt):
+	cvpj_tracks = convproj_obj.tracks
 	for tracktype, tid in current_grouptab:
 		if tracktype == 'GROUP' and tid not in groups_used and tid in track_group:
 			addgrp(convproj_obj, project_obj, tid)
 			groups_used.append(tid)
 			do_tracks(convproj_obj, project_obj, track_group[tid], track_group, groups_used, 'GROUP: '+tid)
 		if tracktype == 'TRACK':
-			track_obj = convproj_obj.track__get(tid)
+			track_obj = cvpj_tracks.get(tid)
 			if track_obj:
 				if track_obj.group:
 					if track_obj.group not in groups_used:
@@ -1303,6 +1304,8 @@ class output_ableton(plugins.base):
 		global master_returns
 		global bpm
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		if AUDCLIPVERBOSE:
 			for x in ['cut_type', 'cut_type', 'IsWarped', "Duration",
 				"StartRelative", "LoopStart",
@@ -1387,7 +1390,7 @@ class output_ableton(plugins.base):
 				track_group[group_obj.group].append(['GROUP', groupid])
 			else: track_nongroup.append(['GROUP', groupid])
 
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 			if track_obj.group: 
 				if track_obj.group not in track_group: track_group[track_obj.group] = []
 				track_group[track_obj.group].append(['TRACK', trackid])

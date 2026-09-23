@@ -100,6 +100,9 @@ class input_kristal(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj params ----------
 		unused_tracks = dawvert_intent.input_get_param('unused_tracks', True)
 
@@ -149,7 +152,7 @@ class input_kristal(plugins.base):
 										
 									if unused_tracks or ch_data.parts:
 										cvpj_trackid = 'track_'+str(tracknum)
-										track_obj = convproj_obj.track__add(cvpj_trackid, 'audio', 1, False)
+										track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
 										track_obj.visual.name = ch_data.name
 										track_obj.audio_channels = 2 if 0 in ch_data.flags else 1
 										tracknums[tracknum] = track_obj

@@ -123,6 +123,9 @@ class input_cvpj_r(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.type = 'ri'
@@ -169,7 +172,7 @@ class input_cvpj_r(plugins.base):
 			pluginid = 'machine'+machid
 			cvpj_trackid = 'MACH'+machid
 
-			track_obj = convproj_obj.track__add(cvpj_trackid, 'instrument', 1, True)
+			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, True)
 			track_obj.visual.from_datapack('caustic', 'plugin_inst', machine.mach_id, True)
 			if machine.name: track_obj.visual.name = machine.name
 			track_obj.plugslots.set_synth(pluginid)

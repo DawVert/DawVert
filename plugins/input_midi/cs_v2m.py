@@ -31,6 +31,9 @@ class input_v2m(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(project_obj.timediv)
 
@@ -46,7 +49,7 @@ class input_v2m(plugins.base):
 		traits_obj.track_nopl = True
 
 		# ---------- control track ----------
-		track_obj = convproj_obj.track__add('control', 'midi', 1, False)
+		track_obj = cvpj_tracks.add('control', 'midi', 1, False)
 		events_obj = track_obj.placements.midievents
 
 		cp = 0
@@ -57,7 +60,7 @@ class input_v2m(plugins.base):
 
 		# ---------- tracks ----------
 		for n, track in enumerate(project_obj.tracks):
-			track_obj = convproj_obj.track__add(str(n), 'midi', 1, False)
+			track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
 			track_obj.visual.name = 'Track #'+str(n)
 			track_obj.midi.out_enabled = True
 			track_obj.midi.out_chanport.chan = n

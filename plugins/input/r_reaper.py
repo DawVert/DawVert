@@ -188,6 +188,9 @@ class input_reaper(plugins.base):
 
 		globalstore.datapack.load('reaper', './data/datapack/app/reaper.xml')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(4.0)
@@ -290,7 +293,7 @@ class input_reaper(plugins.base):
 			if not cvpj_trackid or cvpj_trackid in used_trackids: cvpj_trackid = 'track'+str(tracknum)
 			track_cvpjids.append(cvpj_trackid)
 
-			track_obj = convproj_obj.track__add(cvpj_trackid, 'hybrid', 1, False)
+			track_obj = cvpj_tracks.add(cvpj_trackid, 'hybrid', 1, False)
 			track_obj.visual.name = rpp_track.name.get()
 			track_cvpjdata.append(track_obj)
 
@@ -847,7 +850,7 @@ class input_reaper(plugins.base):
 				return_obj.params = track_obj.params
 				return_obj.plugslots = track_obj.plugslots
 				convproj_obj.automation.move_everything(['track', returnid], ['return', returnid])
-				convproj_obj.track__del(returnid)
+				cvpj_tracks.remove(returnid)
 
 			cur_groups = []
 			for tracknum, rpp_track_obj in enumerate(rpp_project.tracks):
@@ -864,14 +867,14 @@ class input_reaper(plugins.base):
 					group_obj.visual_track.group_expanded = rpp_track_obj.buscomp['folderviewmode']!=2
 
 					if len(rpp_track_obj.items):
-						g_track_obj = convproj_obj.track__add(cvpj_trackid+'_sep', 'hybrid', 1, False)
+						g_track_obj = cvpj_tracks.add(cvpj_trackid+'_sep', 'hybrid', 1, False)
 						g_track_obj.visual.name = rpp_track.name.get()
 						g_track_obj.placements = track_obj.placements
 						g_track_obj.group = cvpj_trackid
 						track_cvpjdata.append(track_obj)
 
 					convproj_obj.automation.move_everything(['track', cvpj_trackid], ['group', cvpj_trackid])
-					convproj_obj.track__del(cvpj_trackid)
+					cvpj_tracks.remove(cvpj_trackid)
 
 					sends_obj = group_obj.sends
 					if cur_groups: group_obj.group = cur_groups[-1]

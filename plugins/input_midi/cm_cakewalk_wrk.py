@@ -43,6 +43,9 @@ class input_cvpj_f(plugins.base):
 				exit()
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(96)
 		traits_obj = convproj_obj.traits
@@ -85,7 +88,7 @@ class input_cvpj_f(plugins.base):
 
 					elif chunk.id == 1: #Gen1:Track:Header
 						cvpj_trackid = str(parseddata.trackno)
-						track_obj = convproj_obj.track__add(cvpj_trackid, 'midi', 1, False)
+						track_obj = cvpj_tracks.add(cvpj_trackid, 'midi', 1, False)
 						track_obj.visual.name = parseddata.name.decode()
 						if parseddata.channel != 255:
 							track_obj.midi.out_enabled = True
@@ -169,7 +172,7 @@ class input_cvpj_f(plugins.base):
 
 					elif chunk.id == 36: #Gen2:Track:Header
 						cvpj_trackid = str(parseddata.trackno)
-						track_obj = convproj_obj.track__add(cvpj_trackid, 'hybrid', 1, False)
+						track_obj = cvpj_tracks.add(cvpj_trackid, 'hybrid', 1, False)
 						track_obj.visual.name = parseddata.name.decode()
 						if parseddata.channel != 255:
 							trackchannel = max(0, parseddata.channel)

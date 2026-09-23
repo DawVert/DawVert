@@ -41,6 +41,9 @@ class input_ex_basic_pitch(plugins.base):
 			logger_input.error('funkin: JSON parsing error: '+str(t))
 			exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(600)
@@ -67,7 +70,7 @@ class input_ex_basic_pitch(plugins.base):
 
 			for x in range(numchars):
 				trackid = notedif+str(x)
-				track_obj = convproj_obj.track__add(trackid, 'instrument', 1, False)
+				track_obj = cvpj_tracks.add(trackid, 'instrument', 1, False)
 				track_obj.visual.name = 'pyr_'+str(x)+','+notedif
 				if colors_on: track_obj.visual.color.set_float(charcolors[(numchars-x)-1])
 				placement_obj = track_obj.placements.add_notes()

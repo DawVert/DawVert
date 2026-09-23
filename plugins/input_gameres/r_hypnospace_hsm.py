@@ -39,6 +39,9 @@ class input_hypnospace_hsm(plugins.base):
 
 		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'hypnospace_hsm', ['hypnospace_hsm'])
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'ms'
 		convproj_obj.set_timings(4)
@@ -55,7 +58,7 @@ class input_hypnospace_hsm(plugins.base):
 
 		# ---------- tracks ----------
 		for tracknum in range(5):
-			track_obj = convproj_obj.track__add('track_'+str(tracknum), 'instruments', 1, False)
+			track_obj = cvpj_tracks.add('track_'+str(tracknum), 'instruments', 1, False)
 			track_obj.visual.name = 'Track #%s' % str(tracknum+1)
 
 		# ---------- samples ----------
@@ -86,7 +89,7 @@ class input_hypnospace_hsm(plugins.base):
 
 				for n, x in enumerate(pattern_obj.notes):
 					if not all([x[0]==0 for x in x]):
-						trscene_obj = convproj_obj.track__add_scene('track_'+str(n), patnum_id, 'main')
+						trscene_obj = cvpj_tracks.add_scene('track_'+str(n), patnum_id, 'main')
 						placement_obj = trscene_obj.add_notes()
 						time_obj = placement_obj.time
 						time_obj.set_posdur(0, steps)

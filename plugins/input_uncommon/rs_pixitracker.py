@@ -37,23 +37,24 @@ class input_cvpj_f(plugins.base):
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']
 
-
-		globalstore.datapack.load('pixitracker', './data/datapack/app/pixitracker.xml')
-		colordata = colors.colorset.from_datapack('pixitracker', 'inst', 'main')
-
 		project_obj = proj_piximod.piximod_song()
 
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
+		globalstore.datapack.load('pixitracker', './data/datapack/app/pixitracker.xml')
+		colordata = colors.colorset.from_datapack('pixitracker', 'inst', 'main')
+
 		swing = project_obj.shuffle/100
 		samplefolder = dawvert_intent.path_samples['extracted']
-		
 
 		for instnum, pixi_sound in enumerate(project_obj.sounds):
 			cvpj_instid = 'pixi_'+str(instnum)
 
-			track_obj = convproj_obj.track__add(cvpj_instid, 'instrument', 1, False)
+			track_obj = cvpj_tracks.add(cvpj_instid, 'instrument', 1, False)
 			track_obj.visual.name = 'Inst #'+str(instnum+1)
 			track_obj.visual.color.set_int(colordata.getcolor())
 			track_obj.params.add('pitch', (pixi_sound.fine/100)+(0.2 if pixi_sound.channels == 1 else 0.4), 'float')
@@ -118,7 +119,7 @@ class input_cvpj_f(plugins.base):
 				for instnum, instnote in enumerate(instnotes):
 					if len(instnote):
 						cvpj_instid = 'pixi_'+str(instnum)
-						trscene_obj = convproj_obj.track__add_scene(cvpj_instid, sceneid, 'main')
+						trscene_obj = cvpj_tracks.add_scene(cvpj_instid, sceneid, 'main')
 						placement_obj = trscene_obj.add_notes()
 						placement_obj.visual.name = 'Pat #'+str(pat_num+1)
 						time_obj = placement_obj.time

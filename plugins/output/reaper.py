@@ -757,6 +757,8 @@ class output_reaper(plugins.base):
 		from objects.file_proj._rpp import fxchain as rpp_fxchain
 		from objects.file_proj._rpp import source as rpp_source
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		global reaper_tempo
 		global datadef_obj
 
@@ -830,11 +832,11 @@ class output_reaper(plugins.base):
 			rpp_project.master_volume['right'] = track_obj.params.get('splitpan_right', 1).value
 
 		if convproj_obj.fxtype == 'route':
-			track_uuids = ['{'+str(uuid.uuid4())+'}' for _ in convproj_obj.track__iter()]
+			track_uuids = ['{'+str(uuid.uuid4())+'}' for _ in cvpj_tracks.iter()]
 
 			trackdata = []
 			tracknum = 0
-			for trackid, track_obj in convproj_obj.track__iter():
+			for trackid, track_obj in cvpj_tracks.iter():
 				trackdata.append( do_track(rpp_project, convproj_obj, track_obj, ['track', trackid], track_uuids[tracknum]) )
 				tracknum += 1
 
@@ -861,7 +863,7 @@ class output_reaper(plugins.base):
 		if convproj_obj.fxtype in ['groupreturn', 'none']:
 			master_returns = convproj_obj.track_master.returns
 
-			track_uuids = dict([[x[0], '{'+str(uuid.uuid4())+'}'] for x in convproj_obj.track__iter()])
+			track_uuids = dict([[x[0], '{'+str(uuid.uuid4())+'}'] for x in cvpj_tracks.iter()])
 			group_uuids = dict([[x, '{'+str(uuid.uuid4())+'}'] for x in convproj_obj.groups])
 			returns_uuids = dict([[x, '{'+str(uuid.uuid4())+'}'] for x in master_returns])
 
@@ -874,7 +876,7 @@ class output_reaper(plugins.base):
 					track_group[group_obj.group].append(['GROUP', groupid])
 				else: track_nongroup.append(['GROUP', groupid])
 	
-			for trackid, track_obj in convproj_obj.track__iter():
+			for trackid, track_obj in cvpj_tracks.iter():
 				if track_obj.group: 
 					if track_obj.group not in track_group: track_group[track_obj.group] = []
 					track_group[track_obj.group].append(['TRACK', trackid])
@@ -942,7 +944,7 @@ class output_reaper(plugins.base):
 
 			for b1, b2, t, i, g in outisbus:
 				if t == 'TRACK': 
-					track_obj = convproj_obj.track__get(i)
+					track_obj = cvpj_tracks.get(i)
 					rpp_track_obj = do_track(rpp_project, convproj_obj, track_obj, ['track', i], track_uuids[i])
 					track_nums[i] = tracknum
 					track_data[i] = rpp_track_obj

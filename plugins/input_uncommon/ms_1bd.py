@@ -69,6 +69,9 @@ class input_1bitdragon(plugins.base):
 		globalstore.datapack.load('1bitdragon', './data/datapack/app/1bitdragon.xml')
 		colordata = colors.colorset.from_datapack('1bitdragon', 'track', 'main')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(4)
 		convproj_obj.do_actions.append('do_lanefit')
@@ -103,7 +106,7 @@ class input_1bitdragon(plugins.base):
 		# ---------- tracks ----------
 		track_data = []
 		for plnum in range(9):
-			track_obj = convproj_obj.track__add(str(plnum), 'instruments', 1, False)
+			track_obj = cvpj_tracks.add(str(plnum), 'instruments', 1, False)
 			track_obj.visual.color.from_colorset_num(colordata, plnum)
 			visual_track = track_obj.visual_track
 			visual_track.pl_notes_all = True
@@ -133,7 +136,7 @@ class input_1bitdragon(plugins.base):
 				dur = max([len(x) for x in instdata])
 
 				if dur:
-					trscene_obj = convproj_obj.track__add_scene(str(instnum), str(blocknum), 'main')
+					trscene_obj = cvpj_tracks.add_scene(str(instnum), str(blocknum), 'main')
 					placement_obj = trscene_obj.add_notes()
 					placement_obj.visual.name = block_obj.instruments[3-instnum].preset
 					time_obj = placement_obj.time
@@ -152,7 +155,7 @@ class input_1bitdragon(plugins.base):
 			ids_drums = [x.get_instid() for x in block_obj.drums]
 			for drumnum, drumdata in enumerate(block_obj.n_drums):
 				if drumdata:
-					trscene_obj = convproj_obj.track__add_scene(str(8-drumnum), str(blocknum), 'main')
+					trscene_obj = cvpj_tracks.add_scene(str(8-drumnum), str(blocknum), 'main')
 					placement_obj = trscene_obj.add_notes()
 					placement_obj.visual.name = block_obj.drums[4-drumnum].preset
 					time_obj = placement_obj.time

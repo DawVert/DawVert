@@ -46,6 +46,8 @@ class output_onlineseq(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import onlineseq as proj_onlineseq
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		convproj_obj.change_timings(4.0)
 
 		project_obj = proj_onlineseq.onlineseq_project()
@@ -56,7 +58,7 @@ class output_onlineseq(plugins.base):
 
 		repeatedolinst = {}
 
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 			onlineseqinst = 43
 			midiinst = None
 

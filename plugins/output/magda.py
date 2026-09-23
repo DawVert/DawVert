@@ -129,6 +129,8 @@ class output_magda(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import magda as proj_magda
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		convproj_obj.change_timings(1.0)
 		
 		session_obj = proj_magda.magda_session()
@@ -182,7 +184,7 @@ class output_magda(plugins.base):
 				objassoc_group[groupid] = group_obj
 				tracknum += 1
 
-			for trackid, track_obj in convproj_obj.track__iter():
+			for trackid, track_obj in cvpj_tracks.iter():
 				numassoc_track[trackid] = tracknum
 				objassoc_track[trackid] = track_obj
 				tracknum += 1
@@ -196,7 +198,7 @@ class output_magda(plugins.base):
 					track_group[group_obj.group].append(['GROUP', groupid])
 				else: track_nongroup.append(['GROUP', groupid])
 	
-			for trackid, track_obj in convproj_obj.track__iter():
+			for trackid, track_obj in cvpj_tracks.iter():
 				if track_obj.group: 
 					if track_obj.group not in track_group: track_group[track_obj.group] = []
 					track_group[track_obj.group].append(['TRACK', trackid])

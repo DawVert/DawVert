@@ -38,6 +38,8 @@ class output_bandlab(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import qtractor as proj_qtractor
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		convproj_obj.change_timings(1.0)
 		
 		project_obj = proj_qtractor.qtractor_project()
@@ -85,7 +87,7 @@ class output_bandlab(plugins.base):
 
 		project_obj.devices.append(audio_engine)
 
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 
 			tracknotes_midinames = []
 

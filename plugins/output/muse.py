@@ -288,6 +288,9 @@ class output_cvpj(plugins.base):
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import muse as proj_muse
+
+		cvpj_tracks = convproj_obj.tracks
+		
 		global tracknum
 		global synthidnum
 		tracknum = 1
@@ -309,7 +312,7 @@ class output_cvpj(plugins.base):
 
 		project_obj.tracks.append(muse_track)
 
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 
 			if track_obj.type == 'instrument':
 				if track_obj.is_laned:

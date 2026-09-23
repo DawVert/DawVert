@@ -54,6 +54,9 @@ class input_petaporon(plugins.base):
 		globalstore.datapack.load('petaporon', './data/datapack/app/petaporon.xml')
 		colordata = colors.colorset.from_datapack('petaporon', 'inst', 'main')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.do_actions.append('do_singlenotelistcut')
@@ -89,7 +92,7 @@ class input_petaporon(plugins.base):
 		for instnum in range(10):
 			instid = 'petaporon'+str(instnum)
 
-			track_obj = convproj_obj.track__add(instid, 'instrument', 0, False)
+			track_obj = cvpj_tracks.add(instid, 'instrument', 0, False)
 			track_obj.visual.name = 'Inst #'+str(instnum+1)
 			track_obj.visual.color.set_int(colordata.getcolornum(instnum))
 

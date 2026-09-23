@@ -10,8 +10,10 @@ logger_project = logging.getLogger('project')
 def convert(convproj_obj):
 	logger_project.info('ProjType Convert: Regular > Multiple')
 
+	cvpj_tracks = convproj_obj.tracks
+	
 	plnum = -1
-	for trackid, track_obj in convproj_obj.track__iter():
+	for trackid, track_obj in cvpj_tracks.iter():
 
 		used_inst = False
 		if track_obj.type == 'instruments': used_inst = True

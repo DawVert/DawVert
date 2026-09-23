@@ -38,6 +38,9 @@ class input_darwin(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'
@@ -64,7 +67,7 @@ class input_darwin(plugins.base):
 		# ---------- tracks ----------
 		for dw_track in project_obj.tracks:
 			if not dw_track.isFolder:
-				track_obj = convproj_obj.track__add(str(dw_track.id), 'instrument', 1, False)
+				track_obj = cvpj_tracks.add(str(dw_track.id), 'instrument', 1, False)
 				if dw_track.parentFolderId>1: track_obj.group = str(dw_track.parentFolderId)
 				do_track_params(dw_track, track_obj.params)
 				do_track_visual(dw_track, track_obj.visual)

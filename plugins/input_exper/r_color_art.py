@@ -39,6 +39,8 @@ class input_color_art(plugins.base):
 
 		w, h = im.size
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		minsize = dawvert_intent.input_get_param('size', 28)
 
 		if h > minsize:
@@ -49,7 +51,7 @@ class input_color_art(plugins.base):
 
 		for height in range(h-1):
 			trackid = str('track'+str(height))
-			track_obj = convproj_obj.track__add(trackid, 'instrument', 1, False)
+			track_obj = cvpj_tracks.add(trackid, 'instrument', 1, False)
 			track_obj.visual.name = '.'
 			for width in range(w):
 				coordinate = width, height

@@ -51,6 +51,9 @@ class input_cvpj_f(plugins.base):
 		#if 'debug' in dawvert_intent:
 		#	with open(input_file+'_pritty', "w") as fileout: json.dump(mmc_main, fileout, indent=4, sort_keys=True)
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(4)
@@ -81,7 +84,7 @@ class input_cvpj_f(plugins.base):
 		for tracknum, mmc_track in enumerate(mmc_tracks):
 			cvpj_instid = 'CH'+str(tracknum)
 
-			track_obj = convproj_obj.track__add(cvpj_instid, 'instrument', 0, False)
+			track_obj = cvpj_tracks.add(cvpj_instid, 'instrument', 0, False)
 
 			track_obj.visual.name = cvpj_instid
 			track_obj.visual.color.set_float(maincolor)

@@ -99,6 +99,9 @@ class input_piyopiyo(plugins.base):
 		globalstore.datapack.load('piyopiyo', './data/datapack/app/piyopiyo.xml')
 		colordata = colors.colorset.from_datapack('piyopiyo', 'inst', 'main')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj params ----------
 		use_samples = dawvert_intent.input_get_param('use_samples', True)
 		drum_notes_alt = dawvert_intent.input_get_param('drum_notes_alt', True)
@@ -125,7 +128,7 @@ class input_piyopiyo(plugins.base):
 			keyoffset = (pmdtrack_obj.octave-2)*12
 
 			idval = str(tracknum)
-			track_obj = convproj_obj.track__add(idval, 'instrument', 0, False)
+			track_obj = cvpj_tracks.add(idval, 'instrument', 0, False)
 			track_obj.visual.name = 'Inst #'+str(tracknum+1)
 			track_obj.visual.color.set_int(colordata.getcolornum(tracknum))
 			track_obj.params.add('vol', pmdtrack_obj.volume/250, 'float')
@@ -143,7 +146,7 @@ class input_piyopiyo(plugins.base):
 			parse_notes(convproj_obj, idval, project_obj.notes_data[tracknum], track_obj, keyoffset)
 
 		# ---------- drum track ----------
-		track_obj = convproj_obj.track__add("3", 'instrument', False, False)
+		track_obj = cvpj_tracks.add("3", 'instrument', False, False)
 		track_obj.visual.name = 'Drums'
 		track_obj.visual.color.set_int(colordata.getcolornum(3))
 		track_obj.params.add('vol', (project_obj.perc_volume/250)/3, 'float')

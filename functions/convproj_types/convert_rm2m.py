@@ -10,6 +10,7 @@ def convert(convproj_obj, change_instnames):
 	logger_project.info('ProjType Convert: RegularMultiple > Multiple')
 
 	fxrack_obj = convproj_obj.fxrack
+	cvpj_tracks = convproj_obj.tracks
 	useable_plugins = convproj_obj.plugins
 	convproj_obj.plugins = {}
 
@@ -21,7 +22,7 @@ def convert(convproj_obj, change_instnames):
 	convproj_obj.instruments_order = []
 
 	plnum = -1
-	for trackid, track_obj in convproj_obj.track__iter():
+	for trackid, track_obj in cvpj_tracks.iter():
 		instruments = track_obj.used_insts()
 
 		for instid in instruments:

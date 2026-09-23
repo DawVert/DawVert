@@ -34,6 +34,9 @@ class input_eam2(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 		
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'none'
@@ -55,7 +58,7 @@ class input_eam2(plugins.base):
 
 				if track.Type != 'Main':
 					autoloc_s = ['track', cvpj_trackid]
-					track_obj = convproj_obj.track__add(cvpj_trackid, 'audio', 1, False)
+					track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
 				else:
 					autoloc_s = ['master']
 					track_obj = convproj_obj.track_master

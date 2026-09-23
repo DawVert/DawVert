@@ -167,6 +167,9 @@ class input_lc(plugins.base):
 		globalstore.datapack.load('lovelycomposer', './data/datapack/app/lovelycomposer.xml')
 		colordata = colors.colorset.from_datapack('lovelycomposer', 'track', 'main')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'rm'
 		convproj_obj.set_timings(4.0)
@@ -200,7 +203,7 @@ class input_lc(plugins.base):
 			vol = xtramath.from_db(project_obj.ui_mixer_expression_list[tracknum]/2)
 			pan = [0,-1,1][project_obj.mixer_output_channel_list[tracknum]]
 
-			track_obj = convproj_obj.track__add(cvpj_instid, 'instruments', 1, False)
+			track_obj = cvpj_tracks.add(cvpj_instid, 'instruments', 1, False)
 			track_obj.params.add('vol', vol, 'float')
 			track_obj.params.add('pan', pan, 'float')
 			track_obj.params.add('enabled', not project_obj.mixer_channel_switch_list[tracknum], 'bool')

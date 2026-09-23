@@ -41,6 +41,9 @@ class input_korg_m1_nds(plugins.base):
 
 		globalstore.datapack.load('korg_m1d', './data/datapack/realsynth/korg_m1d.xml')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj params ----------
 		no_swing = dawvert_intent.input_get_param('no_swing', False)
 		groupby = dawvert_intent.input_get_param('groupby', 'instset')
@@ -104,7 +107,7 @@ class input_korg_m1_nds(plugins.base):
 
 		for num, channel_obj in enumerate(projsong_obj.channels):
 			cvpj_trackid = str(num)
-			track_obj = convproj_obj.track__add(cvpj_trackid, 'instrument', 1, False)
+			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 			track_obj.params.add('vol', channel_obj.volume/127, 'float')
 			track_obj.params.add('pan', channel_obj.pan/5, 'float')
 			track_obj.params.add('enabled', 1 not in channel_obj.flags, 'bool')

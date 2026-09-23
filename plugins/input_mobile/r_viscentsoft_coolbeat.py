@@ -65,6 +65,9 @@ class input_coolbeat(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'none'
 		convproj_obj.type = 'r'
@@ -97,7 +100,7 @@ class input_coolbeat(plugins.base):
 			trackid = 'track_'+str(n)
 			tracktype = track.type
 			if tracktype in [0, 1, 3]:
-				track_obj = convproj_obj.track__add(trackid, 'instrument', 1, False)
+				track_obj = cvpj_tracks.add(trackid, 'instrument', 1, False)
 				track_obj.visual.name = track.label
 				track_obj.params.add('vol', track.volume, 'float')
 				track_obj.params.add('pan', calc_pan(track.pan), 'float')
@@ -151,7 +154,7 @@ class input_coolbeat(plugins.base):
 						time_obj.calc_dur_mul((section.length)/loop_data)
 
 			if tracktype == 2:
-				track_obj = convproj_obj.track__add(trackid, 'audio', 1, False)
+				track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
 				track_obj.visual.name = track.label
 				track_obj.params.add('vol', track.volume, 'float')
 				track_obj.params.add('pan', calc_pan(track.pan), 'float')

@@ -37,6 +37,9 @@ class input_nanostudio_v1(plugins.base):
 		globalstore.datapack.load('nanostudio_v1', './data/datapack/app/nanostudio_v1.xml')
 		colordata = colors.colorset.from_datapack('nanostudio_v1', 'clips', 'main')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(256.0)
@@ -56,7 +59,7 @@ class input_nanostudio_v1(plugins.base):
 			cvpj_trackid = 'track_'+str(instnum)
 
 			if ns_inst.type != 'Mixer':
-				track_obj = convproj_obj.track__add(cvpj_trackid, 'instrument', 1, False)
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 				track_data[instnum] = track_obj
 				track_obj.visual.name = ns_inst.name
 

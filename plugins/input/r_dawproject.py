@@ -165,13 +165,16 @@ def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 def do_tracks(convproj_obj, dp_tracks, groupid):
 	global samplefolder
 	global trackdata
+	
+	cvpj_tracks = convproj_obj.tracks
+
 	for dp_track in dp_tracks:
 		dp_channel = dp_track.channel
 
 		track_obj = None
 
 		if dp_track.contentType == 'notes' and dp_channel.role == 'regular': 
-			track_obj = convproj_obj.track__add(dp_track.id, 'instrument', 1, False)
+			track_obj = cvpj_tracks.add(dp_track.id, 'instrument', 1, False)
 			do_visual(track_obj, dp_track)
 			do_params(convproj_obj, dp_channel, track_obj.params, ['track', dp_track.id])
 			do_sends(convproj_obj, track_obj, dp_channel)
@@ -180,7 +183,7 @@ def do_tracks(convproj_obj, dp_tracks, groupid):
 			if dp_channel.solo: track_obj.params.add('solo', dp_channel.solo=='true', 'bool')
 
 		if dp_track.contentType == 'audio' and dp_channel.role == 'regular': 
-			track_obj = convproj_obj.track__add(dp_track.id, 'audio', 1, False)
+			track_obj = cvpj_tracks.add(dp_track.id, 'audio', 1, False)
 			do_visual(track_obj, dp_track)
 			do_params(convproj_obj, dp_channel, track_obj.params, ['track', dp_track.id])
 			do_sends(convproj_obj, track_obj, dp_channel)
@@ -189,7 +192,7 @@ def do_tracks(convproj_obj, dp_tracks, groupid):
 			if dp_channel.solo: track_obj.params.add('solo', dp_channel.solo=='true', 'bool')
 
 		if dp_track.contentType == 'audio notes' and dp_channel.role == 'regular': 
-			track_obj = convproj_obj.track__add(dp_track.id, 'hybrid', 1, False)
+			track_obj = cvpj_tracks.add(dp_track.id, 'hybrid', 1, False)
 			do_visual(track_obj, dp_track)
 			do_params(convproj_obj, dp_channel, track_obj.params, ['track', dp_track.id])
 			do_sends(convproj_obj, track_obj, dp_channel)

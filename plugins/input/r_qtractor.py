@@ -64,6 +64,9 @@ class input_midi(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj params ----------
 		swap_bg_fg = dawvert_intent.input_get_param('swap_bg_fg', False)
 
@@ -107,9 +110,9 @@ class input_midi(plugins.base):
 			cvpj_trackid = str(tracknum)
 
 			if qtrack.type == 'audio':
-				track_obj = convproj_obj.track__add(cvpj_trackid, 'audio', 1, False)
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
 			if qtrack.type == 'midi':
-				track_obj = convproj_obj.track__add(cvpj_trackid, 'instrument', 1, False)
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 
 			track_obj.visual.name = qtrack.name
 			if qtrack.view.background_color and qtrack.view.foreground_color:

@@ -34,6 +34,9 @@ class input_notessimo_v2(plugins.base):
 		global used_insts
 		used_insts = []
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'ms'
@@ -61,7 +64,7 @@ class input_notessimo_v2(plugins.base):
 		# ---------- tracks ----------
 		cvpj_tracks = []
 		for layernum in range(9):
-			track_obj = convproj_obj.track__add(str(layernum+1), 'instruments', 1, False) 
+			track_obj = cvpj_tracks.add(str(layernum+1), 'instruments', 1, False) 
 			track_obj.visual.name = 'Layer #'+str(layernum+1)
 
 		# ---------- patterns ----------
@@ -81,7 +84,7 @@ class input_notessimo_v2(plugins.base):
 					if note.inst not in used_insts: used_insts.append(note.inst)
 				for l_num, layer in enumerate(layers):
 					if layer:
-						trscene_obj = convproj_obj.track__add_scene(str(l_num+1), sceneid, 'main')
+						trscene_obj = cvpj_tracks.add_scene(str(l_num+1), sceneid, 'main')
 
 						placement_obj = trscene_obj.add_notes()
 						placement_obj.visual.name = 'Pat #'+str(pat_num+1)+', Layer #'+str(l_num+1)

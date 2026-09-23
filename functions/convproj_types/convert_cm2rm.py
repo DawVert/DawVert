@@ -12,11 +12,13 @@ def convert(convproj_obj):
 	import objects.midi_modernize.midi_modernize as midi_modernize
 	from objects.convproj import midievents
 
+	cvpj_tracks = convproj_obj.tracks
+	
 	logger_project.info('ProjType Convert: ClassicalMultiple > RegularMultiple')
 
 	modernize_obj = midi_modernize.midi_modernize(convproj_obj.midi.num_channels)
 
-	for trackid, track_obj in convproj_obj.track__iter():
+	for trackid, track_obj in cvpj_tracks.iter():
 		modernize_obj.memory__add_count(track_obj.placements.midievents)
 		for pl_midi in track_obj.placements.pl_midi:
 			modernize_obj.memory__add_count(pl_midi.midievents)
@@ -26,7 +28,7 @@ def convert(convproj_obj):
 
 	nonmidi_tracks = []
 
-	for n, trackid, track_obj in convproj_obj.track__iter_num():
+	for n, trackid, track_obj in cvpj_tracks.iter_num():
 
 		if track_obj.type in ['midi', 'hybrid']:
 			logger_project.debug('cm2rm: Track '+trackid)

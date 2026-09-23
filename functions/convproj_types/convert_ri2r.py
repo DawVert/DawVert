@@ -9,7 +9,9 @@ logger_project = logging.getLogger('project')
 def convert(convproj_obj):
     logger_project.info('ProjType Convert: RegularIndexed > Regular')
 
-    for trackid, track_obj in convproj_obj.track__iter():
+    cvpj_tracks = convproj_obj.tracks
+    
+    for trackid, track_obj in cvpj_tracks.iter():
         if not track_obj.is_laned: 
             track_obj.placements.unindex_notes(track_obj.notelist_index)
         else:

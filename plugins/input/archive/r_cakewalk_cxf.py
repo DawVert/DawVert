@@ -74,6 +74,8 @@ class input_bandlab(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import cakewalk_cxf as proj_cakewalk_cxf
 
+		cvpj_tracks = convproj_obj.tracks
+	
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'
 
@@ -186,9 +188,9 @@ class input_bandlab(plugins.base):
 
 			track_obj = None
 			if cxf_track.type == 'Audio':
-				track_obj = convproj_obj.track__add(cxf_track.id, 'audio', 1, False)
+				track_obj = cvpj_tracks.add(cxf_track.id, 'audio', 1, False)
 			elif cxf_track.type == 'Instrument':
-				track_obj = convproj_obj.track__add(cxf_track.id, 'instrument', 1, False)
+				track_obj = cvpj_tracks.add(cxf_track.id, 'instrument', 1, False)
 
 			if cxf_track.soundbank:
 				if not track_obj.visual_inst.from_datapack('bandlab', 'inst', cxf_track.soundbank, False):

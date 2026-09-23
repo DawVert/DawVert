@@ -46,6 +46,9 @@ class input_onlinesequencer(plugins.base):
 
 		globalstore.datapack.load('onlineseq', './data/datapack/app/onlineseq.xml')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj params ----------
 		groupby = dawvert_intent.input_get_param('groupby', 'instset')
 		groupmin = dawvert_intent.input_get_param('groupmin', 3)
@@ -122,7 +125,7 @@ class input_onlinesequencer(plugins.base):
 			trueinstid = instid%10000
 
 			if trueinstid not in multig: multig[trueinstid] = []
-			track_obj = convproj_obj.track__add(trackid, 'instrument', 0, False)
+			track_obj = cvpj_tracks.add(trackid, 'instrument', 0, False)
 			track_obj.visual.from_datapack('onlineseq', 'inst', str(trueinstid), True)
 			
 			multig[trueinstid].append(track_obj)

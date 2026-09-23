@@ -48,6 +48,9 @@ class input_adlib_rol(plugins.base):
 						instname = adlibbnk_obj.names[instnum].replace(" ", "").upper()
 						native_insts[instname] = adlibbnk_obj.get_inst_index(instnum)
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj params ----------
 		convproj_obj.type = 'rm'
 		convproj_obj.do_actions.append('do_addloop')
@@ -70,7 +73,7 @@ class input_adlib_rol(plugins.base):
 		used_voices = []
 		for tracknum, rol_track in enumerate(project_obj.tracks):
 			cvpj_trackid = 'track'+str(tracknum+1)
-			track_obj = convproj_obj.track__add(cvpj_trackid, 'instruments', 0, False)
+			track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 0, False)
 			track_obj.visual.name = rol_track.voice.name
 
 			cvpj_notelist = track_obj.placements.notelist

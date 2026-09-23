@@ -4,12 +4,13 @@
 from functions import xtramath
 
 def process(convproj_obj, in__placement_audio_nested, out__placement_audio_nested, out_type, dawvert_intent):
+	cvpj_tracks = convproj_obj.tracks
 	if in__placement_audio_nested == True and out__placement_audio_nested == False:
 		if convproj_obj.type == 'm':
 			for pl_id, playlist_obj in convproj_obj.playlist.items(): playlist_obj.placements.remove_nested()
 			return True
 		elif convproj_obj.type == 'r':
-			for trackid, track_obj in convproj_obj.track__iter():
+			for trackid, track_obj in cvpj_tracks.iter():
 				track_obj.placements.remove_nested()
 				for trackid, lane_obj in track_obj.lanes.items(): lane_obj.placements.remove_nested()
 			return True

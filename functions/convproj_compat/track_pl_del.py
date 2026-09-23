@@ -5,11 +5,12 @@ from objects.convproj import placements
 from objects import notelist_splitter
 
 def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_intent):
+	cvpj_tracks = convproj_obj.tracks
 
 	if in__track_nopl == False and out__track_nopl == True:
 
 		if convproj_obj.type in ['r']: 
-			for cvpj_trackid, track_obj in convproj_obj.track__iter():
+			for cvpj_trackid, track_obj in cvpj_tracks.iter():
 				for notespl_obj in track_obj.placements.pl_notes:
 					track_obj.placements.notelist.merge(notespl_obj.notelist, notespl_obj.time.get_pos())
 
@@ -18,7 +19,7 @@ def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_int
 			return True
 
 		elif convproj_obj.type in ['cs', 'cm']: 
-			for cvpj_trackid, track_obj in convproj_obj.track__iter():
+			for cvpj_trackid, track_obj in cvpj_tracks.iter():
 				track_obj.placements.midievents.change_ppq(convproj_obj.time_ppq)
 
 				for midipl_obj in track_obj.placements.pl_midi:

@@ -82,6 +82,9 @@ class input_pxtone(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'rm'
 		convproj_obj.do_actions.append('do_addloop')
@@ -164,7 +167,7 @@ class input_pxtone(plugins.base):
 			unit_notes = project_obj.events.data[np.where(project_obj.events.data['unitnum'] == unitnum)[0]]
 
 			cvpj_trackid = str(unitnum+1)
-			track_obj = convproj_obj.track__add(cvpj_trackid, 'instruments', 0, False)
+			track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 0, False)
 			track_obj.visual.name = unit_obj.name
 			track_obj.visual.color.set_int(colordata.getcolor())
 			track_obj.visual.color.fx_allowed = ['saturate', 'brighter']

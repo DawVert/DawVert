@@ -4,6 +4,8 @@
 def process(convproj_obj, in__placement_loop, out__placement_loop, out_type, dawvert_intent):
 	remainingplloop = [e for e in in__placement_loop if e not in out__placement_loop]
 
+	cvpj_tracks = convproj_obj.tracks
+
 	if (in__placement_loop != [] and remainingplloop != []):
 
 		traits_obj = convproj_obj.traits
@@ -13,7 +15,7 @@ def process(convproj_obj, in__placement_loop, out__placement_loop, out_type, daw
 			convproj_obj.transport.change_seconds(False, tempo, ppq)
 
 		if convproj_obj.type in ['r', 'ri', 'rm', 'cm', 'cs']: 
-			for trackid, track_obj in convproj_obj.track__iter(): 
+			for trackid, track_obj in cvpj_tracks.iter(): 
 				track_obj.placements.remove_loops(out__placement_loop)
 				for laneid, lane_obj in track_obj.lanes.items(): 
 					lane_obj.placements.remove_loops(out__placement_loop)

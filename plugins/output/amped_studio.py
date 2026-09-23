@@ -155,6 +155,8 @@ class output_amped(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import amped as proj_amped
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		global counter_id
 		global counter_devid
 		global amped_obj
@@ -199,7 +201,7 @@ class output_amped(plugins.base):
 			audio_sampleref[sampleref_id] = sampleref_obj
 			audioidnum += 1
 
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 			amped_track = proj_amped.amped_track(None)
 			amped_track.id = counter_id.get()
 			amped_track.name = track_obj.visual.name if track_obj.visual.name else ''

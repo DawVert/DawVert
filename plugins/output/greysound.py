@@ -50,6 +50,8 @@ class output_greysound(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import greysound as proj_greysound
 
+		cvpj_tracks = convproj_obj.tracks
+		
 		convproj_obj.change_timings(960)
 		
 		session_obj = proj_greysound.greysound_session()
@@ -78,7 +80,7 @@ class output_greysound(plugins.base):
 		# tracks
 		tracknum = 0
 		pointnum = 1000
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 			gtracknum = 1000000000+tracknum
 			greysound_track = proj_greysound.greysound_track()
 			greysound_track.id = gtracknum

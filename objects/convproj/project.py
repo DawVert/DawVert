@@ -28,7 +28,7 @@ from objects.convproj import videoref
 from objects.convproj import sampleref
 from objects.convproj import realdevices
 from objects.convproj import placements_marker
-from objects.convproj import fxrack
+from objects.convproj import fx_rack
 
 from functions.convproj_types import convert_r2m
 from functions.convproj_types import convert_ri2mi
@@ -188,6 +188,63 @@ class cvpj_project_midi:
 		self.num_channels = 16
 		self.num_ports = 1
 
+class cvpj_project_tracks:
+	def __init__(self, mainproject):
+		self.data = {}
+		self.order = []
+		self.mainproject = mainproject
+
+	def __getitem__(self, k):
+		return self.data.__getitem__(k)
+
+	def __contains__(self, k):
+		return self.data.__contains__(k)
+
+	def clear(self):
+		self.data = {}
+		self.order = []
+
+	def remove(self, trackid):
+		if trackid in self.data: del self.data[trackid]
+		if trackid in self.order: self.order.remove(trackid)
+
+	def get(self, trackid):
+		return self.data[trackid] if trackid in self.data else None
+
+	def iter(self):
+		for trackid in self.order:
+			if trackid in self.data: yield trackid, self.data[trackid]
+
+	def iter_num(self):
+		num = 0
+		for trackid in self.order:
+			if trackid in self.data: 
+				yield num, trackid, self.data[trackid]
+				num += 1
+
+	def add_scene(self, i_track, i_sceneid, i_lane):
+		if i_track in self.data: return self.data[i_track].scene__add(i_sceneid, i_lane)
+		else: return None
+
+	def add(self, track_id, tracktype, uses_placements, is_indexed):
+		logger_project.info('Track '+('NoPl' if not uses_placements else 'w/Pl')+(' + Indexed' if is_indexed else '')+' - '+track_id)
+		self.data[track_id] = tracks.cvpj_track(tracktype, self.mainproject.time_ppq, uses_placements, is_indexed)
+		self.order.append(track_id)
+		return self.data[track_id]
+
+	def count(self):
+		return len(self.order)
+
+	def sort(self):
+		sortpos = {}
+		for track_id, track_data in self.data.items():
+			trackstart = track_data.placements.get_start()
+			if trackstart not in sortpos: sortpos[trackstart] = []
+			sortpos[trackstart].append([track_id])
+		self.order = []
+		for n in sorted(sortpos):
+			for i in sortpos[n]: self.order += i
+
 class cvpj_project:
 	def __init__(self):
 		self.id = 'global'
@@ -204,6 +261,7 @@ class cvpj_project:
 		tempocalc.global_stores[self.id] = self.time_tempocalc
 
 		# tracks
+		self.tracks = cvpj_project_tracks(self)
 		self.track_data = {}
 		self.track_order = []
 		self.track_master = tracks.cvpj_track('master', self.time_ppq, False, False)
@@ -259,7 +317,7 @@ class cvpj_project:
 		self.track_returns = {}
 
 		# fxrack
-		self.fxrack = fxrack.cvpj_fxrack()
+		self.fxrack = fx_rack.cvpj_fxrack()
 
 		# route
 		self.trackroute = {}
@@ -516,7 +574,7 @@ class cvpj_project:
 				track_group[group_obj.group].append(['GROUP', groupid])
 			else: track_nongroup.append(['GROUP', groupid])
 
-		for trackid, track_obj in self.track__iter():
+		for trackid, track_obj in self.tracks.iter():
 			if track_obj.group: 
 				if track_obj.group not in track_group: track_group[track_obj.group] = []
 				track_group[track_obj.group].append(['TRACK', trackid])

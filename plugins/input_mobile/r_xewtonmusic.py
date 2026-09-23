@@ -42,6 +42,9 @@ class input_xewton(plugins.base):
 		extpath_path = os.path.join(dawvert_intent.path_external_data, 'xewton')
 		samplefolder = dawvert_intent.path_samples['extracted']
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj params ----------
 		INST_ENABLED = dawvert_intent.input_get_param('inst_on', True)
 
@@ -62,7 +65,7 @@ class input_xewton(plugins.base):
 		instplugs = {}
 		for tracknim, xe_tr in project_obj.tracks.items():
 			idval = 'track'+str(tracknim)
-			track_obj = convproj_obj.track__add(idval, 'instrument', 0, False)
+			track_obj = cvpj_tracks.add(idval, 'instrument', 0, False)
 
 			track_obj.params.add('vol', xe_tr.volume, 'float')
 			track_obj.params.add('pan', xe_tr.pan, 'float')

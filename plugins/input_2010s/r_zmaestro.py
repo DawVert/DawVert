@@ -69,6 +69,9 @@ class input_zmaestro(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(0.25)
@@ -106,7 +109,7 @@ class input_zmaestro(plugins.base):
 			cvpj_trackid = 'track_'+str(tracknum)
 
 			if tracktype in ['MIDITrack', 'MIDIDrumTrack']:
-				track_obj = convproj_obj.track__add(cvpj_trackid, 'instrument', 1, False)
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 				track_obj.params.add('vol', zm_track.volume/100, 'float')
 				track_obj.params.add('pan', (zm_track.pan-50)/50, 'float')
 				track_obj.params.add('enabled', True if not is_any_headphones else (zm_track.headphones), 'bool')
@@ -148,7 +151,7 @@ class input_zmaestro(plugins.base):
 						cvpj_notelist.add_r(note.start, note.length, note.pitch-60, note.velocity/127, None)
 
 			if tracktype == 'AudioTrack':
-				track_obj = convproj_obj.track__add(cvpj_trackid, 'audio', 1, False)
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
 				track_obj.params.add('vol', zm_track.volume/100, 'float')
 				track_obj.params.add('pan', (zm_track.pan-50)/50, 'float')
 				track_obj.params.add('enabled', True if not is_any_headphones else (zm_track.headphones), 'bool')

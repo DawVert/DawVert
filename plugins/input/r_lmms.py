@@ -470,6 +470,8 @@ def decodefxchain(convproj_obj, fxchain_obj):
 def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 	global bbpld
 
+	cvpj_tracks = convproj_obj.tracks
+
 	numbb = 0
 
 	tracks = {}
@@ -479,7 +481,7 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 
 		if lmms_track.type == 0: 
 			bbpld[cvpj_trackid] = []
-			track_obj = convproj_obj.track__add(cvpj_trackid, 'instrument', 1, False)
+			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 			tracks[cvpj_trackid] = track_obj
 			cvpj_enabled = doparam(lmms_track.muted, 'bool', [-1, -1], ['track', cvpj_trackid, 'enabled'])
 			cvpj_solo = doparam(lmms_track.solo, 'bool', None, ['track', cvpj_trackid, 'solo'])
@@ -640,7 +642,7 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 
 		elif lmms_track.type == 2: 
 			bbpld[cvpj_trackid] = []
-			track_obj = convproj_obj.track__add(cvpj_trackid, 'audio', 1, False)
+			track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
 			tracks[cvpj_trackid] = track_obj
 			cvpj_enabled = doparam(lmms_track.muted, 'bool', [-1, -1], ['track', cvpj_trackid, 'enabled'])
 			cvpj_solo = doparam(lmms_track.solo, 'bool', None, ['track', cvpj_trackid, 'solo'])

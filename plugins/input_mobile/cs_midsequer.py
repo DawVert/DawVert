@@ -28,6 +28,9 @@ class input_midsequer(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cs'
@@ -50,7 +53,7 @@ class input_midsequer(plugins.base):
 			trackinfo = track.ini
 			trackevents = track.evts
 			if (trackinfo.volume!=100) or (trackinfo.inst_pc!=0) or len(trackevents):
-				track_obj = convproj_obj.track__add(str(n), 'midi', 1, False)
+				track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
 				track_obj.midi.out_enabled = True
 				track_obj.midi.out_chanport.chan = n
 				track_obj.midi.out_chanport.port = 0

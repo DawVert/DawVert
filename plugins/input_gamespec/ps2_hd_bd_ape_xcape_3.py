@@ -112,12 +112,14 @@ class apeescape_bd:
 
 class reader_midifile_class():
 	def do_song(self, input_file, convproj_obj):
+		cvpj_tracks = convproj_obj.tracks
+		
 		from objects.midi_file.parser import MidiFile
 		midifile = MidiFile.fromFile(input_file)
 		ppq = midifile.ppqn
 		convproj_obj.set_timings(ppq)
 		for n, miditrack in enumerate(midifile.tracks):
-			track_obj = convproj_obj.track__add(str(n), 'midi', 1, False)
+			track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
 			logger_input.info('Track '+str(n+1)+' of '+str(len(midifile.tracks)))
 			self.do_track(miditrack.events, track_obj)
 		return ppq

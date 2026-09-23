@@ -403,6 +403,9 @@ class input_ableton(plugins.base):
 
 		autoid_assoc = auto_id.convproj2autoid(4)
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj params ----------
 		DEBUG_DISABLE_PLACEMENTS = dawvert_intent.input_get_param('no_placements', False)
 		DEBUG_DISABLE_SAMPLER = dawvert_intent.input_get_param('no_sampler', False)
@@ -493,7 +496,7 @@ class input_ableton(plugins.base):
 				track_pan = doparam(track_mixer.Pan, 'Pan', 'float', 0, fxloc+['pan'], None)
 				track_on = doparam(track_mixer.Speaker, 'On', 'bool', 1, fxloc+['enabled'], None)
 
-				track_obj = convproj_obj.track__add(track_id, 'instrument', 1, False)
+				track_obj = cvpj_tracks.add(track_id, 'instrument', 1, False)
 				track_obj.visual.name = track_name
 				track_obj.visual.color.from_colorset_num(colordata, int(track_color))
 				track_obj.visual.comment = track_infotxt
@@ -530,7 +533,7 @@ class input_ableton(plugins.base):
 				track_pan = doparam(track_mixer.Pan, 'Pan', 'float', 0, fxloc+['pan'], None)
 				track_on = doparam(track_mixer.On, 'On', 'bool', 0, fxloc+['enabled'], None)
 
-				track_obj = convproj_obj.track__add(track_id, 'audio', 1, False)
+				track_obj = cvpj_tracks.add(track_id, 'audio', 1, False)
 				track_obj.visual.name = track_name
 				track_obj.visual.color.from_colorset_num(colordata, int(track_color))
 				track_obj.visual.comment = track_infotxt

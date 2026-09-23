@@ -139,6 +139,9 @@ class input_serato(plugins.base):
 		eq_track = {}
 		eq_defined = []
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj init ----------
 		convproj_obj.type = 'ms'
 		convproj_obj.fxtype = 'groupreturn'
@@ -166,7 +169,7 @@ class input_serato(plugins.base):
 			cvpj_instid = cvpj_trackid+'_0'
 
 			if scene_deck.type == 'drums':
-				track_obj = convproj_obj.track__add(cvpj_trackid, 'instruments', 1, False)
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 1, False)
 				track_obj.visual.name = scene_deck.name
 				base_trk_id = 'track_'+str(num+1)
 				group_obj = convproj_obj.fx__group__add(base_trk_id)
@@ -229,7 +232,7 @@ class input_serato(plugins.base):
 								stretch_obj.preserve_pitch = True
 
 			if scene_deck.type == 'plugin':
-				track_obj = convproj_obj.track__add(cvpj_trackid, 'instruments', 1, False)
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 1, False)
 				track_obj.visual.name = scene_deck.name
 				inst_obj = convproj_obj.instrument__add(cvpj_instid)
 				inst_obj.visual.name = scene_deck.name
@@ -247,7 +250,7 @@ class input_serato(plugins.base):
 				do_chan_strip(eq_defined, convproj_obj, cvpj_trackid, scene_strip, track_obj.plugslots.slots_audio)
 
 			if scene_deck.type == 'instrument':
-				track_obj = convproj_obj.track__add(cvpj_trackid, 'instruments', 1, False)
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 1, False)
 				track_obj.visual.name = scene_deck.name
 				inst_obj = convproj_obj.instrument__add(cvpj_instid)
 				inst_obj.visual.name = scene_deck.name
@@ -270,7 +273,7 @@ class input_serato(plugins.base):
 				do_chan_strip(eq_defined, convproj_obj, cvpj_trackid, scene_strip, inst_obj.plugslots.slots_audio)
 
 			if scene_deck.type == 'sample':
-				track_obj = convproj_obj.track__add(cvpj_trackid, 'audio' if scene_deck.type == 'sample' else 'instruments', 1, False)
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'audio' if scene_deck.type == 'sample' else 'instruments', 1, False)
 				track_obj.visual.name = scene_deck.name
 
 				if useaudioclips == False:
@@ -446,7 +449,7 @@ class input_serato(plugins.base):
 								pass
 
 				if deck_sequence.notes:
-					trscene_obj = convproj_obj.track__add_scene(cvpj_trackid, sceneid, 'main')
+					trscene_obj = cvpj_tracks.add_scene(cvpj_trackid, sceneid, 'main')
 
 					if scene_deck.type == 'drums':
 						placement_obj = trscene_obj.add_notes()
@@ -593,5 +596,5 @@ class input_serato(plugins.base):
 				master_obj.datavals.add('pan_mode', 'stereo')
 				do_chan_strip(eq_defined, convproj_obj, 'master', master_strip, master_obj.plugslots.slots_audio)
 
-		#for trackid, track_obj in convproj_obj.track__iter():
+		#for trackid, track_obj in cvpj_tracks.iter():
 		#	print(track_obj.plugslots.slots_audio)

@@ -6,11 +6,13 @@ from functions import data_values
 def process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
 	fxrack_obj = convproj_obj.fxrack
 
+	cvpj_tracks = convproj_obj.tracks
+	
 	if convproj_obj.type in ['ri','r']:
 		if in_compat == out_compat: return False
 		else:
 			fx_trackids = {}
-			for trackid, track_obj in convproj_obj.track__iter():
+			for trackid, track_obj in cvpj_tracks.iter():
 				if track_obj.fxrack_channel not in fx_trackids: fx_trackids[track_obj.fxrack_channel] = []
 				fx_trackids[track_obj.fxrack_channel].append([trackid, track_obj])
 

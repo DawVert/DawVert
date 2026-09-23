@@ -127,6 +127,9 @@ class input_soundation(plugins.base):
 		
 		samplefolder = dawvert_intent.path_samples['extracted']
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'route'
 		convproj_obj.type = 'r'
@@ -168,7 +171,7 @@ class input_soundation(plugins.base):
 				if sound_chan_type == 'effect': track_type = 'fx'
 				if sound_chan_type == 'audio': track_type = 'audio'
 
-				track_obj = convproj_obj.track__add(cvpj_trackid, track_type, 1, False)
+				track_obj = cvpj_tracks.add(cvpj_trackid, track_type, 1, False)
 				do_track_data(convproj_obj, track_obj, soundation_channel, ['track',cvpj_trackid])
 
 				for soundation_region in soundation_channel.regions:

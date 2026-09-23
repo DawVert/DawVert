@@ -10,6 +10,8 @@ def get_sec(in_time_seconds, out_time_seconds):
 def process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
 	tempo = convproj_obj.params.get('bpm', 120).value
 
+	cvpj_tracks = convproj_obj.tracks
+
 	ppq = convproj_obj.time_ppq
 
 	traits_obj = convproj_obj.traits
@@ -24,7 +26,7 @@ def process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
 		# -- tracks --
 		dochange, is_sec = get_sec(in_compat.time_seconds_tracks, out_compat.time_seconds_tracks)
 		if dochange:
-			for trackid, track_obj in convproj_obj.track__iter(): 
+			for trackid, track_obj in cvpj_tracks.iter(): 
 				track_obj.placements.change_seconds(is_sec, tempo, ppq)
 				for laneid, lane_obj in track_obj.lanes.items(): 
 					lane_obj.placements.change_seconds(is_sec, tempo, ppq)

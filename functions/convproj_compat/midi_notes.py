@@ -3,10 +3,12 @@
 
 def process(convproj_obj, in__midi_notes, out__midi_notes, out_type, dawvert_intent):
 
+	cvpj_tracks = convproj_obj.tracks
+
 	if convproj_obj.type == 'r': 
 
 		if in__midi_notes == True and out__midi_notes == False and out_type not in ['cm', 'cs']:
-			for cvpj_trackid, track_obj in convproj_obj.track__iter(): 
+			for cvpj_trackid, track_obj in cvpj_tracks.iter(): 
 				for midpl in track_obj.placements.pl_midi:
 					midievents_obj = midpl.midievents
 					midievents_obj.add_note_durs()
@@ -58,7 +60,7 @@ def process(convproj_obj, in__midi_notes, out__midi_notes, out_type, dawvert_int
 			return True
 
 		elif in__midi_notes == False and out__midi_notes == True and out_type not in ['rm']:
-			for cvpj_trackid, track_obj in convproj_obj.track__iter(): 
+			for cvpj_trackid, track_obj in cvpj_tracks.iter(): 
 
 				pll = [track_obj.placements]+[x[1].placements for x in track_obj.lanes.items()]
 

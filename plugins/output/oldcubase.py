@@ -89,6 +89,8 @@ class output_oldcubase(plugins.base):
 
 		convproj_obj.change_timings(timebase)
 		
+		cvpj_tracks = convproj_obj.tracks
+		
 		project_dur = 1000000
 
 		counter_id = counter.counter(5000000, '')
@@ -591,7 +593,7 @@ class output_oldcubase(plugins.base):
 		#transpose_track.additional_attributes = {"TLID": 2, "FixH": 32}
 		#transpose_track.track_device.connection_type = 2
 
-		for trackid, track_obj in convproj_obj.track__iter():
+		for trackid, track_obj in cvpj_tracks.iter():
 			if track_obj.type == 'instrument' and not DEBUG_DISABLE_INST_TRACK:
 				instrument_track = tracklist.add_track('MInstrumentTrackEvent')
 				instrument_track.spread_counter(counter_id)

@@ -3,9 +3,11 @@
 
 def process(convproj_obj, in__notepl_pitch, out__notepl_pitch, out_type, dawvert_intent):
 
+	cvpj_tracks = convproj_obj.tracks
+
 	if convproj_obj.type == 'r': 
 		if in__notepl_pitch == True and out__notepl_pitch == False:
-			for cvpj_trackid, track_obj in convproj_obj.track__iter(): 
+			for cvpj_trackid, track_obj in cvpj_tracks.iter(): 
 				for midi_pl in track_obj.placements.pl_midi:
 					if midi_pl.pitch:
 						midievents_obj = midi_pl.midievents

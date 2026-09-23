@@ -28,6 +28,9 @@ class input_petaporon(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			project_obj.load_from_file(dawvert_intent.input_file)
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.do_actions.append('do_singlenotelistcut')
@@ -39,7 +42,7 @@ class input_petaporon(plugins.base):
 		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
 
 		# ---------- track ----------
-		track_obj = convproj_obj.track__add('flipper', 'instrument', 0, False)
+		track_obj = cvpj_tracks.add('flipper', 'instrument', 0, False)
 		track_obj.visual.name = 'Flipper Zero'
 		track_obj.visual.color.set_float([0.94, 0.58, 0.23])
 

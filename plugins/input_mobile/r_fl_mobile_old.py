@@ -35,6 +35,9 @@ class input_fl_mobile_old(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(48)
@@ -50,7 +53,7 @@ class input_fl_mobile_old(plugins.base):
 		# ---------- tracks ----------
 		for xe_tr in project_obj.tracks:
 			idval = 'track'+str(xe_tr.numid)
-			track_obj = convproj_obj.track__add(idval, 'instrument', 0, False)
+			track_obj = cvpj_tracks.add(idval, 'instrument', 0, False)
 
 			track_obj.params.add('vol', xe_tr.vol, 'float')
 			track_obj.params.add('pan', xe_tr.pan, 'float')
