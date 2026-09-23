@@ -77,9 +77,9 @@ def convert(convproj_obj):
 			track_obj.fxrack_channel = fx_num
 			track_obj.placements.pl_audio.data = placements
 
-	convproj_obj.track_order = []
+	cvpj_tracks.order = []
 	for n, t in fxrack_order.items():
-		for n in t: convproj_obj.track_order.append(n)
+		for n in t: cvpj_tracks.order.append(n)
 
 	convproj_obj.main__do_lanefit()
 

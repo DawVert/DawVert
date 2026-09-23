@@ -841,14 +841,14 @@ class output_reaper(plugins.base):
 				tracknum += 1
 
 			if convproj_obj.trackroute:
-				for tracknum, trackid in enumerate(convproj_obj.track_order):
+				for tracknum, trackid in enumerate(cvpj_tracks.order):
 					if trackid in convproj_obj.trackroute:
 						sends_obj = convproj_obj.trackroute[trackid]
-						tracksendnum = convproj_obj.track_order.index(trackid)
+						tracksendnum = cvpj_tracks.order.index(trackid)
 						trackdata[tracknum].mainsend['tracknum'] = int(sends_obj.to_master_active)
 						for target, send_obj in sends_obj.iter():
-							if target in convproj_obj.track_order:
-								trackrecnum = convproj_obj.track_order.index(target)
+							if target in cvpj_tracks.order:
+								trackrecnum = cvpj_tracks.order.index(target)
 								rpp_track = trackdata[trackrecnum]
 								auxrecv_obj = rpp_track.add_auxrecv()
 								auxrecv_obj['tracknum'] = tracksendnum

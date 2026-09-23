@@ -13,13 +13,15 @@ def tracklanename(trackname, lanename):
 	return ntp_name
 
 def process_r(convproj_obj, out_dawinfo):
-	org_track_data = convproj_obj.track_data
-	org_track_order = convproj_obj.track_order
+	cvpj_tracks = convproj_obj.tracks
+	
+	org_track_data = cvpj_tracks.data
+	org_track_order = cvpj_tracks.order
 	org_trackroute = convproj_obj.trackroute
 	out_fxtype = out_dawinfo.fxtype
 
-	convproj_obj.track_order = []
-	convproj_obj.track_data = {}
+	cvpj_tracks.order = []
+	cvpj_tracks.data = {}
 	convproj_obj.trackroute = {}
 
 	routechanges = {}
@@ -30,8 +32,8 @@ def process_r(convproj_obj, out_dawinfo):
 			trackroute_sendobj = org_trackroute[trackid] if trackid in org_trackroute else None
 
 			if not track_obj.is_laned:
-				convproj_obj.track_order.append(trackid)
-				convproj_obj.track_data[trackid] = track_obj
+				cvpj_tracks.order.append(trackid)
+				cvpj_tracks.data[trackid] = track_obj
 				if trackroute_sendobj != None: convproj_obj.trackroute[trackid] = trackroute_sendobj
 			else:
 				insidegroup = len(track_obj.lanes)>1 and out_fxtype == 'groupreturn'
@@ -58,8 +60,8 @@ def process_r(convproj_obj, out_dawinfo):
 					sep_track_obj.visual.name = tracklanename(sep_track_obj.visual.name, lane_obj.visual.name)
 					sep_track_obj.visual.color.merge(lane_obj.visual.color)
 					sep_track_obj.placements = lane_obj.placements
-					convproj_obj.track_order.append(cvpj_trackid)
-					convproj_obj.track_data[cvpj_trackid] = sep_track_obj
+					cvpj_tracks.order.append(cvpj_trackid)
+					cvpj_tracks.data[cvpj_trackid] = sep_track_obj
 					if insidegroup: sep_track_obj.group = trackid
 
 					if trackroute_sendobj != None: 

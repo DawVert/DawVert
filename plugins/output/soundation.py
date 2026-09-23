@@ -501,11 +501,11 @@ class output_soundation(plugins.base):
 		soundation_obj.loopStart = int(convproj_obj.transport.loop_start)
 		soundation_obj.loopEnd = int(convproj_obj.transport.loop_end)
 
-		iseffectexists = 'fx' in [convproj_obj.track_data[x].type for x in convproj_obj.track_order]
+		iseffectexists = 'fx' in [cvpj_tracks.data[x].type for x in cvpj_tracks.order]
 
 		if iseffectexists:
 			for trackid, sends_obj in convproj_obj.trackroute.items():
-				tracksendnum = convproj_obj.track_order.index(trackid)
+				tracksendnum = cvpj_tracks.order.index(trackid)
 	
 				for target, send_obj in sends_obj.iter():
 
@@ -522,7 +522,7 @@ class output_soundation(plugins.base):
 
 					if (exists_1 or exists_2) and iseffectexists != 'fx': 
 						pan = send_obj.params.get('pan', 0).value
-						trackrecnum = convproj_obj.track_order.index(target)
+						trackrecnum = cvpj_tracks.order.index(target)
 						soundation_effect = proj_soundation.soundation_device(None)
 						soundation_effect.identifier = 'com.soundation.send'
 						soundation_effect.params.add('send', amount, [])

@@ -43,11 +43,13 @@ class song_compat:
 		self.tempostore = None
 
 	def process_part(self, process_name, classname, convproj_obj, cvpj_type, in_compat, out_compat, out_type, dawvert_intent):
+		cvpj_tracks = convproj_obj.tracks
+
 		if process_name not in self.finished_processes:
 
 			if DEBUG_BEF_AFT_TRACKS:
 				print(process_name)
-				for n, x in convproj_obj.track_data.items():
+				for n, x in cvpj_tracks.data.items():
 					x.debugtxt_placements(n)
 
 			#if classname.process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
@@ -56,7 +58,7 @@ class song_compat:
 
 			if DEBUG_BEF_AFT_TRACKS:
 				print(process_name, 'after')
-				for n, x in convproj_obj.track_data.items():
+				for n, x in cvpj_tracks.data.items():
 					x.debugtxt_placements(n)
 
 	def makecompat(self, convproj_obj, cvpj_type, in_dawinfo, out_dawinfo, out_type, dawvert_intent):

@@ -82,6 +82,6 @@ def convert(convproj_obj, change_instnames):
 			for plugid in useable_plugins:
 				convproj_obj.plugins[plugid] = useable_plugins[plugid]
 
-	convproj_obj.track_data = {}
-	convproj_obj.track_order = []
+	cvpj_tracks.data = {}
+	cvpj_tracks.order = []
 	convproj_obj.type = 'm'

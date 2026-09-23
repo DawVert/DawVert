@@ -16,11 +16,13 @@ class to_numdata:
 				self.output_ids[dest][4].append([self.idnum_return[target], send_amt, send_obj.sendautoid])
 
 	def trackfx_to_numdata_track(self, convproj_obj, trackid, ingroupnum):
+		cvpj_tracks = convproj_obj.tracks
+
 		if ingroupnum == None: self.output_ids.append([self.tracknum, 'track', trackid, [-1, 1, None], []  ])
 		else: self.output_ids.append([self.tracknum, 'track', trackid, [ingroupnum, 1, None], []  ])
 		self.idnum_tracks[trackid] = self.tracknum
 
-		track_obj = convproj_obj.track_data[trackid]
+		track_obj = cvpj_tracks.data[trackid]
 		self.tracknum = self.idnum_tracks[trackid]
 		self.trackfx_to_numdata_send_from_return(self.tracknum, track_obj.sends)
 		self.tracknum += 1

@@ -169,7 +169,7 @@ class input_greysound(plugins.base):
 
 			gs_trackids[gs_track.id] = track_obj
 
-		convproj_obj.track_order = [str(trackorder[x]) for x in sorted(trackorder)]
+		cvpj_tracks.order = [str(trackorder[x]) for x in sorted(trackorder)]
 
 		# ---------- clips ----------
 		for clip in session_obj.clips:

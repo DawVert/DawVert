@@ -61,6 +61,7 @@ def convert(convproj_obj):
 
 	convproj_obj.automation.move_everything(['track'], ['inst'])
 
-	convproj_obj.track_data = {}
-	convproj_obj.track_order = []
+	cvpj_tracks = convproj_obj.tracks
+	cvpj_tracks.data = {}
+	cvpj_tracks.order = []
 	convproj_obj.type = 'm'

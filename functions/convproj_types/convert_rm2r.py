@@ -21,7 +21,7 @@ def convert(convproj_obj):
 
 	convproj_obj.instruments_order = []
 
-	old_track_order = convproj_obj.track_order.copy()
+	old_track_order = cvpj_tracks.order.copy()
 
 	for _, track_obj in convproj_obj.groups.items():
 		for x in track_obj.plugslots.slots_audio:
@@ -77,8 +77,8 @@ def convert(convproj_obj):
 			nonmultitrack.append([trackid, track_obj])
 
 	for x in old_track_order:
-		convproj_obj.track_order.remove(x)
-		del convproj_obj.track_data[x]
+		cvpj_tracks.order.remove(x)
+		del cvpj_tracks.data[x]
 
 	for xc, trackdata in splitted_trks.items():
 
@@ -89,12 +89,12 @@ def convert(convproj_obj):
 			if track_pls: track_obj.placements.pl_notes.data = track_pls
 			if track_nl: track_obj.placements.notelist = track_nl
 
-			convproj_obj.track_data[cvpj_trackid] = track_obj
-			convproj_obj.track_order.append(cvpj_trackid)
+			cvpj_tracks.data[cvpj_trackid] = track_obj
+			cvpj_tracks.order.append(cvpj_trackid)
 
 	for trackid, track_obj in nonmultitrack:
-		convproj_obj.track_data[trackid] = track_obj
-		convproj_obj.track_order.append(trackid)
+		cvpj_tracks.data[trackid] = track_obj
+		cvpj_tracks.order.append(trackid)
 
 		for fxid in track_obj.plugslots.slots_audio:
 			used_plugins.append(fxid)

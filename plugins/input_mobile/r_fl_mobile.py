@@ -308,7 +308,7 @@ class input_fl_mobile(plugins.base):
 								time_obj = autopl_obj.time
 								time_obj.set_posdur(startpos, maxdur)
 								time_obj.set_loop_data(flm_clip.cut_start%flm_clip.loop_end, 0, flm_clip.loop_end)
-		convproj_obj.track_order = [sorttracks[x] for x in sorted(list(sorttracks))]
+		cvpj_tracks.order = [sorttracks[x] for x in sorted(list(sorttracks))]
 
 def extract_audio(audioname, zip_data):
 	audio_filename = None

@@ -36,6 +36,7 @@ def list2fxrack(convproj_obj, data_obj, fxnum, defualtname, starttext, removebot
 
 def process_r(convproj_obj):
 	fxrack_obj = convproj_obj.fxrack
+	cvpj_tracks = convproj_obj.tracks
 	if not fxrack_obj:
 		t2m = trackfx_to_numdata.to_numdata()
 		output_ids = t2m.trackfx_to_numdata(convproj_obj, 1)
@@ -56,7 +57,7 @@ def process_r(convproj_obj):
 
 			if output_id[1] == 'track':
 				fxnum = output_id[0]+1
-				track_obj = convproj_obj.track_data[output_id[2]]
+				track_obj = cvpj_tracks.data[output_id[2]]
 				fxchannel_obj = list2fxrack(convproj_obj, track_obj, fxnum, '', '', False, ['track',output_id[2]])
 				track_obj.fxrack_channel = output_id[0]+1
 				if not track_obj.placements.is_indexed:

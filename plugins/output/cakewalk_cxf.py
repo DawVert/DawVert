@@ -277,12 +277,14 @@ def do_tracks(convproj_obj, project_obj, current_grouptab, ids_obj):
 
 class stored_vals():
 	def __init__(self, convproj_obj):
+		cvpj_tracks = convproj_obj.tracks
+
 		self.track_order = data_values.counter(0)
 		self.songid = str(uuid.uuid4())
 		self.master_returns = convproj_obj.track_master.returns
 		self.groupids = dict([[x, str(uuid.uuid4())] for x in convproj_obj.groups])
 		self.returnids = dict([[x, str(uuid.uuid4())] for x in self.master_returns])
-		self.trackids = dict([[x, str(uuid.uuid4())] for x in convproj_obj.track_data])
+		self.trackids = dict([[x, str(uuid.uuid4())] for x in cvpj_tracks.data])
 		self.filename = str(uuid.uuid4())
 		self.mainBusId = str(uuid.uuid4())
 		self.audiodeviceid = str(uuid.uuid4())

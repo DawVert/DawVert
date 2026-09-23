@@ -148,7 +148,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 
 			if output_id[1] == 'track':
 				fxnum = output_id[0]+1
-				track_obj = convproj_obj.track_data[output_id[2]]
+				track_obj = cvpj_tracks.data[output_id[2]]
 				fxchannel_obj = track2fxrack(convproj_obj, track_obj, fxnum, '', '', True, ['track',output_id[2]])
 				track_obj.fxrack_channel = output_id[0]+1
 				track_obj.placements.add_fxrack_channel(fxnum)
@@ -204,7 +204,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 				if fx_num in routedatas:
 					group_obj.group = 'fxrack_'+str(routedatas[fx_num])
 
-				cvpjtrackdata = convproj_obj.track_data
+				cvpjtrackdata = cvpj_tracks.data
 				colors = []
 				for x in fx_trackids[fx_num]:
 					track_obj = cvpjtrackdata[x]
@@ -226,11 +226,11 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 				fxtracks = fx_trackids[fx_num]
 				if fxchannel_obj.visual.name: group_obj.visual.name = fxchannel_obj.visual.name
 				elif len(fxtracks) == 1: 
-					track_obj = convproj_obj.track_data[fxtracks[0]]
+					track_obj = cvpj_tracks.data[fxtracks[0]]
 					if track_obj.visual.name: group_obj.visual.name = track_obj.visual.name+' [FX '+str(fx_num)+']'
 					else: group_obj.visual.name = 'FX '+str(fx_num)
 				else: 
-					allnames = [(convproj_obj.track_data[x].visual.name.split(' #')[0] if convproj_obj.track_data[x].visual.name else '') for x in fxtracks]
+					allnames = [(cvpj_tracks.data[x].visual.name.split(' #')[0] if cvpj_tracks.data[x].visual.name else '') for x in fxtracks]
 					if all(x == allnames[0] for x in allnames) and allnames: 
 						group_obj.visual.name = allnames[0]+' [FX '+str(fx_num)+']' if allnames[0] else 'FX '+str(fx_num)
 					else: group_obj.visual.name = 'FX '+str(fx_num)
@@ -250,7 +250,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		if DEBUGTXT: print('FX CHANGE PROCESS 6')
 		fxrack_obj.remove_unused()
 
-		for trackid in convproj_obj.track_order: convproj_obj.fx__route__add(trackid)
+		for trackid in cvpj_tracks.order: convproj_obj.fx__route__add(trackid)
 
 		move_fx0_to_mastertrack(convproj_obj)
 
@@ -304,15 +304,15 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 
 			for n, d in fx_obj.sends.data.items(): convproj_obj.trackroute['fxrack_'+str(fxnum)].data['fxrack_'+str(n)] = d
 
-		convproj_obj.track_order = []
+		cvpj_tracks.order = []
 		for fxnum, ids in fx_trackids.items():
-			convproj_obj.track_order.append('fxrack_'+str(fxnum))
-			for sid in ids: convproj_obj.track_order.append(sid)
+			cvpj_tracks.order.append('fxrack_'+str(fxnum))
+			for sid in ids: cvpj_tracks.order.append(sid)
 			used_fxchans.remove(fxnum)
 
-		for sid in nofx_trackids: convproj_obj.track_order.append(sid)
+		for sid in nofx_trackids: cvpj_tracks.order.append(sid)
 
-		for fxnum in used_fxchans: convproj_obj.track_order.append('fxrack_'+str(fxnum))
+		for fxnum in used_fxchans: cvpj_tracks.order.append('fxrack_'+str(fxnum))
 		convproj_obj.fxtype = 'route'
 		return True
 
@@ -320,7 +320,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		if DEBUGTXT: print('FX CHANGE PROCESS 7')
 
 		if not convproj_obj.trackroute:
-			for t in convproj_obj.track_order:
+			for t in cvpj_tracks.order:
 				convproj_obj.fx__route__add(t)
 
 		fx_trackids = {}
@@ -333,7 +333,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 				track_obj.group = 'group_'+firstsend
 
 		for trackid, track_obj in fx_trackids.items():
-			track_obj = convproj_obj.track_data[trackid]
+			track_obj = cvpj_tracks.data[trackid]
 			group_obj = convproj_obj.fx__group__add('group_'+trackid)
 			group_obj.visual = track_obj.visual.copy()
 			group_obj.plugslots.slots_audio = track_obj.plugslots.slots_audio
@@ -348,11 +348,11 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		tracknums = {}
 
 		if not convproj_obj.trackroute:
-			for t in convproj_obj.track_order:
+			for t in cvpj_tracks.order:
 				convproj_obj.fx__route__add(t)
 
-		for num, trackid in enumerate(convproj_obj.track_order): 
-			track_obj = convproj_obj.track_data[trackid]
+		for num, trackid in enumerate(cvpj_tracks.order): 
+			track_obj = cvpj_tracks.data[trackid]
 			tracknums[trackid] = num+1
 
 		for trackid, track_obj in cvpj_tracks.iter():
@@ -379,10 +379,10 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 
 		newtrackids = [t+'_'+i for t, i, g in strgrptrk]
 
-		old_track_data = convproj_obj.track_data
+		old_track_data = cvpj_tracks.data
 
-		convproj_obj.track_data = {}
-		convproj_obj.track_order = []
+		cvpj_tracks.data = {}
+		cvpj_tracks.order = []
 
 		num = 0
 		for t, i, g in strgrptrk:
@@ -419,8 +419,8 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 					send_obj = trackr.add('RETURN_'+i, None, x.params.get('amount', 0).value)
 					send_obj.sendautoid = x.sendautoid
 
-				convproj_obj.track_data[oi] = track_obj
-				convproj_obj.track_order.append(oi)
+				cvpj_tracks.data[oi] = track_obj
+				cvpj_tracks.order.append(oi)
 
 				convproj_obj.automation.move(['track',i,'vol'], ['track',oi,'vol'])
 				convproj_obj.automation.move(['track',i,'pan'], ['track',oi,'pan'])

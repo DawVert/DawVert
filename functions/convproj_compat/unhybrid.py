@@ -4,12 +4,14 @@
 from functions import data_values
 
 def process_r(convproj_obj):
-	org_track_data = convproj_obj.track_data
-	org_track_order = convproj_obj.track_order
+	cvpj_tracks = convproj_obj.tracks
+
+	org_track_data = cvpj_tracks.data
+	org_track_order = cvpj_tracks.order
 	org_trackroute = convproj_obj.trackroute
 
-	convproj_obj.track_order = []
-	convproj_obj.track_data = {}
+	cvpj_tracks.order = []
+	cvpj_tracks.data = {}
 	convproj_obj.trackroute = {}
 
 	#for i, x in org_track_data.items():
@@ -39,33 +41,33 @@ def process_r(convproj_obj):
 				if if_notes:
 					trackid_s = trackid+'_unhybrid_notes'
 					n_track_obj.type = 'instrument'
-					convproj_obj.track_order.append(trackid_s)
-					convproj_obj.track_data[trackid_s] = n_track_obj
+					cvpj_tracks.order.append(trackid_s)
+					cvpj_tracks.data[trackid_s] = n_track_obj
 					if trackroute_sendobj != None: convproj_obj.trackroute[trackid_s] = trackroute_sendobj
 					convproj_obj.automation.copy_everything(['track', trackid], ['track', trackid_s])
 
 				if if_audio:
 					trackid_s = trackid+'_unhybrid_audio'
 					a_track_obj.type = 'audio'
-					convproj_obj.track_order.append(trackid_s)
-					convproj_obj.track_data[trackid_s] = a_track_obj
+					cvpj_tracks.order.append(trackid_s)
+					cvpj_tracks.data[trackid_s] = a_track_obj
 					if trackroute_sendobj != None: convproj_obj.trackroute[trackid_s] = trackroute_sendobj
 					convproj_obj.automation.copy_everything(['track', trackid], ['track', trackid_s])
 
 				if if_video:
 					trackid_s = trackid+'_unhybrid_video'
 					v_track_obj.type = 'video'
-					convproj_obj.track_order.append(trackid_s)
-					convproj_obj.track_data[trackid_s] = v_track_obj
+					cvpj_tracks.order.append(trackid_s)
+					cvpj_tracks.data[trackid_s] = v_track_obj
 
 				#if not (if_audio and if_notes):
 				#	n_track_obj.type = 'instrument'
-				#	convproj_obj.track_order.append(trackid)
-				#	convproj_obj.track_data[trackid] = n_track_obj
+				#	cvpj_tracks.order.append(trackid)
+				#	cvpj_tracks.data[trackid] = n_track_obj
 				#	if trackroute_sendobj != None: convproj_obj.trackroute[trackid] = trackroute_sendobj
 			else:
-				convproj_obj.track_order.append(trackid)
-				convproj_obj.track_data[trackid] = track_obj
+				cvpj_tracks.order.append(trackid)
+				cvpj_tracks.data[trackid] = track_obj
 
 	return True
 

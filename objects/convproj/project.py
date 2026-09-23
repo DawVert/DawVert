@@ -200,6 +200,13 @@ class cvpj_project_tracks:
 	def __contains__(self, k):
 		return self.data.__contains__(k)
 
+	def change_timings(self, time_ppq):
+		for p in self.data: 
+			track_data = self.data[p]
+			track_data.change_timings(time_ppq)
+			for e in track_data.notelist_index: 
+				track_data.notelist_index[e].notelist.change_timings(time_ppq)
+
 	def clear(self):
 		self.data = {}
 		self.order = []
@@ -513,11 +520,7 @@ class cvpj_project:
 
 	def change_timings(self, time_ppq):
 		logger_project.info('Changing Timings from '+str(self.time_ppq)+' to '+str(time_ppq))
-		for p in self.track_data: 
-			track_data = self.track_data[p]
-			track_data.change_timings(time_ppq)
-			for e in track_data.notelist_index: 
-				track_data.notelist_index[e].notelist.change_timings(time_ppq)
+		self.tracks.change_timings(time_ppq)
 		for p in self.playlist: self.playlist[p].change_timings(time_ppq)
 		for _, n in self.notelist_index.items(): 
 			n.notelist.change_timings(time_ppq)
