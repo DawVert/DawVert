@@ -61,6 +61,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 	track_master = convproj_obj.track_master
 
 	cvpj_tracks = convproj_obj.tracks
+	cvpj_groups = convproj_obj.groups
 	
 	logger_compat.info('fxchange: '+in_fxtype+' > '+str(out_fxtype)+' - Proj Type: '+convproj_obj.type)
 
@@ -82,7 +83,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 	if ('none' in out_fxtype) or (not out_fxtype):
 		if DEBUGTXT: print('FX CHANGE PROCESS 1')
 		fxrack_obj.clear()
-		convproj_obj.fx__group__clear()
+		cvpj_groups.clear()
 		convproj_obj.fx__route__clear()
 		convproj_obj.fx__return__clear()
 		for trackid, track_obj in cvpj_tracks.iter():
@@ -199,7 +200,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 				fxchannel_obj = fxrack_obj[fx_num]
 				fxchannel_obj.sends = {}
 				groupid = 'fxrack_'+str(fx_num)
-				group_obj = convproj_obj.fx__group__add(groupid)
+				group_obj = cvpj_groups.add(groupid)
 
 				if fx_num in routedatas:
 					group_obj.group = 'fxrack_'+str(routedatas[fx_num])
@@ -334,7 +335,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 
 		for trackid, track_obj in fx_trackids.items():
 			track_obj = cvpj_tracks.data[trackid]
-			group_obj = convproj_obj.fx__group__add('group_'+trackid)
+			group_obj = cvpj_groups.add('group_'+trackid)
 			group_obj.visual = track_obj.visual.copy()
 			group_obj.plugslots.slots_audio = track_obj.plugslots.slots_audio
 			group_obj.plugslots.slots_mixer = track_obj.plugslots.slots_mixer
@@ -375,7 +376,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		if DEBUGTXT: print('FX CHANGE PROCESS 9')
 
 		convproj_obj.fx__route__clear()
-		strgrptrk = convproj_obj.group__iter_stream_inside()
+		strgrptrk = cvpj_groups.iter_stream_inside()
 
 		newtrackids = [t+'_'+i for t, i, g in strgrptrk]
 
@@ -394,7 +395,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 				trackr.to_master_active = False
 
 			if t == 'GROUP':
-				group_obj = convproj_obj.fx__group__get(i)
+				group_obj = cvpj_groups.get(i)
 				track_obj = cvpj_tracks.add(oi, 'fx', 1, 0)
 				track_obj.visual = group_obj.visual.copy()
 				track_obj.params = group_obj.params
@@ -440,7 +441,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 					send_obj = trackr.add('RETURN_'+i, None, x.params.get('amount', 0).value)
 					send_obj.sendautoid = x.sendautoid
 
-		convproj_obj.fx__group__clear()
+		cvpj_groups.clear()
 		convproj_obj.fxtype = 'route'
 		return True
 		

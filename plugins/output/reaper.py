@@ -758,6 +758,7 @@ class output_reaper(plugins.base):
 		from objects.file_proj._rpp import source as rpp_source
 
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 		
 		global reaper_tempo
 		global datadef_obj
@@ -870,7 +871,7 @@ class output_reaper(plugins.base):
 			track_group = {}
 			track_nongroup = []
 	
-			for groupid, group_obj in convproj_obj.fx__group__iter():
+			for groupid, group_obj in cvpj_groups.iter():
 				if group_obj.group:
 					if group_obj.group not in track_group: track_group[group_obj.group] = []
 					track_group[group_obj.group].append(['GROUP', groupid])
@@ -950,7 +951,7 @@ class output_reaper(plugins.base):
 					track_data[i] = rpp_track_obj
 
 				if t == 'GROUP': 
-					track_obj = convproj_obj.fx__group__get(i)
+					track_obj = cvpj_groups.get(i)
 					rpp_track_obj = do_track(rpp_project, convproj_obj, track_obj, ['group', i], group_uuids[i])
 					rpp_track_obj.buscomp['folderviewmode'] = 1 if track_obj.visual_track.group_expanded else 2
 					group_nums[i] = tracknum

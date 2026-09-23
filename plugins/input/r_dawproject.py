@@ -167,6 +167,7 @@ def do_tracks(convproj_obj, dp_tracks, groupid):
 	global trackdata
 	
 	cvpj_tracks = convproj_obj.tracks
+	cvpj_groups = convproj_obj.groups
 
 	for dp_track in dp_tracks:
 		dp_channel = dp_track.channel
@@ -201,7 +202,7 @@ def do_tracks(convproj_obj, dp_tracks, groupid):
 			if dp_channel.solo: track_obj.params.add('solo', dp_channel.solo=='true', 'bool')
 
 		if dp_track.contentType == 'tracks' and dp_channel.role == 'master': 
-			track_obj = convproj_obj.fx__group__add(dp_track.id)
+			track_obj = cvpj_groups.add(dp_track.id)
 			do_visual(track_obj, dp_track)
 			do_params(convproj_obj, dp_channel, track_obj.params, ['group', dp_track.id])
 			do_tracks(convproj_obj, dp_track.tracks, dp_track.id)

@@ -261,6 +261,71 @@ class cvpj_project_tracks:
 		for n in sorted(sortpos):
 			for i in sortpos[n]: self.order += i
 
+class cvpj_project_groups:
+	def __init__(self, mainproject):
+		self.data = {}
+		self.mainproject = mainproject
+
+	def __getitem__(self, k):
+		return self.data.__getitem__(k)
+
+	def __contains__(self, k):
+		return self.data.__contains__(k)
+
+	def add(self, groupid):
+		logger_project.info('Group - '+groupid)
+		self.data[groupid] = tracks.cvpj_track('group', self.time_ppq, False, False)
+		return self.data[groupid]
+
+	def get(self, groupid):
+		return self.data[groupid] if groupid in self.data else None
+
+	def iter(self):
+		for groupid, group_obj in self.data.items():
+			yield groupid, group_obj
+
+	def clear(self):
+		self.data = {}
+
+	def count_usage(self):
+		groupcount = [x.group for _, x in self.data.items() if x.group != None]
+		groupcount += [x.group for _, x in self.mainproject.tracks.data.items() if x.group != None]
+		return list(Counter(groupcount))
+
+	def remove_unused(self):
+		groupcount = self.count_usage()
+		unusedgroups = [x for x in list(self.data) if x not in groupcount]
+		for x in unusedgroups: del self.data[x]
+
+	def iter_inside(self):
+		groups_assoc = groupassoc()
+
+		for groupid, track_obj in self.iter():
+			groups_assoc.add_part(groupid, track_obj.group)
+
+		for groupid, insidegroup in groups_assoc.iter(None):
+			yield groupid, insidegroup
+
+	def iter_stream_inside(self):
+		track_group = {}
+		track_nongroup = []
+
+		for groupid, group_obj in self.iter():
+			if group_obj.group:
+				if group_obj.group not in track_group: track_group[group_obj.group] = []
+				track_group[group_obj.group].append(['GROUP', groupid])
+			else: track_nongroup.append(['GROUP', groupid])
+
+		for trackid, track_obj in self.mainproject.tracks.iter():
+			if track_obj.group: 
+				if track_obj.group not in track_group: track_group[track_obj.group] = []
+				track_group[track_obj.group].append(['TRACK', trackid])
+			else: track_nongroup.append(['TRACK', trackid])
+
+		outl = []
+		routetrackord(track_nongroup, track_group, outl, None)
+		return outl
+
 class cvpj_project:
 	def __init__(self):
 		self.id = 'global'
@@ -278,8 +343,8 @@ class cvpj_project:
 
 		# tracks
 		self.tracks = cvpj_project_tracks(self)
-		self.track_data = {}
-		self.track_order = []
+		self.tracks.data = {}
+		self.tracks.order = []
 		self.track_master = tracks.cvpj_track('master', self.time_ppq, False, False)
 
 		# markers and automation
@@ -329,7 +394,7 @@ class cvpj_project:
 
 		# ------------------- fxtype -------------------
 		# groupreturn
-		self.groups = {}
+		self.groups = cvpj_project_groups()
 		self.track_returns = {}
 
 		# fxrack
@@ -349,16 +414,16 @@ class cvpj_project:
 
 	def main__sort_tracks(self):
 		sortpos = {}
-		for track_id, track_data in self.track_data.items():
+		for track_id, track_data in self.tracks.data.items():
 			trackstart = track_data.placements.get_start()
 			if trackstart not in sortpos: sortpos[trackstart] = []
 			sortpos[trackstart].append([track_id])
-		self.track_order = []
+		self.tracks.order = []
 		for n in sorted(sortpos):
-			for i in sortpos[n]: self.track_order += i
+			for i in sortpos[n]: self.tracks.order += i
 
 	def main__do_lanefit(self):
-		for trackid, track_obj in self.track_data.items():
+		for trackid, track_obj in self.tracks.data.items():
 			oldnum = len(track_obj.lanes)
 			track_obj.lanefit()
 			logger_project.info('LaneFit: '+ trackid+': '+str(oldnum)+' > '+str(len(track_obj.lanes)))
@@ -544,8 +609,8 @@ class cvpj_project:
 
 	def get_dur(self):
 		duration_final = 0
-		for p in self.track_data: 
-			track_data = self.track_data[p]
+		for p in self.tracks.data: 
+			track_data = self.tracks.data[p]
 			trk_dur = track_data.placements.get_dur()
 			if duration_final < trk_dur: duration_final = trk_dur
 		for p in self.playlist: 
@@ -564,37 +629,6 @@ class cvpj_project:
 		if self.time_tempocalc.auto_found>=0:
 			for x in self.iter__placements_obj():
 				x.do_tempo(self.time_tempocalc)
-
-# --------------------------------------------------------- GROUPS ---------------------------------------------------------
-
-	def group__iter_inside(self):
-		groups_assoc = groupassoc()
-
-		for groupid, track_obj in self.groups.items():
-			groups_assoc.add_part(groupid, track_obj.group)
-
-		for groupid, insidegroup in groups_assoc.iter(None):
-			yield groupid, insidegroup
-
-	def group__iter_stream_inside(self):
-		track_group = {}
-		track_nongroup = []
-
-		for groupid, group_obj in self.fx__group__iter():
-			if group_obj.group:
-				if group_obj.group not in track_group: track_group[group_obj.group] = []
-				track_group[group_obj.group].append(['GROUP', groupid])
-			else: track_nongroup.append(['GROUP', groupid])
-
-		for trackid, track_obj in self.tracks.iter():
-			if track_obj.group: 
-				if track_obj.group not in track_group: track_group[track_obj.group] = []
-				track_group[track_obj.group].append(['TRACK', trackid])
-			else: track_nongroup.append(['TRACK', trackid])
-
-		outl = []
-		routetrackord(track_nongroup, track_group, outl, None)
-		return outl
 
 # --------------------------------------------------------- SCENE ---------------------------------------------------------
 
@@ -636,43 +670,6 @@ class cvpj_project:
 			prevtimesig = temptimesig
 			currentpos += PatternLengthPart
 			blockcount += 1
-
-# --------------------------------------------------------- TRACKS ---------------------------------------------------------
-
-	def track__clear(self):
-		self.track_data = {}
-		self.track_order = []
-
-	def track__del(self, trackid):
-		if trackid in self.track_data: del self.track_data[trackid]
-		if trackid in self.track_order: self.track_order.remove(trackid)
-
-	def track__get(self, trackid):
-		return self.track_data[trackid] if trackid in self.track_data else None
-
-	def track__iter(self):
-		for trackid in self.track_order:
-			if trackid in self.track_data: yield trackid, self.track_data[trackid]
-
-	def track__iter_num(self):
-		num = 0
-		for trackid in self.track_order:
-			if trackid in self.track_data: 
-				yield num, trackid, self.track_data[trackid]
-				num += 1
-
-	def track__add_scene(self, i_track, i_sceneid, i_lane):
-		if i_track in self.track_data: return self.track_data[i_track].scene__add(i_sceneid, i_lane)
-		else: return None
-
-	def track__add(self, track_id, tracktype, uses_placements, is_indexed):
-		logger_project.info('Track '+('NoPl' if not uses_placements else 'w/Pl')+(' + Indexed' if is_indexed else '')+' - '+track_id)
-		self.track_data[track_id] = tracks.cvpj_track(tracktype, self.time_ppq, uses_placements, is_indexed)
-		self.track_order.append(track_id)
-		return self.track_data[track_id]
-
-	def track__count(self):
-		return len(self.track_order)
 
 # --------------------------------------------------------- AUTOMATION ---------------------------------------------------------
 
@@ -765,33 +762,6 @@ class cvpj_project:
 
 	def fx__route__clear(self):
 		self.trackroute = {}
-
-
-	def fx__group__add(self, groupid):
-		logger_project.info('Group - '+groupid)
-		self.groups[groupid] = tracks.cvpj_track('group', self.time_ppq, False, False)
-		return self.groups[groupid]
-
-	def fx__group__get(self, groupid):
-		return self.groups[groupid] if groupid in self.groups else None
-
-	def fx__group__iter(self):
-		for groupid, group_obj in self.groups.items():
-			yield groupid, group_obj
-
-	def fx__group__clear(self):
-		self.groups = {}
-
-	def fx__group__count_usage(self):
-		groupcount = [x.group for _, x in self.groups.items() if x.group != None]
-		groupcount += [x.group for _, x in self.track_data.items() if x.group != None]
-		return list(Counter(groupcount))
-
-	def fx__group__remove_unused(self):
-		groupcount = self.fx__group__count_usage()
-		unusedgroups = [x for x in list(self.groups) if x not in groupcount]
-		for x in unusedgroups: del self.groups[x]
-
 
 	def fx__return__add(self, track_id):
 		self.track_returns[track_id] = tracks.cvpj_track('return', self.time_ppq, False, False)
@@ -974,7 +944,7 @@ class cvpj_project:
 # --------------------------------------------------------- ITER ---------------------------------------------------------
 
 	def iter__placements_obj(self):
-		for _, track_obj in self.track_data.items():
+		for _, track_obj in self.tracks.data.items():
 			yield track_obj.placements
 			for _, lane_obj in track_obj.lanes.items():
 				yield lane_obj.placements

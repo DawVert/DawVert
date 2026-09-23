@@ -63,6 +63,7 @@ class input_acid_old(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 
 		# ---------- convproj params ----------
 		groupby = dawvert_intent.input_get_param('groupby', 'none')
@@ -362,7 +363,7 @@ class input_acid_old(plugins.base):
 				if group_isdrum:
 					if len(tn_melodic)>3:
 						if len(tn_drum)>1:
-							track_obj = convproj_obj.fx__group__add('drums')
+							track_obj = cvpj_groups.add('drums')
 							track_obj.visual.name = 'Drums/SFX'
 							for x in tn_drum: tracks[x].group = 'drums'
 
@@ -371,7 +372,7 @@ class input_acid_old(plugins.base):
 						v = [x for x in v if x in tn_melodic]
 						if len(v)>1:
 							groupid = str(k)
-							track_obj = convproj_obj.fx__group__add(groupid)
+							track_obj = cvpj_groups.add(groupid)
 							track_obj.visual.name = tracks[v[0]].visual.name
 							for x in v: tracks[x].group = groupid
 
@@ -379,7 +380,7 @@ class input_acid_old(plugins.base):
 			if grouptype=='sample':
 				for k, v in group_samp.items():
 					groupid = str(k)
-					track_obj = convproj_obj.fx__group__add(groupid)
+					track_obj = cvpj_groups.add(groupid)
 					if len(v)>1:
 						track_obj.visual.name = tracks[v[0]].visual.name
 						for x in v: tracks[x].group = groupid
@@ -388,12 +389,12 @@ class input_acid_old(plugins.base):
 				tn_melodic, tn_drum = group_isdrum
 
 				if len(tn_melodic)>1:
-					track_obj = convproj_obj.fx__group__add('melody')
+					track_obj = cvpj_groups.add('melody')
 					track_obj.visual.name = 'Melody'
 					for x in tn_melodic: tracks[x].group = 'melody'
 
 				if len(tn_drum)>1:
-					track_obj = convproj_obj.fx__group__add('drums')
+					track_obj = cvpj_groups.add('drums')
 					track_obj.visual.name = 'Drums/SFX'
 					for x in tn_drum: tracks[x].group = 'drums'
 

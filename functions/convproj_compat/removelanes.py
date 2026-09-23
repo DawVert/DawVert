@@ -14,6 +14,7 @@ def tracklanename(trackname, lanename):
 
 def process_r(convproj_obj, out_dawinfo):
 	cvpj_tracks = convproj_obj.tracks
+	cvpj_groups = convproj_obj.groups
 	
 	org_track_data = cvpj_tracks.data
 	org_track_order = cvpj_tracks.order
@@ -39,7 +40,7 @@ def process_r(convproj_obj, out_dawinfo):
 				insidegroup = len(track_obj.lanes)>1 and out_fxtype == 'groupreturn'
 
 				if insidegroup:
-					group_obj = convproj_obj.fx__group__add(trackid)
+					group_obj = cvpj_groups.add(trackid)
 					group_obj.visual = copy.deepcopy(track_obj.visual)
 					for paramid in track_obj.params.list():
 						track_obj.params.move(group_obj.params, paramid)

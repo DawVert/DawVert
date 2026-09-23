@@ -52,6 +52,7 @@ class input_orgyana(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 
 		# ---------- convproj params ----------
 		use_groups = dawvert_intent.input_get_param('use_groups', True)
@@ -162,7 +163,7 @@ class input_orgyana(plugins.base):
 		if use_groups:
 			convproj_obj.fxtype = 'groupreturn'
 
-			track_obj = convproj_obj.fx__group__add('drums')
+			track_obj = cvpj_groups.add('drums')
 			track_obj.visual.name = 'Drums/SFX'
 			
 			for track_obj in drum_tracks:

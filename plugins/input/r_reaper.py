@@ -190,6 +190,7 @@ class input_reaper(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -860,7 +861,7 @@ class input_reaper(plugins.base):
 				bus_depth = rpp_track_obj.isbus['depth']
 				if bus_state == 1:
 					#print('--- group add:', cvpj_trackid)
-					group_obj = convproj_obj.fx__group__add(cvpj_trackid)
+					group_obj = cvpj_groups.add(cvpj_trackid)
 					group_obj.visual = track_obj.visual
 					group_obj.params = track_obj.params
 					group_obj.plugslots = track_obj.plugslots

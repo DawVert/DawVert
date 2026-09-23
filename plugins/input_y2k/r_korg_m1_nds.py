@@ -43,6 +43,7 @@ class input_korg_m1_nds(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 
 		# ---------- convproj params ----------
 		no_swing = dawvert_intent.input_get_param('no_swing', False)
@@ -164,7 +165,7 @@ class input_korg_m1_nds(plugins.base):
 			for k, v in grouptrks.items():
 				if len(v)>1:
 					groupid = str(groupnum)
-					track_obj = convproj_obj.fx__group__add(groupid)
+					track_obj = cvpj_groups.add(groupid)
 					track_obj.visual.name = k
 					for x in v: x.group = groupid
 					groupnum += 1

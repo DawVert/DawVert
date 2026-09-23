@@ -200,6 +200,7 @@ class input_acid_3(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 
 		def do_orders_groups(riff_data, track_order, tracks_data, ingroup):
 			if not use_groups: ingroup = None
@@ -213,7 +214,7 @@ class input_acid_3(plugins.base):
 					def_data = regs_chunk.content
 					groupid = 'group_'+str(def_data.idnum)
 					if use_groups: 
-						group_obj = convproj_obj.fx__group__add(groupid)
+						group_obj = cvpj_groups.add(groupid)
 						group_obj.visual.name = def_data.name
 						group_obj.group = ingroup
 						group_obj.params.add('enabled', 4 not in def_data.flags, 'float')

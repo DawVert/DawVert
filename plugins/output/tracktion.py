@@ -382,8 +382,11 @@ def get_plugins(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc,
 
 def make_group(convproj_obj, sampleref_assoc, sampleref_obj_assoc, groupid, groups_data, counter_id, wf_maintrack):
 	from objects.file_proj import tracktion_edit as proj_tracktion_edit
+
+	cvpj_groups = convproj_obj.groups
+
 	if groupid not in groups_data:
-		group_obj = convproj_obj.fx__group__get(groupid)
+		group_obj = cvpj_groups.get(groupid)
 		if group_obj:
 			wf_foldertrack = proj_tracktion_edit.tracktion_foldertrack()
 			wf_foldertrack.expanded = int(group_obj.visual_track.group_expanded)
@@ -436,6 +439,7 @@ class output_tracktion_edit(plugins.base):
 		from objects.file_proj import tracktion_project as proj_tracktion_project
 
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 
 		convproj_obj.change_timings(4.0)
 
@@ -547,7 +551,7 @@ class output_tracktion_edit(plugins.base):
 			auxnums[returnid] = len(auxnums)
 
 		groups_data = {}
-		for groupid, insidegroup in convproj_obj.group__iter_inside():
+		for groupid, insidegroup in cvpj_groups.iter_inside():
 			wf_tracks = project_obj.tracks
 
 			if insidegroup: 

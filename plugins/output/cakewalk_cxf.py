@@ -337,6 +337,7 @@ class output_bandlab(plugins.base):
 		from objects.file_proj import cakewalk_cxf as proj_cakewalk_cxf
 
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 		
 		convproj_obj.change_timings(1.0)
 		
@@ -379,9 +380,9 @@ class output_bandlab(plugins.base):
 
 		#print()
 
-		convproj_obj.fx__group__remove_unused()
+		cvpj_groups.remove_unused()
 
-		for groupid, group_obj in convproj_obj.fx__group__iter():
+		for groupid, group_obj in cvpj_groups.iter():
 			if group_obj.group:
 				if group_obj.group not in ids_obj.track_group: ids_obj.track_group[group_obj.group] = []
 				ids_obj.track_group[group_obj.group].append(['GROUP', groupid, group_obj])

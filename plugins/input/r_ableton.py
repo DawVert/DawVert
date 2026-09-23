@@ -405,6 +405,7 @@ class input_ableton(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 
 		# ---------- convproj params ----------
 		DEBUG_DISABLE_PLACEMENTS = dawvert_intent.input_get_param('no_placements', False)
@@ -711,7 +712,7 @@ class input_ableton(plugins.base):
 				track_pan = doparam(track_mixer.Pan, 'Pan', 'float', 0, fxloc+['pan'], None)
 				track_on = doparam(track_mixer.On, 'On', 'bool', 0, fxloc+['enabled'], None)
 
-				track_obj = convproj_obj.fx__group__add(cvpj_grouptrackid)
+				track_obj = cvpj_groups.add(cvpj_grouptrackid)
 				track_obj.visual.name = track_name
 				track_obj.visual.comment = track_infotxt
 				track_obj.visual.color.from_colorset_num(colordata, int(track_color))

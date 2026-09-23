@@ -130,6 +130,7 @@ class output_magda(plugins.base):
 		from objects.file_proj import magda as proj_magda
 
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 		
 		convproj_obj.change_timings(1.0)
 		
@@ -179,7 +180,7 @@ class output_magda(plugins.base):
 
 				tracknum += 1
 
-			for groupid, group_obj in convproj_obj.fx__group__iter():
+			for groupid, group_obj in cvpj_groups.iter():
 				numassoc_group[groupid] = tracknum
 				objassoc_group[groupid] = group_obj
 				tracknum += 1
@@ -192,7 +193,7 @@ class output_magda(plugins.base):
 			track_group = {}
 			track_nongroup = []
 	
-			for groupid, group_obj in convproj_obj.fx__group__iter():
+			for groupid, group_obj in cvpj_groups.iter():
 				if group_obj.group:
 					if group_obj.group not in track_group: track_group[group_obj.group] = []
 					track_group[group_obj.group].append(['GROUP', groupid])

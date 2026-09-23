@@ -327,8 +327,10 @@ def do_foldertrack(convproj_obj, wf_track, store_obj):
 	software_mode = store_obj.software_mode
 	dawvert_intent = store_obj.dawvert_intent
 
+	cvpj_groups = convproj_obj.groups
+
 	groupid = str(wf_track.id_num)
-	track_obj = convproj_obj.fx__group__add(groupid)
+	track_obj = cvpj_groups.add(groupid)
 	track_obj.visual_track.group_expanded = bool(wf_track.expanded)
 	do_track_visual(wf_track, track_obj.visual)
 	do_track_params(convproj_obj, wf_track, track_obj.params, ['group', groupid])

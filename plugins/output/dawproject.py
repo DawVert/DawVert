@@ -767,6 +767,7 @@ class output_dawproject(plugins.base):
 		global bpm
 
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 		
 		convproj_obj.change_timings(1.0)
 
@@ -792,9 +793,9 @@ class output_dawproject(plugins.base):
 
 		groups_data = {}
 
-		for groupid, insidegroup in convproj_obj.group__iter_inside():
+		for groupid, insidegroup in cvpj_groups.iter_inside():
 			grp_lane_obj = make_lane('group__'+groupid)
-			group_obj = convproj_obj.fx__group__get(groupid)
+			group_obj = cvpj_groups.get(groupid)
 			dp_group = maketrack_group(convproj_obj, group_obj, groupid, grp_lane_obj)
 			make_sends(master_returns, group_obj.sends.data, dp_group, convproj_obj, grp_lane_obj)
 			groups_data[groupid] = dp_group

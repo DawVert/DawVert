@@ -57,6 +57,7 @@ class input_magda(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -152,7 +153,7 @@ class input_magda(plugins.base):
 
 				elif x.type in [2, 3]:
 					route_on = False
-					track_obj = convproj_obj.fx__group__add(cvpj_trackid)
+					track_obj = cvpj_groups.add(cvpj_trackid)
 					track_obj.visual_track.group_expanded = True
 					do_track_base(x, track_obj)
 					numassoc_all[trackid] = ['group', cvpj_trackid]

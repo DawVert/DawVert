@@ -498,9 +498,11 @@ def addgrp(convproj_obj, project_obj, groupid):
 	global colordata
 	global ids_group_cvpj_als
 
+	cvpj_groups = convproj_obj.groups
+
 	ingroupid = None
 	if groupid not in ids_group_cvpj_als:
-		group_obj = convproj_obj.fx__group__get(groupid)
+		group_obj = cvpj_groups.get(groupid)
 		groupnumid = counter_track.get()
 		als_gtrack = project_obj.add_group_track(groupnumid)
 		als_gtrack.TrackUnfolded = int(group_obj.visual_track.group_expanded)
@@ -752,9 +754,11 @@ def add_track(convproj_obj, project_obj, trackid, track_obj):
 	track_obj.placements.pl_notes.sort()
 	track_color = track_obj.visual.color.closest_color_index_int(colordata, NOCOLORNUM)
 
+	cvpj_groups = convproj_obj.groups
+
 	groupnumid = None
 	if track_obj.group:
-		if convproj_obj.fx__group__get(track_obj.group):
+		if cvpj_groups.get(track_obj.group):
 			groupnumid = addgrp(convproj_obj, project_obj, track_obj.group)
 			
 	if track_obj.type == 'instrument':
@@ -1305,6 +1309,7 @@ class output_ableton(plugins.base):
 		global bpm
 
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 		
 		if AUDCLIPVERBOSE:
 			for x in ['cut_type', 'cut_type', 'IsWarped', "Duration",
@@ -1382,9 +1387,9 @@ class output_ableton(plugins.base):
 		track_nongroup = []
 		groups_used = []
 
-		convproj_obj.fx__group__remove_unused()
+		cvpj_groups.remove_unused()
 
-		for groupid, group_obj in convproj_obj.fx__group__iter():
+		for groupid, group_obj in cvpj_groups.iter():
 			if group_obj.group:
 				if group_obj.group not in track_group: track_group[group_obj.group] = []
 				track_group[group_obj.group].append(['GROUP', groupid])

@@ -40,6 +40,7 @@ class input_darwin(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -80,7 +81,7 @@ class input_darwin(plugins.base):
 						for note in dw_clip.notes:
 							cvpj_notelist.add_r(note.startTick, note.durationTicks, note.pitch-60, note.velocity/127, None)
 			else:
-				track_obj = convproj_obj.fx__group__add(str(dw_track.id))
+				track_obj = cvpj_groups.add(str(dw_track.id))
 				track_obj.visual_track.group_expanded = bool(dw_track.folderExpanded)
 				do_track_params(dw_track, track_obj.params)
 				do_track_visual(dw_track, track_obj.visual)

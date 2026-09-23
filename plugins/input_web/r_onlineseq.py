@@ -48,6 +48,7 @@ class input_onlinesequencer(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
 
 		# ---------- convproj params ----------
 		groupby = dawvert_intent.input_get_param('groupby', 'instset')
@@ -247,7 +248,7 @@ class input_onlinesequencer(plugins.base):
 		if groupby=='inst':
 			for k, v in multig.items():
 				if len(v)>groupmin:
-					group_obj = convproj_obj.fx__group__add(str(k))
+					group_obj = cvpj_groups.add(str(k))
 					group_obj.visual.from_datapack('onlineseq', 'inst', str(k), True)
 					for x in v: x.group = str(k)
 
@@ -265,6 +266,6 @@ class input_onlinesequencer(plugins.base):
 			for k, v in catgrp.items():
 				dset_obj = dset_cat_obj.objects.get(str(k))
 				if len(v)>groupmin:
-					group_obj = convproj_obj.fx__group__add(k)
+					group_obj = cvpj_groups.add(k)
 					group_obj.visual.name = k
 					for x in v: x.group = str(k)
