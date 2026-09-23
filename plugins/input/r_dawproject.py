@@ -423,6 +423,8 @@ class input_dawproject(plugins.base):
 		from objects.file_proj import dawproject as proj_dawproject
 		from objects import auto_id
 
+		global zip_data
+		
 		# ---------- file load ----------
 
 		project_obj = proj_dawproject.dawproject_song()
@@ -447,7 +449,6 @@ class input_dawproject(plugins.base):
 		global autoid_assoc
 		global samplefolder
 		global trackdata
-		global zip_data
 
 		trackdata = {}
 		autoid_assoc = auto_id.convproj2autoid(48)
