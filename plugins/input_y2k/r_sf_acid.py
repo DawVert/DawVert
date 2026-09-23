@@ -36,6 +36,12 @@ class input_acid_old(plugins.base):
 		in_dict['projtype'] = 'r'
 
 	def get_configdef(self, configdef):
+		configdef.set_group('visual', 'Visual')
+		cfgpart = configdef.add_enum('colorscheme', 'acid_1', 'Color Scheme')
+		cfgpart.add_choice('acid_1', 'Acid 1/2')
+		cfgpart.add_choice('acid_4', 'Acid 3')
+		cfgpart.add_choice('sdml', 'Super Duper Music Looper')
+
 		configdef.set_group('grouping', 'Grouping')
 		cfgpart = configdef.add_enum('groupby', 'mixed', 'Group By')
 		cfgpart.add_choice('none', 'None')
@@ -52,12 +58,14 @@ class input_acid_old(plugins.base):
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
 		globalstore.datapack.load('sony_acid', './data/datapack/app/sony_acid.xml')
-		colordata = colors.colorset.from_datapack('sony_acid', 'track', 'acid_1')
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
 		# ---------- convproj params ----------
 		groupby = dawvert_intent.input_get_param('groupby', 'none')
+		colorscheme = dawvert_intent.input_get_param('colorscheme', 'acid_1')
+
+		colordata = colors.colorset.from_datapack('sony_acid', 'track', colorscheme)
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'

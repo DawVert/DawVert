@@ -17,6 +17,7 @@ class miniconfmenu_storepart():
 		self.value_def = None
 		self.value_min = None
 		self.value_max = None
+		self.value_step = None
 		self.group = 'main'
 		self.choices = []
 

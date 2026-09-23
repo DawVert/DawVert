@@ -106,8 +106,12 @@ class ConfigWindow(QWidget):
 	def add_control_int(self, name, data):
 		sizePolicy = self.gen_sizePolicy()
 
+		val_lower = data.value_min if data.value_min is not None else -10000
+		val_upper = data.value_max if data.value_max is not None else 10000
+
 		self.control = QSpinBox(self.groupBox)
 		self.control.setObjectName(u"editor_"+name)
+		self.control.setRange(val_lower, val_upper)
 		sizePolicy.setHeightForWidth(self.control.sizePolicy().hasHeightForWidth())
 		self.control.setSizePolicy(sizePolicy)
 		self.temp_layout = self.premake_hl(name, data)
@@ -122,8 +126,14 @@ class ConfigWindow(QWidget):
 	def add_control_float(self, name, data):
 		sizePolicy = self.gen_sizePolicy()
 
+		val_lower = data.value_min if data.value_min is not None else -10000
+		val_upper = data.value_max if data.value_max is not None else 10000
+		val_step = data.value_step if data.value_step is not None else 0.05
+
 		self.control = QDoubleSpinBox(self.groupBox)
 		self.control.setObjectName(u"editor_"+name)
+		self.control.setRange(val_lower, val_upper)
+		self.control.setSingleStep(val_step)
 		sizePolicy.setHeightForWidth(self.control.sizePolicy().hasHeightForWidth())
 		self.control.setSizePolicy(sizePolicy)
 		self.temp_layout = self.premake_hl(name, data)
