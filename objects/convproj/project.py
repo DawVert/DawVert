@@ -242,6 +242,15 @@ class cvpj_project_tracks:
 	def count(self):
 		return len(self.order)
 
+	def addspec__midi(self, track_id, uses_placements, is_indexed, indict):
+		plugin_obj = self.mainproject.plugin__addspec__midi(track_id, indict)
+		plugin_obj.role = 'synth'
+
+		track_obj = self.add(track_id, 'instrument', uses_placements, is_indexed)
+		track_obj.plugslots.set_synth(track_id)
+		track_obj.params.add('usemasterpitch', not m_drum, 'bool')
+		return track_obj, plugin_obj
+
 	def sort(self):
 		sortpos = {}
 		for track_id, track_data in self.data.items():
@@ -664,15 +673,6 @@ class cvpj_project:
 
 	def track__count(self):
 		return len(self.track_order)
-
-	def track__addspec__midi(self, track_id, uses_placements, is_indexed, indict):
-		plugin_obj = self.plugin__addspec__midi(track_id, indict)
-		plugin_obj.role = 'synth'
-
-		track_obj = self.track__add(track_id, 'instrument', uses_placements, is_indexed)
-		track_obj.plugslots.set_synth(track_id)
-		track_obj.params.add('usemasterpitch', not m_drum, 'bool')
-		return track_obj, plugin_obj
 
 # --------------------------------------------------------- AUTOMATION ---------------------------------------------------------
 
