@@ -343,8 +343,6 @@ class cvpj_project:
 
 		# tracks
 		self.tracks = cvpj_project_tracks(self)
-		self.tracks.data = {}
-		self.tracks.order = []
 		self.track_master = tracks.cvpj_track('master', self.time_ppq, False, False)
 
 		# markers and automation
@@ -394,7 +392,7 @@ class cvpj_project:
 
 		# ------------------- fxtype -------------------
 		# groupreturn
-		self.groups = cvpj_project_groups()
+		self.groups = cvpj_project_groups(self)
 		self.track_returns = {}
 
 		# fxrack

@@ -31,8 +31,8 @@ class cvpj_wave:
 		outjson['points'] = self.points
 		outjson['numpoints'] = self.numpoints
 		outjson['smooth'] = self.smooth
-		self.visname = outjson['visname'] = self.visname
-		self.author = outjson['author'] = self.author
+		outjson['visname'] = self.visname
+		outjson['author'] = self.author
 		outjson['data'] = self.data
 
 	@classmethod

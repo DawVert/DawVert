@@ -56,6 +56,12 @@ class gui_config():
 		self.main['auto_convert'] = False
 		self.main['language'] = 'english'
 
+		self.session = {}
+		self.session['current_in_plug'] = None
+		self.session['current_in_set'] = 'main'
+		self.session['current_out_plug'] = None
+		self.session['current_out_set'] = 'main'
+
 		self.conversion = {}
 		self.conversion['splitter_mode'] = dawvert_intent.splitter_mode
 		self.conversion['splitter_detect_start'] = dawvert_intent.splitter_detect_start
@@ -99,15 +105,27 @@ class gui_config():
 
 	def load_json(self, indict):
 		if 'main' in indict: self.main = indict['main']
+		if 'session' in indict: self.session = indict['session']
 		if 'conversion' in indict: self.conversion = indict['conversion']
 		if 'extplug' in indict: self.extplug = indict['extplug']
 		if 'soundfont' in indict: self.soundfont = indict['soundfont']
 		if 'input_plugins' in indict: self.input_plugins = indict['input_plugins']
 		if 'output_plugins' in indict: self.output_plugins = indict['output_plugins']
 
+		if 'current_in_plug' not in self.session: self.session['current_in_plug'] = None
+		if 'current_in_set' not in self.session: self.session['current_in_set'] = ''
+		if 'current_out_plug' not in self.session: self.session['current_out_plug'] = None
+		if 'current_out_set' not in self.session: self.session['current_out_set'] = ''
+
 	def save_file(self, filename):
+		current_in_plug = dawvert_core.input_get_current()
+		current_out_plug = dawvert_core.output_get_current()
+		if current_in_plug: self.session['current_in_plug'] = current_in_plug
+		if current_out_plug: self.session['current_out_plug'] = current_out_plug
+
 		outdict = {}
 		outdict['main'] = self.main
+		outdict['session'] = self.session
 		outdict['conversion'] = self.conversion
 		outdict['extplug'] = self.extplug
 		outdict['soundfont'] = self.soundfont
@@ -128,6 +146,7 @@ class gui_config():
 				pass
 
 		self.load_json(injson)
+
 
 dawvert_config = gui_config()
 
@@ -362,9 +381,53 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.ui.ConfigOutput.clicked.connect(functools.partial(self.open_configmenu, 'output'))
 		self.ui.ConfigInput.clicked.connect(functools.partial(self.open_configmenu, 'input'))
 
+		cfgsession = dawvert_config.session
+
+		current_in_plug = cfgsession['current_in_plug']
+		current_in_set = cfgsession['current_in_set']
+
+		if current_in_set is not None:
+			plugsetlist = list(dv_core.pluginsets_input)
+			if current_in_set in plugsetlist:
+				self.__change_input_plugset_named(current_in_set)
+				self.ui.ListWidget_InPlugSet.setCurrentRow(plugsetlist.index(current_in_set))
+		if current_in_plug is not None:
+			plugnames = dawvert_core.input_get_plugins()
+			if current_in_plug in plugnames:
+				self.ui.ListWidget_InPlugin.setCurrentRow(plugnames.index(current_in_plug))
+				dawvert_core.input_set(current_in_plug)
+
+		current_out_plug = cfgsession['current_out_plug']
+		current_out_set = cfgsession['current_out_set']
+
+		if current_out_set is not None:
+			plugsetlist = list(dv_core.pluginsets_output)
+			if current_out_set in plugsetlist:
+				self.__change_output_plugset_named(current_out_set)
+				self.ui.ListWidget_OutPlugSet.setCurrentRow(plugsetlist.index(current_out_set))
+		if current_out_plug is not None:
+			plugnames = dawvert_core.output_get_plugins()
+			if current_out_plug in plugnames:
+				self.ui.ListWidget_OutPlugin.setCurrentRow(plugnames.index(current_out_plug))
+				dawvert_core.output_set(current_in_plug)
+
+		if 'input_file' in cfgsession: self.ui.InputFilePath.setText(cfgsession['input_file'])
+		if 'output_file' in cfgsession: 
+			self.ui.OutputFilePath.setText(cfgsession['output_file'])
+			dawvert_config.main['overwrite_out'] = False
+			dawvert_config.main['auto_convert'] = False
+		if 'output_samples' in cfgsession: self.ui.OutputSamplePath.setText(cfgsession['output_samples'])
+
 	def closeEvent(self, event):
+		ui_o = self.ui
+
 		dawvert_config.save_in_plugin_config()
 		dawvert_config.save_out_plugin_config()
+
+		dawvert_config.session['input_file'] = ui_o.InputFilePath.text()
+		dawvert_config.session['output_file'] = ui_o.OutputFilePath.text()
+		dawvert_config.session['output_samples'] = ui_o.OutputSamplePath.text()
+
 		dawvert_config.save_file('config.json')
 		event.accept()
 
@@ -611,6 +674,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		dawvert_core.input_load_plugins(plugsetname)
 		self.__update_input_plugins()
 		self.__change_input_plugin(0)
+		dawvert_config.session['current_in_set'] = plugsetname
 
 	def __change_input_plugin(self, num):
 		dawvert_config.save_in_plugin_config()
@@ -647,11 +711,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 				if DEBUG_VIEW == 3: o = ('[%s:%s] ' % (fxt, fdt)+o)
 				self.ui.ListWidget_InPlugin.addItem(o)
 
+	def __change_output_plugset_named(self, plugsetname):
+		dawvert_core.output_load_plugins(plugsetname)
+		self.__update_output_plugins()
+		self.__change_output_plugin(0)
+
 	def __change_output_plugset(self, num):
 		plugsetname = dawvert_core.output_get_pluginsets_index(num)
 		dawvert_core.output_load_plugins(plugsetname)
 		self.__update_output_plugins()
 		self.__change_output_path()
+		dawvert_config.session['current_out_set'] = plugsetname
 
 	def __change_output_plugin(self, num):
 		dawvert_config.save_out_plugin_config()

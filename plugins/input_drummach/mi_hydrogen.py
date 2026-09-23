@@ -156,7 +156,6 @@ class input_hydrogen(plugins.base):
 
 			inst_obj.datavals.add('middlenote', -int(instrument.pitchOffset))
 			inst_obj.datavals.add('random_pitch', instrument.randomPitchFactor)
-			inst_obj.datavals.add('random_pitch', instrument.randomPitchFactor)
 
 			if instrument.filterActive:
 				filter_id = str(instrument.id)+'_filter'
