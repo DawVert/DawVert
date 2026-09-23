@@ -50,6 +50,18 @@ class input_eam2(plugins.base):
 		if project_obj.Format == 'EAMFormat01':
 			eamproj = project_obj.EAMFormat1
 
+			# ---------- metadata ----------
+			ExportTagSettings = eamproj.ExportTagSettings
+			cvpj_meta = convproj_obj.metadata
+			if 'tagTitle' in ExportTagSettings: cvpj_meta.name = ExportTagSettings['tagTitle']
+			if 'tagArtist' in ExportTagSettings: cvpj_meta.author = ExportTagSettings['tagArtist']
+			if 'tagComment' in ExportTagSettings: cvpj_meta.comment_text = ExportTagSettings['tagComment']
+			if 'tagAlbum' in ExportTagSettings: cvpj_meta.album = ExportTagSettings['tagAlbum']
+			if 'tagGenre' in ExportTagSettings: cvpj_meta.genre = ExportTagSettings['tagGenre']
+			if 'tagYear' in ExportTagSettings: 
+				try: cvpj_meta.t_year = int(ExportTagSettings['tagYear'])
+				except: pass
+
 			convproj_obj.params.add('bpm', eamproj.BPM, 'float')
 			tempomul = 120/eamproj.BPM
 
@@ -63,9 +75,10 @@ class input_eam2(plugins.base):
 					autoloc_s = ['master']
 					track_obj = convproj_obj.track_master
 
-				color = conv_color(struct.unpack('I', struct.pack('i', track.EventsColorRGB))[0])
 				track_obj.visual.name = track.Name
-				track_obj.visual.color.set_int(color)
+				if track.EventsColorRGB is not None:
+					color = conv_color(struct.unpack('I', struct.pack('i', track.EventsColorRGB))[0])
+					track_obj.visual.color.set_int(color)
 
 				track_obj.params.add('vol', xtramath.from_db(track.Volume), 'float')
 				track_obj.params.add('pan', track.Pan, 'float')

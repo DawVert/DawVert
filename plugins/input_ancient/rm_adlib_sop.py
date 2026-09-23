@@ -63,16 +63,28 @@ class input_sop(plugins.base):
 		convproj_obj.timesig = [project_obj.beatMeasure, 4]
 
 		# ---------- insts ----------
-		sop_data_inst = []
-		for instnum, opli in enumerate(project_obj.insts):
-			cvpj_instname = str(instnum)
-			inst_obj = convproj_obj.instrument__add(cvpj_instname)
-			inst_obj.plugslots.set_synth(cvpj_instname)
-			outname = opli.name_long if opli.name_long else opli.name
-			if outname: inst_obj.visual.name = outname
-			inst_obj.visual.color.set_float(maincolor)
-			inst_obj.is_drum = opli.perc_type!=0
-			opli.to_cvpj(convproj_obj, cvpj_instname)
+		inst_comments = []
+
+		for instnum, sopinst in enumerate(project_obj.insts):
+			insttype, opli = sopinst
+			if insttype!=12:
+				cvpj_instname = str(instnum)
+				inst_obj = convproj_obj.instrument__add(cvpj_instname)
+				inst_obj.plugslots.set_synth(cvpj_instname)
+				outname = opli.name_long if opli.name_long else opli.name
+				if outname: 
+					inst_obj.visual.name = outname
+				inst_obj.visual.color.set_float(maincolor)
+				inst_obj.is_drum = opli.perc_type!=0
+				opli.to_cvpj(convproj_obj, cvpj_instname)
+			else:
+				inst_comments.append(opli.name_long)
+
+		inst_comments = '\n'.join(inst_comments).lstrip('\n').rstrip('\n')
+		if convproj_obj.metadata.comment_text:
+			convproj_obj.metadata.comment_text += '\n'
+
+		convproj_obj.metadata.comment_text += inst_comments
 
 		# ---------- tracks ----------
 		for tracknum, soptrack in enumerate(project_obj.tracks):
@@ -80,7 +92,7 @@ class input_sop(plugins.base):
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 0, False)
 			track_obj.visual.name = '#'+str(cvpj_trackid)
 			track_obj.visual.color.set_float(maincolor)
-			
+
 			if endtxt_on:
 				trackname_endtext = endtxt[soptrack.chanmode]
 				track_obj.visual.name += ' '+str()+trackname_endtext

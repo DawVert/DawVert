@@ -112,7 +112,7 @@ class easyamixr_EAM1_AudioChannel:
 		self.Volume = 0.0
 		self.VoiceRemoval = 0
 		self.ChannelHeight = 100
-		self.EventsColorRGB = -15234422
+		self.EventsColorRGB = None
 		self.TitleColorIndex = 1
 		self.Muted = False
 		self.Solo = False
@@ -177,13 +177,17 @@ class easyamixr_EAMFormat1:
 		self.AudioChannelsList = []
 		self.ProjectSettings = None
 		self.SavePath = ''
-		self.ExportTagSettings = None
+		self.ExportTagSettings = {}
 		self.TrackEditorAlign = 1
 		self.SaveFileDPI = 96
 
 	def read(self, x_data):
 		for xpart in x_data:
 			tagname = xpart.tag
+			if tagname == 'ExportTagSettings': 
+				self.ExportTagSettings = {}
+				for inpart in xpart:
+					if inpart.text: self.ExportTagSettings[inpart.tag] = inpart.text
 			if tagname == 'MinorVersion': self.MinorVersion = int(xpart.text)
 			if tagname == 'IDCounter': self.IDCounter = int(xpart.text)
 			if tagname == 'BPM': self.BPM = int(xpart.text)

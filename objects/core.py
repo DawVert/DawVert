@@ -457,9 +457,10 @@ class core:
 		plug_obj = selected_plugin.plug_obj
 		configdef = selected_plugin.configdef
 		if configdef:
-			for k, v in configdef.items():
-				if ('def' in v) and (k not in dawvert_intent.input_params):
-					dawvert_intent.input_params[k] = v['def']
+			cfgdefdict = configdef.parts
+			for k, v in cfgdefdict.items():
+				if (v.value_def is not None) and (k not in dawvert_intent.input_params):
+					dawvert_intent.input_params[k] = v.value_def
 
 		if selected_plugin.usable:
 			plug_obj.parse(self.convproj_obj, dawvert_intent)

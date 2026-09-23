@@ -25,6 +25,8 @@ class input_adlib_rol(plugins.base):
 
 	def get_configdef(self, configdef):
 		configdef.add_text('bank_file', 'STANDARD.BNK', 'Bank File')
+		configdef.set_group('visual', 'Visual')
+		configdef.add_bool('keep_def_name', False, 'Keep Default Track Names')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_adlib import rol as proj_adlib_rol
@@ -47,6 +49,8 @@ class input_adlib_rol(plugins.base):
 					if used:
 						instname = adlibbnk_obj.names[instnum].replace(" ", "").upper()
 						native_insts[instname] = adlibbnk_obj.get_inst_index(instnum)
+
+		keep_def_name = dawvert_intent.input_get_param('keep_def_name', '')
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
@@ -74,7 +78,16 @@ class input_adlib_rol(plugins.base):
 		for tracknum, rol_track in enumerate(project_obj.tracks):
 			cvpj_trackid = 'track'+str(tracknum+1)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 0, False)
-			track_obj.visual.name = rol_track.voice.name
+
+			if (rol_track.voice.name!='Voix  %i'%tracknum) or keep_def_name:
+				track_obj.visual.name = rol_track.voice.name
+			elif not project_obj.isMelodic:
+				if 5>tracknum: track_obj.visual.name = 'Melodic #%i'%(tracknum+1)
+				elif tracknum==5: track_obj.visual.name = 'Bass Drum'
+				elif tracknum==6: track_obj.visual.name = 'Snare Drum'
+				elif tracknum==7: track_obj.visual.name = 'Tom Tom'
+				elif tracknum==8: track_obj.visual.name = 'Top Cymbal'
+				elif tracknum==9: track_obj.visual.name = 'Hi-Hat'
 
 			cvpj_notelist = track_obj.placements.notelist
 			

@@ -128,7 +128,7 @@ class adlib_sop_project:
 				opli.ops[1].att_dec(ebrw_readstr.int_u8())
 				opli.ops[1].sus_rel(ebrw_readstr.int_u8())
 				opli.ops[1].waveform = ebrw_readstr.int_u8()
-			self.insts.append(opli)
+			self.insts.append([insttype, opli])
 
 		for n in range(num_tracks): self.tracks[n].events = decode_events(ebrw_readstr)
 		self.controltrack = decode_events(ebrw_readstr)

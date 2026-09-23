@@ -23,7 +23,7 @@ def convert(convproj_obj):
 
 	old_track_order = cvpj_tracks.order.copy()
 
-	for _, track_obj in convproj_obj.groups.items():
+	for _, track_obj in convproj_obj.groups.iter():
 		for x in track_obj.plugslots.slots_audio:
 			if x not in used_plugins: used_plugins.append(x)
 

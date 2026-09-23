@@ -151,7 +151,8 @@ class input_soundclub2(plugins.base):
 						scnote_obj = t_active_notes[event.value]
 						if scnote_obj.active:
 							cvpj_notelist.add_r(scnote_obj.start, scnote_obj.end, scnote_obj.key-36, n_curvol, None)
-							for s_pos, s_len, s_key in scnote_obj.porta: cvpj_notelist.last_add_slide(s_pos, s_len, s_key-36, n_curvol, None)
+							for s_pos, s_len, s_key in scnote_obj.porta:
+								cvpj_notelist.last_add_slide(s_pos, s_len, s_key-36, n_curvol, None)
 
 					elif event.type == 20: n_curvol = event.value/31
 					elif event.type == 21: 
