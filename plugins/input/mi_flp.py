@@ -277,6 +277,9 @@ class input_flp(plugins.base):
 
 		wrapper_plugids = []
 
+		# ---------- convproj objects ----------
+		cvpj_insts = convproj_obj.instruments
+
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'mi'
@@ -339,7 +342,7 @@ class input_flp(plugins.base):
 			if fl_channel_obj.type in [0,1,2,3]:
 				cvpj_instid = 'FLInst' + str(instrument)
 
-				inst_obj = convproj_obj.instrument__add(cvpj_instid)
+				inst_obj = cvpj_insts.add(cvpj_instid)
 
 				inst_obj.visual.name = fl_channel_obj.name if fl_channel_obj.name else ''
 				inst_obj.visual.color.set_int(conv_color(fl_channel_obj.color))

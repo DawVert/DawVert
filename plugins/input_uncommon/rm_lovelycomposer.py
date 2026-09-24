@@ -168,6 +168,7 @@ class input_lc(plugins.base):
 		colordata = colors.colorset.from_datapack('lovelycomposer', 'track', 'main')
 
 		# ---------- convproj objects ----------
+		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 		
 		# ---------- convproj init ----------
@@ -301,7 +302,7 @@ class input_lc(plugins.base):
 					plugin_obj.role = 'synth'
 					osc_data = plugin_obj.osc_add()
 		
-					inst_obj = convproj_obj.instrument__add(cvpj_ninstid)
+					inst_obj = cvpj_insts.add(cvpj_ninstid)
 					inst_obj.plugslots.set_synth(pluginid)
 					inst_obj.visual.name = instdata[1]
 					inst_obj.visual.color.set_int(color)
@@ -353,6 +354,6 @@ class input_lc(plugins.base):
 					#else: 
 					#	inst_plugindata = plugins.cvpj_plugin('deftype', 'lovelycomposer', instdata[1])
 			else:
-				inst_obj = convproj_obj.instrument__add('chord')
+				inst_obj = cvpj_insts.add('chord')
 				inst_obj.visual.name = 'Chord'
 				inst_obj.visual.color.set_int(color)

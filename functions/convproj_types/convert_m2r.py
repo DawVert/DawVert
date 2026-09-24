@@ -18,11 +18,12 @@ def convert(convproj_obj):
 		is_indexed = playlist_obj.placements.is_indexed
 
 	cvpj_tracks = convproj_obj.tracks
+	cvpj_insts = convproj_obj.instruments
 	
 	fxrack_order = {}
 
 	track_stor = {}
-	for inst_id, inst_obj in convproj_obj.instruments.items():
+	for inst_id, inst_obj in cvpj_insts.iter():
 		track_obj = cvpj_tracks.add(inst_id, 'instrument', uses_placements, is_indexed)
 		track_obj.visual = copy.deepcopy(inst_obj.visual)
 		track_obj.params = copy.deepcopy(inst_obj.params)
@@ -36,7 +37,7 @@ def convert(convproj_obj):
 			fxrack_order[track_obj.fxrack_channel] = []
 		fxrack_order[track_obj.fxrack_channel].append(inst_id)
 
-	del convproj_obj.instruments
+	cvpj_insts.clear()
 
 	for pl_id, playlist_obj in convproj_obj.playlist.items():
 		splitted_pl = playlist_obj.placements.inst_split()

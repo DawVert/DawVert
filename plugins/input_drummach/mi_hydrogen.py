@@ -66,6 +66,9 @@ class input_hydrogen(plugins.base):
 		color_pattern = colors.colorset.from_datapack('hydrogen', 'pattern', 'main')
 		color_track = colors.colorset.from_datapack('hydrogen', 'track', 'main')
 
+		# ---------- convproj objects ----------
+		cvpj_insts = convproj_obj.instruments
+		
 		# ---------- convproj params ----------
 		pb_track = dawvert_intent.input_get_param('pb_track', True)
 
@@ -134,7 +137,7 @@ class input_hydrogen(plugins.base):
 		# ---------- instruments ----------
 		external_dats = {}
 		for instrument in project_obj.instrumentList:
-			inst_obj = convproj_obj.instrument__add(str(instrument.id))
+			inst_obj = cvpj_insts.add(str(instrument.id))
 			inst_obj.visual.name = instrument.name
 			drumkit = instrument.drumkit
 

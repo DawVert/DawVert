@@ -273,6 +273,9 @@ class input_jummbox(plugins.base):
 
 		durpos = jummbox_obj.get_durpos()
 
+		# ---------- convproj objects ----------
+		cvpj_insts = convproj_obj.instruments
+		
 		# ---------- convproj params ----------
 		transpose_ignore = dawvert_intent.input_get_param('transpose_ignore', False)
 
@@ -316,7 +319,7 @@ class input_jummbox(plugins.base):
 					cvpj_volume = (bb_inst.volume/50)+0.5
 					preset = str(bb_inst.preset) if bb_inst.preset else None
 
-					inst_obj = convproj_obj.instrument__add(cvpj_instid)
+					inst_obj = cvpj_insts.add(cvpj_instid)
 					midifound = False
 
 					if preset:

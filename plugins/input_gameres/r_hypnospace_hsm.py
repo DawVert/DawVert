@@ -40,6 +40,7 @@ class input_hypnospace_hsm(plugins.base):
 		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'hypnospace_hsm', ['hypnospace_hsm'])
 
 		# ---------- convproj objects ----------
+		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 		
 		# ---------- convproj init ----------
@@ -64,7 +65,7 @@ class input_hypnospace_hsm(plugins.base):
 		# ---------- samples ----------
 		for num, sample in enumerate(project_obj.samples):
 			instid = 'inst_'+str(num)
-			inst_obj = convproj_obj.instrument__add(instid)
+			inst_obj = cvpj_insts.add(instid)
 			inst_obj.visual.name = sample.path.split('\\')[-1] if sample.path else 'Unused #%s' % str(num+1)
 			inst_obj.visual.color.set_int(colordata.getcolornum(num))
 			inst_obj.visual.color.fx_allowed = ['saturate']

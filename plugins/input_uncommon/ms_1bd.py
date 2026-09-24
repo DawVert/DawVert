@@ -70,6 +70,7 @@ class input_1bitdragon(plugins.base):
 		colordata = colors.colorset.from_datapack('1bitdragon', 'track', 'main')
 
 		# ---------- convproj objects ----------
+		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 		
 		# ---------- convproj init ----------
@@ -177,7 +178,7 @@ class input_1bitdragon(plugins.base):
 		for instid, instdata in used_inst.items():
 			instname = instdata.preset
  
-			inst_obj = convproj_obj.instrument__add(instid)
+			inst_obj = cvpj_insts.add(instid)
 			inst_obj.visual.name = instname
 			inst_obj.params.add('enabled', instdata.on, 'int')
 			inst_obj.params.add('vol', instdata.volume, 'float')
@@ -193,7 +194,7 @@ class input_1bitdragon(plugins.base):
 		for drumid, drumdata in used_drums.items():
 			instname = drumdata.preset
 			
-			inst_obj = convproj_obj.instrument__add(drumid)
+			inst_obj = cvpj_insts.add(drumid)
 			inst_obj.visual.name = instname
 			inst_obj.params.add('enabled', drumdata.on, 'int')
 			inst_obj.params.add('vol', drumdata.volume, 'float')

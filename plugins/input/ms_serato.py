@@ -142,6 +142,7 @@ class input_serato(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_insts = convproj_obj.instruments
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'ms'
@@ -195,7 +196,7 @@ class input_serato(plugins.base):
 							channel_strip = drumdata.channel_strip
 	
 							if samplefile:
-								inst_obj = convproj_obj.instrument__add(cvpj_instid_p)
+								inst_obj = cvpj_insts.add(cvpj_instid_p)
 								inst_obj.group = base_trk_id
 								inst_obj.is_drum = True
 								inst_obj.plugslots.set_synth(cvpj_instid_p)
@@ -235,7 +236,7 @@ class input_serato(plugins.base):
 			if scene_deck.type == 'plugin':
 				track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 1, False)
 				track_obj.visual.name = scene_deck.name
-				inst_obj = convproj_obj.instrument__add(cvpj_instid)
+				inst_obj = cvpj_insts.add(cvpj_instid)
 				inst_obj.visual.name = scene_deck.name
 				inst_obj.visual.color.set_float([0.3,0.3,0.3])
 				plugin_obj = add_vst_data(json.loads(scene_deck.plugin_description), cvpj_instid, convproj_obj, scene_deck.state, scene_deck.parameters)
@@ -253,7 +254,7 @@ class input_serato(plugins.base):
 			if scene_deck.type == 'instrument':
 				track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 1, False)
 				track_obj.visual.name = scene_deck.name
-				inst_obj = convproj_obj.instrument__add(cvpj_instid)
+				inst_obj = cvpj_insts.add(cvpj_instid)
 				inst_obj.visual.name = scene_deck.name
 				inst_obj.visual.color.set_float([0.48, 0.35, 0.84])
 				plugin_obj, synthid = convproj_obj.plugin__add__genid('native', 'serato-inst', 'instrument')
@@ -278,7 +279,7 @@ class input_serato(plugins.base):
 				track_obj.visual.name = scene_deck.name
 
 				if useaudioclips == False:
-					inst_obj = convproj_obj.instrument__add(cvpj_instid)
+					inst_obj = cvpj_insts.add(cvpj_instid)
 					plugin_obj, synthid = convproj_obj.plugin__add__genid('native', 'serato-inst', 'sampler')
 					inst_obj.plugslots.set_synth(synthid)
 

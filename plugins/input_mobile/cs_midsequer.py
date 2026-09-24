@@ -20,6 +20,9 @@ class input_midsequer(plugins.base):
 		in_dict['plugin_included'] = ['universal:soundfont2']
 		in_dict['projtype'] = 'r'
 
+	def get_configdef(self, configdef):
+		configdef.add_bool('unused_tracks', False, 'Use Unused Tracks')
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_mobile import midsequer
 
@@ -31,6 +34,9 @@ class input_midsequer(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		
+		# ---------- convproj params ----------
+		unused_tracks = dawvert_intent.input_get_param('unused_tracks', False)
+
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cs'
@@ -52,7 +58,7 @@ class input_midsequer(plugins.base):
 		for n, track in enumerate(project_obj.sng.data.tracks):
 			trackinfo = track.ini
 			trackevents = track.evts
-			if (trackinfo.volume!=100) or (trackinfo.inst_pc!=0) or len(trackevents):
+			if (trackinfo.volume!=100) or (trackinfo.inst_pc!=0) or len(trackevents) or unused_tracks:
 				track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
 				track_obj.midi.out_enabled = True
 				track_obj.midi.out_chanport.chan = n

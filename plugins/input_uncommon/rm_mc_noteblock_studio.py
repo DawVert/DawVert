@@ -64,6 +64,7 @@ class input_gt_mnbs(plugins.base):
 		external_dat.load_data(os.path.join(dawvert_intent.path_external_data, 'mnbs', 'samples.zip'))
 
 		# ---------- convproj objects ----------
+		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 		
 		# ---------- convproj init ----------
@@ -110,7 +111,7 @@ class input_gt_mnbs(plugins.base):
 		# ---------- insts ----------
 		for instnum in used_inst:
 			instid = 'NoteBlock'+str(instnum)
-			inst_obj = convproj_obj.instrument__add(instid)
+			inst_obj = cvpj_insts.add(instid)
 			dpobj = globalstore.datapack.get_obj('noteblockstudio', 'inst', str(instnum))
 			if dpobj:
 				inst_obj.visual.from_datapack_obj(dpobj, True)
@@ -139,7 +140,7 @@ class input_gt_mnbs(plugins.base):
 		custominstid = 16
 		for custominstid, custom_obj in enumerate(project_obj.custom):
 			instid = 'NoteBlock'+str(custominstid+16)
-			inst_obj = convproj_obj.instrument__add(instid)
+			inst_obj = cvpj_insts.add(instid)
 			inst_obj.visual.name = custom_obj.name
 			inst_obj.visual.color.set_hsv(custominstid*0.2, 1, 0.5)
 			inst_obj.datavals.add('middlenote', -(custom_obj.key-51))

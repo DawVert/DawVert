@@ -126,7 +126,9 @@ class inst_manager():
 				sp_obj.visual = sampleref_obj.visual.copy()
 
 	def add_inst(convproj_obj, instid, project_obj, maindata_obj):
-		inst_obj = convproj_obj.instrument__add(instid)
+		cvpj_insts = convproj_obj.instruments
+
+		inst_obj = cvpj_insts.add(instid)
 		inst_obj.visual.from_datapack('notessimo_v3', 'inst', instid, True)
 		if inst_obj.visual.name and DEBUGINSTNAMES: inst_obj.visual.name = '[DSET] '+inst_obj.visual.name
 

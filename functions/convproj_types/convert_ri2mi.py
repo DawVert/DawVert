@@ -16,10 +16,11 @@ def convert(convproj_obj):
 	logger_project.info('ProjType Convert: RegularIndexed > MultipleIndexed')
 
 	cvpj_tracks = convproj_obj.tracks
+	cvpj_insts = convproj_obj.instruments
 	
 	plnum = -1
 	for trackid, track_obj in cvpj_tracks.iter():
-		inst_obj = convproj_obj.instrument__add(trackid)
+		inst_obj = cvpj_insts.add(trackid)
 		inst_obj.visual = copy.deepcopy(track_obj.visual)
 		inst_obj.params = copy.deepcopy(track_obj.params)
 		inst_obj.datavals = copy.deepcopy(track_obj.datavals)

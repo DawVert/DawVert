@@ -75,6 +75,7 @@ def process_r(convproj_obj):
 
 def process_m(convproj_obj):
 	fxrack_obj = convproj_obj.fxrack
+	cvpj_insts = convproj_obj.instruments
 	
 	if not fxrack_obj:
 		logger_compat.info('trackfx2fxrack: Master to FX 0')
@@ -90,7 +91,7 @@ def process_m(convproj_obj):
 		convproj_obj.automation.move(['master','pan'], ['fxmixer','0','pan'])
 
 		fxnum = 1
-		for inst_id, inst_obj in convproj_obj.instrument__iter():
+		for inst_id, inst_obj in cvpj_insts.iter():
 			fxchannel_obj = fxrack_obj.add(fxnum)
 			fxchannel_obj.visual = copy.deepcopy(inst_obj.visual)
 			fxchannel_obj.params = copy.deepcopy(inst_obj.params)

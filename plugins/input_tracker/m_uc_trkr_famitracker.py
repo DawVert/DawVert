@@ -42,6 +42,9 @@ class input_famitracker_txt(plugins.base):
 
 		cur_song = project_obj.song[0]
 
+		# ---------- convproj objects ----------
+		cvpj_insts = convproj_obj.instruments
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 
@@ -128,7 +131,7 @@ class input_famitracker_txt(plugins.base):
 				instnum, channum = chinst
 				instid = instname+'_'+str(channum)+'_'+str(instnum)
 
-				inst_obj = convproj_obj.instrument__add(instid)
+				inst_obj = cvpj_insts.add(instid)
 				inst_obj.fxrack_channel = channum+1
 
 				insttype = patterndata_obj.get_channel_insttype(channum)

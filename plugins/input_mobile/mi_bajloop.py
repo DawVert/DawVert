@@ -32,6 +32,9 @@ class input_fl_mobile_old(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_insts = convproj_obj.instruments
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'mi'
 		convproj_obj.set_timings(8)
@@ -68,7 +71,7 @@ class input_fl_mobile_old(plugins.base):
 			samplenum = int(binst.sample_num)-1
 			samp = project_obj.samples[samplenum]
 			instid = str(num+1)
-			inst_obj = convproj_obj.instrument__add(instid)
+			inst_obj = cvpj_insts.add(instid)
 			inst_obj.datavals.add('middlenote', binst.basenote)
 			inst_obj.params.add('vol', binst.vol/64, 'float')
 			inst_obj.params.add('pan', -(binst.pan-32)/32, 'float')

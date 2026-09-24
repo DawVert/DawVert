@@ -62,6 +62,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 
 	cvpj_tracks = convproj_obj.tracks
 	cvpj_groups = convproj_obj.groups
+	cvpj_insts = convproj_obj.instruments
 	
 	logger_compat.info('fxchange: '+in_fxtype+' > '+str(out_fxtype)+' - Proj Type: '+convproj_obj.type)
 
@@ -100,7 +101,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		convproj_obj.automation.move(['master','vol'], ['fxmixer','0','vol'])
 		convproj_obj.automation.move(['master','pan'], ['fxmixer','0','pan'])
 		fxchannel_obj.latency_offset = track_master.latency_offset
-		for count, iterval in enumerate(convproj_obj.instrument__iter()):
+		for count, iterval in enumerate(cvpj_insts.iter()):
 			fxnum = count+1
 			inst_id, inst_obj = iterval
 			fxchannel_obj = fxrack_obj.add(fxnum)

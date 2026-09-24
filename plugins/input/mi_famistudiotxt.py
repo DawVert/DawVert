@@ -79,10 +79,12 @@ cvpj_osc_wave_midi = {
 }
 
 def create_inst(convproj_obj, vol, WaveType, fst_Instrument, fx_num):
+	cvpj_insts = convproj_obj.instruments
+
 	instname = fst_Instrument.Name
 
 	cvpj_instid = make_instid(fx_num, WaveType, instname)
-	inst_obj = convproj_obj.instrument__add(cvpj_instid)
+	inst_obj = cvpj_insts.add(cvpj_instid)
 	inst_obj.fxrack_channel = fx_num
 	inst_obj.params.add('vol', 0.2*vol, 'float')
 
@@ -143,13 +145,15 @@ def create_inst(convproj_obj, vol, WaveType, fst_Instrument, fx_num):
 	if WaveType in ['VRC7FM']: inst_obj.datavals.add('middlenote', 12)
 
 def create_dpcm_inst(DPCMMappings, DPCMSamples, fst_instrument, fx_num, dpcm_freqlist):
+	cvpj_insts = convproj_obj.instruments
+	
 	from objects import audio_data
 	global samplefolder
 
 	instname = fst_instrument.Name if fst_instrument != None else None
 	cvpj_instid = make_instid(fx_num, 'DPCM', instname)
 
-	inst_obj = convproj_obj.instrument__add(cvpj_instid)
+	inst_obj = cvpj_insts.add(cvpj_instid)
 	inst_obj.params.add('vol', 0.6, 'float')
 	inst_obj.params.add('usemasterpitch', False, 'bool')
 	inst_obj.visual.name = 'DPCM'

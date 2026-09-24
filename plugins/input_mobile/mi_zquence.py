@@ -64,6 +64,9 @@ class input_zquence(plugins.base):
 		if dawvert_intent.input_mode == 'file':
 			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
+		# ---------- convproj objects ----------
+		cvpj_insts = convproj_obj.instruments
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'mi'
@@ -110,7 +113,7 @@ class input_zquence(plugins.base):
 			for track in project_obj.tracks:
 				trackattrib = track.attrib
 				trackid = trackattrib['TrackID']
-				inst_obj = convproj_obj.instrument__add(trackid)
+				inst_obj = cvpj_insts.add(trackid)
 				if 'MixerChannelID' in trackattrib:
 					MixerChannelID = trackattrib['MixerChannelID']
 					if MixerChannelID in mixerassoc:

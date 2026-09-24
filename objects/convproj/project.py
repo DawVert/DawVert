@@ -85,7 +85,7 @@ def routetrackord(trackord, groupdata, outl, insidegroup):
 		if i in groupdata:
 			if t == 'GROUP': routetrackord(groupdata[i], groupdata, outl, i)
 
-class groupassoc():
+class groupassoc:
 	def __init__(self):
 		self.groupdata = []
 		self.inside_found = []
@@ -326,6 +326,39 @@ class cvpj_project_groups:
 		routetrackord(track_nongroup, track_group, outl, None)
 		return outl
 
+class cvpj_project_instruments:
+	def __init__(self, mainproject):
+		self.data = {}
+		self.order = []
+		self.mainproject = mainproject
+
+	def __getitem__(self, k):
+		return self.data.__getitem__(k)
+
+	def __contains__(self, k):
+		return self.data.__contains__(k)
+
+	def add(self, inst_id):
+		logger_project.info('Instrument - '+str(inst_id))
+		self.data[inst_id] = tracks.cvpj_instrument()
+		self.order.append(inst_id)
+		return self.data[inst_id]
+
+	def iter(self):
+		for inst_id in self.order:
+			if inst_id in self.data: yield inst_id, self.data[inst_id]
+
+	def enumerate(self):
+		count = 0
+		for inst_id in self.order:
+			if inst_id in self.data: 
+				yield count, inst_id, self.data[inst_id]
+				count += 1
+
+	def clear(self):
+		self.data = {}
+		self.order = []
+
 class cvpj_project:
 	def __init__(self):
 		self.id = 'global'
@@ -375,8 +408,7 @@ class cvpj_project:
 
 		# Multiple, MultipleIndexed and similar
 		self.playlist = {}
-		self.instruments = {}
-		self.instruments_order = []
+		self.instruments = cvpj_project_instruments(self)
 
 		# *Tracked
 		self.tracker_single = None
@@ -900,18 +932,6 @@ class cvpj_project:
 			midi_obj.patch = dso_midi.patch
 			midi_obj.drum = dso_midi.is_drum
 			return plugin_obj
-
-# --------------------------------------------------------- INSTRUMENT ---------------------------------------------------------
-
-	def instrument__add(self, inst_id):
-		logger_project.info('Instrument - '+str(inst_id))
-		self.instruments[inst_id] = tracks.cvpj_instrument()
-		self.instruments_order.append(inst_id)
-		return self.instruments[inst_id]
-
-	def instrument__iter(self):
-		for inst_id in self.instruments_order:
-			if inst_id in self.instruments: yield inst_id, self.instruments[inst_id]
 
 # --------------------------------------------------------- VIDEOREF ---------------------------------------------------------
 

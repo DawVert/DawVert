@@ -90,8 +90,10 @@ def get_inst_id(indata):
 	return '_'.join([str(x) for x in indata[instnames]])
 
 def cvpj_create_instrument(convproj_obj, inst):
+	cvpj_insts = convproj_obj.instruments
+
 	cvpj_instid = get_inst_id(inst)
-	inst_obj = convproj_obj.instrument__add(cvpj_instid)
+	inst_obj = cvpj_insts.add(cvpj_instid)
 	midi_obj = inst_obj.midi.out_inst
 	midi_obj.bank_hi = int(inst['bank_hi'])
 	midi_obj.bank = int(inst['bank'])

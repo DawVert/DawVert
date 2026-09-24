@@ -35,6 +35,7 @@ class input_notessimo_v2(plugins.base):
 		used_insts = []
 
 		# ---------- convproj objects ----------
+		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 		
 		# ---------- convproj init ----------
@@ -104,7 +105,7 @@ class input_notessimo_v2(plugins.base):
 		fxnum = 2
 		for used_inst in used_insts:
 			cvpj_instid = str(used_inst)
-			inst_obj = convproj_obj.instrument__add(cvpj_instid)
+			inst_obj = cvpj_insts.add(cvpj_instid)
 			inst_obj.visual.from_datapack('notessimo_v2', 'inst', cvpj_instid, True)
 			midifound = inst_obj.midi.out_inst.from_datapack('notessimo_v2', 'inst', cvpj_instid)
 			inst_obj.fxrack_channel = 1 if inst_obj.midi.out_inst.drum else fxnum

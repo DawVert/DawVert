@@ -11,15 +11,15 @@ def convert(convproj_obj, change_instnames):
 
 	fxrack_obj = convproj_obj.fxrack
 	cvpj_tracks = convproj_obj.tracks
+	cvpj_insts = convproj_obj.instruments
 	useable_plugins = convproj_obj.plugins
 	convproj_obj.plugins = {}
 
 	used_plugins = []
 
-	old_instruments = convproj_obj.instruments
+	old_instruments = cvpj_insts.data.copy()
 
-	convproj_obj.instruments = {}
-	convproj_obj.instruments_order = []
+	cvpj_insts.clear()
 
 	plnum = -1
 	for trackid, track_obj in cvpj_tracks.iter():
@@ -33,14 +33,14 @@ def convert(convproj_obj, change_instnames):
 					used_plugins.append(new_inst.plugslots.synth)
 				for x in new_inst.plugslots.slots_audio:
 					if x not in used_plugins: used_plugins.append(x)
-				convproj_obj.instruments[newinstid] = new_inst
-				convproj_obj.instruments_order.append(newinstid)
+				cvpj_insts.data[newinstid] = new_inst
+				cvpj_insts.order.append(newinstid)
 			else:
-				inst_obj = convproj_obj.instrument__add(newinstid)
+				inst_obj = cvpj_insts.add(newinstid)
 				inst_obj.visual.name = instid
 
-			if convproj_obj.instruments[newinstid].fxrack_channel == -1:
-				convproj_obj.instruments[newinstid].fxrack_channel = track_obj.fxrack_channel 
+			if cvpj_insts.data[newinstid].fxrack_channel == -1:
+				cvpj_insts.data[newinstid].fxrack_channel = track_obj.fxrack_channel 
 		
 		if change_instnames:
 			track_obj.placements.notelist.appendtxt_inst('rm2m__'+trackid+'__', '')

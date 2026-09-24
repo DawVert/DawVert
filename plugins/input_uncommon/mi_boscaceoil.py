@@ -97,6 +97,9 @@ class input_ceol(plugins.base):
 		color_track = colors.colorset.from_datapack('boscaceoil', 'track', 'main')
 		color_main = colors.colorset.from_datapack('boscaceoil', 'main', 'main')
 
+		# ---------- convproj objects ----------
+		cvpj_insts = convproj_obj.instruments
+		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'mi'
 		convproj_obj.set_timings(4)
@@ -125,7 +128,7 @@ class input_ceol(plugins.base):
 
 		for instnum, ceol_inst_obj in enumerate(project_obj.instruments):
 			cvpj_instid = 'ceol_'+str(instnum).zfill(2)
-			inst_obj = convproj_obj.instrument__add(cvpj_instid)
+			inst_obj = cvpj_insts.add(cvpj_instid)
 			inst_obj.visual.color.set_int(color_main.getcolornum(ceol_inst_obj.palette))
 			inst_obj.visual.color.fx_allowed = ['saturate', 'brighter']
 			inst_obj.params.add('vol', ceol_inst_obj.volume/256, 'float')

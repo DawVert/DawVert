@@ -143,6 +143,8 @@ class output_cvpjs(plugins.base):
 		from objects.file_proj._flp import arrangement
 		from objects.file_proj._flp import fx
 
+		cvpj_insts = convproj_obj.instruments
+
 		flversion = 20
 
 		num_fx = proj_flp.total_num_fx[flversion]
@@ -186,7 +188,7 @@ class output_cvpjs(plugins.base):
 		g_inst_id = {}
 		g_inst_id_count = 0
 
-		for instentry in convproj_obj.instruments_order:
+		for instentry in cvpj_insts.order:
 			g_inst_id[instentry] = g_inst_id_count
 			g_inst_id_count += 1
 
@@ -195,7 +197,7 @@ class output_cvpjs(plugins.base):
 			samples_id[sampleentry] = g_inst_id_count
 			g_inst_id_count += 1
 
-		for inst_id, inst_obj in convproj_obj.instrument__iter():
+		for inst_id, inst_obj in cvpj_insts.iter():
 			fl_channel_obj = channel.flp_channel()
 			fl_channel_obj.basicparams.volume = inst_obj.params.get('vol',1).value**0.75
 			fl_channel_obj.basicparams.pan = inst_obj.params.get('pan',0).value

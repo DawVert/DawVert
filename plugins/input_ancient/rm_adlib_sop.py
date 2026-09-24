@@ -43,6 +43,7 @@ class input_sop(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_insts = convproj_obj.instruments
 		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(project_obj.tickBeat)
@@ -69,7 +70,7 @@ class input_sop(plugins.base):
 			insttype, opli = sopinst
 			if insttype!=12:
 				cvpj_instname = str(instnum)
-				inst_obj = convproj_obj.instrument__add(cvpj_instname)
+				inst_obj = cvpj_insts.add(cvpj_instname)
 				inst_obj.plugslots.set_synth(cvpj_instname)
 				outname = opli.name_long if opli.name_long else opli.name
 				if outname: 

@@ -14,12 +14,13 @@ def convert(convproj_obj):
 
 	fxrack_obj = convproj_obj.fxrack
 	cvpj_tracks = convproj_obj.tracks
+	cvpj_insts = convproj_obj.instruments
 	useable_plugins = convproj_obj.plugins
+
 	convproj_obj.plugins = {}
 
 	used_plugins = []
 
-	convproj_obj.instruments_order = []
 
 	old_track_order = cvpj_tracks.order.copy()
 
@@ -50,8 +51,8 @@ def convert(convproj_obj):
 			for i, d in comb_split.items():
 				pls, nl = d
 				if i not in splitted_trks: splitted_trks[i] = []
-				if i in convproj_obj.instruments:
-					inst_obj = convproj_obj.instruments[i]
+				if i in cvpj_insts:
+					inst_obj = cvpj_insts[i]
 	
 					new_track_obj = track_obj.make_base_inst(inst_obj)
 					new_track_obj.is_drum = inst_obj.is_drum
@@ -109,5 +110,5 @@ def convert(convproj_obj):
 		if plugid in useable_plugins:
 			convproj_obj.plugins[plugid] = useable_plugins[plugid]
 
-	convproj_obj.instruments = {}
+	cvpj_insts.clear()
 	convproj_obj.type = 'r'

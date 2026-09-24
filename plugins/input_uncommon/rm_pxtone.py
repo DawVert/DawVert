@@ -83,6 +83,7 @@ class input_pxtone(plugins.base):
 		samplefolder = dawvert_intent.path_samples['extracted']
 
 		# ---------- convproj objects ----------
+		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 		
 		# ---------- convproj init ----------
@@ -115,7 +116,7 @@ class input_pxtone(plugins.base):
 		# ---------- voices ----------
 		for voicenum, voice_obj in project_obj.voices.items():
 			cvpj_instid = 'ptcop_'+str(voicenum)
-			inst_obj = convproj_obj.instrument__add(cvpj_instid)
+			inst_obj = cvpj_insts.add(cvpj_instid)
 			inst_obj.visual.name = voice_obj.name
 			#inst_obj.visual.color.set_int([0.14, 0.00, 0.29])
 			inst_obj.visual.color.priority = -1

@@ -50,8 +50,10 @@ class convproj_tracker_patsong:
 		self.use_starttempo = False
 
 	def add_inst(self, convproj_obj, instnum, instid):
+		cvpj_insts = convproj_obj.instruments
+
 		instid = instid if instid else 'inst_'+str(instnum)
-		inst_obj = convproj_obj.instrument__add(instid)
+		inst_obj = cvpj_insts.add(instid)
 		inst_obj.visual.color = self.mainvisual.color.copy()
 		self.assoc_instid[instnum+1] = instid
 		return inst_obj

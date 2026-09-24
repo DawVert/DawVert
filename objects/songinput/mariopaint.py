@@ -49,6 +49,7 @@ class mariopaint_song():
 
 	def to_cvpj(self, convproj_obj):
 
+		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 	
 		convproj_obj.set_timings(4)
@@ -94,7 +95,7 @@ class mariopaint_song():
 		fxrack_obj = convproj_obj.fxrack
 		
 		for instnum, instname in enumerate(used_inst): 
-			inst_obj = convproj_obj.instrument__add(instname)
+			inst_obj = cvpj_insts.add(instname)
 			inst_obj.visual.from_datapack('mariopaint', 'inst', instname, True)
 			plugin_obj = convproj_obj.plugin__add(instname, 'universal', 'mariopaint', None)
 			plugin_obj.midi_fallback__add_from_datapack('mariopaint', 'inst', instname)

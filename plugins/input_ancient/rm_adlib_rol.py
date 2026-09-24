@@ -54,6 +54,7 @@ class input_adlib_rol(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_insts = convproj_obj.instruments
 		
 		# ---------- convproj params ----------
 		convproj_obj.type = 'rm'
@@ -108,7 +109,7 @@ class input_adlib_rol(plugins.base):
 		# ---------- insts ----------
 		for used_voice in used_voices:
 			instname_upper = used_voice.upper()
-			inst_obj = convproj_obj.instrument__add(instname_upper)
+			inst_obj = cvpj_insts.add(instname_upper)
 			inst_obj.visual.name = instname_upper
 			inst_obj.visual.from_datapack('adlib_rol', 'inst', instname_upper, True)
 			if instname_upper in native_insts:
