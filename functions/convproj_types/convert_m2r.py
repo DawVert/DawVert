@@ -83,7 +83,7 @@ def convert(convproj_obj):
 	for n, t in fxrack_order.items():
 		for n in t: cvpj_tracks.order.append(n)
 
-	convproj_obj.main__do_lanefit()
+	cvpj_tracks.do_lanefit()
 
 	cvpj_automation.move_everything(['inst'], ['track'])
 

@@ -5,7 +5,6 @@ from objects import globalstore
 from objects.convproj import sample_entry
 from objects.convproj import fileref
 from objects.convproj import params
-from objects.convproj import tracks
 from objects.convproj import visual
 from objects.convproj import sends
 from objects.convproj import notelist
@@ -623,3 +622,83 @@ class cvpj_track:
 
 	def debugtxt_placements(self, starttxt):
 		self.placements.debugtxt(starttxt)
+
+
+class cvpj_project_tracks:
+	def __init__(self, convproj_obj):
+		self.data = {}
+		self.order = []
+		self.convproj_obj = convproj_obj
+
+	def __getitem__(self, k):
+		return self.data.__getitem__(k)
+
+	def __contains__(self, k):
+		return self.data.__contains__(k)
+
+	def change_timings(self, time_ppq):
+		for p in self.data: 
+			track_data = self.data[p]
+			track_data.change_timings(time_ppq)
+			for e in track_data.notelist_index: 
+				track_data.notelist_index[e].notelist.change_timings(time_ppq)
+
+	def clear(self):
+		self.data = {}
+		self.order = []
+
+	def remove(self, trackid):
+		if trackid in self.data: del self.data[trackid]
+		if trackid in self.order: self.order.remove(trackid)
+
+	def get(self, trackid):
+		return self.data[trackid] if trackid in self.data else None
+
+	def iter(self):
+		for trackid in self.order:
+			if trackid in self.data: yield trackid, self.data[trackid]
+
+	def iter_num(self):
+		num = 0
+		for trackid in self.order:
+			if trackid in self.data: 
+				yield num, trackid, self.data[trackid]
+				num += 1
+
+	def add_scene(self, i_track, i_sceneid, i_lane):
+		if i_track in self.data: return self.data[i_track].scene__add(i_sceneid, i_lane)
+		else: return None
+
+	def add(self, track_id, tracktype, uses_placements, is_indexed):
+		logger_project.info('Track '+('NoPl' if not uses_placements else 'w/Pl')+(' + Indexed' if is_indexed else '')+' - '+track_id)
+		self.data[track_id] = cvpj_track(tracktype, self.convproj_obj.time_ppq, uses_placements, is_indexed)
+		self.order.append(track_id)
+		return self.data[track_id]
+
+	def count(self):
+		return len(self.order)
+
+	def addspec__midi(self, track_id, uses_placements, is_indexed, indict):
+		plugin_obj = self.convproj_obj.plugin__addspec__midi(track_id, indict)
+		plugin_obj.role = 'synth'
+
+		track_obj = self.add(track_id, 'instrument', uses_placements, is_indexed)
+		track_obj.plugslots.set_synth(track_id)
+		track_obj.params.add('usemasterpitch', not m_drum, 'bool')
+		return track_obj, plugin_obj
+
+	def sort(self):
+		sortpos = {}
+		for track_id, track_data in self.data.items():
+			trackstart = track_data.placements.get_start()
+			if trackstart not in sortpos: sortpos[trackstart] = []
+			sortpos[trackstart].append([track_id])
+		self.order = []
+		for n in sorted(sortpos):
+			for i in sortpos[n]: self.order += i
+
+	def do_lanefit(self):
+		for trackid, track_obj in self.data.items():
+			oldnum = len(track_obj.lanes)
+			track_obj.lanefit()
+			logger_project.info('LaneFit: '+ trackid+': '+str(oldnum)+' > '+str(len(track_obj.lanes)))

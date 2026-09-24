@@ -9,7 +9,7 @@ import math
 import copy
 
 class cvpj_autoticks:
-	#__slots__ = ['val_type','time_ppq','points']
+	__slots__ = ['val_type','time_ppq','is_seconds','points','is_timesig']
 
 	def __init__(self, time_ppq, val_type):
 		self.val_type = val_type

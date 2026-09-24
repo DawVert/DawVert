@@ -29,6 +29,7 @@ from objects.convproj import sampleref
 from objects.convproj import realdevices
 from objects.convproj import placements_marker
 from objects.convproj import fx_rack
+from objects.convproj import groups
 
 from functions.convproj_types import convert_r2m
 from functions.convproj_types import convert_ri2mi
@@ -78,41 +79,6 @@ def autoloc_getname(autopath):
 	if autopath[0] == 'track': autoname = 'Track'
 
 plugin_id_counter = idcounter.counter(1000, 'plugin_')
-
-def routetrackord(trackord, groupdata, outl, insidegroup):
-	for t, i in trackord:
-		outl.append([t, i, insidegroup])
-		if i in groupdata:
-			if t == 'GROUP': routetrackord(groupdata[i], groupdata, outl, i)
-
-class groupassoc:
-	def __init__(self):
-		self.groupdata = []
-		self.inside_found = []
-
-	def add_part(self, groupname, insidegroup):
-		for x in self.groupdata:
-			if x[0] == groupname: 
-				if insidegroup: 
-					x[1] = insidegroup
-					self.inside_found.append(x[1])
-				return True
-		self.groupdata.append([groupname, insidegroup])
-		if insidegroup: 
-			self.inside_found.append(insidegroup)
-		return True
-
-	def filter(self, insidegroup):
-		for x in self.groupdata:
-			if insidegroup == x[1]:
-				yield x
-
-	def iter(self, i):
-		if i in self.inside_found or not i:
-			for x in self.filter(i):
-				yield x
-				for d in self.iter(x[0]):
-					yield d
 
 class cvpj_scene:
 	def __init__(self, time_ppq, projid):
@@ -188,144 +154,6 @@ class cvpj_project_midi:
 		self.num_channels = 16
 		self.num_ports = 1
 
-class cvpj_project_tracks:
-	def __init__(self, convproj_obj):
-		self.data = {}
-		self.order = []
-		self.convproj_obj = convproj_obj
-
-	def __getitem__(self, k):
-		return self.data.__getitem__(k)
-
-	def __contains__(self, k):
-		return self.data.__contains__(k)
-
-	def change_timings(self, time_ppq):
-		for p in self.data: 
-			track_data = self.data[p]
-			track_data.change_timings(time_ppq)
-			for e in track_data.notelist_index: 
-				track_data.notelist_index[e].notelist.change_timings(time_ppq)
-
-	def clear(self):
-		self.data = {}
-		self.order = []
-
-	def remove(self, trackid):
-		if trackid in self.data: del self.data[trackid]
-		if trackid in self.order: self.order.remove(trackid)
-
-	def get(self, trackid):
-		return self.data[trackid] if trackid in self.data else None
-
-	def iter(self):
-		for trackid in self.order:
-			if trackid in self.data: yield trackid, self.data[trackid]
-
-	def iter_num(self):
-		num = 0
-		for trackid in self.order:
-			if trackid in self.data: 
-				yield num, trackid, self.data[trackid]
-				num += 1
-
-	def add_scene(self, i_track, i_sceneid, i_lane):
-		if i_track in self.data: return self.data[i_track].scene__add(i_sceneid, i_lane)
-		else: return None
-
-	def add(self, track_id, tracktype, uses_placements, is_indexed):
-		logger_project.info('Track '+('NoPl' if not uses_placements else 'w/Pl')+(' + Indexed' if is_indexed else '')+' - '+track_id)
-		self.data[track_id] = tracks.cvpj_track(tracktype, self.convproj_obj.time_ppq, uses_placements, is_indexed)
-		self.order.append(track_id)
-		return self.data[track_id]
-
-	def count(self):
-		return len(self.order)
-
-	def addspec__midi(self, track_id, uses_placements, is_indexed, indict):
-		plugin_obj = self.convproj_obj.plugin__addspec__midi(track_id, indict)
-		plugin_obj.role = 'synth'
-
-		track_obj = self.add(track_id, 'instrument', uses_placements, is_indexed)
-		track_obj.plugslots.set_synth(track_id)
-		track_obj.params.add('usemasterpitch', not m_drum, 'bool')
-		return track_obj, plugin_obj
-
-	def sort(self):
-		sortpos = {}
-		for track_id, track_data in self.data.items():
-			trackstart = track_data.placements.get_start()
-			if trackstart not in sortpos: sortpos[trackstart] = []
-			sortpos[trackstart].append([track_id])
-		self.order = []
-		for n in sorted(sortpos):
-			for i in sortpos[n]: self.order += i
-
-class cvpj_project_groups:
-	def __init__(self, convproj_obj):
-		self.data = {}
-		self.convproj_obj = convproj_obj
-
-	def __getitem__(self, k):
-		return self.data.__getitem__(k)
-
-	def __contains__(self, k):
-		return self.data.__contains__(k)
-
-	def add(self, groupid):
-		logger_project.info('Group - '+groupid)
-		self.data[groupid] = tracks.cvpj_track('group', self.time_ppq, False, False)
-		return self.data[groupid]
-
-	def get(self, groupid):
-		return self.data[groupid] if groupid in self.data else None
-
-	def iter(self):
-		for groupid, group_obj in self.data.items():
-			yield groupid, group_obj
-
-	def clear(self):
-		self.data = {}
-
-	def count_usage(self):
-		groupcount = [x.group for _, x in self.data.items() if x.group != None]
-		groupcount += [x.group for _, x in self.convproj_obj.tracks.data.items() if x.group != None]
-		return list(Counter(groupcount))
-
-	def remove_unused(self):
-		groupcount = self.count_usage()
-		unusedgroups = [x for x in list(self.data) if x not in groupcount]
-		for x in unusedgroups: del self.data[x]
-
-	def iter_inside(self):
-		groups_assoc = groupassoc()
-
-		for groupid, track_obj in self.iter():
-			groups_assoc.add_part(groupid, track_obj.group)
-
-		for groupid, insidegroup in groups_assoc.iter(None):
-			yield groupid, insidegroup
-
-	def iter_stream_inside(self):
-		track_group = {}
-		track_nongroup = []
-
-		for groupid, group_obj in self.iter():
-			if group_obj.group:
-				if group_obj.group not in track_group: track_group[group_obj.group] = []
-				track_group[group_obj.group].append(['GROUP', groupid])
-			else: track_nongroup.append(['GROUP', groupid])
-
-		for trackid, track_obj in self.convproj_obj.tracks.iter():
-			if track_obj.group: 
-				if track_obj.group not in track_group: track_group[track_obj.group] = []
-				track_group[track_obj.group].append(['TRACK', trackid])
-			else: track_nongroup.append(['TRACK', trackid])
-
-		outl = []
-		routetrackord(track_nongroup, track_group, outl, None)
-		return outl
-
 class cvpj_project_instruments:
 	def __init__(self, convproj_obj):
 		self.data = {}
@@ -375,7 +203,7 @@ class cvpj_project:
 		tempocalc.global_stores[self.id] = self.time_tempocalc
 
 		# tracks
-		self.tracks = cvpj_project_tracks(self)
+		self.tracks = tracks.cvpj_project_tracks(self)
 		self.track_master = tracks.cvpj_track('master', self.time_ppq, False, False)
 
 		# markers and automation
@@ -424,7 +252,7 @@ class cvpj_project:
 
 		# ------------------- fxtype -------------------
 		# groupreturn
-		self.groups = cvpj_project_groups(self)
+		self.groups = groups.cvpj_groups(self)
 		self.track_returns = {}
 
 		# fxrack
@@ -441,22 +269,6 @@ class cvpj_project:
 		self.type = 'ts'
 		self.tracker_single = pat_single.convproj_tracker_patsong()
 		return self.tracker_single
-
-	def main__sort_tracks(self):
-		sortpos = {}
-		for track_id, track_data in self.tracks.data.items():
-			trackstart = track_data.placements.get_start()
-			if trackstart not in sortpos: sortpos[trackstart] = []
-			sortpos[trackstart].append([track_id])
-		self.tracks.order = []
-		for n in sorted(sortpos):
-			for i in sortpos[n]: self.tracks.order += i
-
-	def main__do_lanefit(self):
-		for trackid, track_obj in self.tracks.data.items():
-			oldnum = len(track_obj.lanes)
-			track_obj.lanefit()
-			logger_project.info('LaneFit: '+ trackid+': '+str(oldnum)+' > '+str(len(track_obj.lanes)))
 
 	def main__change_type(self, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		compactclass = song_compat.song_compat()

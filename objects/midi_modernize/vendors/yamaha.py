@@ -3,6 +3,116 @@
 
 from functions import data_bytes
 
+yamaha_xg_8_params = {
+	0: "element_reserve",
+	1: "bank_select_msb",
+	2: "bank_select_lsb",
+	3: "program_number",
+	4: "receive_midi_channel",
+	5: "mono_poly",
+	6: "same_note_number_key_on_assign",
+	7: "part_mode",
+	8: "note_shift",
+	9: "detune",
+	11: "volume",
+	12: "velocity_sense_depth",
+	13: "velocity_sense_offset",
+	14: "panorama",
+	15: "note_limit_low",
+	16: "note_limit_high",
+	17: "dry_level",
+	18: "chorus_send",
+	19: "reverb_send",
+	20: "variation_send",
+	21: "vibrato_rate",
+	22: "vibrato_depth",
+	23: "vibrato_delay",
+	24: "filter_cutoff_frequency",
+	25: "filter_resonance",
+	26: "eg_attack_time",
+	27: "eg_decay_time",
+	28: "eg_release_time",
+	29: "mw_pitch_control",
+	30: "mw_filter_control",
+	31: "mw_amplitude_control",
+	32: "mw_lfo_pitch_modulation_depth",
+	33: "mw_lfo_filter_modulation_depth",
+	34: "mw_lfo_amplitude_modulation_depth",
+	35: "bend_pitch_control",
+	36: "bend_filter_control",
+	37: "bend_amplitude_control",
+	38: "bend_lfo_pitch_modulation_depth",
+	39: "bend_lfo_filter_modulation_depth",
+	40: "bend_lfo_amplitude_modulation_depth",
+	48: "receive_pitch_bend",
+	49: "receive_channel_after_touch",
+	50: "receive_program_change",
+	51: "receive_control_change",
+	52: "receive_polyphonic_after_touch",
+	53: "receive_note_messages",
+	54: "receive_rpn",
+	55: "receive_nrpn",
+	56: "receive_modulation_wheel",
+	57: "receive_volume",
+	58: "receive_pan",
+	59: "receive_expression",
+	60: "receive_hold_pedal",
+	61: "receive_portamento",
+	62: "receive_sostenuto_pedal",
+	63: "receive_soft_pedal",
+	64: "receive_bank_select",
+	65: "scale_tuning_c",
+	66: "scale_tuning_c_s",
+	67: "scale_tuning_d",
+	68: "scale_tuning_d_s",
+	69: "scale_tuning_e",
+	70: "scale_tuning_f",
+	71: "scale_tuning_f_s",
+	72: "scale_tuning_g",
+	73: "scale_tuning_g_s",
+	74: "scale_tuning_a",
+	75: "scale_tuning_a_s",
+	76: "scale_tuning_b",
+	77: "cat_pitch_control",
+	78: "cat_filter_control",
+	79: "cat_amplitude_control",
+	80: "cat_lfo_pitch_modulation_depth",
+	81: "cat_lfo_filter_modulation_depth",
+	82: "cat_lfo_amplitude_modulation_depth",
+	83: "pat_pitch_control",
+	84: "pat_filter_control",
+	85: "pat_amplitude_control",
+	86: "pat_lfo_pitch_modulation_depth",
+	87: "pat_lfo_filter_modulation_depth",
+	88: "pat_lfo_amplitude_modulation_depth",
+	89: "ac1_controller_number",
+	90: "ac1_pitch_control",
+	91: "ac1_filter_control",
+	92: "ac1_amplitude_control",
+	93: "ac1_lfo_pitch_modulation_depth",
+	94: "ac1_lfo_filter_modulation_depth",
+	95: "ac1_lfo_amplitude_modulation_depth",
+	96: "ac2_controller_number",
+	97: "ac2_pitch_control",
+	98: "ac2_filter_control",
+	99: "ac2_amplitude_control",
+	100: "ac2_lfo_pitch_modulation_depth",
+	101: "ac2_lfo_filter_modulation_depth",
+	102: "ac2_lfo_amplitude_modulation_depth",
+	103: "portamento_switch",
+	104: "portamento_time",
+	105: "pitch_eg_initial_level",
+	106: "pitch_eg_attack_time",
+	107: "pitch_eg_release_level",
+	108: "pitch_eg_release_time",
+	109: "velocity_limit_low",
+	110: "velocity_limit_high",
+	114: "eq_bass_gain",
+	115: "eq_treble_gain",
+	118: "eq_bass_frequency",
+	119: "eq_treble_frequency"
+}
+
 def decode(sysex_obj, bstream):
 	mem_paramid = bstream.read(2)
 	mem_data = bstream.read()
@@ -200,122 +310,21 @@ def decode(sysex_obj, bstream):
 				if mem_paramid[1] == 36: sysex_obj.param, sysex_obj.value = [14, firstval]
 
 		elif sysex_obj.command == 6 and mem_paramid[0] == 0:
-			sysex_obj.category, sysex_obj.group = ['display', 'text'], 
-			sysex_obj.param, sysex_obj.value = ['text', mem_data]
+			sysex_obj.category = 'display' 
+			sysex_obj.group = 'text'
+			sysex_obj.param = 'text'
+			sysex_obj.value = mem_data
 
 		elif sysex_obj.command == 7:
-			sysex_obj.category, sysex_obj.group =  ['display', 'bitmap'], 
-			sysex_obj.param, sysex_obj.value = [data_bytes.splitbyte(mem_paramid[0]), mem_data]
+			sysex_obj.category = 'display'
+			sysex_obj.group = 'bitmap'
+			sysex_obj.param = data_bytes.splitbyte(mem_paramid[0])
+			sysex_obj.value = mem_data
 
 		elif sysex_obj.command == 8:
-			sysex_obj.category, sysex_obj.group = ['part', mem_paramid[0]]
+			sysex_obj.category = 'part'
+			sysex_obj.group = mem_paramid[0]
 			if mem_paramid[1] != 9: sysex_obj.value = firstval
 			else: sysex_obj.value = mem_data
-			if mem_paramid[1] == 0: sysex_obj.param = "element_reserve"
-			if mem_paramid[1] == 1: sysex_obj.param = "bank_select_msb"
-			if mem_paramid[1] == 2: sysex_obj.param = "bank_select_lsb"
-			if mem_paramid[1] == 3: sysex_obj.param = "program_number"
-			if mem_paramid[1] == 4: sysex_obj.param = "receive_midi_channel"
-			if mem_paramid[1] == 5: sysex_obj.param = "mono_poly"
-			if mem_paramid[1] == 6: sysex_obj.param = "same_note_number_key_on_assign"
-			if mem_paramid[1] == 7: sysex_obj.param = "part_mode"
-			if mem_paramid[1] == 8: sysex_obj.param = "note_shift"
-			if mem_paramid[1] == 9: sysex_obj.param = "detune"
-			if mem_paramid[1] == 11: sysex_obj.param = "volume"
-			if mem_paramid[1] == 12: sysex_obj.param = "velocity_sense_depth"
-			if mem_paramid[1] == 13: sysex_obj.param = "velocity_sense_offset"
-			if mem_paramid[1] == 14: sysex_obj.param = "panorama"
-			if mem_paramid[1] == 15: sysex_obj.param = "note_limit_low"
-			if mem_paramid[1] == 16: sysex_obj.param = "note_limit_high"
-			if mem_paramid[1] == 17: sysex_obj.param = "dry_level"
-			if mem_paramid[1] == 18: sysex_obj.param = "chorus_send"
-			if mem_paramid[1] == 19: sysex_obj.param = "reverb_send"
-			if mem_paramid[1] == 20: sysex_obj.param = "variation_send"
-			if mem_paramid[1] == 21: sysex_obj.param = "vibrato_rate"
-			if mem_paramid[1] == 22: sysex_obj.param = "vibrato_depth"
-			if mem_paramid[1] == 23: sysex_obj.param = "vibrato_delay"
-			if mem_paramid[1] == 24: sysex_obj.param = "filter_cutoff_frequency"
-			if mem_paramid[1] == 25: sysex_obj.param = "filter_resonance"
-			if mem_paramid[1] == 26: sysex_obj.param = "eg_attack_time"
-			if mem_paramid[1] == 27: sysex_obj.param = "eg_decay_time"
-			if mem_paramid[1] == 28: sysex_obj.param = "eg_release_time"
-			if mem_paramid[1] == 29: sysex_obj.param = "mw_pitch_control"
-			if mem_paramid[1] == 30: sysex_obj.param = "mw_filter_control"
-			if mem_paramid[1] == 31: sysex_obj.param = "mw_amplitude_control"
-			if mem_paramid[1] == 32: sysex_obj.param = "mw_lfo_pitch_modulation_depth"
-			if mem_paramid[1] == 33: sysex_obj.param = "mw_lfo_filter_modulation_depth"
-			if mem_paramid[1] == 34: sysex_obj.param = "mw_lfo_amplitude_modulation_depth"
-			if mem_paramid[1] == 35: sysex_obj.param = "bend_pitch_control"
-			if mem_paramid[1] == 36: sysex_obj.param = "bend_filter_control"
-			if mem_paramid[1] == 37: sysex_obj.param = "bend_amplitude_control"
-			if mem_paramid[1] == 38: sysex_obj.param = "bend_lfo_pitch_modulation_depth"
-			if mem_paramid[1] == 39: sysex_obj.param = "bend_lfo_filter_modulation_depth"
-			if mem_paramid[1] == 40: sysex_obj.param = "bend_lfo_amplitude_modulation_depth"
-			if mem_paramid[1] == 48: sysex_obj.param = "receive_pitch_bend"
-			if mem_paramid[1] == 49: sysex_obj.param = "receive_channel_after_touch"
-			if mem_paramid[1] == 50: sysex_obj.param = "receive_program_change"
-			if mem_paramid[1] == 51: sysex_obj.param = "receive_control_change"
-			if mem_paramid[1] == 52: sysex_obj.param = "receive_polyphonic_after_touch"
-			if mem_paramid[1] == 53: sysex_obj.param = "receive_note_messages"
-			if mem_paramid[1] == 54: sysex_obj.param = "receive_rpn"
-			if mem_paramid[1] == 55: sysex_obj.param = "receive_nrpn"
-			if mem_paramid[1] == 56: sysex_obj.param = "receive_modulation_wheel"
-			if mem_paramid[1] == 57: sysex_obj.param = "receive_volume"
-			if mem_paramid[1] == 58: sysex_obj.param = "receive_pan"
-			if mem_paramid[1] == 59: sysex_obj.param = "receive_expression"
-			if mem_paramid[1] == 60: sysex_obj.param = "receive_hold_pedal"
-			if mem_paramid[1] == 61: sysex_obj.param = "receive_portamento"
-			if mem_paramid[1] == 62: sysex_obj.param = "receive_sostenuto_pedal"
-			if mem_paramid[1] == 63: sysex_obj.param = "receive_soft_pedal"
-			if mem_paramid[1] == 64: sysex_obj.param = "receive_bank_select"
-			if mem_paramid[1] == 65: sysex_obj.param = "scale_tuning_c"
-			if mem_paramid[1] == 66: sysex_obj.param = "scale_tuning_c_s"
-			if mem_paramid[1] == 67: sysex_obj.param = "scale_tuning_d"
-			if mem_paramid[1] == 68: sysex_obj.param = "scale_tuning_d_s"
-			if mem_paramid[1] == 69: sysex_obj.param = "scale_tuning_e"
-			if mem_paramid[1] == 70: sysex_obj.param = "scale_tuning_f"
-			if mem_paramid[1] == 71: sysex_obj.param = "scale_tuning_f_s"
-			if mem_paramid[1] == 72: sysex_obj.param = "scale_tuning_g"
-			if mem_paramid[1] == 73: sysex_obj.param = "scale_tuning_g_s"
-			if mem_paramid[1] == 74: sysex_obj.param = "scale_tuning_a"
-			if mem_paramid[1] == 75: sysex_obj.param = "scale_tuning_a_s"
-			if mem_paramid[1] == 76: sysex_obj.param = "scale_tuning_b"
-			if mem_paramid[1] == 77: sysex_obj.param = "cat_pitch_control"
-			if mem_paramid[1] == 78: sysex_obj.param = "cat_filter_control"
-			if mem_paramid[1] == 79: sysex_obj.param = "cat_amplitude_control"
-			if mem_paramid[1] == 80: sysex_obj.param = "cat_lfo_pitch_modulation_depth"
-			if mem_paramid[1] == 81: sysex_obj.param = "cat_lfo_filter_modulation_depth"
-			if mem_paramid[1] == 82: sysex_obj.param = "cat_lfo_amplitude_modulation_depth"
-			if mem_paramid[1] == 83: sysex_obj.param = "pat_pitch_control"
-			if mem_paramid[1] == 84: sysex_obj.param = "pat_filter_control"
-			if mem_paramid[1] == 85: sysex_obj.param = "pat_amplitude_control"
-			if mem_paramid[1] == 86: sysex_obj.param = "pat_lfo_pitch_modulation_depth"
-			if mem_paramid[1] == 87: sysex_obj.param = "pat_lfo_filter_modulation_depth"
-			if mem_paramid[1] == 88: sysex_obj.param = "pat_lfo_amplitude_modulation_depth"
-			if mem_paramid[1] == 89: sysex_obj.param = "ac1_controller_number"
-			if mem_paramid[1] == 90: sysex_obj.param = "ac1_pitch_control"
-			if mem_paramid[1] == 91: sysex_obj.param = "ac1_filter_control"
-			if mem_paramid[1] == 92: sysex_obj.param = "ac1_amplitude_control"
-			if mem_paramid[1] == 93: sysex_obj.param = "ac1_lfo_pitch_modulation_depth"
-			if mem_paramid[1] == 94: sysex_obj.param = "ac1_lfo_filter_modulation_depth"
-			if mem_paramid[1] == 95: sysex_obj.param = "ac1_lfo_amplitude_modulation_depth"
-			if mem_paramid[1] == 96: sysex_obj.param = "ac2_controller_number"
-			if mem_paramid[1] == 97: sysex_obj.param = "ac2_pitch_control"
-			if mem_paramid[1] == 98: sysex_obj.param = "ac2_filter_control"
-			if mem_paramid[1] == 99: sysex_obj.param = "ac2_amplitude_control"
-			if mem_paramid[1] == 100: sysex_obj.param = "ac2_lfo_pitch_modulation_depth"
-			if mem_paramid[1] == 101: sysex_obj.param = "ac2_lfo_filter_modulation_depth"
-			if mem_paramid[1] == 102: sysex_obj.param = "ac2_lfo_amplitude_modulation_depth"
-			if mem_paramid[1] == 103: sysex_obj.param = "portamento_switch"
-			if mem_paramid[1] == 104: sysex_obj.param = "portamento_time"
-			if mem_paramid[1] == 105: sysex_obj.param = "pitch_eg_initial_level"
-			if mem_paramid[1] == 106: sysex_obj.param = "pitch_eg_attack_time"
-			if mem_paramid[1] == 107: sysex_obj.param = "pitch_eg_release_level"
-			if mem_paramid[1] == 108: sysex_obj.param = "pitch_eg_release_time"
-			if mem_paramid[1] == 109: sysex_obj.param = "velocity_limit_low"
-			if mem_paramid[1] == 110: sysex_obj.param = "velocity_limit_high"
-			if mem_paramid[1] == 114: sysex_obj.param = "eq_bass_gain"
-			if mem_paramid[1] == 115: sysex_obj.param = "eq_treble_gain"
-			if mem_paramid[1] == 118: sysex_obj.param = "eq_bass_frequency"
-			if mem_paramid[1] == 119: sysex_obj.param = "eq_treble_frequency"
-		
+			if mem_paramid[1] in yamaha_xg_8_params: 
+				sysex_obj.param = yamaha_xg_8_params[mem_paramid[1]]

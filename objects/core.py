@@ -481,7 +481,7 @@ class core:
 		logger_core.info('' + convproj.typelist[in_type] + ' > ' + convproj.typelist[out_type])
 
 		self.convproj_obj.main__change_type(in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-		if 'do_sorttracks' in self.convproj_obj.do_actions: self.convproj_obj.main__sort_tracks()
+		if 'do_sorttracks' in self.convproj_obj.do_actions: self.convproj_obj.tracks.sort()
 
 		isconverted = False
 		for sampleref_id, sampleref_obj in self.convproj_obj.samplerefs.items():
