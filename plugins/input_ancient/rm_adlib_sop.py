@@ -74,8 +74,7 @@ class input_sop(plugins.base):
 				inst_obj = cvpj_insts.add(cvpj_instname)
 				inst_obj.plugslots.set_synth(cvpj_instname)
 				outname = opli.name_long if opli.name_long else opli.name
-				if outname: 
-					inst_obj.visual.name = outname
+				if outname: inst_obj.visual.name = outname
 				inst_obj.visual.color.set_float(maincolor)
 				inst_obj.is_drum = opli.perc_type!=0
 				opli.to_cvpj(convproj_obj, cvpj_instname)

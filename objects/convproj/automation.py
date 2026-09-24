@@ -51,14 +51,10 @@ class midifile_to_automation:
 
 						for pos, chan, controller, value in controlv:
 							if (i_chan==chan or i_chan==-1) and controller==i_ctrl:
-								if real:
-									self.auto_obj.add_autopoint_real(i_vals[0], valtype, pos, 
-										xtramath.between_from_one(i_vals[1], i_vals[2], value/127 if not i_vals[3] else value>=64)
-										, 'instant')
-								else:
-									self.auto_obj.add_autopoint(i_vals[0], valtype, pos, 
-										xtramath.between_from_one(i_vals[1], i_vals[2], value/127 if not i_vals[3] else value>=64)
-										, 'instant')
+								ovalue = value/127 if not i_vals[3] else value>=64
+								ovalue = xtramath.between_from_one(i_vals[1], i_vals[2], ovalue)
+								if real: self.auto_obj.add_autopoint_real(i_vals[0], valtype, pos, ovalue, 'instant')
+								else: self.auto_obj.add_autopoint(i_vals[0], valtype, pos, ovalue, 'instant')
 
 
 class cvpj_s_automation:

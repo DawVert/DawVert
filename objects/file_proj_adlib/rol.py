@@ -81,7 +81,6 @@ class adlib_rol_project:
 		self.cTimbreEvents = (0,0,0,0,0,0,0,0,0,0,0)
 		self.cVolumeEvents = (0,0,0,0,0,0,0,0,0,0,0)
 		self.cPitchEvents = (0,0,0,0,0,0,0,0,0,0,0)
-		self.cPitchEvents = (0,0,0,0,0,0,0,0,0,0,0)
 		self.cTempoEvents = 4
 		self.track_tempo = track_tempo()
 		self.tracks = [adlib_rol_track() for _ in range(10)]
@@ -109,12 +108,10 @@ class adlib_rol_project:
 		self.cTimbreEvents = ebrw_readstr.list_int_u16(11)
 		self.cVolumeEvents = ebrw_readstr.list_int_u16(11)
 		self.cPitchEvents = ebrw_readstr.list_int_u16(11)
-
 		self.cTempoEvents = ebrw_readstr.int_u16()
 
 		ebrw_readstr.skip(38)
 		self.track_tempo.load(ebrw_readstr)
 
-		for tracknum in range(10): 
-			self.tracks[tracknum].load(ebrw_readstr)
+		for tracknum in range(10): self.tracks[tracknum].load(ebrw_readstr)
 		return True
