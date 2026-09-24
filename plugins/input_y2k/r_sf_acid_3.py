@@ -202,6 +202,7 @@ class input_acid_3(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
 		cvpj_automation = convproj_obj.automation
+		cvpj_timemarkers = convproj_obj.timemarkers
 
 		def do_orders_groups(riff_data, track_order, tracks_data, ingroup):
 			if not use_groups: ingroup = None
@@ -524,7 +525,7 @@ class input_acid_3(plugins.base):
 							cvpj_automation.add_autopoint(['main', 'bpm'], 'float', def_data.pos_samples, tempov, 'instant')
 						if def_data.base_note:
 							if def_data.pos_samples in auto_basenotes:
-								timemarker_obj = convproj_obj.timemarker__add_key(auto_basenotes[def_data.pos_samples]-60)
+								timemarker_obj = cvpj_timemarkers.add_key(auto_basenotes[def_data.pos_samples]-60)
 								timemarker_obj.time.set_pos(def_data.pos_samples)
 								timemarker_obj.visual.color.set_int([56, 95, 125])
 
@@ -533,7 +534,7 @@ class input_acid_3(plugins.base):
 					if regs_name == 'Marker':
 						marker = regs_chunk.content
 
-						timemarker_obj = convproj_obj.timemarker__add()
+						timemarker_obj = cvpj_timemarkers.add()
 						timemarker_obj.time.set_posdur(marker.pos, marker.end)
 						timemarker_obj.visual.name = marker.name if marker.name else '[%i]' % marker.id
 						if marker.type == 1: 

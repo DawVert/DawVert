@@ -84,19 +84,7 @@ class jummbox_autotype():
 
 		return autoloc, m_add, m_mul
 
-noteoffset = {}
-noteoffset['B'] = 11
-noteoffset['A♯'] = 10
-noteoffset['A'] = 9
-noteoffset['G♯'] = 8
-noteoffset['G'] = 7
-noteoffset['F♯'] = 6
-noteoffset['F'] = 5
-noteoffset['E'] = 4
-noteoffset['D♯'] = 3
-noteoffset['D'] = 2
-noteoffset['C♯'] = 1
-noteoffset['C'] = 0
+noteoffset = {'B':11,'A♯':10,'A':9,'G♯':8,'G':7,'F♯':6,'F':5,'E':4,'D♯':3,'D':2,'C♯':1,'C':0}
 
 def text_patternid(channum, patnum):
 	return 'bb_ch'+str(channum)+'_pat'+str(patnum)
@@ -276,6 +264,7 @@ class input_jummbox(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = convproj_obj.automation
+		cvpj_timemarkers = convproj_obj.timemarkers
 		
 		# ---------- convproj params ----------
 		transpose_ignore = dawvert_intent.input_get_param('transpose_ignore', False)

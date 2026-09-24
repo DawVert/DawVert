@@ -102,6 +102,8 @@ class midi_modernize:
 			self.instchange_data.add_program(0, gfunc.calc_channum(out_chanport.chan, out_chanport.port, self.num_channels), track_midi.out_inst.patch)
 
 	def do_notes(self, convproj_obj, midievents_obj, inpos, dur, offset, in_section, portnum, tracknum):
+		cvpj_timemarkers = convproj_obj.timemarkers
+
 		for x in midievents_obj:
 			pos = (x['pos']-offset)+inpos
 			condpos = (dur+inpos)>(pos)>=0 if dur>=0 else True
@@ -156,7 +158,7 @@ class midi_modernize:
 	
 				elif x['type'] == midievents.EVENTID__MARKER:
 					marker_data = midievents_obj.markers[x['uhival']]
-					timemarker_obj = convproj_obj.timemarker__add()
+					timemarker_obj = cvpj_timemarkers.add()
 					timemarker_obj.time.set_pos(pos)
 					if marker_data: timemarker_obj.visual.name = marker_data
 

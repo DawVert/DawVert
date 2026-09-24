@@ -194,6 +194,7 @@ class input_reaper(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
 		cvpj_automation = convproj_obj.automation
+		cvpj_timemarkers = convproj_obj.timemarkers
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -255,7 +256,7 @@ class input_reaper(plugins.base):
 
 		for marker in rpp_project.markers:
 			if not marker[3]:
-				timemarker_obj = convproj_obj.timemarker__add()
+				timemarker_obj = cvpj_timemarkers.add()
 				timemarker_obj.time.set_pos_real(marker[1])
 				if marker[2]: timemarker_obj.visual.name = marker[2]
 				if marker[4]: timemarker_obj.visual.color.set_int(reaper_color_to_cvpj_color(marker[4], True))
@@ -267,7 +268,7 @@ class input_reaper(plugins.base):
 			if len(markerdata)>1:
 				marker = markerdata[0]
 				marker_end = markerdata[1]
-				timemarker_obj = convproj_obj.timemarker__add()
+				timemarker_obj = cvpj_timemarkers.add()
 				timemarker_obj.type = 'region'
 				timemarker_obj.time.set_posdur_real(marker[0], marker_end[0]-marker[0])
 				if marker[1]: timemarker_obj.visual.name = marker[1]

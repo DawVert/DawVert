@@ -65,6 +65,7 @@ class input_acid_old(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
 		cvpj_automation = convproj_obj.automation
+		cvpj_timemarkers = convproj_obj.timemarkers
 
 		# ---------- convproj params ----------
 		groupby = dawvert_intent.input_get_param('groupby', 'none')
@@ -114,7 +115,7 @@ class input_acid_old(plugins.base):
 					pos = int(x['pos'])
 					if pos:
 						auto_basenotes[pos] = int(x['base_note'])
-						timemarker_obj = convproj_obj.timemarker__add_key(auto_basenotes[pos]-60)
+						timemarker_obj = cvpj_timemarkers.add_key(auto_basenotes[pos]-60)
 						timemarker_obj.time.set_pos(pos)
 						timemarker_obj.visual.color.set_int([0,0,255] if not x['tempo'] else [0,192,0])
 					else:
@@ -122,11 +123,11 @@ class input_acid_old(plugins.base):
 
 		for pos in list(auto_basenotes): rootnote_auto.add_pos(pos)
 		rootnote_auto.add_notes(auto_basenotes)
-		timemarker_obj = convproj_obj.timemarker__add_key(auto_basenotes[0]-60)
+		timemarker_obj = cvpj_timemarkers.add_key(auto_basenotes[0]-60)
 
 		# ---------- markers ----------
 		for marker in project_obj.markers:
-			timemarker_obj = convproj_obj.timemarker__add()
+			timemarker_obj = cvpj_timemarkers.add()
 			timemarker_obj.time.set_pos(marker.pos)
 			timemarker_obj.visual.name = marker.text if marker.text else '[%i]' % marker.id
 			timemarker_obj.visual.color.set_int([255,0,0])

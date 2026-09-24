@@ -72,6 +72,7 @@ class input_zmaestro(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_timemarkers = convproj_obj.timemarkers
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -96,7 +97,7 @@ class input_zmaestro(plugins.base):
 
 		# ---------- key marker ----------
 		if project_obj.key in keynums:
-			timemarker_obj = convproj_obj.timemarker__add_key(keynums[project_obj.key])
+			timemarker_obj = cvpj_timemarkers.add_key(keynums[project_obj.key])
 
 		# ---------- automation ----------
 		do_automation(cvpj_automation, '', 'vol', project_obj.volumetimeline, project_obj.usevolumetimeline)

@@ -46,6 +46,7 @@ class input_cvpj_f(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_timemarkers = convproj_obj.timemarkers
 		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(96)
@@ -257,7 +258,7 @@ class input_cvpj_f(plugins.base):
 					elif chunk.id == 21: #Gen1:Global:Markers
 						for realtime, pos, text in parseddata.markers:
 							if not realtime:
-								timemarker_obj = convproj_obj.timemarker__add()
+								timemarker_obj = cvpj_timemarkers.add()
 								timemarker_obj.time.set_pos(pos)
 								timemarker_obj.visual.name = text.decode()
 

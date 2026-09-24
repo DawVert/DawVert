@@ -629,6 +629,7 @@ class input_tracktion_edit(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_timemarkers = convproj_obj.timemarkers
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
@@ -685,7 +686,7 @@ class input_tracktion_edit(plugins.base):
 
 		# ---------- marker track ----------
 		for markclip in project_obj.markertrack.clips:
-			timemarker_obj = convproj_obj.timemarker__add()
+			timemarker_obj = cvpj_timemarkers.add()
 			#if not markclip.sync:
 			timemarker_obj.time.set_posdur(markclip.start*8, markclip.length*8)
 			timemarker_obj.type = 'region'

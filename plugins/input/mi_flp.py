@@ -280,6 +280,7 @@ class input_flp(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = convproj_obj.automation
+		cvpj_timemarkers = convproj_obj.timemarkers
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -764,7 +765,7 @@ class input_flp(plugins.base):
 						convproj_obj.transport.loop_start = fl_timemark.pos
 						convproj_obj.transport.loop_active = True
 					else:
-						timemarker_obj = convproj_obj.timemarker__add()
+						timemarker_obj = cvpj_timemarkers.add()
 						timemarker_obj.visual.name = fl_timemark.name
 						timemarker_obj.time.set_pos(fl_timemark.pos)
 						if fl_timemark.type == 1: timemarker_obj.type = 'markerloop'

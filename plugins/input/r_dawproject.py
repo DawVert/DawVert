@@ -462,6 +462,7 @@ class input_dawproject(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_automation = convproj_obj.automation
+		cvpj_timemarkers = convproj_obj.timemarkers
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -535,7 +536,7 @@ class input_dawproject(plugins.base):
 		if project_obj.arrangement.markers:
 			markers = project_obj.arrangement.markers.markers
 			for marker in markers:
-				timemarker_obj = convproj_obj.timemarker__add()
+				timemarker_obj = cvpj_timemarkers.add()
 				if marker.name: timemarker_obj.visual.name = marker.name
 				if marker.color: timemarker_obj.visual.color.set_hex(marker.color)
 				timemarker_obj.time.set_pos(marker.time)

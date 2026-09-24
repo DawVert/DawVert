@@ -69,6 +69,7 @@ class input_hydrogen(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = convproj_obj.automation
+		cvpj_timemarkers = convproj_obj.timemarkers
 		
 		# ---------- convproj params ----------
 		pb_track = dawvert_intent.input_get_param('pb_track', True)
@@ -125,7 +126,7 @@ class input_hydrogen(plugins.base):
 
 		# ---------- markers ----------
 		for tag in project_obj.timeLineTag:
-			timemarker_obj = convproj_obj.timemarker__add()
+			timemarker_obj = cvpj_timemarkers.add()
 			timemarker_obj.time.set_pos(tag.bar*48*4)
 			timemarker_obj.visual.name = tag.tag
 

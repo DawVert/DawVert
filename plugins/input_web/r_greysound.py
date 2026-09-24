@@ -89,6 +89,7 @@ class input_greysound(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_timemarkers = convproj_obj.timemarkers
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -255,7 +256,7 @@ class input_greysound(plugins.base):
 		# ---------- markers ----------
 		for gs_marker in session_obj.markers:
 			if 'ticks' in gs_marker.position:
-				timemarker_obj = convproj_obj.timemarker__add()
+				timemarker_obj = cvpj_timemarkers.add()
 				if gs_marker.name: timemarker_obj.visual.name = gs_marker.name
 				timemarker_obj.time.set_pos(gs_marker.position['ticks'])
 

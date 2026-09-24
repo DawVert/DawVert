@@ -407,6 +407,7 @@ class input_ableton(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_timemarkers = convproj_obj.timemarkers
 
 		# ---------- convproj params ----------
 		DEBUG_DISABLE_PLACEMENTS = dawvert_intent.input_get_param('no_placements', False)
@@ -434,7 +435,7 @@ class input_ableton(plugins.base):
 
 		# ---------- markers ----------
 		for _, loc in project_obj.Locators.items():
-			timemarker_obj = convproj_obj.timemarker__add()
+			timemarker_obj = cvpj_timemarkers.add()
 			timemarker_obj.visual.name = loc.Name
 			timemarker_obj.time.set_pos(loc.Time)
 			if loc.Annotation: timemarker_obj.visual.comment = loc.Annotation

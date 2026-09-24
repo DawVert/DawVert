@@ -48,25 +48,26 @@ class mariopaint_song():
 		return self.chords[pos]
 
 	def to_cvpj(self, convproj_obj):
-
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_timemarkers = convproj_obj.timemarkers
 	
 		convproj_obj.set_timings(4)
-		track_obj = cvpj_tracks.add('main', 'instruments', 0, False)
+		convproj_obj.do_actions.append('do_addloop')
+		convproj_obj.do_actions.append('do_singlenotelistcut')
+		convproj_obj.timesig = [self.measure, self.measure_o]
+		auto_bpm_obj = convproj_obj.automation.create(['main','bpm'], 'float', True)
+
 		globalstore.datapack.load('mariopaint', './data/datapack/app/mariopaint.xml')
 
-		#print(outtempo, notelen, self.tempo)
-
+		track_obj = cvpj_tracks.add('main', 'instruments', 0, False)
 		cvpj_notelist = track_obj.placements.notelist
-
-		songsize = max(list(self.chords))
-
-		auto_bpm_obj = convproj_obj.automation.create(['main','bpm'], 'float', True)
 
 		notepos = 0
 		outtempo, notelen = xtramath.get_lower_tempo(self.tempo, 1, 180)
 		tempo_changed = True
+
+		songsize = max(list(self.chords))
 		for pos in range(songsize):
 			chord_obj = self.chords[pos] if pos in self.chords else None
 
@@ -76,7 +77,7 @@ class mariopaint_song():
 					outtempo, notelen = xtramath.get_lower_tempo(chord_obj.speedmark, 1, 180)
 
 				if chord_obj.bookmark:
-					timemarker_obj = convproj_obj.timemarker__add()
+					timemarker_obj = cvpj_timemarkers.add()
 					timemarker_obj.visual.name = 'Bookmark'
 					timemarker_obj.type = 'text'
 					timemarker_obj.time.set_pos(pos/notelen)
@@ -93,17 +94,16 @@ class mariopaint_song():
 		used_inst = cvpj_notelist.get_used_inst()
 
 		fxrack_obj = convproj_obj.fxrack
-		
 		for instnum, instname in enumerate(used_inst): 
 			inst_obj = cvpj_insts.add(instname)
 			inst_obj.visual.from_datapack('mariopaint', 'inst', instname, True)
+			inst_obj.fxrack_channel = instnum+1
+			inst_obj.plugslots.set_synth(instname)
+
 			plugin_obj = convproj_obj.plugin__add(instname, 'universal', 'mariopaint', None)
 			plugin_obj.midi_fallback__add_from_datapack('mariopaint', 'inst', instname)
+
 			fxchan_data = fxrack_obj.add(instnum+1)
 			fxchan_data.visual = copy.deepcopy(inst_obj.visual)
-			inst_obj.fxrack_channel = instnum+1
 			
-		convproj_obj.do_actions.append('do_addloop')
-		convproj_obj.do_actions.append('do_singlenotelistcut')
-		convproj_obj.timesig = [self.measure, self.measure_o]
 		convproj_obj.params.add('bpm', outtempo, 'float')

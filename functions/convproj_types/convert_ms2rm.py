@@ -11,6 +11,7 @@ def convert(convproj_obj, out_dawinfo):
 
 	cvpj_tracks = convproj_obj.tracks
 	cvpj_automation = convproj_obj.automation
+	cvpj_timemarkers = convproj_obj.timemarkers
 	
 	if 'arranger_from_scene' in convproj_obj.do_actions:
 		convproj_obj.traits.track_arranger = True
@@ -19,7 +20,7 @@ def convert(convproj_obj, out_dawinfo):
 	for scenepl in convproj_obj.scene_placements:
 		if scenepl.id != prevsceneid:
 			if 'markers_from_scene' in convproj_obj.do_actions:
-				timemarker_obj = convproj_obj.timemarker__add()
+				timemarker_obj = cvpj_timemarkers.add()
 				timemarker_obj.position = scenepl.position
 				if scenepl.id in convproj_obj.scenes:
 					timemarker_obj.visual = convproj_obj.scenes[scenepl.id].visual.copy()
