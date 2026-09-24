@@ -51,6 +51,7 @@ class input_fl_mobile(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -302,7 +303,7 @@ class input_fl_mobile(plugins.base):
 						for flm_clip in lanedata.clips:
 							startpos = flm_clip.position/128
 							if flm_clip.evn2: 
-								autopl_obj = convproj_obj.automation.add_pl_points(autoloc, 'float')
+								autopl_obj = cvpj_automation.add_pl_points(autoloc, 'float')
 								duration = do_auto(flm_clip.evn2.events, autopl_obj.data, startpos, v_add, v_mul, v_bool)
 								maxdur = max(duration, flm_clip.duration)
 								time_obj = autopl_obj.time

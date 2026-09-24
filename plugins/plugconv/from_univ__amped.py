@@ -25,6 +25,8 @@ class plugconv(plugins.base):
 		in_dict['out_daws'] = ['amped']
 
 	def convert(self, convproj_obj, plugin_obj, pluginid, dawvert_intent):
+		cvpj_automation = convproj_obj.automation
+		
 		if plugin_obj.eq_to_bands_only(convproj_obj, pluginid, ['8limited', '3band_channel']):
 			eqbands = [x for x in plugin_obj.state.eq]
 			gain_out = plugin_obj.params.get("gain_out", 0).value
@@ -39,10 +41,10 @@ class plugconv(plugins.base):
 				plugin_obj.params.add(starttxt+'q', filter_obj.q, 'float')
 				plugin_obj.params.add(starttxt+'gain', filter_obj.gain, 'float')
 
-				convproj_obj.automation.move(['n_filter', pluginid, filter_id, 'on'], ['plugin', pluginid, starttxt+'active'])
-				convproj_obj.automation.move(['n_filter', pluginid, filter_id, 'freq'], ['plugin', pluginid, starttxt+'freq'])
-				convproj_obj.automation.move(['n_filter', pluginid, filter_id, 'gain'], ['plugin', pluginid, starttxt+'gain'])
+				cvpj_automation.move(['n_filter', pluginid, filter_id, 'on'], ['plugin', pluginid, starttxt+'active'])
+				cvpj_automation.move(['n_filter', pluginid, filter_id, 'freq'], ['plugin', pluginid, starttxt+'freq'])
+				cvpj_automation.move(['n_filter', pluginid, filter_id, 'gain'], ['plugin', pluginid, starttxt+'gain'])
 
-			convproj_obj.automation.move_group(['plugin', pluginid], 'gain_out', 'postGain')
+			cvpj_automation.move_group(['plugin', pluginid], 'gain_out', 'postGain')
 			plugin_obj.params.add('postGain', gain_out, 'float')
 			return True

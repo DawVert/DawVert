@@ -7,6 +7,7 @@ def process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
 	fxrack_obj = convproj_obj.fxrack
 
 	cvpj_tracks = convproj_obj.tracks
+	cvpj_automation = convproj_obj.automation
 	
 	if convproj_obj.type in ['ri','r']:
 		if in_compat == out_compat: return False
@@ -26,7 +27,7 @@ def process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
 						for trackid, track_obj in fx_trackids[fx_num]:
 							for paramid in paramlist:
 								fxchannel_obj.params.copy(track_obj.params, paramid)
-								convproj_obj.automation.copy(['fxmixer',str(fx_num),paramid], ['track',trackid,paramid])
+								cvpj_automation.copy(['fxmixer',str(fx_num),paramid], ['track',trackid,paramid])
 
 			return True
 			

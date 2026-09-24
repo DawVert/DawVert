@@ -81,8 +81,9 @@ class cvpj_eq:
 				if nameto: 
 					self.plugstate_obj.named_filter_rename(fname, nameto)
 					if convproj_obj and pluginid:
-						convproj_obj.automation.move(['n_filter', pluginid, fname, 'freq'], ['n_filter', pluginid, nameto, 'freq'])
-						convproj_obj.automation.move(['n_filter', pluginid, fname, 'gain'], ['n_filter', pluginid, nameto, 'gain'])
-						convproj_obj.automation.move(['n_filter', pluginid, fname, 'q'], ['n_filter', pluginid, nameto, 'q'])
-						convproj_obj.automation.move(['n_filter', pluginid, fname, 'on'], ['n_filter', pluginid, nameto, 'on'])
+						cvpj_automation = convproj_obj.automation
+						cvpj_automation.move(['n_filter', pluginid, fname, 'freq'], ['n_filter', pluginid, nameto, 'freq'])
+						cvpj_automation.move(['n_filter', pluginid, fname, 'gain'], ['n_filter', pluginid, nameto, 'gain'])
+						cvpj_automation.move(['n_filter', pluginid, fname, 'q'], ['n_filter', pluginid, nameto, 'q'])
+						cvpj_automation.move(['n_filter', pluginid, fname, 'on'], ['n_filter', pluginid, nameto, 'on'])
 		return iseqlimited

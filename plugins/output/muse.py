@@ -159,9 +159,9 @@ WAVE_FREQUENCY = 48000
 
 wavetime = WAVE_FREQUENCY/768
 
-def do_automation(convproj_obj, autoloc, controller_obj):
+def do_automation(cvpj_automation, autoloc, controller_obj):
 	autopoints = controller_obj.autopoints
-	ap_f, ap_d = convproj_obj.automation.get(autoloc, 'float')
+	ap_f, ap_d = cvpj_automation.get(autoloc, 'float')
 	if ap_f: 
 		if ap_d.u_nopl_points:
 			nopl_points = ap_d.nopl_points

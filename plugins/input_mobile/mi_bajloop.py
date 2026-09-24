@@ -34,6 +34,7 @@ class input_fl_mobile_old(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'mi'
@@ -136,7 +137,7 @@ class input_fl_mobile_old(plugins.base):
 				else: logger_input.warning('bajloop: Track Automation Param #%i is not implemented.' % paramnum)
 
 			if a_loc:
-				auto_obj = convproj_obj.automation.create(a_loc, 'float', True)
+				auto_obj = cvpj_automation.create(a_loc, 'float', True)
 				for pos, val in data.items():
 					pos = (pos-256)/8
 					val = v_add+(val/v_div)

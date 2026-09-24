@@ -59,6 +59,7 @@ class input_soundclub2(plugins.base):
 		
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj params ----------
 		panlvl = dawvert_intent.input_get_param('panlvl', 1.0)
@@ -195,7 +196,7 @@ class input_soundclub2(plugins.base):
 
 			pat_tempos = project_obj.patterns[pat_num].tempos
 
-			autopl_obj = convproj_obj.automation.add_pl_points(['main','bpm'], 'float')
+			autopl_obj = cvpj_automation.add_pl_points(['main','bpm'], 'float')
 			time_obj = autopl_obj.time
 			time_obj.set_posdur(curpos, size)
 			autopoints_obj = autopl_obj.data

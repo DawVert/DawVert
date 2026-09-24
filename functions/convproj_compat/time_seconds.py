@@ -11,6 +11,7 @@ def process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
 	tempo = convproj_obj.params.get('bpm', 120).value
 
 	cvpj_tracks = convproj_obj.tracks
+	cvpj_automation = convproj_obj.automation
 
 	ppq = convproj_obj.time_ppq
 
@@ -21,7 +22,7 @@ def process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
 	elif in_compat.time_seconds == True and out_compat.time_seconds == False: is_seconds = -1
 
 	if convproj_obj.type in ['r', 'rm', 'ri']: 
-		if not convproj_obj.time_tempocalc.use_stored>0: convproj_obj.automation.delete(['main', 'bpm'])
+		if not convproj_obj.time_tempocalc.use_stored>0: cvpj_automation.delete(['main', 'bpm'])
 
 		# -- tracks --
 		dochange, is_sec = get_sec(in_compat.time_seconds_tracks, out_compat.time_seconds_tracks)
@@ -33,11 +34,11 @@ def process(convproj_obj, in_compat, out_compat, out_type, dawvert_intent):
 
 		# -- automation --
 		dochange, is_sec = get_sec(in_compat.time_seconds_auto, out_compat.time_seconds_auto)
-		if dochange: convproj_obj.automation.change_seconds_notempo(is_sec, tempo, ppq)
+		if dochange: cvpj_automation.change_seconds_notempo(is_sec, tempo, ppq)
 
 		# -- tempo --
 		dochange, is_sec = get_sec(in_compat.time_seconds_tempo, out_compat.time_seconds_tempo)
-		if dochange: convproj_obj.automation.change_seconds_tempo(is_sec, tempo, ppq)
+		if dochange: cvpj_automation.change_seconds_tempo(is_sec, tempo, ppq)
 
 		# -- timesig --
 		dochange, is_sec = get_sec(in_compat.time_seconds_timesig, out_compat.time_seconds_timesig)

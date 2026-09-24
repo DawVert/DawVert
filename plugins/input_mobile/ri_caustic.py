@@ -125,6 +125,7 @@ class input_cvpj_r(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = cvpj_automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
@@ -465,20 +466,20 @@ class input_cvpj_r(plugins.base):
 #
 			#	for position, duration, loopstart, loopend in cutpoints:
 			#		for autoid, sauto in autodata.items():
-			#			autopl_obj = convproj_obj.automation.add_pl_points(['plugin', 'machine'+str(x['mach']+1), str(autoid)], 'float')
+			#			autopl_obj = cvpj_automation.add_pl_points(['plugin', 'machine'+str(x['mach']+1), str(autoid)], 'float')
 			#			autopl_obj.data.from_steps(sauto.data, sauto.smooth, 1)
 			#			time_obj = autopl_obj.time
 			#			time_obj.set_posdur(position, duration)
 
 		# ---------- automation: tempo ----------
-		bpm_auto_obj = convproj_obj.automation.create(['main', 'bpm'], 'float', True)
+		bpm_auto_obj = cvpj_automation.create(['main', 'bpm'], 'float', True)
 		for pos, val in project_obj.seqn.tempoauto: bpm_auto_obj.add_autopoint(pos, val, None)
 
 		# ---------- automation: mach ----------
 		for machnum, machauto in enumerate(project_obj.seqn.auto_mach):
 			for ctrlid, s_machauto in machauto.data.items():
 				twopoints = [[float(x['pos']), float(x['val'])] for x in s_machauto]
-				convproj_obj.automation.add_autopoints_twopoints(['plugin', 'machine'+str(machnum+1), str(ctrlid)], 'float', twopoints)
+				cvpj_automation.add_autopoints_twopoints(['plugin', 'machine'+str(machnum+1), str(ctrlid)], 'float', twopoints)
 
 		# ---------- automation: mixer ----------
 		for fxsetnum, machauto in enumerate(project_obj.seqn.auto_mixer):
@@ -500,7 +501,7 @@ class input_cvpj_r(plugins.base):
 					twopoints = [[float(x['pos']), float(x['val'])] for x in s_machauto]
 					if ctrl_g == 8: 
 						for x in twopoints: x[1] = (x[1]-0.5)*2
-					convproj_obj.automation.add_autopoints_twopoints(autoloc, 'float', twopoints)
+					cvpj_automation.add_autopoints_twopoints(autoloc, 'float', twopoints)
 
 		# ---------- automation: fx ----------
 		for fxsetnum, machauto in enumerate(project_obj.seqn.auto_fx):
@@ -515,9 +516,9 @@ class input_cvpj_r(plugins.base):
 
 				if autofx_ctrl == 5: 
 					for x in twopoints: x[1] = (x[1]*-1)-1
-					convproj_obj.automation.add_autopoints_twopoints(['slot', cvpj_fx_autoid, 'enabled'], 'bool', twopoints)
+					cvpj_automation.add_autopoints_twopoints(['slot', cvpj_fx_autoid, 'enabled'], 'bool', twopoints)
 				else: 
-					convproj_obj.automation.add_autopoints_twopoints(['plugin', cvpj_fx_autoid, str(autofx_ctrl)], 'float', twopoints)
+					cvpj_automation.add_autopoints_twopoints(['plugin', cvpj_fx_autoid, str(autofx_ctrl)], 'float', twopoints)
 
 		# ---------- automation: master fx ----------
 		master_fxchaindata = []
@@ -570,7 +571,7 @@ class input_cvpj_r(plugins.base):
 					autoloc = ['slot', cvpj_fx_autoid, 'enabled']
 				else:  autoloc = ['plugin', cvpj_fx_autoid, str(autofx_ctrl-64)]
 
-			if autoloc: convproj_obj.automation.add_autopoints_twopoints(autoloc, 'float', twopoints)
+			if autoloc: cvpj_automation.add_autopoints_twopoints(autoloc, 'float', twopoints)
 
 		# ---------- master track ----------
 		convproj_obj.track_master.params.add('vol', master_controls_data[39], 'float')

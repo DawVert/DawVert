@@ -29,6 +29,8 @@ class plugconv(plugins.base):
 		in_dict['out_daws'] = []
 
 	def convert(self, convproj_obj, plugin_obj, pluginid, dawvert_intent):
+		cvpj_automation = convproj_obj.automation
+		
 		#if plugin_obj.type.check_wildmatch('native', 'tracktion', 'chorusEffect'):
 		#	# extpluglog.convinternal('Waveform', 'chorusEffect', 'Universal', 'Chorus')
 		#	p_delay = plugin_obj.params.get('delay', 10).value/1000
@@ -86,11 +88,11 @@ class plugconv(plugins.base):
 					filter_obj.type.set(band_shape, None)
 					filter_obj.slope = band_slope
 
-					convproj_obj.automation.calc(['plugin', pluginid, "freq"+endtxt], 'add', -72, 0, 0, 0)
-					convproj_obj.automation.calc(['plugin', pluginid, "freq"+endtxt], 'note2freq', 0, 0, 0, 0)
-					convproj_obj.automation.move(['plugin', pluginid, "freq"+endtxt], ['n_filter', pluginid, filterid, 'freq'])
-					convproj_obj.automation.move(['plugin', pluginid, "gain"+endtxt], ['n_filter', pluginid, filterid, 'gain'])
-					convproj_obj.automation.move(['plugin', pluginid, "q"+endtxt], ['n_filter', pluginid, filterid, 'q'])
+					cvpj_automation.calc(['plugin', pluginid, "freq"+endtxt], 'add', -72, 0, 0, 0)
+					cvpj_automation.calc(['plugin', pluginid, "freq"+endtxt], 'note2freq', 0, 0, 0, 0)
+					cvpj_automation.move(['plugin', pluginid, "freq"+endtxt], ['n_filter', pluginid, filterid, 'freq'])
+					cvpj_automation.move(['plugin', pluginid, "gain"+endtxt], ['n_filter', pluginid, filterid, 'gain'])
+					cvpj_automation.move(['plugin', pluginid, "q"+endtxt], ['n_filter', pluginid, filterid, 'q'])
 
 			eq_mode = plugin_obj.params.get("mode", 0).value
 			cvpj_eq_mode = ['normal', 'l_r', 'm_s'][eq_mode]

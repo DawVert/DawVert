@@ -17,6 +17,7 @@ def convert(convproj_obj):
 
 	cvpj_tracks = convproj_obj.tracks
 	cvpj_insts = convproj_obj.instruments
+	cvpj_automation = convproj_obj.automation
 	
 	plnum = -1
 	for trackid, track_obj in cvpj_tracks.iter():
@@ -61,7 +62,7 @@ def convert(convproj_obj):
 				playlist_obj.datavals = copy.deepcopy(lane_obj.datavals)
 				playlist_obj.placements = copy.deepcopy(lane_obj.placements)
 	
-	convproj_obj.automation.move_everything(['track'], ['inst'])
+	cvpj_automation.move_everything(['track'], ['inst'])
 
 	cvpj_tracks.data = {}
 	cvpj_tracks.order = []

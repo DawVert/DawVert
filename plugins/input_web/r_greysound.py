@@ -88,6 +88,7 @@ class input_greysound(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -159,11 +160,11 @@ class input_greysound(plugins.base):
 					target = lane.target
 					if target.type=='TRACK':
 						if target.parameterId=='volume':
-							auto_obj = convproj_obj.automation.create(autoloc+['vol'], 'float', True)
+							auto_obj = cvpj_automation.create(autoloc+['vol'], 'float', True)
 							for point in lane.points:
 								if 'ticks' in point.position: auto_obj.add_autopoint(point.position['ticks']*16, clipGain(point.value), None)
 						if target.parameterId=='pan':
-							auto_obj = convproj_obj.automation.create(autoloc+['pan'], 'float', True)
+							auto_obj = cvpj_automation.create(autoloc+['pan'], 'float', True)
 							for point in lane.points:
 								if 'ticks' in point.position: auto_obj.add_autopoint(point.position['ticks']*16, point.value, None)
 

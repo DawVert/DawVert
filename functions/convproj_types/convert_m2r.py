@@ -19,6 +19,7 @@ def convert(convproj_obj):
 
 	cvpj_tracks = convproj_obj.tracks
 	cvpj_insts = convproj_obj.instruments
+	cvpj_automation = convproj_obj.automation
 	
 	fxrack_order = {}
 
@@ -84,9 +85,9 @@ def convert(convproj_obj):
 
 	convproj_obj.main__do_lanefit()
 
-	convproj_obj.automation.move_everything(['inst'], ['track'])
+	cvpj_automation.move_everything(['inst'], ['track'])
 
-	#print(convproj_obj.automation.data)
+	#print(cvpj_automation.data)
 	#exit()
 
 	convproj_obj.playlist = {}

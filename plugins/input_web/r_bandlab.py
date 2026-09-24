@@ -236,13 +236,15 @@ def do_loop(time_obj, blx_region, tempomul, speed):
 	else:
 		time_obj.set_loop_data(sampleOffset, sampleOffset, loopLength)
 
-def do_automation(convproj_obj, blx_auto, autoloc, tempomul):
-	auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
+def do_automation(cvpj_automation, blx_auto, autoloc, tempomul):
+	auto_obj = cvpj_automation.create(autoloc, 'float', True)
 	for p in blx_auto.points:
 		pos = tempo_calc(tempomul, p.position)
 		auto_obj.add_autopoint(pos, p.value, None)
 
 def do_track_common(convproj_obj, track_obj, blx_track, tempomul):
+	cvpj_automation = convproj_obj.automation
+
 	track_obj.visual.name = blx_track.name
 	track_obj.visual.color.set_hex(blx_track.color)
 	track_obj.params.add('enabled', not blx_track.isMuted, 'bool')
@@ -253,11 +255,11 @@ def do_track_common(convproj_obj, track_obj, blx_track, tempomul):
 	for blx_auxSend in blx_track.auxSends:
 		sendautoid = blx_track.id+'__'+'return__'+str(blx_auxSend.id)
 		track_obj.sends.add(blx_auxSend.id, sendautoid, blx_auxSend.sendLevel)
-		do_automation(convproj_obj, blx_auxSend.automation, ['send', sendautoid, 'amount'], tempomul)
+		do_automation(cvpj_automation, blx_auxSend.automation, ['send', sendautoid, 'amount'], tempomul)
 
 	if blx_track.automation:
-		do_automation(convproj_obj, blx_track.automation.pan, ['track', blx_track.id, 'pan'], tempomul)
-		do_automation(convproj_obj, blx_track.automation.volume, ['track', blx_track.id, 'vol'], tempomul)
+		do_automation(cvpj_automation, blx_track.automation.pan, ['track', blx_track.id, 'pan'], tempomul)
+		do_automation(cvpj_automation, blx_track.automation.volume, ['track', blx_track.id, 'vol'], tempomul)
 		
 	for n, blx_effect in enumerate(blx_track.effects):
 		fxid = blx_track.id+'_'+str(n)
@@ -275,14 +277,14 @@ def do_track_common(convproj_obj, track_obj, blx_track, tempomul):
 				paramv = plugparams[param_id] if param_id in plugparams else dset_param.defv
 				plugin_obj.datapack_param__add(param_id, paramv, dset_param)
 				if n in blx_effect.automation: 
-					do_automation(convproj_obj, blx_effect.automation[n], ['plugin', fxid, n], tempomul)
+					do_automation(cvpj_automation, blx_effect.automation[n], ['plugin', fxid, n], tempomul)
 
 		else:
 			for n, v in plugparams.items():
 				if not isinstance(v, str) and isinstance(v, dict):
 					plugparams.add(n, v, 'float')
 					if n in blx_effect.automation:
-						do_automation(convproj_obj, blx_effect.automation[n], ['plugin', fxid, n], tempomul)
+						do_automation(cvpj_automation, blx_effect.automation[n], ['plugin', fxid, n], tempomul)
 				else:
 					plugin_obj.datavals.add(n, v)
 

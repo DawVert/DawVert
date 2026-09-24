@@ -20,6 +20,7 @@ def process_r(convproj_obj, out_dawinfo):
 	org_track_order = cvpj_tracks.order
 	org_trackroute = convproj_obj.trackroute
 	out_fxtype = out_dawinfo.fxtype
+	cvpj_automation = convproj_obj.automation
 
 	cvpj_tracks.order = []
 	cvpj_tracks.data = {}
@@ -44,7 +45,7 @@ def process_r(convproj_obj, out_dawinfo):
 					group_obj.visual = copy.deepcopy(track_obj.visual)
 					for paramid in track_obj.params.list():
 						track_obj.params.move(group_obj.params, paramid)
-						convproj_obj.automation.move(['track',trackid,paramid], ['group',trackid,paramid])
+						cvpj_automation.move(['track',trackid,paramid], ['group',trackid,paramid])
 						track_obj.params.move(group_obj.params, paramid)
 					group_obj.plugslots.slots_notes = track_obj.plugslots.slots_notes
 					group_obj.plugslots.slots_audio = track_obj.plugslots.slots_audio
@@ -56,7 +57,7 @@ def process_r(convproj_obj, out_dawinfo):
 				for laneid, lane_obj in track_obj.lanes.items():
 					cvpj_trackid = trackid+'_lane_'+laneid
 					if not insidegroup:
-						convproj_obj.automation.move_everything(['track', trackid], ['track', cvpj_trackid])
+						cvpj_automation.move_everything(['track', trackid], ['track', cvpj_trackid])
 					sep_track_obj = track_obj.make_base()
 					sep_track_obj.visual.name = tracklanename(sep_track_obj.visual.name, lane_obj.visual.name)
 					sep_track_obj.visual.color.merge(lane_obj.visual.color)

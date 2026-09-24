@@ -27,8 +27,8 @@ def do_sample(convproj_obj, soundPack, filename, dawvert_intent):
 
 def calc_pan(i): return (i-0.5)*2
 
-def do_auto(convproj_obj, autoloc, imin, imax, sections, defval):
-	auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
+def do_auto(cvpj_automation, autoloc, imin, imax, sections, defval):
+	auto_obj = cvpj_automation.create(autoloc, 'float', True)
 	for section in sections:
 		autopl_obj = auto_obj.add_pl_points(autoloc, 'float')
 		time_obj = autopl_obj.time
@@ -37,7 +37,7 @@ def do_auto(convproj_obj, autoloc, imin, imax, sections, defval):
 		for node in section.nodes: 
 			autopoints_obj.points__add_normal(node.position, xtramath.between_from_one(imin, imax, node.value), 0, None)
 
-	auto_obj = convproj_obj.automation.get_opt(autoloc)
+	auto_obj = cvpj_automation.get_opt(autoloc)
 	if auto_obj is not None: auto_obj.defualt_val = defval
 
 class input_coolbeat(plugins.base):
@@ -67,6 +67,7 @@ class input_coolbeat(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'none'
@@ -89,11 +90,11 @@ class input_coolbeat(plugins.base):
 		# ---------- automation: master ----------
 		for an, masterAuto in enumerate(project_obj.masterAutos):
 			if an == 0:
-				do_auto(convproj_obj, ['main', 'bpm'], 50, 300, masterAuto.sections, project_obj.tempo)
+				do_auto(cvpj_automation, ['main', 'bpm'], 50, 300, masterAuto.sections, project_obj.tempo)
 			if an == 1:
-				do_auto(convproj_obj, ['master', 'vol'], 0, 1, masterAuto.sections, project_obj.masterVolume)
+				do_auto(cvpj_automation, ['master', 'vol'], 0, 1, masterAuto.sections, project_obj.masterVolume)
 			if an == 2:
-				do_auto(convproj_obj, ['master', 'pan'], -1, 1, masterAuto.sections, calc_pan(project_obj.masterPan))
+				do_auto(cvpj_automation, ['master', 'pan'], -1, 1, masterAuto.sections, calc_pan(project_obj.masterPan))
 
 		# ---------- tracks ----------
 		for n, track in enumerate(project_obj.tracks):
@@ -178,4 +179,4 @@ class input_coolbeat(plugins.base):
 					do_auto(convproj_obj, ['track', trackid, 'pan'], -1, 1, ta.sections, calc_pan(track.pan))
 
 		# ---------- automation ----------
-		convproj_obj.automation.set_persist_all(False)
+		cvpj_automation.set_persist_all(False)

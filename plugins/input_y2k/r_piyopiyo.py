@@ -27,22 +27,26 @@ alt_drum_note_map = {
 }
 
 def parse_notes(convproj_obj, trackid, notes_data, track_obj, keyoffset):
+	cvpj_automation = convproj_obj.automation
 	cvpj_notelist = track_obj.placements.notelist
+	autopan = ['track', trackid, 'pan']
 	for pos, nd in enumerate(notes_data):
 		notes, pan = nd
 		cvpj_notelist.add_r_multi(pos, 1, [(x+keyoffset)-12 for x in notes], 1, None)
-		if pan != 0: convproj_obj.automation.add_autotick(['track', trackid, 'pan'], 'float', pos, (pan-4)/3)
+		if pan != 0: cvpj_automation.add_autotick(autopan, 'float', pos, (pan-4)/3)
 	cvpj_notelist.sort()
 
 def parse_notes_drumalt(convproj_obj, trackid, notes_data, track_obj):
+	cvpj_automation = convproj_obj.automation
 	cvpj_notelist = track_obj.placements.notelist
+	autopan = ['track', trackid, 'pan']
 	for pos, nd in enumerate(notes_data):
 		notes, pan = nd
 		for x in notes:
 			if x in alt_drum_note_map: 
 				vol, key = alt_drum_note_map[x]
 				cvpj_notelist.add_r(pos, 1, key, vol, None)
-		if pan != 0: convproj_obj.automation.add_autotick(['track', trackid, 'pan'], 'float', pos, (pan-4)/3)
+		if pan != 0: cvpj_automation.add_autotick(autopan, 'float', pos, (pan-4)/3)
 	cvpj_notelist.sort()
 
 class external_data_zip():

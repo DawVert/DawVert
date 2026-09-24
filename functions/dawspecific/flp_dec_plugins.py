@@ -817,14 +817,16 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 			except:
 				pass
 
+	cvpj_automation = convproj_obj.automation
+
 	fldso = globalstore.datapack.get_obj('fl_studio', 'plugin', flplugin.name)
 	if fldso:
 		for param_id, dset_param in fldso.params.iter():
 			if dset_param.num != -1:
 				#print('FS', flplugin.name, dset_param.num, param_id, dset_param, pluginid)
-				convproj_obj.automation.calc(['id_plug_points', pluginid, str(dset_param.num)], 'from_one', dset_param.min, dset_param.max, 0, 0)
-				convproj_obj.automation.move(['id_plug', pluginid, str(dset_param.num)], ['plugin',pluginid,param_id])
-				convproj_obj.automation.move(['id_plug_points', pluginid, str(dset_param.num)], ['plugin',pluginid,param_id])
+				cvpj_automation.calc(['id_plug_points', pluginid, str(dset_param.num)], 'from_one', dset_param.min, dset_param.max, 0, 0)
+				cvpj_automation.move(['id_plug', pluginid, str(dset_param.num)], ['plugin',pluginid,param_id])
+				cvpj_automation.move(['id_plug_points', pluginid, str(dset_param.num)], ['plugin',pluginid,param_id])
 
 	# ------------------------------------------------------------------------------------------- Other
 

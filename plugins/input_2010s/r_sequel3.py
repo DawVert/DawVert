@@ -35,8 +35,8 @@ def do_params(track_obj, track_device):
 			pandata = ebrw_readstr.float()
 			track_obj.params.add('pan', (pandata-0.5)*2, 'float')
 
-def do_autopoints(convproj_obj, autoloc, auto_node, v_min, v_max, instant):
-	auto_obj = convproj_obj.automation.create(autoloc, 'float' if not instant else 'bool', True)
+def do_autopoints(cvpj_automation, autoloc, auto_node, v_min, v_max, instant):
+	auto_obj = cvpj_automation.create(autoloc, 'float' if not instant else 'bool', True)
 	if 'Events' in auto_node:
 		autoevents = auto_node['Events']
 		if not instant:
@@ -48,6 +48,8 @@ def do_autopoints(convproj_obj, autoloc, auto_node, v_min, v_max, instant):
 
 def do_auto(track_obj, convproj_obj, seq_automation, autoloc_start, proj_sequel):
 	globalids = proj_sequel.globalids
+	cvpj_automation = convproj_obj.automation
+
 	for autotrack in seq_automation.tracks:
 		nodeid = autotrack.node.idnum
 		trackdeviceid = autotrack.track_device.idnum
@@ -63,11 +65,11 @@ def do_auto(track_obj, convproj_obj, seq_automation, autoloc_start, proj_sequel)
 			#dev_name = auto_device['Device Name'] if 'Device Name' in auto_device else None
 
 			if con_type==2 and trackflags==0:
-				do_autopoints(convproj_obj, autoloc_start+['vol'], auto_node, 0, 1, False)
+				do_autopoints(cvpj_automation, autoloc_start+['vol'], auto_node, 0, 1, False)
 			if con_type==2 and trackflags==1:
-				do_autopoints(convproj_obj, autoloc_start+['enabled'], auto_node, 0, 1, True)
+				do_autopoints(cvpj_automation, autoloc_start+['enabled'], auto_node, 0, 1, True)
 			if con_type==7 and trackflags==2:
-				do_autopoints(convproj_obj, autoloc_start+['pan'], auto_node, 1, -1, False)
+				do_autopoints(cvpj_automation, autoloc_start+['pan'], auto_node, 1, -1, False)
 			#print(con_type, trackflags)
 
 def do_effect_param(ebrw_readstr):
@@ -210,6 +212,7 @@ class input_sequel3(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -243,7 +246,7 @@ class input_sequel3(plugins.base):
 			tempo_track = proj_sequel.get_object(globalids[tempoid])
 			convproj_obj.params.add('bpm', tempo_track.rehearsaltempo, 'float')
 			#for tempoevent in tempo_track.tempoevent:
-			#	convproj_obj.automation.add_autotick(['main', 'bpm'], 'float', 0, tempoevent.bpm)
+			#	cvpj_automation.add_autotick(['main', 'bpm'], 'float', 0, tempoevent.bpm)
 
 		# ---------- tracks ----------
 		tracklist = data_root.node

@@ -44,6 +44,7 @@ class input_sop(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_insts = convproj_obj.instruments
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(project_obj.tickBeat)
@@ -105,10 +106,10 @@ class input_sop(plugins.base):
 			for event in soptrack.events:
 				curtick += event[0]
 				if event[1] == 'VOL': 
-					convproj_obj.automation.add_autotick(['track', cvpj_trackid, 'vol'], 'float', curtick, event[2]/127)
+					cvpj_automation.add_autotick(['track', cvpj_trackid, 'vol'], 'float', curtick, event[2]/127)
 
 				elif event[1] == 'PAN': 
-					convproj_obj.automation.add_autotick(['track', cvpj_trackid, 'pan'], 'float', curtick, panvals[event[2]%3]*panlvl)
+					cvpj_automation.add_autotick(['track', cvpj_trackid, 'pan'], 'float', curtick, panvals[event[2]%3]*panlvl)
 
 				elif event[1] == 'INST': 
 					instpos.append([curtick, str(event[2])])
@@ -125,6 +126,6 @@ class input_sop(plugins.base):
 		for event in project_obj.controltrack:
 			curtick += event[0]
 			if event[1] == 'TEMPO': 
-				convproj_obj.automation.add_autotick(['main', 'bpm'], 'float', curtick, event[2])
+				cvpj_automation.add_autotick(['main', 'bpm'], 'float', curtick, event[2])
 			if event[1] == 'GVOL': 
-				convproj_obj.automation.add_autotick(['master', 'vol'], 'float', curtick, event[2]/127)
+				cvpj_automation.add_autotick(['master', 'vol'], 'float', curtick, event[2]/127)

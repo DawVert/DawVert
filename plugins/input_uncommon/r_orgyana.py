@@ -53,6 +53,7 @@ class input_orgyana(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_automation = cvpj_automation
 
 		# ---------- convproj params ----------
 		use_groups = dawvert_intent.input_get_param('use_groups', True)
@@ -147,15 +148,15 @@ class input_orgyana(plugins.base):
 						cvpj_notelist.add_r(pos, dur, note-24 if tracknum > 7 else note-36, vol/254, None)
 						notepos = pos
 						if pan or last_pan_val:
-							convproj_obj.automation.add_autopoint(pan_autoid, 'float', pos, pan, 'instant')
+							cvpj_automation.add_autopoint(pan_autoid, 'float', pos, pan, 'instant')
 						last_pan_pos = pos
 						last_pan_val = pan
 					else:
 						if pan!=last_pan_val:
 							if last_pan_pos>1:
 								insidepos = pos-notepos
-								convproj_obj.automation.add_autopoint(pan_autoid, 'float', pos-0.25, last_pan_val, 'normal')
-								convproj_obj.automation.add_autopoint(pan_autoid, 'float', pos+0.25, pan, 'normal')
+								cvpj_automation.add_autopoint(pan_autoid, 'float', pos-0.25, last_pan_val, 'normal')
+								cvpj_automation.add_autopoint(pan_autoid, 'float', pos+0.25, pan, 'normal')
 						last_pan_pos = pos
 						last_pan_val = pan
 

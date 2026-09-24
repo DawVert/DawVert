@@ -66,6 +66,7 @@ class input_midi(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 
 		# ---------- convproj params ----------
 		swap_bg_fg = dawvert_intent.input_get_param('swap_bg_fg', False)
@@ -91,7 +92,7 @@ class input_midi(plugins.base):
 		
 		#for temponode in project_obj.tempo_map:
 		#	tempopos = calcsec(temponode.frame, ppq)
-		#	convproj_obj.automation.add_autotick(['main', 'bpm'], 'float', tempopos, temponode.tempo)
+		#	cvpj_automation.add_autotick(['main', 'bpm'], 'float', tempopos, temponode.tempo)
 
 		#for audioid, filename in project_obj.files.audio_list.items():
 		#	sampleref_obj = convproj_obj.sampleref__add(audioid, filename, None)
@@ -138,7 +139,7 @@ class input_midi(plugins.base):
 			if qtrack.type == 'audio': track_obj.armed.in_audio = track_obj.armed.on
 			if qtrack.type == 'midi': track_obj.armed.in_keys = track_obj.armed.on
 
-			midiauto_obj = convproj_obj.automation.create_midi_auto_obj()
+			midiauto_obj = cvpj_automation.create_midi_auto_obj()
 
 			if qtrack.curve_file.used:
 				midipath = os.path.join(os.path.dirname(dawvert_intent.input_file), qtrack.curve_file.filename)

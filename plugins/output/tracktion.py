@@ -24,14 +24,15 @@ def gen_hexid(num):
 
 def make_volpan_plugin(convproj_obj, track_obj, iddat, wf_track, startn):
 	from objects.file_proj import tracktion_edit as proj_tracktion_edit
+	cvpj_automation = convproj_obj.automation
 	wf_plugin = proj_tracktion_edit.tracktion_plugin()
 	wf_plugin.plugtype = 'volume'
 	wf_plugin.enabled = 1
 	wf_plugin.presetDirty = 1
 	wf_plugin.params['volume'] = track_obj.params.get('vol', 1.0).value*0.740818202495575
 	wf_plugin.params['pan'] = track_obj.params.get('pan', 0).value
-	add_auto_curves(convproj_obj, [startn, iddat, 'vol'], wf_plugin, 'volume', 0.740818202495575)
-	add_auto_curves(convproj_obj, [startn, iddat, 'pan'], wf_plugin, 'pan', 1)
+	add_auto_curves(cvpj_automation, [startn, iddat, 'vol'], wf_plugin, 'volume', 0.740818202495575)
+	add_auto_curves(cvpj_automation, [startn, iddat, 'pan'], wf_plugin, 'pan', 1)
 	wf_track.plugins.append(wf_plugin)
 	return wf_plugin
 
@@ -42,9 +43,9 @@ def make_level_plugin(wf_track):
 	wf_plugin.enabled = 1
 	wf_track.plugins.append(wf_plugin)
 
-def add_auto_curves(convproj_obj, autoloc, wf_plugin, param_id, mul):
+def add_auto_curves(cvpj_automation, autoloc, wf_plugin, param_id, mul):
 	from objects.file_proj import tracktion_edit as proj_tracktion_edit
-	if_found, autopoints = convproj_obj.automation.get_autopoints(autoloc)
+	if_found, autopoints = cvpj_automation.get_autopoints(autoloc)
 	if if_found:
 		autopoints.remove_instant()
 		autocurve_obj = proj_tracktion_edit.tracktion_automationcurve()
@@ -115,18 +116,20 @@ def soundlayer_samplepart(plugin_obj, gpitch, programdata, lowNote, highNote, ro
 		return soundlayer
 
 def do_sends(convproj_obj, sends_data, wf_track, auxnums):
+	cvpj_automation = convproj_obj.automation
 	for sendid, send_obj in sends_data:
 		vol = send_obj.params.get('amount', 0).value
 		exists_1 = vol>0.001
 		exists_2 = False
 		if send_obj.sendautoid:
 			autoloc = ['send', send_obj.sendautoid, 'amount']
-			autodata = convproj_obj.automation.get_opt(autoloc)
+			autodata = cvpj_automation.get_opt(autoloc)
 			if autodata is not None: exists_2 = True
 		if exists_1 or exists_2: make_send_plugin(convproj_obj, wf_track, sendid, send_obj, auxnums)
 
 def make_send_plugin(convproj_obj, wf_track, returnid, send_obj, auxnums):
 	from objects.file_proj import tracktion_edit as proj_tracktion_edit
+	cvpj_automation = convproj_obj.automation
 	wf_plugin = proj_tracktion_edit.tracktion_plugin()
 	wf_plugin.plugtype = 'auxsend'
 	wf_plugin.enabled = 1
@@ -134,7 +137,7 @@ def make_send_plugin(convproj_obj, wf_track, returnid, send_obj, auxnums):
 	wf_plugin.params['auxSendSliderPos'] = send_obj.params.get('amount', 0).value
 	wf_plugin.params['busNum'] = auxnums[returnid]
 	if send_obj.sendautoid:
-		add_auto_curves(convproj_obj, ['send', send_obj.sendautoid, 'amount'], wf_plugin, 'send level', 1)
+		add_auto_curves(cvpj_automation, ['send', send_obj.sendautoid, 'amount'], wf_plugin, 'send level', 1)
 	wf_track.plugins.append(wf_plugin)
 	return wf_plugin
 
@@ -145,6 +148,8 @@ def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, 
 	from objects.binary_fmt import juce_binaryxml
 	from functions.juce import juce_memoryblock
 
+	cvpj_automation = convproj_obj.automation
+	
 	plugin_found, plugin_obj = convproj_obj.plugin__get(cvpj_fxid)
 
 	if plugin_found: 
@@ -326,8 +331,8 @@ def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, 
 				wf_plugin.params['uid'] = f'{juceobj.uniqueId:x}'
 				wf_plugin.params['state'] = juceobj.memoryblock
 
-				for _, _, paramnum in convproj_obj.automation.iter_nopl_points_external(cvpj_fxid):
-					add_auto_curves(convproj_obj, ['plugin', cvpj_fxid, 'ext_param_'+str(paramnum)], wf_plugin, str(paramnum), 1)
+				for _, _, paramnum in cvpj_automation.iter_nopl_points_external(cvpj_fxid):
+					add_auto_curves(cvpj_automation, ['plugin', cvpj_fxid, 'ext_param_'+str(paramnum)], wf_plugin, str(paramnum), 1)
 				return wf_plugin
 			else: logger_output.warning('VST2 plugin not placed: no ID found.')
 
@@ -344,8 +349,8 @@ def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, 
 				if juceobj.filename: wf_plugin.params['filename'] = juceobj.filename
 				if juceobj.manufacturer: wf_plugin.params['manufacturer'] = juceobj.manufacturer
 				wf_plugin.params['state'] = juceobj.memoryblock
-				for _, _, paramnum in convproj_obj.automation.iter_nopl_points_external(cvpj_fxid):
-					add_auto_curves(convproj_obj, ['plugin', cvpj_fxid, 'ext_param_'+str(paramnum)], wf_plugin, str(paramnum), 1)
+				for _, _, paramnum in cvpj_automation.iter_nopl_points_external(cvpj_fxid):
+					add_auto_curves(cvpj_automation, ['plugin', cvpj_fxid, 'ext_param_'+str(paramnum)], wf_plugin, str(paramnum), 1)
 				return wf_plugin
 			else: logger_output.warning('VST2 plugin not placed: no ID found.')
 
@@ -357,7 +362,7 @@ def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, 
 			dsetfound = False
 			for param_id, dset_param in globalstore.datapack.get_params('waveform', 'plugin', wf_plugin.plugtype):
 				wf_plugin.params[param_id] = plugin_obj.params.get(param_id, dset_param.defv).value
-				add_auto_curves(convproj_obj, ['plugin', cvpj_fxid, param_id], wf_plugin, param_id, 1)
+				add_auto_curves(cvpj_automation, ['plugin', cvpj_fxid, param_id], wf_plugin, param_id, 1)
 				dsetfound = True
 
 			if dsetfound == False:
@@ -365,7 +370,7 @@ def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, 
 				if paramlist:
 					for param_id in paramlist:
 						wf_plugin.params[param_id] = plugin_obj.params.get(param_id, 0).value
-						add_auto_curves(convproj_obj, ['plugin', cvpj_fxid, param_id], wf_plugin, param_id, 1)
+						add_auto_curves(cvpj_automation, ['plugin', cvpj_fxid, param_id], wf_plugin, param_id, 1)
 			return wf_plugin
 
 	elif isinstrument:
@@ -438,8 +443,10 @@ class output_tracktion_edit(plugins.base):
 		from objects.file_proj import tracktion_edit as proj_tracktion_edit
 		from objects.file_proj import tracktion_project as proj_tracktion_project
 
+		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_automation = convproj_obj.automation
 
 		convproj_obj.change_timings(4.0)
 
@@ -501,7 +508,7 @@ class output_tracktion_edit(plugins.base):
 		bpm = convproj_obj.params.get('bpm', 140).value
 
 		project_obj.temposequence.tempo[0] = [bpm, 1]
-		if_found, autodata = convproj_obj.automation.get(['main', 'bpm'], 'float')
+		if_found, autodata = cvpj_automation.get(['main', 'bpm'], 'float')
 		if if_found:
 			if autodata.u_nopl_points:
 				for x in autodata.nopl_points:

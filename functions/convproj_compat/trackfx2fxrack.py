@@ -12,6 +12,7 @@ def list2fxrack(convproj_obj, data_obj, fxnum, defualtname, starttext, removebot
 	fx_name = starttext+data_obj.visual.name if data_obj.visual.name else starttext+defualtname
 
 	fxrack_obj = convproj_obj.fxrack
+	cvpj_automation = convproj_obj.automation
 
 	fxchannel_obj = fxrack_obj.add(fxnum)
 	fxchannel_obj.visual.name = fx_name
@@ -24,19 +25,20 @@ def list2fxrack(convproj_obj, data_obj, fxnum, defualtname, starttext, removebot
 	vol = data_obj.params.get('vol', 1).value
 	data_obj.params.remove('vol')
 	fxchannel_obj.params.add('vol', vol, 'float')
-	convproj_obj.automation.move(autoloc+['vol'], ['fxmixer',str(fxnum),'vol'])
+	cvpj_automation.move(autoloc+['vol'], ['fxmixer',str(fxnum),'vol'])
 
 	if removeboth == True: 
 		pan = data_obj.params.get('pan', 0).value
 		data_obj.params.remove('pan')
 		fxchannel_obj.params.add('pan', pan, 'float')
-		convproj_obj.automation.move(autoloc+['pan'], ['fxmixer',str(fxnum),'pan'])
+		cvpj_automation.move(autoloc+['pan'], ['fxmixer',str(fxnum),'pan'])
 
 	return fxchannel_obj
 
 def process_r(convproj_obj):
 	fxrack_obj = convproj_obj.fxrack
 	cvpj_tracks = convproj_obj.tracks
+	cvpj_automation = convproj_obj.automation
 	if not fxrack_obj:
 		t2m = trackfx_to_numdata.to_numdata()
 		output_ids = t2m.trackfx_to_numdata(convproj_obj, 1)
@@ -76,6 +78,7 @@ def process_r(convproj_obj):
 def process_m(convproj_obj):
 	fxrack_obj = convproj_obj.fxrack
 	cvpj_insts = convproj_obj.instruments
+	cvpj_automation = convproj_obj.automation
 	
 	if not fxrack_obj:
 		logger_compat.info('trackfx2fxrack: Master to FX 0')
@@ -87,8 +90,8 @@ def process_m(convproj_obj):
 		convproj_obj.track_master.plugslots.slots_audio = []
 		convproj_obj.track_master.plugslots.slots_mixer = []
 
-		convproj_obj.automation.move(['master','vol'], ['fxmixer','0','vol'])
-		convproj_obj.automation.move(['master','pan'], ['fxmixer','0','pan'])
+		cvpj_automation.move(['master','vol'], ['fxmixer','0','vol'])
+		cvpj_automation.move(['master','pan'], ['fxmixer','0','pan'])
 
 		fxnum = 1
 		for inst_id, inst_obj in cvpj_insts.iter():
@@ -101,7 +104,7 @@ def process_m(convproj_obj):
 			fxchannel_obj.visual.name = inst_obj.visual.name
 			fxchannel_obj.visual.color = inst_obj.visual.color
 
-			convproj_obj.automation.move(['track',inst_id,'vol'], ['fxmixer',str(fxnum),'vol'])
+			cvpj_automation.move(['track',inst_id,'vol'], ['fxmixer',str(fxnum),'vol'])
 			inst_obj.params.move(fxchannel_obj.params, 'vol')
 
 			logger_compat.info('trackfx2fxrack: Instrument to FX '+str(fxnum)+(' ('+fxchannel_obj.visual.name+')' if fxchannel_obj.visual.name else ''))

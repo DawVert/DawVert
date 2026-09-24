@@ -99,6 +99,7 @@ class input_ceol(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
+		cvpj_automation = cvpj_automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'mi'
@@ -232,14 +233,14 @@ class input_ceol(plugins.base):
 						autofilterfxid = patinstid+'_filter'
 						recordfilter_freq = [xtramath.midi_filter(x/100) for x in recordfilter[:,1]]
 
-						f_autopl_obj = convproj_obj.automation.add_pl_points(['filter', autofilterfxid, 'freq'], 'float')
+						f_autopl_obj = cvpj_automation.add_pl_points(['filter', autofilterfxid, 'freq'], 'float')
 						f_autopl_obj.time.set_block_posdur(plpos, project_obj.pattern_length)
 						autopoints_obj = f_autopl_obj.data
 						for n, x in enumerate(recordfilter_freq):
 							autopoints_obj.points__add_normal(n, x, 0, None)
 
 						recordfilter_reso = [x+1 for x in recordfilter[:,2]]
-						q_autopl_obj = convproj_obj.automation.add_pl_points(['filter', autofilterfxid, 'q'], 'float')
+						q_autopl_obj = cvpj_automation.add_pl_points(['filter', autofilterfxid, 'q'], 'float')
 						q_autopl_obj.time.set_block_posdur(plpos, project_obj.pattern_length)
 						autopoints_obj = q_autopl_obj.data
 						for n, x in enumerate(recordfilter_reso):
@@ -254,13 +255,13 @@ class input_ceol(plugins.base):
 
 						ceol_inst_obj = project_obj.instruments[instnum]
 
-						f_autopl_obj = convproj_obj.automation.get_opt(['filter', autofilterfxid, 'freq'])
+						f_autopl_obj = cvpj_automation.get_opt(['filter', autofilterfxid, 'freq'])
 						f_autopl_obj.defualt_val = xtramath.midi_filter(ceol_inst_obj.cutoff)
 
-						q_autopl_obj = convproj_obj.automation.get_opt(['filter', autofilterfxid, 'q'])
+						q_autopl_obj = cvpj_automation.get_opt(['filter', autofilterfxid, 'q'])
 						q_autopl_obj.defualt_val = ceol_inst_obj.resonance+1
 
 			prev_pl = after_filter
 
 		# ---------- automation ----------
-		convproj_obj.automation.set_persist_all(False)
+		cvpj_automation.set_persist_all(False)

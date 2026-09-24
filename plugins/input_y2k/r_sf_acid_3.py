@@ -201,6 +201,7 @@ class input_acid_3(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_automation = convproj_obj.automation
 
 		def do_orders_groups(riff_data, track_order, tracks_data, ingroup):
 			if not use_groups: ingroup = None
@@ -374,7 +375,7 @@ class input_acid_3(plugins.base):
 													if autoloc:
 														for p in track_auto.points:
 															if not p[1]:
-																convproj_obj.automation.add_autopoint(autoloc, 'float', p[0], p[2] if not invert else 1-p[2], autotype)
+																cvpj_automation.add_autopoint(autoloc, 'float', p[0], p[2] if not invert else 1-p[2], autotype)
 
 
 						if track_header:
@@ -520,7 +521,7 @@ class input_acid_3(plugins.base):
 						def_data = regs_chunk.content
 						if def_data.tempo:
 							tempov = (500000/def_data.tempo)*120
-							convproj_obj.automation.add_autopoint(['main', 'bpm'], 'float', def_data.pos_samples, tempov, 'instant')
+							cvpj_automation.add_autopoint(['main', 'bpm'], 'float', def_data.pos_samples, tempov, 'instant')
 						if def_data.base_note:
 							if def_data.pos_samples in auto_basenotes:
 								timemarker_obj = convproj_obj.timemarker__add_key(auto_basenotes[def_data.pos_samples]-60)

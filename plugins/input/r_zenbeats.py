@@ -19,11 +19,11 @@ def do_visual(cvpj_visual, zb_visual, color_index, colordata):
 		cvpj_visual.color.set_int(colorfloat)
 		cvpj_visual.color.fx_allowed = ['saturate', 'brighter']
 
-def do_auto(convproj_obj, autoloc, curve, parammode):
+def do_auto(cvpj_automation, autoloc, curve, parammode):
 	valtype = 'float'
 	if parammode == 1: valtype = 'bool'
 	if parammode == 2: valtype = 'bool'
-	auto_obj = convproj_obj.automation.create(autoloc, valtype, True)
+	auto_obj = cvpj_automation.create(autoloc, valtype, True)
 	for p in curve.points:
 		if parammode == 0: val = p.value
 		if parammode == 1: val = p.value>0.5
@@ -446,10 +446,10 @@ def do_rack(convproj_obj, project_obj, track_obj, zb_track, autoloc, dawvert_int
 			for curve in rack.automation_set.curves:
 				if rack.uid==curve.target_object:
 					if curve.target == 'DT_RACK':
-						if curve.function == 'DF_POST_GAIN': do_auto(convproj_obj, autoloc+['vol'], curve, 0)
-						if curve.function == 'DF_PAN': do_auto(convproj_obj, autoloc+['pan'], curve, 3)
-						if curve.function == 'DF_MUTE': do_auto(convproj_obj, autoloc+['enabled'], curve, 2)
-						if curve.function == 'DF_SOLO': do_auto(convproj_obj, autoloc+['solo'], curve, 1)
+						if curve.function == 'DF_POST_GAIN': do_auto(cvpj_automation, autoloc+['vol'], curve, 0)
+						if curve.function == 'DF_PAN': do_auto(cvpj_automation, autoloc+['pan'], curve, 3)
+						if curve.function == 'DF_MUTE': do_auto(cvpj_automation, autoloc+['enabled'], curve, 2)
+						if curve.function == 'DF_SOLO': do_auto(cvpj_automation, autoloc+['solo'], curve, 1)
 
 			if rack.signal_chain:
 				strprocs = rack.signal_chain.stream_processors
@@ -508,6 +508,7 @@ class input_zenbeats(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'

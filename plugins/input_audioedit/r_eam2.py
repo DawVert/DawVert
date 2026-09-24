@@ -36,6 +36,7 @@ class input_eam2(plugins.base):
 		
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -89,14 +90,14 @@ class input_eam2(plugins.base):
 					autoloc_e = None
 					if autop.AutomationType == 'Pan':
 						autoloc = autoloc_s+['pan']
-						auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
+						auto_obj = cvpj_automation.create(autoloc, 'float', True)
 						auto_obj.is_seconds = True
 						for p in autop.Points:
 							if p.BeatN>=0: auto_obj.add_autopoint(p.BeatN, (p.Value-0.5)*2, None)
 
 					if autop.AutomationType == 'Volume':
 						autoloc = autoloc_s+['vol']
-						auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
+						auto_obj = cvpj_automation.create(autoloc, 'float', True)
 						auto_obj.is_seconds = True
 						for p in autop.Points:
 							if p.BeatN>=0: auto_obj.add_autopoint(p.BeatN, p.Value/0.71, None)

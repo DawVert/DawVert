@@ -45,6 +45,7 @@ class input_cvpj_f(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(96)
@@ -84,7 +85,7 @@ class input_cvpj_f(plugins.base):
 							firstpoint = points[0]
 							if firstpoint[0]==0: convproj_obj.params.add('bpm', firstpoint[1]/100, 'float')
 							for x in points:
-								convproj_obj.automation.add_autotick(['main', 'bpm'], 'float', x[0], x[1]/100)
+								cvpj_automation.add_autotick(['main', 'bpm'], 'float', x[0], x[1]/100)
 
 					elif chunk.id == 1: #Gen1:Track:Header
 						cvpj_trackid = str(parseddata.trackno)
@@ -168,7 +169,7 @@ class input_cvpj_f(plugins.base):
 							firstpoint = points[0]
 							if firstpoint[0]==0: convproj_obj.params.add('bpm', firstpoint[1]/100, 'float')
 							for x in points:
-								convproj_obj.automation.add_autotick(['main', 'bpm'], 'float', x[0], x[1]/100)
+								cvpj_automation.add_autotick(['main', 'bpm'], 'float', x[0], x[1]/100)
 
 					elif chunk.id == 36: #Gen2:Track:Header
 						cvpj_trackid = str(parseddata.trackno)

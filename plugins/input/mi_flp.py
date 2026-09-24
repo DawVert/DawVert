@@ -279,6 +279,7 @@ class input_flp(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
+		cvpj_automation = convproj_obj.automation
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -661,7 +662,7 @@ class input_flp(plugins.base):
 							if autoloc: 
 								if DEBUGAUTOTICKS: t = []
 
-								autopl_obj = convproj_obj.automation.add_pl_ticks(autoloc, 'float')
+								autopl_obj = cvpj_automation.add_pl_ticks(autoloc, 'float')
 								autopl_obj.time = time_obj.copy()
 								if pattern in flp_obj.patterns:
 									pat_obj = flp_obj.patterns[pattern]
@@ -689,7 +690,7 @@ class input_flp(plugins.base):
 							autoloc, amin, amax = flpauto_to_cvpjauto_points(autotxt.split('/'))
 	
 							if autoloc: 
-								autopl_obj = convproj_obj.automation.add_pl_points(autoloc, 'float')
+								autopl_obj = cvpj_automation.add_pl_points(autoloc, 'float')
 								time_obj = autopl_obj.time
 								time_obj.set_posdur(item.position, item.length)
 								if item.itemindex in flp_obj.channels:
@@ -909,13 +910,13 @@ class input_flp(plugins.base):
 
 		convproj_obj.transport.loop_end = convproj_obj.get_dur()
 
-		convproj_obj.automation.attempt_after()
+		cvpj_automation.attempt_after()
 
 		# ---------- movequeue automation ----------
 		movequeue = []
 		movequeue_points = []
 
-		autodata = convproj_obj.automation.data
+		autodata = cvpj_automation.data
 		for wrapper_plugid in wrapper_plugids:
 			for n, x in autodata.items():
 				if n.startswith(['id_plug',wrapper_plugid]):
@@ -929,14 +930,14 @@ class input_flp(plugins.base):
 					movequeue_points.append([autol, ['plugin',autol[1],'ext_param_'+autol[2]]])
 
 		for autopath, to_autopath in movequeue:
-			convproj_obj.automation.calc(autopath, 'floatbyteint2float', 0, 0, 0, 0)
-			convproj_obj.automation.move(autopath, to_autopath)
+			cvpj_automation.calc(autopath, 'floatbyteint2float', 0, 0, 0, 0)
+			cvpj_automation.move(autopath, to_autopath)
 
 		for autopath, to_autopath in movequeue_points:
-			convproj_obj.automation.move(autopath, to_autopath)
+			cvpj_automation.move(autopath, to_autopath)
 
 		if dawvert_intent.input_mode == 'file':
 			convproj_obj.sampleref__searchmissing(dawvert_intent.input_file)
 
-		#for n, d in convproj_obj.automation.data.items():
+		#for n, d in cvpj_automation.data.items():
 		#	print(n, [x.value for x in d.pl_points.data[0].data])

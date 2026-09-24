@@ -49,6 +49,8 @@ def get_pluginfileid(startid, uniqueId, num):
 	return '\\'.join(['Assets', 'Plugins', filename])
 
 def do_plugin(convproj_obj, plugin_obj, pluginid, cxf_fx, ids_obj, trackid, num):
+	cvpj_automation = convproj_obj.automation
+	
 	fx_on, fx_wet = plugin_obj.fxdata_get()
 
 	cxf_fx.bypass = not fx_on
@@ -84,7 +86,7 @@ def do_plugin(convproj_obj, plugin_obj, pluginid, cxf_fx, ids_obj, trackid, num)
 		extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 		fxpdata = extmanu_obj.vst2__export_presetdata(None)
 		ids_obj.zipfile.writestr(get_pluginfileid(trackid, cxf_fx.uniqueId, num), fxpdata)
-		for _, _, paramnum in convproj_obj.automation.iter_nopl_points_external(pluginid):
+		for _, _, paramnum in cvpj_automation.iter_nopl_points_external(pluginid):
 			do_automation(convproj_obj, ['plugin', pluginid, 'ext_param_'+str(paramnum)], str(paramnum), cxf_fx.automation, ids_obj)
 
 	if plugin_obj.check_wildmatch('external', 'vst3', None): 
@@ -97,7 +99,7 @@ def do_plugin(convproj_obj, plugin_obj, pluginid, cxf_fx, ids_obj, trackid, num)
 		extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 		fxpdata = extmanu_obj.vst3__exportstate_juce()
 		ids_obj.zipfile.writestr(get_pluginfileid(trackid, cxf_fx.uniqueId, num), fxpdata)
-		for _, _, paramnum in convproj_obj.automation.iter_nopl_points_external(pluginid):
+		for _, _, paramnum in cvpj_automation.iter_nopl_points_external(pluginid):
 			do_automation(convproj_obj, ['plugin', pluginid, 'ext_param_'+str(paramnum)], param_id, cxf_fx.automation, ids_obj)
 
 def do_track_effects(btrack_obj, plugslots, convproj_obj, ids_obj):
@@ -419,8 +421,9 @@ class output_bandlab(plugins.base):
 
 def do_automation(convproj_obj, autoloc, cfx_id, cfx_auto, ids_obj):
 	from objects.file_proj import cakewalk_cxf as proj_cakewalk_cxf
+	cvpj_automation = convproj_obj.automation
 	tempomul = ids_obj.tempomul
-	ap_f, ap_d = convproj_obj.automation.get(autoloc, 'float')
+	ap_f, ap_d = cvpj_automation.get(autoloc, 'float')
 	if ap_f: 
 		if ap_d.u_nopl_points:
 			cfx_points = cfx_auto[cfx_id] = proj_cakewalk_cxf.cxf_automation()

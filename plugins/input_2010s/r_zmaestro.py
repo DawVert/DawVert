@@ -8,11 +8,11 @@ from functions import xtramath
 from objects import globalstore
 import os
 
-def do_automation(convproj_obj, trackid, atype, timelineobj, usetimeline):
+def do_automation(cvpj_automation, trackid, atype, timelineobj, usetimeline):
 	if usetimeline:
 		nextinstant = False
 		autoloc = ['track', trackid, atype] if trackid else ['master', atype]
-		auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
+		auto_obj = cvpj_automation.create(autoloc, 'float', True)
 		for event in timelineobj:
 			value = 0
 			if atype == 'vol': value = event.value/100
@@ -71,6 +71,7 @@ class input_zmaestro(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -98,8 +99,8 @@ class input_zmaestro(plugins.base):
 			timemarker_obj = convproj_obj.timemarker__add_key(keynums[project_obj.key])
 
 		# ---------- automation ----------
-		do_automation(convproj_obj, '', 'vol', project_obj.volumetimeline, project_obj.usevolumetimeline)
-		do_automation(convproj_obj, '', 'pan', project_obj.pantimeline, project_obj.usepantimeline)
+		do_automation(cvpj_automation, '', 'vol', project_obj.volumetimeline, project_obj.usevolumetimeline)
+		do_automation(cvpj_automation, '', 'pan', project_obj.pantimeline, project_obj.usepantimeline)
 
 		# ---------- tracks ----------
 		is_any_headphones = any([x[1].headphones for x in project_obj.tracks])

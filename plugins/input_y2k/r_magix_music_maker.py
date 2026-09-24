@@ -37,6 +37,7 @@ class input_old_magix_maker(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 
 		# ---------- convproj params ----------
 		swap_bg_fg = dawvert_intent.input_get_param('swap_bg_fg', False)
@@ -257,7 +258,7 @@ class input_old_magix_maker(plugins.base):
 							autoloc = ['send', 'send_%i_aux2' % (tracknum), 'amount']
 							aux2_track_used = True
 						if autoloc:
-							auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
+							auto_obj = cvpj_automation.create(autoloc, 'float', True)
 							for pos, val in paramdata.items():
 								val = xtramath.between_from_one(v_min, v_max, (val+32768)/65535)
 								auto_obj.add_autopoint(pos, val, None)

@@ -54,7 +54,8 @@ class plugconv(plugins.base):
 		in_dict['out_daws'] = []
 
 	def convert(self, convproj_obj, plugin_obj, pluginid, dawvert_intent):
-
+		cvpj_automation = convproj_obj.automation
+		
 		if plugin_obj.type.check_wildmatch('native', 'soundation', 'com.soundation.parametric-eq'):
 			params_obj = plugin_obj.params
 
@@ -66,13 +67,13 @@ class plugconv(plugins.base):
 			filter_obj.gain = (params_obj.get('hpf_gain', 0.5).value-0.5)*40
 			filter_obj.q = eq_calc_q('hpf', params_obj.get('hpf_res', 0).value)
 
-			convproj_obj.automation.calc(['plugin', pluginid, 'hpf_freq'], 'pow_r', 1000, 0, 0, 0)
-			convproj_obj.automation.calc(['plugin', pluginid, 'hpf_freq'], 'mul', 20, 0, 0, 0)
-			convproj_obj.automation.move(['plugin', pluginid, 'hpf_freq'], ['n_filter', pluginid, 'high_pass', 'freq'])
-			convproj_obj.automation.calc(['plugin', pluginid, 'hpf_gain'], 'add', -0.5, 0, 0, 0)
-			convproj_obj.automation.calc(['plugin', pluginid, 'hpf_gain'], 'mul', 40, 0, 0, 0)
-			convproj_obj.automation.move(['plugin', pluginid, 'hpf_gain'], ['n_filter', pluginid, 'high_pass', 'gain'])
-			convproj_obj.automation.move(['plugin', pluginid, 'hpf_enable'], ['n_filter', pluginid, 'high_pass', 'on'])
+			cvpj_automation.calc(['plugin', pluginid, 'hpf_freq'], 'pow_r', 1000, 0, 0, 0)
+			cvpj_automation.calc(['plugin', pluginid, 'hpf_freq'], 'mul', 20, 0, 0, 0)
+			cvpj_automation.move(['plugin', pluginid, 'hpf_freq'], ['n_filter', pluginid, 'high_pass', 'freq'])
+			cvpj_automation.calc(['plugin', pluginid, 'hpf_gain'], 'add', -0.5, 0, 0, 0)
+			cvpj_automation.calc(['plugin', pluginid, 'hpf_gain'], 'mul', 40, 0, 0, 0)
+			cvpj_automation.move(['plugin', pluginid, 'hpf_gain'], ['n_filter', pluginid, 'high_pass', 'gain'])
+			cvpj_automation.move(['plugin', pluginid, 'hpf_enable'], ['n_filter', pluginid, 'high_pass', 'on'])
 
 			#low_shelf
 			filter_obj = plugin_obj.named_filter_add('low_shelf')
@@ -82,13 +83,13 @@ class plugconv(plugins.base):
 			filter_obj.gain = (params_obj.get('lowshelf_gain', 0).value-0.5)*40
 			filter_obj.q = eq_calc_q('lowshelf', params_obj.get('lowshelf_res', 0).value)
 
-			convproj_obj.automation.calc(['plugin', pluginid, 'lowshelf_freq'], 'pow_r', 1000, 0, 0, 0)
-			convproj_obj.automation.calc(['plugin', pluginid, 'lowshelf_freq'], 'mul', 20, 0, 0, 0)
-			convproj_obj.automation.move(['plugin', pluginid, 'lowshelf_freq'], ['n_filter', pluginid, 'low_shelf', 'freq'])
-			convproj_obj.automation.calc(['plugin', pluginid, 'lowshelf_gain'], 'add', -0.5, 0, 0, 0)
-			convproj_obj.automation.calc(['plugin', pluginid, 'lowshelf_gain'], 'mul', 40, 0, 0, 0)
-			convproj_obj.automation.move(['plugin', pluginid, 'lowshelf_gain'], ['n_filter', pluginid, 'low_shelf', 'gain'])
-			convproj_obj.automation.move(['plugin', pluginid, 'lowshelf_enable'], ['n_filter', pluginid, 'low_shelf', 'on'])
+			cvpj_automation.calc(['plugin', pluginid, 'lowshelf_freq'], 'pow_r', 1000, 0, 0, 0)
+			cvpj_automation.calc(['plugin', pluginid, 'lowshelf_freq'], 'mul', 20, 0, 0, 0)
+			cvpj_automation.move(['plugin', pluginid, 'lowshelf_freq'], ['n_filter', pluginid, 'low_shelf', 'freq'])
+			cvpj_automation.calc(['plugin', pluginid, 'lowshelf_gain'], 'add', -0.5, 0, 0, 0)
+			cvpj_automation.calc(['plugin', pluginid, 'lowshelf_gain'], 'mul', 40, 0, 0, 0)
+			cvpj_automation.move(['plugin', pluginid, 'lowshelf_gain'], ['n_filter', pluginid, 'low_shelf', 'gain'])
+			cvpj_automation.move(['plugin', pluginid, 'lowshelf_enable'], ['n_filter', pluginid, 'low_shelf', 'on'])
 
 			#peak
 			for peak_num in range(4):
@@ -101,13 +102,13 @@ class plugconv(plugins.base):
 				filter_obj.gain = (params_obj.get(peak_txt+'_gain', 0).value-0.5)*40
 				filter_obj.q = eq_calc_q('peak', params_obj.get(peak_txt+'_res', 0).value)
 
-				convproj_obj.automation.calc(['plugin', pluginid, peak_txt+'_freq'], 'pow_r', 1000, 0, 0, 0)
-				convproj_obj.automation.calc(['plugin', pluginid, peak_txt+'_freq'], 'mul', 20, 0, 0, 0)
-				convproj_obj.automation.move(['plugin', pluginid, peak_txt+'_freq'], ['n_filter', pluginid, cvpj_txt, 'freq'])
-				convproj_obj.automation.calc(['plugin', pluginid, peak_txt+'_gain'], 'add', -0.5, 0, 0, 0)
-				convproj_obj.automation.calc(['plugin', pluginid, peak_txt+'_gain'], 'mul', 40, 0, 0, 0)
-				convproj_obj.automation.move(['plugin', pluginid, peak_txt+'_gain'], ['n_filter', pluginid, cvpj_txt, 'gain'])
-				convproj_obj.automation.move(['plugin', pluginid, peak_txt+'_enable'], ['n_filter', pluginid, cvpj_txt, 'on'])
+				cvpj_automation.calc(['plugin', pluginid, peak_txt+'_freq'], 'pow_r', 1000, 0, 0, 0)
+				cvpj_automation.calc(['plugin', pluginid, peak_txt+'_freq'], 'mul', 20, 0, 0, 0)
+				cvpj_automation.move(['plugin', pluginid, peak_txt+'_freq'], ['n_filter', pluginid, cvpj_txt, 'freq'])
+				cvpj_automation.calc(['plugin', pluginid, peak_txt+'_gain'], 'add', -0.5, 0, 0, 0)
+				cvpj_automation.calc(['plugin', pluginid, peak_txt+'_gain'], 'mul', 40, 0, 0, 0)
+				cvpj_automation.move(['plugin', pluginid, peak_txt+'_gain'], ['n_filter', pluginid, cvpj_txt, 'gain'])
+				cvpj_automation.move(['plugin', pluginid, peak_txt+'_enable'], ['n_filter', pluginid, cvpj_txt, 'on'])
 
 			#low_shelf
 			filter_obj = plugin_obj.named_filter_add('high_shelf')
@@ -117,13 +118,13 @@ class plugconv(plugins.base):
 			filter_obj.gain = (params_obj.get('highshelf_gain', 0).value-0.5)*40
 			filter_obj.q = eq_calc_q('highshelf', params_obj.get('highshelf_res', 0).value)
 
-			convproj_obj.automation.calc(['plugin', pluginid, 'highshelf_freq'], 'pow_r', 1000, 0, 0, 0)
-			convproj_obj.automation.calc(['plugin', pluginid, 'highshelf_freq'], 'mul', 20, 0, 0, 0)
-			convproj_obj.automation.move(['plugin', pluginid, 'highshelf_freq'], ['n_filter', pluginid, 'high_shelf', 'freq'])
-			convproj_obj.automation.calc(['plugin', pluginid, 'highshelf_gain'], 'add', -0.5, 0, 0, 0)
-			convproj_obj.automation.calc(['plugin', pluginid, 'highshelf_gain'], 'mul', 40, 0, 0, 0)
-			convproj_obj.automation.move(['plugin', pluginid, 'highshelf_gain'], ['n_filter', pluginid, 'high_shelf', 'gain'])
-			convproj_obj.automation.move(['plugin', pluginid, 'highshelf_enable'], ['n_filter', pluginid, 'high_shelf', 'on'])
+			cvpj_automation.calc(['plugin', pluginid, 'highshelf_freq'], 'pow_r', 1000, 0, 0, 0)
+			cvpj_automation.calc(['plugin', pluginid, 'highshelf_freq'], 'mul', 20, 0, 0, 0)
+			cvpj_automation.move(['plugin', pluginid, 'highshelf_freq'], ['n_filter', pluginid, 'high_shelf', 'freq'])
+			cvpj_automation.calc(['plugin', pluginid, 'highshelf_gain'], 'add', -0.5, 0, 0, 0)
+			cvpj_automation.calc(['plugin', pluginid, 'highshelf_gain'], 'mul', 40, 0, 0, 0)
+			cvpj_automation.move(['plugin', pluginid, 'highshelf_gain'], ['n_filter', pluginid, 'high_shelf', 'gain'])
+			cvpj_automation.move(['plugin', pluginid, 'highshelf_enable'], ['n_filter', pluginid, 'high_shelf', 'on'])
 
 			#low_shelf
 			filter_obj = plugin_obj.named_filter_add('low_pass')
@@ -133,20 +134,20 @@ class plugconv(plugins.base):
 			filter_obj.gain = (params_obj.get('lpf_gain', 0.5).value-0.5)*40
 			filter_obj.q = eq_calc_q('lpf', params_obj.get('lpf_res', 0).value)
 
-			convproj_obj.automation.calc(['plugin', pluginid, 'lpf_freq'], 'pow_r', 1000, 0, 0, 0)
-			convproj_obj.automation.calc(['plugin', pluginid, 'lpf_freq'], 'mul', 20, 0, 0, 0)
-			convproj_obj.automation.move(['plugin', pluginid, 'lpf_freq'], ['n_filter', pluginid, 'low_pass', 'freq'])
-			convproj_obj.automation.calc(['plugin', pluginid, 'lpf_gain'], 'add', -0.5, 0, 0, 0)
-			convproj_obj.automation.calc(['plugin', pluginid, 'lpf_gain'], 'mul', 40, 0, 0, 0)
-			convproj_obj.automation.move(['plugin', pluginid, 'lpf_gain'], ['n_filter', pluginid, 'low_pass', 'gain'])
-			convproj_obj.automation.move(['plugin', pluginid, 'lpf_enable'], ['n_filter', pluginid, 'low_pass', 'on'])
+			cvpj_automation.calc(['plugin', pluginid, 'lpf_freq'], 'pow_r', 1000, 0, 0, 0)
+			cvpj_automation.calc(['plugin', pluginid, 'lpf_freq'], 'mul', 20, 0, 0, 0)
+			cvpj_automation.move(['plugin', pluginid, 'lpf_freq'], ['n_filter', pluginid, 'low_pass', 'freq'])
+			cvpj_automation.calc(['plugin', pluginid, 'lpf_gain'], 'add', -0.5, 0, 0, 0)
+			cvpj_automation.calc(['plugin', pluginid, 'lpf_gain'], 'mul', 40, 0, 0, 0)
+			cvpj_automation.move(['plugin', pluginid, 'lpf_gain'], ['n_filter', pluginid, 'low_pass', 'gain'])
+			cvpj_automation.move(['plugin', pluginid, 'lpf_enable'], ['n_filter', pluginid, 'low_pass', 'on'])
 
 			master_gain = params_obj.get('master_gain', 0).value
 			master_gain = (master_gain-0.5)*40
 
-			convproj_obj.automation.calc(['plugin', pluginid, 'master_gain'], 'add', -0.5, 0, 0, 0)
-			convproj_obj.automation.calc(['plugin', pluginid, 'master_gain'], 'mul', 40, 0, 0, 0)
-			convproj_obj.automation.move_group(['plugin', pluginid], 'master_gain', 'gain_out')
+			cvpj_automation.calc(['plugin', pluginid, 'master_gain'], 'add', -0.5, 0, 0, 0)
+			cvpj_automation.calc(['plugin', pluginid, 'master_gain'], 'mul', 40, 0, 0, 0)
+			cvpj_automation.move_group(['plugin', pluginid], 'master_gain', 'gain_out')
 			
 			named_filter_obj = plugin_obj.state.named_filter
 			plugin_obj.replace('universal', 'eq', '8limited')

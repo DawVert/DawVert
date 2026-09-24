@@ -433,6 +433,7 @@ class input_wavtool(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'route'
@@ -469,7 +470,7 @@ class input_wavtool(plugins.base):
 		for x in wavtool_obj.bpmAutomation:
 			point_tempo = x['value'] if 'value' in x else 120
 			point_time = x['time'] if 'time' in x else 0
-			convproj_obj.automation.add_autopoint(['main','bpm'], 'float', point_time, point_tempo, 'instant')
+			cvpj_automation.add_autopoint(['main','bpm'], 'float', point_time, point_tempo, 'instant')
 
 		# ---------- tracks ----------
 		for trackid, wavtool_track in wavtool_obj.tracks.items(): 

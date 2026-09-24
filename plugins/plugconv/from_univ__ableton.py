@@ -22,6 +22,8 @@ class plugconv(plugins.base):
 		in_dict['out_daws'] = ['ableton']
 
 	def convert(self, convproj_obj, plugin_obj, pluginid, dawvert_intent):
+		cvpj_automation = cvpj_automation
+		
 		#if plugin_obj.type.check_wildmatch('universal', 'delay', None):
 		#	fx_on, fx_wet = plugin_obj.fxdata_get()
 		#	seperated = plugin_obj.datavals.get('seperated', [])
@@ -73,10 +75,10 @@ class plugconv(plugins.base):
 			plugin_obj.params.add(abe_starttxt+'Mode', als_shape, 'float')
 			plugin_obj.params.add(abe_starttxt+'Q', filter_obj.q, 'float')
 
-			convproj_obj.automation.move(['filter', pluginid, 'on'], ['plugin', pluginid, abe_starttxt+'IsOn'])
-			convproj_obj.automation.move(['filter', pluginid, 'freq'], ['plugin', pluginid, abe_starttxt+'Freq'])
-			convproj_obj.automation.move(['filter', pluginid, 'gain'], ['plugin', pluginid, abe_starttxt+'Gain'])
-			convproj_obj.automation.move(['filter', pluginid, 'q'], ['plugin', pluginid, abe_starttxt+'Q'])
+			cvpj_automation.move(['filter', pluginid, 'on'], ['plugin', pluginid, abe_starttxt+'IsOn'])
+			cvpj_automation.move(['filter', pluginid, 'freq'], ['plugin', pluginid, abe_starttxt+'Freq'])
+			cvpj_automation.move(['filter', pluginid, 'gain'], ['plugin', pluginid, abe_starttxt+'Gain'])
+			cvpj_automation.move(['filter', pluginid, 'q'], ['plugin', pluginid, abe_starttxt+'Q'])
 			return True
 
 		if plugin_obj.eq_to_bands(convproj_obj, pluginid):
@@ -98,7 +100,7 @@ class plugconv(plugins.base):
 				plugin_obj.params.add(abe_starttxt+'Mode', als_shape, 'int')
 				plugin_obj.params.add(abe_starttxt+'Q', filter_obj.q, 'float')
 
-				convproj_obj.automation.move(['n_filter', pluginid, filter_id, 'on'], ['plugin', pluginid, abe_starttxt+'IsOn'])
-				convproj_obj.automation.move(['n_filter', pluginid, filter_id, 'freq'], ['plugin', pluginid, abe_starttxt+'Freq'])
-				convproj_obj.automation.move(['n_filter', pluginid, filter_id, 'gain'], ['plugin', pluginid, abe_starttxt+'Gain'])
+				cvpj_automation.move(['n_filter', pluginid, filter_id, 'on'], ['plugin', pluginid, abe_starttxt+'IsOn'])
+				cvpj_automation.move(['n_filter', pluginid, filter_id, 'freq'], ['plugin', pluginid, abe_starttxt+'Freq'])
+				cvpj_automation.move(['n_filter', pluginid, filter_id, 'gain'], ['plugin', pluginid, abe_starttxt+'Gain'])
 			return True

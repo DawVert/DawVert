@@ -44,11 +44,13 @@ def reaper_color_to_cvpj_color(i_color, isreversed):
 	#	return [60, 60, 60]
 
 def do_auto(pooledenvs, convproj_obj, rpp_autodata, autoloc, instant, paramtype, invert): 
+	cvpj_automation = convproj_obj.automation
+
 	bpm = convproj_obj.params.get('bpm', 120).value
 	tempomul = bpm/120
 	isbool = paramtype=='bool'
 
-	auto_obj = convproj_obj.automation.create(autoloc, paramtype, True)
+	auto_obj = cvpj_automation.create(autoloc, paramtype, True)
 	auto_obj.is_seconds = True
 
 	for x in rpp_autodata.pooledenvinst:
@@ -191,6 +193,7 @@ class input_reaper(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -240,7 +243,7 @@ class input_reaper(plugins.base):
 
 		tempoenvex = rpp_project.tempoenvex
 		if tempoenvex.used:
-			auto_obj = convproj_obj.automation.create(['main', 'bpm'], 'float', True)
+			auto_obj = cvpj_automation.create(['main', 'bpm'], 'float', True)
 			for point in tempoenvex.points:
 				autopoint_obj = auto_obj.add_autopoint(point[0], point[1], 'instant')
 				if len(point)>6:
@@ -850,7 +853,7 @@ class input_reaper(plugins.base):
 				return_obj.visual = track_obj.visual
 				return_obj.params = track_obj.params
 				return_obj.plugslots = track_obj.plugslots
-				convproj_obj.automation.move_everything(['track', returnid], ['return', returnid])
+				cvpj_automation.move_everything(['track', returnid], ['return', returnid])
 				cvpj_tracks.remove(returnid)
 
 			cur_groups = []
@@ -874,7 +877,7 @@ class input_reaper(plugins.base):
 						g_track_obj.group = cvpj_trackid
 						track_cvpjdata.append(track_obj)
 
-					convproj_obj.automation.move_everything(['track', cvpj_trackid], ['group', cvpj_trackid])
+					cvpj_automation.move_everything(['track', cvpj_trackid], ['group', cvpj_trackid])
 					cvpj_tracks.remove(cvpj_trackid)
 
 					sends_obj = group_obj.sends
@@ -920,4 +923,4 @@ class input_reaper(plugins.base):
 					send_obj.params.add('pan', rpp_auxrecv_obj['pan'], 'float')
 
 		# ---------- automation ----------
-		convproj_obj.automation.set_persist_all(False)
+		cvpj_automation.set_persist_all(False)

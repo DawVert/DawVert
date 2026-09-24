@@ -22,6 +22,8 @@ class plugconv(plugins.base):
 		in_dict['out_daws'] = []
 
 	def convert(self, convproj_obj, plugin_obj, pluginid, dawvert_intent):
+		cvpj_automation = convproj_obj.automation
+		
 		if plugin_obj.type.check_wildmatch('native', 'ableton', 'AutoFilter'):
 			#extpluglog.convinternal('Ableton', 'AutoFilter', 'Universal', 'Filter')
 			
@@ -42,13 +44,13 @@ class plugconv(plugins.base):
 			filter_obj.q = (1+(p_Resonance-0.12))**3
 			filter_obj.slope = 24 if p_Slope else 12
 
-			convproj_obj.automation.calc(['plugin', pluginid, 'Resonance'], 'add', 1-0.12, 0, 0, 0)
-			convproj_obj.automation.calc(['plugin', pluginid, 'Resonance'], 'pow', 3, 0, 0, 0)
-			convproj_obj.automation.move(['plugin', pluginid, 'Resonance'], ['filter', pluginid, 'q'])
+			cvpj_automation.calc(['plugin', pluginid, 'Resonance'], 'add', 1-0.12, 0, 0, 0)
+			cvpj_automation.calc(['plugin', pluginid, 'Resonance'], 'pow', 3, 0, 0, 0)
+			cvpj_automation.move(['plugin', pluginid, 'Resonance'], ['filter', pluginid, 'q'])
 
-			convproj_obj.automation.calc(['plugin', pluginid, 'Cutoff'], 'add', -72, 0, 0, 0)
-			convproj_obj.automation.calc(['plugin', pluginid, 'Cutoff'], 'note2freq', 0, 0, 0, 0)
-			convproj_obj.automation.move(['plugin', pluginid, 'Cutoff'], ['filter', pluginid, 'freq'])
+			cvpj_automation.calc(['plugin', pluginid, 'Cutoff'], 'add', -72, 0, 0, 0)
+			cvpj_automation.calc(['plugin', pluginid, 'Cutoff'], 'note2freq', 0, 0, 0, 0)
+			cvpj_automation.move(['plugin', pluginid, 'Cutoff'], ['filter', pluginid, 'freq'])
 			return True
 
 		if plugin_obj.type.check_wildmatch('native', 'ableton', 'AutoPan'):
@@ -112,10 +114,10 @@ class plugconv(plugins.base):
 				filter_obj.type.set(cvpj_bandtype, None)
 				filter_obj.slope = cvpj_slope
 
-				convproj_obj.automation.move(['plugin', pluginid, abe_starttxt+"IsOn"], ['n_filter', pluginid, filter_id, 'on'])
-				convproj_obj.automation.move(['plugin', pluginid, abe_starttxt+"Freq"], ['n_filter', pluginid, filter_id, 'freq'])
-				convproj_obj.automation.move(['plugin', pluginid, abe_starttxt+"Gain"], ['n_filter', pluginid, filter_id, 'gain'])
-				convproj_obj.automation.move(['plugin', pluginid, abe_starttxt+"Q"], ['n_filter', pluginid, filter_id, 'q'])
+				cvpj_automation.move(['plugin', pluginid, abe_starttxt+"IsOn"], ['n_filter', pluginid, filter_id, 'on'])
+				cvpj_automation.move(['plugin', pluginid, abe_starttxt+"Freq"], ['n_filter', pluginid, filter_id, 'freq'])
+				cvpj_automation.move(['plugin', pluginid, abe_starttxt+"Gain"], ['n_filter', pluginid, filter_id, 'gain'])
+				cvpj_automation.move(['plugin', pluginid, abe_starttxt+"Q"], ['n_filter', pluginid, filter_id, 'q'])
 
 				filter_obj, filter_id = plugin_obj.named_eq_add('alt')
 				filter_obj.on = bool(plugin_obj.params.get(abe_starttxt_alt+"IsOn", 0).value)
@@ -125,10 +127,10 @@ class plugconv(plugins.base):
 				filter_obj.type.set(cvpj_bandtype_alt, None)
 				filter_obj.slope = cvpj_slope_alt
 
-				convproj_obj.automation.move(['plugin', pluginid, abe_starttxt_alt+"IsOn"], ['n_filter', pluginid, filter_id, 'on'])
-				convproj_obj.automation.move(['plugin', pluginid, abe_starttxt_alt+"Freq"], ['n_filter', pluginid, filter_id, 'freq'])
-				convproj_obj.automation.move(['plugin', pluginid, abe_starttxt_alt+"Gain"], ['n_filter', pluginid, filter_id, 'gain'])
-				convproj_obj.automation.move(['plugin', pluginid, abe_starttxt_alt+"Q"], ['n_filter', pluginid, filter_id, 'q'])
+				cvpj_automation.move(['plugin', pluginid, abe_starttxt_alt+"IsOn"], ['n_filter', pluginid, filter_id, 'on'])
+				cvpj_automation.move(['plugin', pluginid, abe_starttxt_alt+"Freq"], ['n_filter', pluginid, filter_id, 'freq'])
+				cvpj_automation.move(['plugin', pluginid, abe_starttxt_alt+"Gain"], ['n_filter', pluginid, filter_id, 'gain'])
+				cvpj_automation.move(['plugin', pluginid, abe_starttxt_alt+"Q"], ['n_filter', pluginid, filter_id, 'q'])
 
 			eq_obj = plugin_obj.state.eq
 			plugin_obj.replace('universal', 'eq', 'bands')

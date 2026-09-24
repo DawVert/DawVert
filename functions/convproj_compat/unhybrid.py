@@ -5,6 +5,7 @@ from functions import data_values
 
 def process_r(convproj_obj):
 	cvpj_tracks = convproj_obj.tracks
+	cvpj_automation = convproj_obj.automation
 
 	org_track_data = cvpj_tracks.data
 	org_track_order = cvpj_tracks.order
@@ -44,7 +45,7 @@ def process_r(convproj_obj):
 					cvpj_tracks.order.append(trackid_s)
 					cvpj_tracks.data[trackid_s] = n_track_obj
 					if trackroute_sendobj != None: convproj_obj.trackroute[trackid_s] = trackroute_sendobj
-					convproj_obj.automation.copy_everything(['track', trackid], ['track', trackid_s])
+					cvpj_automation.copy_everything(['track', trackid], ['track', trackid_s])
 
 				if if_audio:
 					trackid_s = trackid+'_unhybrid_audio'
@@ -52,7 +53,7 @@ def process_r(convproj_obj):
 					cvpj_tracks.order.append(trackid_s)
 					cvpj_tracks.data[trackid_s] = a_track_obj
 					if trackroute_sendobj != None: convproj_obj.trackroute[trackid_s] = trackroute_sendobj
-					convproj_obj.automation.copy_everything(['track', trackid], ['track', trackid_s])
+					cvpj_automation.copy_everything(['track', trackid], ['track', trackid_s])
 
 				if if_video:
 					trackid_s = trackid+'_unhybrid_video'

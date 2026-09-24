@@ -55,6 +55,7 @@ class input_adlib_rol(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_insts = convproj_obj.instruments
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj params ----------
 		convproj_obj.type = 'rm'
@@ -72,7 +73,7 @@ class input_adlib_rol(plugins.base):
 		bpm = project_obj.track_tempo.tempo
 		convproj_obj.params.add('bpm', bpm, 'float')
 		for pos, bpmmod in project_obj.track_tempo.events: 
-			convproj_obj.automation.add_autotick(['main', 'bpm'], 'float', pos, bpmmod*bpm)
+			cvpj_automation.add_autotick(['main', 'bpm'], 'float', pos, bpmmod*bpm)
 
 		# ---------- tracks ----------
 		used_voices = []
@@ -103,8 +104,8 @@ class input_adlib_rol(plugins.base):
 			for x in upper_timbre:
 				if x[1] not in used_voices: used_voices.append(x[1])
 
-			for pos, val in rol_track.volume.events: convproj_obj.automation.add_autotick(['track', cvpj_trackid, 'vol'], 'float', pos, val)
-			for pos, val in rol_track.pitch.events: convproj_obj.automation.add_autotick(['track', cvpj_trackid, 'pitch'], 'float', pos, val)
+			for pos, val in rol_track.volume.events: cvpj_automation.add_autotick(['track', cvpj_trackid, 'vol'], 'float', pos, val)
+			for pos, val in rol_track.pitch.events: cvpj_automation.add_autotick(['track', cvpj_trackid, 'pitch'], 'float', pos, val)
 
 		# ---------- insts ----------
 		for used_voice in used_voices:

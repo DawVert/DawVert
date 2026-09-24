@@ -18,6 +18,8 @@ class plugconv(plugins.base):
 		in_dict['out_daws'] = ['waveform']
 
 	def convert(self, convproj_obj, plugin_obj, pluginid, dawvert_intent):
+		cvpj_automation = convproj_obj.automation
+		
 		if plugin_obj.eq_to_bands(convproj_obj, pluginid):
 			eqbands = [x for x in plugin_obj.state.eq]
 			plugin_obj.replace('native', 'tracktion', '8bandEq')
@@ -43,10 +45,10 @@ class plugconv(plugins.base):
 				plugin_obj.params.add("shape"+eqnumtxt, band_shape, 'float')
 				plugin_obj.params.add("slope"+eqnumtxt, filter_obj.slope, 'float')
 
-				convproj_obj.automation.move(['n_filter', pluginid, filter_id, 'on'], ['plugin', pluginid, "enable"+eqnumtxt])
-				convproj_obj.automation.move(['n_filter', pluginid, filter_id, 'freq'], ['plugin', pluginid, "freq"+eqnumtxt])
-				convproj_obj.automation.move(['n_filter', pluginid, filter_id, 'gain'], ['plugin', pluginid, "gain"+eqnumtxt])
-				convproj_obj.automation.calc(['plugin', pluginid, "freq"+eqnumtxt], 'freq2note', 0, 0, 0, 0)
-				convproj_obj.automation.calc(['plugin', pluginid, "freq"+eqnumtxt], 'add', 72, 0, 0, 0)
+				cvpj_automation.move(['n_filter', pluginid, filter_id, 'on'], ['plugin', pluginid, "enable"+eqnumtxt])
+				cvpj_automation.move(['n_filter', pluginid, filter_id, 'freq'], ['plugin', pluginid, "freq"+eqnumtxt])
+				cvpj_automation.move(['n_filter', pluginid, filter_id, 'gain'], ['plugin', pluginid, "gain"+eqnumtxt])
+				cvpj_automation.calc(['plugin', pluginid, "freq"+eqnumtxt], 'freq2note', 0, 0, 0, 0)
+				cvpj_automation.calc(['plugin', pluginid, "freq"+eqnumtxt], 'add', 72, 0, 0, 0)
 			return True
 			

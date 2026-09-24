@@ -65,7 +65,9 @@ def do_adsr(sampler_params, adsr_obj, sampleref_obj, sp_obj):
 			sampler_params['env_release'] = adsr_obj.release/2
 
 def add_auto_all(rpp_project, convproj_obj, rpp_env, autopath, valtype, inverted):
-	if_found, autodata = convproj_obj.automation.get(autopath, valtype)
+	cvpj_automation = convproj_obj.automation
+	
+	if_found, autodata = cvpj_automation.get(autopath, valtype)
 
 	if if_found:
 		rpp_env.used = True
@@ -272,7 +274,7 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj):
 				rpp_plug_obj.wet['wet'] = fx_wet
 				if fx_wet != 1: rpp_plug_obj.wet.used = True
 
-				for autoloc, autodata, paramnum in convproj_obj.automation.iter_all_external(pluginid):
+				for autoloc, autodata, paramnum in cvpj_automation.iter_all_external(pluginid):
 					parmenv_obj = rpp_plug_obj.add_env()
 					parmenv_obj.param_id = paramnum
 					add_auto_all(rpp_project, convproj_obj, parmenv_obj, list(autoloc), 'float', False)
@@ -317,7 +319,7 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj):
 				rpp_plug_obj.wet['wet'] = fx_wet
 				if fx_wet != 1: rpp_plug_obj.wet.used = True
 
-				for autoloc, autodata, paramnum in convproj_obj.automation.iter_all_external(pluginid):
+				for autoloc, autodata, paramnum in cvpj_automation.iter_all_external(pluginid):
 					parmenv_obj = rpp_plug_obj.add_env()
 					parmenv_obj.param_id = paramnum
 					add_auto_all(rpp_project, convproj_obj, parmenv_obj, list(autoloc), 'float', False)
@@ -340,7 +342,7 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj):
 				rpp_plug_obj.wet['wet'] = fx_wet
 				if fx_wet != 1: rpp_plug_obj.wet.used = True
 
-				for autoloc, autodata, paramnum in convproj_obj.automation.iter_all_external(pluginid):
+				for autoloc, autodata, paramnum in cvpj_automation.iter_all_external(pluginid):
 					parmenv_obj = rpp_plug_obj.add_env()
 					parmenv_obj.param_id = paramnum
 					add_auto_all(rpp_project, convproj_obj, parmenv_obj, list(autoloc), 'float', False)
@@ -759,6 +761,7 @@ class output_reaper(plugins.base):
 
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_automation = convproj_obj.automation
 		
 		global reaper_tempo
 		global datadef_obj
@@ -793,7 +796,7 @@ class output_reaper(plugins.base):
 		#tempo env
 		tempoenvex = rpp_project.tempoenvex
 
-		if_found, autodata = convproj_obj.automation.get(['main', 'bpm'], 'float')
+		if_found, autodata = cvpj_automation.get(['main', 'bpm'], 'float')
 		if if_found:
 			if autodata.u_nopl_points:
 				tempoenvex.used = 1

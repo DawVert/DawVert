@@ -58,6 +58,7 @@ class input_magda(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_automation = convproj_obj.automation
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -306,16 +307,16 @@ class input_magda(plugins.base):
 				startloc = numassoc_all[target.trackId]
 				if targtype==5:
 					sendautoid = 'send_%s_%s' % (target.trackId, target.sendBusIndex)
-					auto_obj = convproj_obj.automation.create(['send', sendautoid, 'amount'], 'float', True)
+					auto_obj = cvpj_automation.create(['send', sendautoid, 'amount'], 'float', True)
 					doautopoints(auto_obj, x.absolutePoints, 0, 1)
 				elif targtype==3:
-					auto_obj = convproj_obj.automation.create(startloc+['vol'], 'float', True)
+					auto_obj = cvpj_automation.create(startloc+['vol'], 'float', True)
 					doautopoints(auto_obj, x.absolutePoints, 0, 1)
 				elif targtype==4:
-					auto_obj = convproj_obj.automation.create(startloc+['pan'], 'float', True)
+					auto_obj = cvpj_automation.create(startloc+['pan'], 'float', True)
 					doautopoints(auto_obj, x.absolutePoints, -1, 1)
 				elif targtype==0:
 					topLevelDeviceId = target.devicePath['topLevelDeviceId']
 					startloc = numassoc_all[target.trackId]
-					auto_obj = convproj_obj.automation.create(['plugin', '%s_%s'%(target.trackId, topLevelDeviceId), 'param_'+str(target.paramIndex)], 'float', True)
+					auto_obj = cvpj_automation.create(['plugin', '%s_%s'%(target.trackId, topLevelDeviceId), 'param_'+str(target.paramIndex)], 'float', True)
 					doautopoints(auto_obj, x.absolutePoints, 0, 1)

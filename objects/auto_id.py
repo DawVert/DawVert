@@ -21,7 +21,8 @@ class convproj2autoid:
 			self.in_data[i_id][2] = i_addmul
 
 	def output(self, convproj_obj):
+		cvpj_automation = convproj_obj.automation
 		for i, v in self.in_data.items():
-			convproj_obj.automation.move(['id', str(i)], v[0])
+			cvpj_automation.move(['id', str(i)], v[0])
 			if v[2] != None: 
-				convproj_obj.automation.calc(v[0], 'addmul', v[2][0], v[2][1], 0, 0)
+				cvpj_automation.calc(v[0], 'addmul', v[2][0], v[2][1], 0, 0)

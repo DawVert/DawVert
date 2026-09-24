@@ -216,7 +216,7 @@ def get_instshape(InstShape):
 def make_instid(fxchan, wavetype, instname):
 	return '%i_%s' % (fxchan, wavetype+(('-'+instname) if instname else ''))
 
-def make_auto(convproj_obj, fs_pattern, NoteLength, timemul, patpos, patdur, channum):
+def make_auto(cvpj_automation, fs_pattern, NoteLength, timemul, patpos, patdur, channum):
 	fs_notes = fs_pattern.Notes
 	vol_auto = []
 	for notedata in fs_notes:
@@ -225,7 +225,7 @@ def make_auto(convproj_obj, fs_pattern, NoteLength, timemul, patpos, patdur, cha
 			vol_auto.append([notepos, notedata.Volume, notedata.VolumeSlideTarget])
 
 	if vol_auto:
-		autopl_obj = convproj_obj.automation.add_pl_points(['fxmixer', str(channum), 'vol'], 'float')
+		autopl_obj = cvpj_automation.add_pl_points(['fxmixer', str(channum), 'vol'], 'float')
 		time_obj = autopl_obj.time
 		time_obj.set_posdur(patpos, patdur)
 		if fs_pattern.Color: autopl_obj.visual.color.set_hex(fs_pattern.Color)
@@ -323,6 +323,9 @@ class input_famistudio(plugins.base):
 		defualt_track_color = get_gcolor('famistudio', 'defualt', 'track')
 
 		fst_currentsong = project_obj.Songs[dawvert_intent.songnum]
+
+		# ---------- convproj objects ----------
+		cvpj_automation = convproj_obj.automation
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -513,4 +516,4 @@ class input_famistudio(plugins.base):
 				time_obj.set_posdur(float(tempoblocks[pattime]['start']), float(tempoblocks[pattime]['steps']))
 
 				if patid in fst_channel.Patterns:
-					make_auto(convproj_obj, fst_channel.Patterns[patid], NoteLength, tempoblocks[pattime]['notemul'], time_obj.get_pos(), time_obj.get_dur(), fxchan)
+					make_auto(cvpj_automation, fst_channel.Patterns[patid], NoteLength, tempoblocks[pattime]['notemul'], time_obj.get_pos(), time_obj.get_dur(), fxchan)

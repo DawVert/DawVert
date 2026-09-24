@@ -12,6 +12,7 @@ def convert(convproj_obj):
 
 	cvpj_tracks = convproj_obj.tracks
 	cvpj_insts = convproj_obj.instruments
+	cvpj_automation = convproj_obj.automation
 	
 	plnum = -1
 	for trackid, track_obj in cvpj_tracks.iter():
@@ -60,7 +61,7 @@ def convert(convproj_obj):
 			if track_obj.visual_inst.color: inst_obj.visual.color = track_obj.visual_inst.color.copy()
 			else: inst_obj.visual.color = track_obj.visual.color.copy()
 
-	convproj_obj.automation.move_everything(['track'], ['inst'])
+	cvpj_automation.move_everything(['track'], ['inst'])
 
 	cvpj_tracks = convproj_obj.tracks
 	cvpj_tracks.data = {}

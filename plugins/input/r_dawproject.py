@@ -49,6 +49,8 @@ def do_sends(convproj_obj, track_obj, dp_channel):
 			do_param(convproj_obj, send_obj.params, send.volume, 'amount', None, 'float', ['send', send.id, 'amount'])
 
 def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
+	cvpj_automation = convproj_obj.automation
+
 	for device in dp_devices:
 		plugin_obj = None
 		pluginid = device.id
@@ -81,8 +83,8 @@ def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 				if band.freq.unit == 'semitone':
 					filter_obj.freq = note_data.note_to_freq(band.freq.value-72)
 					freqpath = ['n_filter', pluginid, filter_id, 'freq']
-					convproj_obj.automation.calc(freqpath, 'add', -72, 0, 0, 0)
-					convproj_obj.automation.calc(freqpath, 'note2freq', 0, 0, 0, 0)
+					cvpj_automation.calc(freqpath, 'add', -72, 0, 0, 0)
+					cvpj_automation.calc(freqpath, 'note2freq', 0, 0, 0, 0)
 				if band.freq.unit == 'hertz':
 					filter_obj.freq = band.freq.value
 					freqpath = ['n_filter', pluginid, filter_id, 'freq']
@@ -458,6 +460,9 @@ class input_dawproject(plugins.base):
 		autoid_assoc = auto_id.convproj2autoid(48)
 		samplefolder = dawvert_intent.path_samples['extracted']
 
+		# ---------- convproj objects ----------
+		cvpj_automation = convproj_obj.automation
+
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.fxtype = 'groupreturn'
@@ -511,7 +516,7 @@ class input_dawproject(plugins.base):
 				for points in lane.points:
 					target_obj = points.target
 					if target_obj.parameter:
-						auto_obj = convproj_obj.automation.create(['id',target_obj.parameter], 'bool' if points.points_bool else 'float', True)
+						auto_obj = cvpj_automation.create(['id',target_obj.parameter], 'bool' if points.points_bool else 'float', True)
 						for point in points.points: auto_obj.add_autopoint(point.time, point.value, None)
 						for point in points.points_bool: auto_obj.add_autopoint(point.time, point.value, 'instant')
 
@@ -524,7 +529,7 @@ class input_dawproject(plugins.base):
 		if tempoauto:
 			target_obj = tempoauto.target
 			if target_obj.parameter:
-				auto_obj = convproj_obj.automation.create(['id',target_obj.parameter], 'float', True)
+				auto_obj = cvpj_automation.create(['id',target_obj.parameter], 'float', True)
 				for point in tempoauto.points: auto_obj.add_autopoint(point.time, point.value, None)
 
 		if project_obj.arrangement.markers:
@@ -537,4 +542,4 @@ class input_dawproject(plugins.base):
 
 		autoid_assoc.output(convproj_obj)
 
-		convproj_obj.automation.attempt_after()
+		cvpj_automation.attempt_after()

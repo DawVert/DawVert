@@ -88,8 +88,8 @@ def sampler_soundlayer_filter(plugin_obj, soundlayer, filter_obj):
 	if filterModeParam in sampler_filter_types: filter_obj.type.set(sampler_filter_types[filterModeParam], None)
 	if filterModeParam in sampler_filter_slopes: filter_obj.slope = sampler_filter_slopes[filterModeParam]
 
-def do_auto(convproj_obj, autocurvespoints, autoloc, mul):
-	auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
+def do_auto(cvpj_automation, autocurvespoints, autoloc, mul):
+	auto_obj = cvpj_automation.create(autoloc, 'float', True)
 	auto_obj.is_seconds = True
 	for time, val, curve in autocurvespoints:
 		auto_obj.add_autopoint(time, val, 'normal')
@@ -107,6 +107,8 @@ def decodevst3_chunk(memoryblock):
 def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode): 
 	from functions.juce import juce_memoryblock
 	from objects.file_proj._waveform import sampler
+
+	cvpj_automation = convproj_obj.automation
 
 	pitch = None
 
@@ -238,7 +240,7 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 						windata_obj.pos_y = wf_plugin.windowY
 					for autocurves in wf_plugin.automationcurves:
 						if autocurves.paramid: 
-							do_auto(convproj_obj, autocurves.points, ['plugin',pluginid,'ext_param_'+autocurves.paramid], 1)
+							do_auto(cvpj_automation, autocurves.points, ['plugin',pluginid,'ext_param_'+autocurves.paramid], 1)
 
 			#except:
 				#import traceback
@@ -626,6 +628,7 @@ class input_tracktion_edit(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
@@ -660,7 +663,7 @@ class input_tracktion_edit(plugins.base):
 		if project_obj.temposequence.tempo:
 			pos, tempo = next(iter(project_obj.temposequence.tempo.items()))
 			convproj_obj.params.add('bpm', tempo[0], 'float')
-			auto_obj = convproj_obj.automation.create(['main', 'bpm'], 'float', True)
+			auto_obj = cvpj_automation.create(['main', 'bpm'], 'float', True)
 			auto_obj.is_seconds = False
 			for pos, tempo in project_obj.temposequence.tempo.items():
 				auto_obj.add_autopoint(pos*4, tempo[0], 'instant' if tempo[1] not in [None, 1] else 'normal')
@@ -749,7 +752,7 @@ class input_tracktion_edit(plugins.base):
 				return_obj.visual = track_obj.visual
 				return_obj.params = track_obj.params
 				return_obj.plugslots = track_obj.plugslots
-				convproj_obj.automation.move_everything(['track', returnid], ['return', returnid])
+				cvpj_automation.move_everything(['track', returnid], ['return', returnid])
 				cvpj_tracks.remove(returnid)
 
 			for busNum, trackid, track_obj, wf_plugin in gr_sends_t+gr_sends_g:

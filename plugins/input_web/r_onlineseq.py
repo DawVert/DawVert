@@ -49,6 +49,7 @@ class input_onlinesequencer(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_automation = convproj_obj.automation
 
 		# ---------- convproj params ----------
 		groupby = dawvert_intent.input_get_param('groupby', 'instset')
@@ -113,7 +114,7 @@ class input_onlinesequencer(plugins.base):
 					if paramid == 26: autoloc = ['plugin', trackid+'_bitcrush', 'bits']
 
 				if autoloc:
-					auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
+					auto_obj = cvpj_automation.create(autoloc, 'float', True)
 					for marker in markers: auto_obj.add_autopoint(marker.pos, marker.value/div, 'normal' if marker.type else 'instant')
 
 		# ---------- notes ----------

@@ -33,6 +33,7 @@ class input_cvpj_f(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -52,7 +53,7 @@ class input_cvpj_f(plugins.base):
 
 			if isinstance(metaevent, proj_temper.metaevent_bpm):
 				if not curpos: convproj_obj.params.add('bpm', metaevent.bpm, 'float')
-				convproj_obj.automation.add_autopoint(['main', 'bpm'], 'float', curpos, metaevent.bpm, 'normal')
+				cvpj_automation.add_autopoint(['main', 'bpm'], 'float', curpos, metaevent.bpm, 'normal')
 
 			if isinstance(metaevent, proj_temper.metaevent_meter):
 				if not curpos: convproj_obj.timesig = [metaevent.beats, metaevent.beat_value]

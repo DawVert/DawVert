@@ -41,8 +41,10 @@ def make_auto(convproj_obj, addauto_obj):
 	placement_obj = addauto_obj.placement_obj
 	ftr_clip = addauto_obj.ftr_clip
 
+	cvpj_automation = convproj_obj.automation
+
 	if auto_method=='auto':
-		autopl_obj = convproj_obj.automation.add_pl_points(autoloc, 'float')
+		autopl_obj = cvpj_automation.add_pl_points(autoloc, 'float')
 		autopl_obj.visual.name = ftr_clip.name
 		time_obj = autopl_obj.time
 		time_obj.set_posdur(plpos, pldur)
@@ -101,6 +103,7 @@ class input_fruitytracks(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 
 		# ---------- convproj params ----------
 		pan_auto = dawvert_intent.input_get_param('pan_auto', 'auto')
@@ -141,9 +144,10 @@ class input_fruitytracks(plugins.base):
 			trackid = str(tracknum)
 			track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
 			track_obj.visual.name = ftr_track.name if ftr_track.name else 'Track '+str(tracknum)
-			track_obj.params.add('pan', (ftr_track.pan-64)/64, 'float')
-			track_obj.params.add('vol', ftr_track.vol/128, 'float')
-			track_obj.params.add('enabled', not bool(ftr_track.muted), 'bool')
+			track_params = track_obj.params
+			track_params.add('pan', (ftr_track.pan-64)/64, 'float')
+			track_params.add('vol', ftr_track.vol/128, 'float')
+			track_params.add('enabled', not bool(ftr_track.muted), 'bool')
 
 			for pid in sorted(ftr_track.plugins):
 				flplug = ftr_track.plugins[pid]
@@ -156,7 +160,8 @@ class input_fruitytracks(plugins.base):
 				plugin_obj.datavals.add('file', flplug.name)
 				plugin_obj.role = 'fx'
 				plugin_obj.fxdata_add(bool(flplug.enabled), None)
-				for n, v in enumerate(flplug.params): plugin_obj.params.add(str(n), v, 'float')
+				plugin_params = plugin_obj.params
+				for n, v in enumerate(flplug.params): plugin_params.add(str(n), v, 'float')
 				track_obj.plugslots.slots_audio.append(fxid)
 
 			for ftr_clip in ftr_track.clips:
@@ -223,4 +228,4 @@ class input_fruitytracks(plugins.base):
 					make_auto(convproj_obj, addauto_obj)
 
 		# ---------- automation ----------
-		convproj_obj.automation.set_persist_all(False)
+		cvpj_automation.set_persist_all(False)

@@ -21,7 +21,7 @@ def spc_vals():
 
 def autopoints_get(autoloc, add, mul):
 	sngauto = []
-	if_found, autopoints = convproj_obj.automation.get_autopoints(autoloc)
+	if_found, autopoints = cvpj_automation.get_autopoints(autoloc)
 	if if_found:
 		autopoints.remove_instant()
 		for autopoint in autopoints:
@@ -108,12 +108,14 @@ class output_soundation(plugins.base):
 		from objects.file_proj import soundation as proj_soundation
 
 		global convproj_obj
+		global cvpj_automation
 		global audio_id
 
 		audio_id = {}
 		convproj_obj = i_convproj_obj
 
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		globalstore.datapack.load('soundation', './data/datapack/app/soundation.xml')
 		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.xml')
@@ -515,7 +517,7 @@ class output_soundation(plugins.base):
 					exists_2 = False
 					if send_obj.sendautoid:
 						autoloc = ['send', send_obj.sendautoid, 'amount']
-						autodata = convproj_obj.automation.get_opt(autoloc)
+						autodata = cvpj_automation.get_opt(autoloc)
 						if autodata:
 							if autodata.u_nopl_points:
 								if len(autodata.nopl_points): exists_2 = True

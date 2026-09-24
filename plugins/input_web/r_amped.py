@@ -48,13 +48,13 @@ def do_idparams(paramsdata, plugin_obj, pluginname):
 			dset_dataval = fldso.datavals.get(param.name)
 			if dset_dataval: plugin_obj.datapack_dataval__add(param.name, param.value, dset_dataval)
 
-def do_idauto(convproj_obj, amped_autodata, devid, amped_auto, pluginid):
+def do_idauto(cvpj_automation, amped_autodata, devid, amped_auto, pluginid):
 	if amped_autodata:
 		if devid in amped_autodata:
 			autoparams = amped_autodata[devid]
 			for autop, apoints in autoparams.items():
 				autoloc = ['plugin',str(pluginid),autop.replace('/', '__')]
-				auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
+				auto_obj = cvpj_automation.create(autoloc, 'float', True)
 				for point in apoints: auto_obj.add_autopoint(point[0], point[1], 'normal')
 
 def get_contentGuid(contentGuid):
@@ -92,6 +92,8 @@ def get_wampreset(amped_tr_device):
 	return json.loads(amped_tr_device.data['wamPreset']) if 'wamPreset' in amped_tr_device.data else {}
 
 def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
+	cvpj_automation = convproj_obj.automation
+
 	for amped_tr_device in amped_tr_devices:
 		devid = amped_tr_device.id
 		pluginid = str(devid)
@@ -223,21 +225,21 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			#sampleref_obj.visual.name = amped_tr_device.grannySampleName
 			#plugin_obj.samplerefs['sample'] = sampleuuid
 			do_idparams(amped_tr_device.params, plugin_obj, amped_tr_device.className)
-			do_idauto(convproj_obj, amped_autodata, devid, amped_tr_device.params, pluginid)
+			do_idauto(cvpj_automation, amped_autodata, devid, amped_tr_device.params, pluginid)
 
 		elif devicetype == ['Volt', 'VOLT']:
 			track_obj.plugslots.set_synth(pluginid)
 			plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'amped', 'Volt')
 			plugin_obj.role = 'synth'
 			do_idparams(amped_tr_device.params, plugin_obj, amped_tr_device.className)
-			do_idauto(convproj_obj, amped_autodata, devid, amped_tr_device.params, pluginid)
+			do_idauto(cvpj_automation, amped_autodata, devid, amped_tr_device.params, pluginid)
 
 		elif devicetype == ['VoltMini', 'VOLT Mini']:
 			track_obj.plugslots.set_synth(pluginid)
 			plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'amped', 'VoltMini')
 			plugin_obj.role = 'synth'
 			do_idparams(amped_tr_device.params, plugin_obj, amped_tr_device.className)
-			do_idauto(convproj_obj, amped_autodata, devid, amped_tr_device.params, pluginid)
+			do_idauto(cvpj_automation, amped_autodata, devid, amped_tr_device.params, pluginid)
 
 			filt_lvl = plugin_obj.params.get("part/1/eg/3/L", 0).value
 			modlvl = plugin_obj.params.get("part/1/eg/1/L", 0).value
@@ -287,7 +289,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'amped', 'EqualizerPro')
 			plugin_obj.role = 'fx'
 			do_idparams(amped_tr_device.params, plugin_obj, amped_tr_device.className)
-			do_idauto(convproj_obj, amped_autodata, devid, amped_tr_device.params, pluginid)
+			do_idauto(cvpj_automation, amped_autodata, devid, amped_tr_device.params, pluginid)
 
 		elif amped_tr_device.className in ['Chorus',  
 		'CompressorMini', 'Delay', 'Distortion', 'Equalizer', 
@@ -297,7 +299,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'amped', amped_tr_device.className)
 			plugin_obj.role = 'fx'
 			do_idparams(amped_tr_device.params, plugin_obj, amped_tr_device.className)
-			do_idauto(convproj_obj, amped_autodata, devid, amped_tr_device.params, pluginid)
+			do_idauto(cvpj_automation, amped_autodata, devid, amped_tr_device.params, pluginid)
 
 		plugin_obj.fxdata_add(not amped_tr_device.bypass, None)
 
@@ -382,6 +384,7 @@ class input_amped(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -439,7 +442,7 @@ class input_amped(plugins.base):
 					if autoname == 'volume': autoloc = ['track', amped_tr_id, 'vol']
 					if autoname == 'pan': autoloc = ['track', amped_tr_id, 'pan']
 					if autoloc: 
-						auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
+						auto_obj = cvpj_automation.create(autoloc, 'float', True)
 						for p, v in ampedauto_to_cvpjauto(amped_automation.points):
 							auto_obj.add_autopoint(p, v, None)
 				else:

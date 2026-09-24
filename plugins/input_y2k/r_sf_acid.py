@@ -64,6 +64,7 @@ class input_acid_old(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_automation = convproj_obj.automation
 
 		# ---------- convproj params ----------
 		groupby = dawvert_intent.input_get_param('groupby', 'none')
@@ -103,11 +104,12 @@ class input_acid_old(plugins.base):
 		rootnote_auto = regions.rootnote_stor()
 		auto_basenotes[0] = project_obj.root_note
 		if len(project_obj.tempmap):
-			convproj_obj.automation.add_autotick(['main', 'bpm'], 'float', 0, project_obj.tempo)
+			tempo_autoloc = ['main', 'bpm']
+			cvpj_automation.add_autotick(tempo_autoloc, 'float', 0, project_obj.tempo)
 			for x in project_obj.tempmap:
 				if x['tempo']:
 					tempov = (500000/x['tempo'])*120
-					convproj_obj.automation.add_autotick(['main', 'bpm'], 'float', int(x['pos']), tempov)
+					cvpj_automation.add_autotick(tempo_autoloc, 'float', int(x['pos']), tempov)
 				if x['base_note']:
 					pos = int(x['pos'])
 					if pos:
@@ -295,7 +297,7 @@ class input_acid_old(plugins.base):
 							autoloc = ['send', 'send_%i_%i' % (tracknum, env.type-2), 'amount']
 							if env.type-2 not in used_sends: used_sends.append(env.type-2)
 						if autoloc:
-							autopl_obj = convproj_obj.automation.add_pl_points(autoloc, 'float')
+							autopl_obj = cvpj_automation.add_pl_points(autoloc, 'float')
 							time_obj = autopl_obj.time
 							time_obj.set_startend(region.start, region.end)
 							for point in env.points:
@@ -303,7 +305,7 @@ class input_acid_old(plugins.base):
 								if point[0] == 2: tension = 1
 								if point[0] == -2: tension = -1
 								autopl_obj.data.points__add_normal(point[0], point[1], tension, None)
-							auto_obj = convproj_obj.automation.get_opt(autoloc)
+							auto_obj = cvpj_automation.get_opt(autoloc)
 							if auto_obj is not None: 
 								if env.type == 0: auto_obj.defualt_val = track.vol
 								if env.type == 1: auto_obj.defualt_val = track.pan
@@ -399,4 +401,4 @@ class input_acid_old(plugins.base):
 					for x in tn_drum: tracks[x].group = 'drums'
 
 		# ---------- automation ----------
-		convproj_obj.automation.set_persist_all(False)
+		cvpj_automation.set_persist_all(False)

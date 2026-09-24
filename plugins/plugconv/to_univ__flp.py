@@ -26,6 +26,8 @@ class plugconv(plugins.base):
 		in_dict['out_daws'] = []
 
 	def convert(self, convproj_obj, plugin_obj, pluginid, dawvert_intent):
+		cvpj_automation = convproj_obj.automation
+		
 		if plugin_obj.type.check_wildmatch('native', 'flstudio', 'fruity 7 band eq'):
 			bandsdata = max([plugin_obj.params.get('band_'+str(bandnum+1), 0).value for bandnum in range(7)])
 			if bandsdata<=1800:
@@ -39,8 +41,8 @@ class plugconv(plugins.base):
 					filter_obj.gain = plugin_obj.params.get(gain_txt, 0).value/100
 					filter_obj.type.set('peak', None)
 
-					convproj_obj.automation.calc(['plugin', pluginid, gain_txt], 'div', 100, 0, 0, 0)
-					convproj_obj.automation.move(['plugin', pluginid, gain_txt], ['n_filter', pluginid, filterid, 'gain'])
+					cvpj_automation.calc(['plugin', pluginid, gain_txt], 'div', 100, 0, 0, 0)
+					cvpj_automation.move(['plugin', pluginid, gain_txt], ['n_filter', pluginid, filterid, 'gain'])
 
 				plugin_obj.replace('universal', 'eq', 'bands')
 				plugin_obj.state.eq = eq_obj
@@ -129,14 +131,14 @@ class plugconv(plugins.base):
 				if fl_band_type == 7: filter_obj.type.set('high_shelf', None)
 
 				txt_freq = bandstarttxt+'_freq'
-				convproj_obj.automation.calc(['plugin', pluginid, txt_freq], 'div', 65536, 0, 0, 0)
-				convproj_obj.automation.calc(['plugin', pluginid, txt_freq], 'pow_r', 1000, 0, 0, 0)
-				convproj_obj.automation.calc(['plugin', pluginid, txt_freq], 'mul', 20, 0, 0, 0)
-				convproj_obj.automation.move(['plugin', pluginid, txt_freq], ['n_filter', pluginid, filterid, 'freq'])
+				cvpj_automation.calc(['plugin', pluginid, txt_freq], 'div', 65536, 0, 0, 0)
+				cvpj_automation.calc(['plugin', pluginid, txt_freq], 'pow_r', 1000, 0, 0, 0)
+				cvpj_automation.calc(['plugin', pluginid, txt_freq], 'mul', 20, 0, 0, 0)
+				cvpj_automation.move(['plugin', pluginid, txt_freq], ['n_filter', pluginid, filterid, 'freq'])
 
 				txt_gain = bandstarttxt+'_gain'
-				convproj_obj.automation.calc(['plugin', pluginid, txt_gain], 'div', 100, 0, 0, 0)
-				convproj_obj.automation.move(['plugin', pluginid, txt_gain], ['n_filter', pluginid, filterid, 'gain'])
+				cvpj_automation.calc(['plugin', pluginid, txt_gain], 'div', 100, 0, 0, 0)
+				cvpj_automation.move(['plugin', pluginid, txt_gain], ['n_filter', pluginid, filterid, 'gain'])
 
 			plugin_obj.replace('universal', 'eq', 'bands')
 			plugin_obj.state.eq = eq_obj

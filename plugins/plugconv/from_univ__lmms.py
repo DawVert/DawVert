@@ -72,6 +72,8 @@ class plugconv(plugins.base):
 		in_dict['out_daws'] = ['lmms']
 
 	def convert(self, convproj_obj, plugin_obj, pluginid, dawvert_intent):
+		cvpj_automation = convproj_obj.automation
+		
 		if plugin_obj.type.check_wildmatch('universal', 'synth-osc', None):
 			samplefolder = dawvert_intent.path_samples['generated']
 
@@ -130,16 +132,16 @@ class plugconv(plugins.base):
 			plugin_obj.params.add('HPfreq', fil_hp.freq, 'float')
 			plugin_obj.params.add('HPres', fil_hp.q, 'float')
 			plugin_obj.params.add('HP', getslope(fil_hp.slope), 'float')
-			convproj_obj.automation.move(['n_filter', pluginid, 'high_pass', 'on'], ['plugin', pluginid, "HPactive"])
-			convproj_obj.automation.move(['n_filter', pluginid, 'high_pass', 'freq'], ['plugin', pluginid, "HPfreq"])
+			cvpj_automation.move(['n_filter', pluginid, 'high_pass', 'on'], ['plugin', pluginid, "HPactive"])
+			cvpj_automation.move(['n_filter', pluginid, 'high_pass', 'freq'], ['plugin', pluginid, "HPfreq"])
 
 			plugin_obj.params.add('Lowshelfactive', int(fil_ls.on), 'float')
 			plugin_obj.params.add('LowShelffreq', fil_ls.freq, 'float')
 			plugin_obj.params.add('Lowshelfgain', fil_ls.gain, 'float')
 			plugin_obj.params.add('LowShelfres', fil_ls.q, 'float')
-			convproj_obj.automation.move(['n_filter', pluginid, 'low_shelf', 'on'], ['plugin', pluginid, "Lowshelfactive"])
-			convproj_obj.automation.move(['n_filter', pluginid, 'low_shelf', 'freq'], ['plugin', pluginid, "LowShelffreq"])
-			convproj_obj.automation.move(['n_filter', pluginid, 'low_shelf', 'gain'], ['plugin', pluginid, "Lowshelfgain"])
+			cvpj_automation.move(['n_filter', pluginid, 'low_shelf', 'on'], ['plugin', pluginid, "Lowshelfactive"])
+			cvpj_automation.move(['n_filter', pluginid, 'low_shelf', 'freq'], ['plugin', pluginid, "LowShelffreq"])
+			cvpj_automation.move(['n_filter', pluginid, 'low_shelf', 'gain'], ['plugin', pluginid, "Lowshelfgain"])
 
 			for peak_num in range(4):
 				fil_p = fil_pd[peak_num]
@@ -149,22 +151,22 @@ class plugconv(plugins.base):
 				plugin_obj.params.add(peak_txt+'freq', fil_p.freq, 'float')
 				plugin_obj.params.add(peak_txt+'gain', fil_p.gain, 'float')
 				plugin_obj.params.add(peak_txt+'bw', fil_p.q**0.5, 'float')
-				convproj_obj.automation.move(['n_filter', pluginid, filt_txt, 'on'], ['plugin', pluginid, peak_txt+'active'])
-				convproj_obj.automation.move(['n_filter', pluginid, filt_txt, 'freq'], ['plugin', pluginid, peak_txt+'freq'])
-				convproj_obj.automation.move(['n_filter', pluginid, filt_txt, 'gain'], ['plugin', pluginid, peak_txt+'gain'])
+				cvpj_automation.move(['n_filter', pluginid, filt_txt, 'on'], ['plugin', pluginid, peak_txt+'active'])
+				cvpj_automation.move(['n_filter', pluginid, filt_txt, 'freq'], ['plugin', pluginid, peak_txt+'freq'])
+				cvpj_automation.move(['n_filter', pluginid, filt_txt, 'gain'], ['plugin', pluginid, peak_txt+'gain'])
 
 			plugin_obj.params.add('Highshelfactive', int(fil_hs.on), 'float')
 			plugin_obj.params.add('Highshelffreq', fil_hs.freq, 'float')
 			plugin_obj.params.add('HighShelfgain', fil_hs.gain, 'float')
 			plugin_obj.params.add('HighShelfres', fil_hs.q, 'float')
-			convproj_obj.automation.move(['n_filter', pluginid, 'high_shelf', 'on'], ['plugin', pluginid, "Highshelfactive"])
-			convproj_obj.automation.move(['n_filter', pluginid, 'high_shelf', 'freq'], ['plugin', pluginid, "Highshelffreq"])
-			convproj_obj.automation.move(['n_filter', pluginid, 'high_shelf', 'gain'], ['plugin', pluginid, "HighShelfgain"])
+			cvpj_automation.move(['n_filter', pluginid, 'high_shelf', 'on'], ['plugin', pluginid, "Highshelfactive"])
+			cvpj_automation.move(['n_filter', pluginid, 'high_shelf', 'freq'], ['plugin', pluginid, "Highshelffreq"])
+			cvpj_automation.move(['n_filter', pluginid, 'high_shelf', 'gain'], ['plugin', pluginid, "HighShelfgain"])
 
 			plugin_obj.params.add('LPactive', int(fil_lp.on), 'float')
 			plugin_obj.params.add('LPfreq', fil_lp.freq, 'float')
 			plugin_obj.params.add('LPres', fil_lp.q, 'float')
 			plugin_obj.params.add('LP', getslope(fil_lp.slope), 'float')
-			convproj_obj.automation.move(['n_filter', pluginid, 'low_pass', 'on'], ['plugin', pluginid, "LPactive"])
-			convproj_obj.automation.move(['n_filter', pluginid, 'low_pass', 'freq'], ['plugin', pluginid, "LPfreq"])
+			cvpj_automation.move(['n_filter', pluginid, 'low_pass', 'on'], ['plugin', pluginid, "LPactive"])
+			cvpj_automation.move(['n_filter', pluginid, 'low_pass', 'freq'], ['plugin', pluginid, "LPfreq"])
 			return True

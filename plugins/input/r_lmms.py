@@ -471,6 +471,7 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 	global bbpld
 
 	cvpj_tracks = convproj_obj.tracks
+	cvpj_automation = convproj_obj.automation
 
 	numbb = 0
 
@@ -682,7 +683,7 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 			for lmms_automationpattern in lmms_track.automationpatterns:
 				if not isbb:
 					for id_num in lmms_automationpattern.auto_target:
-						autopl_obj = convproj_obj.automation.add_pl_points(['id',str(id_num)], 'float')
+						autopl_obj = cvpj_automation.add_pl_points(['id',str(id_num)], 'float')
 						time_obj = autopl_obj.time
 						time_obj.set_posdur(lmms_automationpattern.pos, lmms_automationpattern.len)
 						autopl_obj.muted = bool(int(lmms_automationpattern.mute))

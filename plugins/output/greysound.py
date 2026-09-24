@@ -51,6 +51,7 @@ class output_greysound(plugins.base):
 		from objects.file_proj import greysound as proj_greysound
 
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		convproj_obj.change_timings(960)
 		
@@ -152,7 +153,7 @@ class output_greysound(plugins.base):
 					session_obj.regions.append(greysound_region)
 
 
-			v_ap_f, v_ap_d = convproj_obj.automation.get(['track', trackid, 'vol'], 'float')
+			v_ap_f, v_ap_d = cvpj_automation.get(['track', trackid, 'vol'], 'float')
 			if v_ap_f:
 				if v_ap_d.u_nopl_points:
 					gs_lane = proj_greysound.greysound_automationLane()
@@ -177,7 +178,7 @@ class output_greysound(plugins.base):
 						p.value = clipGain(point.value) if point.value else  -60
 						gs_lane.points.append(p)
 
-			p_ap_f, p_ap_d = convproj_obj.automation.get(['track', trackid, 'pan'], 'float')
+			p_ap_f, p_ap_d = cvpj_automation.get(['track', trackid, 'pan'], 'float')
 			if p_ap_f:
 				if p_ap_d.u_nopl_points:
 					gs_lane = proj_greysound.greysound_automationLane()

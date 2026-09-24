@@ -9,12 +9,14 @@ import logging
 logger_compat = logging.getLogger('compat')
 
 def move_fx0_to_mastertrack(convproj_obj):
+	cvpj_automation = convproj_obj.automation
+	
 	fxrack_obj = convproj_obj.fxrack
 	track_master = convproj_obj.track_master
 	if 0 in fxrack_obj:
 		fxchannel_obj = fxrack_obj[0]
-		convproj_obj.automation.move(['fxmixer','0','vol'], ['master', 'vol'])
-		convproj_obj.automation.move(['fxmixer','0','pan'], ['master', 'pan'])
+		cvpj_automation.move(['fxmixer','0','vol'], ['master', 'vol'])
+		cvpj_automation.move(['fxmixer','0','pan'], ['master', 'pan'])
 		fxchannel_obj.params.move(track_master.params, 'vol')
 		fxchannel_obj.params.move(track_master.params, 'pan')
 		track_master.plugslots.audiofx_move_from(fxchannel_obj.plugslots)
@@ -25,6 +27,7 @@ def track2fxrack(convproj_obj, data_obj, fxnum, defualtname, starttext, doboth, 
 	fx_name = starttext+data_obj.visual.name if data_obj.visual.name else starttext+defualtname
 
 	fxrack_obj = convproj_obj.fxrack
+	cvpj_automation = convproj_obj.automation
 
 	fxchannel_obj = fxrack_obj.add(fxnum)
 	fxchannel_obj.visual.name = fx_name
@@ -36,18 +39,18 @@ def track2fxrack(convproj_obj, data_obj, fxnum, defualtname, starttext, doboth, 
 	vol = data_obj.params.get('vol', 1).value
 	data_obj.params.remove('vol')
 	fxchannel_obj.params.add('vol', vol, 'float')
-	convproj_obj.automation.move(autoloc+['vol'], ['fxmixer',str(fxnum),'vol'])
+	cvpj_automation.move(autoloc+['vol'], ['fxmixer',str(fxnum),'vol'])
 
 	if doboth == True: 
 		pan = data_obj.params.get('pan', 0).value
 		data_obj.params.remove('pan')
 		fxchannel_obj.params.add('pan', pan, 'float')
-		convproj_obj.automation.move(autoloc+['pan'], ['fxmixer',str(fxnum),'pan'])
+		cvpj_automation.move(autoloc+['pan'], ['fxmixer',str(fxnum),'pan'])
 
 		enabled = data_obj.params.get('enabled', True).value
 		data_obj.params.remove('enabled')
 		fxchannel_obj.params.add('enabled', enabled, 'float')
-		convproj_obj.automation.move(autoloc+['enabled'], ['fxmixer',str(fxnum),'enabled'])
+		cvpj_automation.move(autoloc+['enabled'], ['fxmixer',str(fxnum),'enabled'])
 
 	return fxchannel_obj
 
@@ -63,6 +66,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 	cvpj_tracks = convproj_obj.tracks
 	cvpj_groups = convproj_obj.groups
 	cvpj_insts = convproj_obj.instruments
+	cvpj_automation = convproj_obj.automation
 	
 	logger_compat.info('fxchange: '+in_fxtype+' > '+str(out_fxtype)+' - Proj Type: '+convproj_obj.type)
 
@@ -75,7 +79,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 			if track_obj.fxrack_channel > 0:
 				c_frack_obj = fxrack_obj[track_obj.fxrack_channel]
 				for paramid in paramchange:
-					convproj_obj.automation.copy(['fxmixer',str(track_obj.fxrack_channel),paramid], ['track',trackid,paramid])
+					cvpj_automation.copy(['fxmixer',str(track_obj.fxrack_channel),paramid], ['track',trackid,paramid])
 					c_frack_obj.params.copy(track_obj.params, paramid)
 
 	if in_fxtype in out_fxtype:
@@ -98,8 +102,8 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 		fxchannel_obj.visual = copy.deepcopy(track_master.visual)
 		fxchannel_obj.params = copy.deepcopy(track_master.params)
 		fxchannel_obj.plugslots.audiofx_move_from(track_master.plugslots)
-		convproj_obj.automation.move(['master','vol'], ['fxmixer','0','vol'])
-		convproj_obj.automation.move(['master','pan'], ['fxmixer','0','pan'])
+		cvpj_automation.move(['master','vol'], ['fxmixer','0','vol'])
+		cvpj_automation.move(['master','pan'], ['fxmixer','0','pan'])
 		fxchannel_obj.latency_offset = track_master.latency_offset
 		for count, iterval in enumerate(cvpj_insts.iter()):
 			fxnum = count+1
@@ -110,7 +114,7 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 			fxchannel_obj.plugslots.audiofx_move_from(inst_obj.plugslots)
 			inst_obj.fxrack_channel = fxnum
 			fxchannel_obj.visual = inst_obj.visual.copy()
-			convproj_obj.automation.move(['track',inst_id,'vol'], ['fxmixer',str(fxnum),'vol'])
+			cvpj_automation.move(['track',inst_id,'vol'], ['fxmixer',str(fxnum),'vol'])
 			inst_obj.params.move(fxchannel_obj.params, 'vol')
 			logger_compat.info('fxchange: Instrument to FX '+str(fxnum)+(' ('+fxchannel_obj.visual.name+')' if fxchannel_obj.visual.name else ''))
 		return True
@@ -219,8 +223,8 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 
 				allcolor = colors[0] if (all(x == colors[0] for x in colors) and colors) else None
 
-				convproj_obj.automation.move(['fxmixer',str(fx_num),'pan'], ['group',groupid,'pan'])
-				convproj_obj.automation.move(['fxmixer',str(fx_num),'vol'], ['group',groupid,'vol'])
+				cvpj_automation.move(['fxmixer',str(fx_num),'pan'], ['group',groupid,'pan'])
+				cvpj_automation.move(['fxmixer',str(fx_num),'vol'], ['group',groupid,'vol'])
 				fxchannel_obj.params.move(group_obj.params, 'vol')
 				fxchannel_obj.params.move(group_obj.params, 'pan')
 				group_obj.plugslots.audiofx_move_from(fxchannel_obj.plugslots)
@@ -294,8 +298,8 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 			convproj_obj.fx__route__add(track_id)
 			track_obj = cvpj_tracks.add(track_id, 'fx', 1, 0)
 
-			convproj_obj.automation.move(['fxmixer',str(fxnum),'vol'], ['track',track_id,'vol'])
-			convproj_obj.automation.move(['fxmixer',str(fxnum),'pan'], ['track',track_id,'pan'])
+			cvpj_automation.move(['fxmixer',str(fxnum),'vol'], ['track',track_id,'vol'])
+			cvpj_automation.move(['fxmixer',str(fxnum),'pan'], ['track',track_id,'pan'])
 			fx_obj.params.move(track_obj.params, 'vol')
 			fx_obj.params.move(track_obj.params, 'pan')
 			track_obj.visual = fx_obj.visual
@@ -402,8 +406,8 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 				track_obj.params = group_obj.params
 				track_obj.datavals = group_obj.datavals
 				track_obj.plugslots.slots_audio = group_obj.plugslots.slots_audio.copy()
-				convproj_obj.automation.move(['group',i,'vol'], ['track',oi,'vol'])
-				convproj_obj.automation.move(['group',i,'pan'], ['track',oi,'pan'])
+				cvpj_automation.move(['group',i,'vol'], ['track',oi,'vol'])
+				cvpj_automation.move(['group',i,'pan'], ['track',oi,'pan'])
 				if track_obj.visual.name: track_obj.visual.name = '[Group] '+track_obj.visual.name
 				else: track_obj.visual.name = '[Group]'
 
@@ -424,8 +428,8 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 				cvpj_tracks.data[oi] = track_obj
 				cvpj_tracks.order.append(oi)
 
-				convproj_obj.automation.move(['track',i,'vol'], ['track',oi,'vol'])
-				convproj_obj.automation.move(['track',i,'pan'], ['track',oi,'pan'])
+				cvpj_automation.move(['track',i,'vol'], ['track',oi,'vol'])
+				cvpj_automation.move(['track',i,'pan'], ['track',oi,'pan'])
 			num += 1
 
 		for returnid, return_obj in track_master.returns.items(): 

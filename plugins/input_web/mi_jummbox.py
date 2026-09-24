@@ -275,6 +275,7 @@ class input_jummbox(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj params ----------
 		transpose_ignore = dawvert_intent.input_get_param('transpose_ignore', False)
@@ -529,7 +530,7 @@ class input_jummbox(plugins.base):
 									for s_ap in t_ap: s_ap[1] = (s_ap[1]+1)*523.25
 
 							if autoloc:
-								autopl_obj = convproj_obj.automation.add_pl_points(autoloc, 'float')
+								autopl_obj = cvpj_automation.add_pl_points(autoloc, 'float')
 								time_obj = autopl_obj.time
 								time_obj.set_posdur(placement_pos+pos, ap[-1][0])
 
@@ -546,4 +547,4 @@ class input_jummbox(plugins.base):
 		#	convproj_obj.transport.loop_start = introbars
 		#	convproj_obj.transport.loop_end = loopbars if loopbars else patlentable[-1]
 
-		#convproj_obj.automation.sort()
+		#cvpj_automation.sort()

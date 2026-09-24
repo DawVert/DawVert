@@ -272,6 +272,9 @@ class input_notessimo_v3(plugins.base):
 		# ---------- convproj params ----------
 		sharp_bug = dawvert_intent.input_get_param('sharp_bug', True)
 
+		# ---------- convproj objects ----------
+		cvpj_automation = convproj_obj.automation
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'mi'
@@ -326,7 +329,7 @@ class input_notessimo_v3(plugins.base):
 		fxchan_data.params.add('pan', notet_cursong_data.pan, 'float')
 		
 		# ---------- layers ----------
-		auto_bpm_obj = convproj_obj.automation.create(['main','bpm'], 'float', True)
+		auto_bpm_obj = cvpj_automation.create(['main','bpm'], 'float', True)
 		firstlayer = True
 
 		for layer_id, layer_data in notet_cursong_data.layers.items():

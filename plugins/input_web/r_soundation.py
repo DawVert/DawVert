@@ -13,9 +13,10 @@ import zipfile
 
 def get_param(soundation_device, plugin_obj, i_name, cvpj_autoloc, add_to_param):
 	global convproj_obj
+	cvpj_automation = convproj_obj.automation
 	sndparam_obj = soundation_device.params.get(i_name)
 	if plugin_obj: plugin_obj.params.add(i_name, sndparam_obj.value, 'float')
-	if cvpj_autoloc: autopoints_set(convproj_obj, cvpj_autoloc, sndparam_obj.automation, 0, 1)
+	if cvpj_autoloc: autopoints_set(cvpj_automation, cvpj_autoloc, sndparam_obj.automation, 0, 1)
 	return sndparam_obj
 
 def get_paramval(soundation_device, i_name):
@@ -39,8 +40,8 @@ def autoall_sng_to_cvpj(convproj_obj, pluginid, soundation_device, plugin_obj, f
 		sndparam_obj = get_param(soundation_device, plugin_obj, param_id, ['plugin', pluginid, param_id], True)
 		plugin_obj.datapack_param__add(param_id, sndparam_obj.value, dset_param)
 
-def autopoints_set(convproj_obj, autoloc, points, add, mul):
-	auto_obj = convproj_obj.automation.create(autoloc, 'float', True)
+def autopoints_set(cvpj_automation, autoloc, points, add, mul):
+	auto_obj = cvpj_automation.create(autoloc, 'float', True)
 	for point in points: auto_obj.add_autopoint(point['pos'], (point['value']+add)*mul, None)
 
 def extract_audio(url, zip_data, samplefolder):
@@ -60,6 +61,7 @@ def create_sampleref(jsondict, convproj_obj, samplefolder, zip_data):
 	return None, None
 
 def do_track_data(convproj_obj, track_obj, soundation_channel, autostart):
+	cvpj_automation = convproj_obj.automation
 	track_obj.visual.name = soundation_channel.userSetName if soundation_channel.userSetName else soundation_channel.name
 	try:
 		if soundation_channel.color.startswith('#'):
@@ -70,8 +72,8 @@ def do_track_data(convproj_obj, track_obj, soundation_channel, autostart):
 	track_obj.params.add('pan', (soundation_channel.pan-0.5)*2, 'float')
 	track_obj.params.add('enabled', bool(int(not soundation_channel.mute)), 'bool')
 	track_obj.params.add('solo', int(soundation_channel.solo), 'bool')
-	autopoints_set(convproj_obj, autostart+['vol'], soundation_channel.volumeAutomation, 0, 1)
-	autopoints_set(convproj_obj, autostart+['pan'], soundation_channel.panAutomation, -1, 2)
+	autopoints_set(cvpj_automation, autostart+['vol'], soundation_channel.volumeAutomation, 0, 1)
+	autopoints_set(cvpj_automation, autostart+['pan'], soundation_channel.panAutomation, -1, 2)
 
 class input_soundation(plugins.base):
 	def is_dawvert_plugin(self):

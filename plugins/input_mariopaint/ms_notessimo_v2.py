@@ -37,6 +37,7 @@ class input_notessimo_v2(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -116,7 +117,7 @@ class input_notessimo_v2(plugins.base):
 				fxnum += 1
 
 		# ---------- bpm auto ----------
-		auto_bpm_obj = convproj_obj.automation.create(['main','bpm'], 'float', True)
+		auto_bpm_obj = cvpj_automation.create(['main','bpm'], 'float', True)
 		
 		# ---------- scene ----------
 		curpos = 0

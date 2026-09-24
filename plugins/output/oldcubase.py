@@ -90,6 +90,7 @@ class output_oldcubase(plugins.base):
 		convproj_obj.change_timings(timebase)
 		
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		project_dur = 1000000
 
@@ -130,7 +131,7 @@ class output_oldcubase(plugins.base):
 
 		tempopoints = {}
 		tempopoints[0] = bpm
-		if_found, autodata = convproj_obj.automation.get(['main', 'bpm'], 'float')
+		if_found, autodata = cvpj_automation.get(['main', 'bpm'], 'float')
 		if if_found:
 			if autodata.u_nopl_ticks:
 				for pos, val in autodata.nopl_ticks:

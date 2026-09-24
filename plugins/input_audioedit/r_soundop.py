@@ -7,8 +7,8 @@ from functions import xtramath
 from objects import globalstore
 from external.easybinrw import easybinrw
 
-def do_auto(convproj_obj, hz, autopoints, autoloc, valtype, minval, maxval):
-	auto_obj = convproj_obj.automation.create(autoloc, valtype, True)
+def do_auto(cvpj_automation, hz, autopoints, autoloc, valtype, minval, maxval):
+	auto_obj = cvpj_automation.create(autoloc, valtype, True)
 	auto_obj.is_seconds = True
 	for a in autopoints:
 		auto_obj.add_autopoint(a['Position']/(hz/2), xtramath.between_from_one(minval, maxval, a['Value']), None)
@@ -100,6 +100,7 @@ class input_soundop(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -163,16 +164,16 @@ class input_soundop(plugins.base):
 						if Envelops:
 							if 'Points' in Envelops[0]:
 								do_auto(
-									convproj_obj, samplerate, Envelops[0]['Points'], 
+									cvpj_automation, samplerate, Envelops[0]['Points'], 
 									autoloc_s+['vol'], 'float', 0, 1
 									)
 					if x.Name == 'Pan':
 						if StateParams: track_obj.params.add('pan', (StateParams[0]-0.5)*2, 'float')
-						auto_obj = convproj_obj.automation.create(['track', cvpj_trackid, 'vol'], 'float', True)
+						auto_obj = cvpj_automation.create(['track', cvpj_trackid, 'vol'], 'float', True)
 						if Envelops:
 							if 'Points' in Envelops[0]:
 								do_auto(
-									convproj_obj, samplerate, Envelops[0]['Points'], 
+									cvpj_automation, samplerate, Envelops[0]['Points'], 
 									autoloc_s+['pan'], 'float', -1, 1
 									)
 					if x.Name == 'Mute':

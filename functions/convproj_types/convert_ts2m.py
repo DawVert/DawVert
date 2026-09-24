@@ -37,8 +37,9 @@ def convert(convproj_obj):
 	if tracker_obj.use_starttempo and playstr.first_speed:
 		convproj_obj.params.add('bpm', playstr.first_speed, 'float')
 
-	playstr.auto_tempo.to_cvpj(convproj_obj, ['main','bpm'])
-	playstr.auto_mastervol.to_cvpj(convproj_obj, ['main','vol'])
+	cvpj_automation = convproj_obj.automation
+	playstr.auto_tempo.to_cvpj(cvpj_automation, ['main','bpm'])
+	playstr.auto_mastervol.to_cvpj(cvpj_automation, ['main','vol'])
 
 	for chns in playstr.notestreams: chns.add_pl(-1)
 

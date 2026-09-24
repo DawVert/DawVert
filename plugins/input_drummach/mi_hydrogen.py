@@ -68,6 +68,7 @@ class input_hydrogen(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj params ----------
 		pb_track = dawvert_intent.input_get_param('pb_track', True)
@@ -92,9 +93,9 @@ class input_hydrogen(plugins.base):
 		bpm = project_obj.bpm
 
 		if project_obj.BPMTimeLine:
-			convproj_obj.automation.add_autopoint(['main', 'bpm'], 'float', 0, project_obj.bpm, 'instant')
+			cvpj_automation.add_autopoint(['main', 'bpm'], 'float', 0, project_obj.bpm, 'instant')
 			for bpmtl in project_obj.BPMTimeLine:
-				convproj_obj.automation.add_autopoint(['main', 'bpm'], 'float', bpmtl.bar*48*4, bpmtl.bpm, 'instant')
+				cvpj_automation.add_autopoint(['main', 'bpm'], 'float', bpmtl.bar*48*4, bpmtl.bpm, 'instant')
 				if bpmtl.bar == 0: bpm = bpmtl.bpm
 
 		convproj_obj.params.add('bpm', bpm , 'float')
@@ -132,7 +133,7 @@ class input_hydrogen(plugins.base):
 		for autopath in project_obj.automationPaths:
 			if autopath.adjust == 'velocity':
 				for p, v in autopath.points.items():
-					convproj_obj.automation.add_autopoint(['master', 'vol'], 'float', p*48*4, v, 'normal')
+					cvpj_automation.add_autopoint(['master', 'vol'], 'float', p*48*4, v, 'normal')
 
 		# ---------- instruments ----------
 		external_dats = {}

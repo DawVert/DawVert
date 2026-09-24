@@ -132,8 +132,8 @@ class cvpj_param:
 		elif p_id in visname: param_visname = visname[p_id]
 		else: param_visname = p_id
 		self.visual.name = param_visname
-		if 'minmax' in kwargs:
-			self.min, self.max = kwargs['minmax']
+		if 'range' in kwargs:
+			self.min, self.max = kwargs['range']
 			self.range_defined = True
 		elif 'max' in kwargs:
 			self.min = 0

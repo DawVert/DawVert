@@ -35,9 +35,9 @@ class autostream:
 		self.pl_pos += self.cur_pos
 		self.cur_pos = 0
 
-	def to_cvpj(self, convproj_obj, autoloc):
+	def to_cvpj(self, cvpj_automation, autoloc):
 		for tpl in self.placements:
-			autopl_obj = convproj_obj.automation.add_pl_points(autoloc, 'float')
+			autopl_obj = cvpj_automation.add_pl_points(autoloc, 'float')
 			for tap in tpl[1]: 
 				autopoint_obj = autopl_obj.data.add_point()
 				autopoint_obj.pos = tap[0]-tpl[1][0][0]

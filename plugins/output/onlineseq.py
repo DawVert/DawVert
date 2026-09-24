@@ -7,9 +7,9 @@ import struct
 from objects import globalstore
 from functions import data_values
 
-def create_auto(project_obj, convproj_obj, os_target, os_param, autoloc, mul):
+def create_auto(project_obj, cvpj_automation, os_target, os_param, autoloc, mul):
 	from objects.file_proj import onlineseq as proj_onlineseq
-	auto_found, autopoints_obj = convproj_obj.automation.get_autopoints(autoloc)
+	auto_found, autopoints_obj = cvpj_automation.get_autopoints(autoloc)
 
 	if auto_found:
 		autopoints_obj.remove_instant()
@@ -47,6 +47,7 @@ class output_onlineseq(plugins.base):
 		from objects.file_proj import onlineseq as proj_onlineseq
 
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
 		
 		convproj_obj.change_timings(4.0)
 
@@ -111,12 +112,12 @@ class output_onlineseq(plugins.base):
 
 			project_obj.params[onlineseqnum] = iparams
 
-			create_auto(project_obj, convproj_obj, onlineseqnum, 1, ['track', trackid, 'vol'], 1)
-			create_auto(project_obj, convproj_obj, onlineseqnum, 2, ['track', trackid, 'pan'], 1)
-			create_auto(project_obj, convproj_obj, onlineseqnum, 11, ['track', trackid, 'pitch'], 100)
+			create_auto(project_obj, cvpj_automation, onlineseqnum, 1, ['track', trackid, 'vol'], 1)
+			create_auto(project_obj, cvpj_automation, onlineseqnum, 2, ['track', trackid, 'pan'], 1)
+			create_auto(project_obj, cvpj_automation, onlineseqnum, 11, ['track', trackid, 'pitch'], 100)
 
-		create_auto(project_obj, convproj_obj, 0, 0, ['main', 'bpm'], 1)
-		create_auto(project_obj, convproj_obj, 0, 8, ['master', 'vol'], 1)
+		create_auto(project_obj, cvpj_automation, 0, 0, ['main', 'bpm'], 1)
+		create_auto(project_obj, cvpj_automation, 0, 8, ['master', 'vol'], 1)
 
 		if dawvert_intent.output_mode == 'file':
 			project_obj.save_to_file(dawvert_intent.output_file)

@@ -48,8 +48,8 @@ def do_autopoints(autopoints_obj, dppoints_obj):
 			dppoint_obj.value = bool(autopoint_obj.value)
 			dppoints_obj.points_bool.append(dppoint_obj)
 
-def from_cvpj_auto(convproj_obj, points_obj, autoloc, intype, dpautoid, i_addmul):
-	autofound, autoseries = convproj_obj.automation.get(autoloc, intype)
+def from_cvpj_auto(cvpj_automation, points_obj, autoloc, intype, dpautoid, i_addmul):
+	autofound, autoseries = cvpj_automation.get(autoloc, intype)
 	if autofound and autoseries.nopl_points:
 		if i_addmul:
 			autoseries.nopl_points.calc('addmul', i_addmul[0], i_addmul[1], 0, 0)
@@ -59,8 +59,8 @@ def from_cvpj_auto(convproj_obj, points_obj, autoloc, intype, dpautoid, i_addmul
 		do_autopoints(autoseries.nopl_points, dppoints_obj)
 		points_obj.append(dppoints_obj)
 
-def from_cvpj_auto_dppoints_obj(convproj_obj, dppoints_obj, autoloc, intype, dpautoid, i_addmul):
-	autofound, autoseries = convproj_obj.automation.get(autoloc, intype)
+def from_cvpj_auto_dppoints_obj(cvpj_automation, dppoints_obj, autoloc, intype, dpautoid, i_addmul):
+	autofound, autoseries = cvpj_automation.get(autoloc, intype)
 	if autofound and autoseries.nopl_points:
 		if i_addmul:
 			autoseries.nopl_points.calc('addmul', i_addmul[0], i_addmul[1], 0, 0)
@@ -81,9 +81,11 @@ def do_params(convproj_obj, lane_obj, paramset_obj, dp_channel, starttxt, autolo
 	dp_channel.volume.value = paramset_obj.get('vol', 1).value
 	dp_channel.volume.id = starttxt+'vol'
 
-	from_cvpj_auto(convproj_obj, lane_obj.points, autoloc+['enabled'], 'bool', dp_channel.mute.id, [-1, -1])
-	from_cvpj_auto(convproj_obj, lane_obj.points, autoloc+['pan'], 'float', dp_channel.pan.id, [1, 0.5])
-	from_cvpj_auto(convproj_obj, lane_obj.points, autoloc+['vol'], 'float', dp_channel.volume.id, None)
+	cvpj_automation = convproj_obj.automation
+
+	from_cvpj_auto(cvpj_automation, lane_obj.points, autoloc+['enabled'], 'bool', dp_channel.mute.id, [-1, -1])
+	from_cvpj_auto(cvpj_automation, lane_obj.points, autoloc+['pan'], 'float', dp_channel.pan.id, [1, 0.5])
+	from_cvpj_auto(cvpj_automation, lane_obj.points, autoloc+['vol'], 'float', dp_channel.volume.id, None)
 
 def make_time(clip_obj, time_obj):
 	position, duration = time_obj.get_posdur()
@@ -161,7 +163,7 @@ def make_send(send_obj, returnid, convproj_obj, dptrack_obj, lane_obj):
 	dp_send.volume.name = 'Send'
 	if send_obj.sendautoid: 
 		dp_send.volume.id = 'send__'+send_obj.sendautoid+'__param__amount'
-		from_cvpj_auto(convproj_obj, lane_obj.points, ['send', send_obj.sendautoid, 'amount'], 'float', dp_send.volume.id, None)
+		from_cvpj_auto(convproj_obj.automation, lane_obj.points, ['send', send_obj.sendautoid, 'amount'], 'float', dp_send.volume.id, None)
 	return dp_send
 
 def make_sends(master_returns, cvpj_sendsdata, dp_track, convproj_obj, lane_obj):
@@ -416,6 +418,8 @@ def make_lane(starttxt):
 
 def do_extparams(param_obj, pluginid, convproj_obj, lane_obj, dp_device):
 	extparams = {}
+	
+	cvpj_automation = convproj_obj.automation
 
 	for cvpj_paramid in param_obj.list():
 		if cvpj_paramid.startswith('ext_param_'):
@@ -427,10 +431,10 @@ def do_extparams(param_obj, pluginid, convproj_obj, lane_obj, dp_device):
 			dp_realparam.id = 'plugin__'+pluginid+'__param__'+cvpj_paramid
 			if cvpj_paramdata.visual.name: dp_realparam.name = cvpj_paramdata.visual.name
 			dp_device.realparameter.append(dp_realparam)
-			#from_cvpj_auto(convproj_obj, lane_obj.points, ['plugin', pluginid, cvpj_paramid], 'float', dp_realparam.id, 0)
+			#from_cvpj_auto(cvpj_automation, lane_obj.points, ['plugin', pluginid, cvpj_paramid], 'float', dp_realparam.id, 0)
 			extparams[paramnum] = dp_realparam
 
-	for autoloc, autodata, paramnum in convproj_obj.automation.iter_nopl_points_external(pluginid):
+	for autoloc, autodata, paramnum in cvpj_automation.iter_nopl_points_external(pluginid):
 		if paramnum not in extparams:
 			dp_realparam = device.dawproject_realparameter()
 			dp_realparam.parameterID = paramnum
@@ -464,10 +468,13 @@ def add_device_param_from_paramobj(convproj_obj, lane_obj, plugin_obj, pluginid,
 		dp_param.name = dpname
 		dp_device.params[dpname] = dp_param
 	
-		from_cvpj_auto(convproj_obj, lane_obj.points, ['plugin', pluginid, name], 'float', dp_param_id, None)
+		from_cvpj_auto(convproj_obj.automation, lane_obj.points, ['plugin', pluginid, name], 'float', dp_param_id, None)
 
 def do_device(convproj_obj, dp_channel, lane_obj, pluginid, role):
 	plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
+
+	cvpj_automation = convproj_obj.automation
+
 	if plugin_found:
 		dp_device = None
 
@@ -537,10 +544,10 @@ def do_device(convproj_obj, dp_channel, lane_obj, pluginid, role):
 			band.q.max = 40.003685
 			band.q.min = 0.024998
 
-			from_cvpj_auto(convproj_obj, lane_obj.points, ['filter', pluginid, 'on'], 'bool', band.enabled.id, None)
-			from_cvpj_auto(convproj_obj, lane_obj.points, ['filter', pluginid, 'freq'], 'float', band.freq.id, None)
-			from_cvpj_auto(convproj_obj, lane_obj.points, ['filter', pluginid, 'gain'], 'float', band.gain.id, None)
-			from_cvpj_auto(convproj_obj, lane_obj.points, ['filter', pluginid, 'q'], 'float', band.q.id, None)
+			from_cvpj_auto(cvpj_automation, lane_obj.points, ['filter', pluginid, 'on'], 'bool', band.enabled.id, None)
+			from_cvpj_auto(cvpj_automation, lane_obj.points, ['filter', pluginid, 'freq'], 'float', band.freq.id, None)
+			from_cvpj_auto(cvpj_automation, lane_obj.points, ['filter', pluginid, 'gain'], 'float', band.gain.id, None)
+			from_cvpj_auto(cvpj_automation, lane_obj.points, ['filter', pluginid, 'q'], 'float', band.q.id, None)
 
 			dp_device.bands.append(band)
 
@@ -588,10 +595,10 @@ def do_device(convproj_obj, dp_channel, lane_obj, pluginid, role):
 				band.q.max = 40.003685
 				band.q.min = 0.024998
 
-				from_cvpj_auto(convproj_obj, lane_obj.points, ['n_filter', pluginid, filter_id, 'on'], 'bool', band.enabled.id, None)
-				from_cvpj_auto(convproj_obj, lane_obj.points, ['n_filter', pluginid, filter_id, 'freq'], 'float', band.freq.id, None)
-				from_cvpj_auto(convproj_obj, lane_obj.points, ['n_filter', pluginid, filter_id, 'gain'], 'float', band.gain.id, None)
-				from_cvpj_auto(convproj_obj, lane_obj.points, ['n_filter', pluginid, filter_id, 'q'], 'float', band.q.id, None)
+				from_cvpj_auto(cvpj_automation, lane_obj.points, ['n_filter', pluginid, filter_id, 'on'], 'bool', band.enabled.id, None)
+				from_cvpj_auto(cvpj_automation, lane_obj.points, ['n_filter', pluginid, filter_id, 'freq'], 'float', band.freq.id, None)
+				from_cvpj_auto(cvpj_automation, lane_obj.points, ['n_filter', pluginid, filter_id, 'gain'], 'float', band.gain.id, None)
+				from_cvpj_auto(cvpj_automation, lane_obj.points, ['n_filter', pluginid, filter_id, 'q'], 'float', band.q.id, None)
 
 				dp_device.bands.append(band)
 
@@ -718,17 +725,18 @@ def maketrack_return(convproj_obj, return_obj, returnid):
 	return dp_track
 
 def maketrack_master(convproj_obj, track_obj, arrangement):
+	cvpj_automation = convproj_obj.automation
 	dp_track, dp_channel = make_track('audio notes', 'master', 'mastertrack', 'masterchannel')
 	track_obj.visual.name = 'Master'
 	do_visual(track_obj.visual, dp_track)
 	lane_obj = make_lane('mastertrack')
 	do_params(convproj_obj, lane_obj, track_obj.params, dp_channel, dp_track.id+'__param__', ['master'])
-	autofound, autoseries = convproj_obj.automation.get(['main', 'bpm'], 'float')
+	autofound, autoseries = cvpj_automation.get(['main', 'bpm'], 'float')
 	do_devices(convproj_obj, dp_channel, lane_obj, None, track_obj.plugslots.slots_audio)
 	if autofound:
 		tempoauto = arrangement.tempoautomation = points.dawproject_points()
 		tempoauto.unit = 'bpm'
-		from_cvpj_auto_dppoints_obj(convproj_obj, tempoauto, ['main', 'bpm'], 'float', 'main__bpm', None)
+		from_cvpj_auto_dppoints_obj(cvpj_automation, tempoauto, ['main', 'bpm'], 'float', 'main__bpm', None)
 	return dp_track
 
 class output_dawproject(plugins.base):
