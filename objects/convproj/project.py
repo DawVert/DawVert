@@ -189,10 +189,10 @@ class cvpj_project_midi:
 		self.num_ports = 1
 
 class cvpj_project_tracks:
-	def __init__(self, mainproject):
+	def __init__(self, convproj_obj):
 		self.data = {}
 		self.order = []
-		self.mainproject = mainproject
+		self.convproj_obj = convproj_obj
 
 	def __getitem__(self, k):
 		return self.data.__getitem__(k)
@@ -235,7 +235,7 @@ class cvpj_project_tracks:
 
 	def add(self, track_id, tracktype, uses_placements, is_indexed):
 		logger_project.info('Track '+('NoPl' if not uses_placements else 'w/Pl')+(' + Indexed' if is_indexed else '')+' - '+track_id)
-		self.data[track_id] = tracks.cvpj_track(tracktype, self.mainproject.time_ppq, uses_placements, is_indexed)
+		self.data[track_id] = tracks.cvpj_track(tracktype, self.convproj_obj.time_ppq, uses_placements, is_indexed)
 		self.order.append(track_id)
 		return self.data[track_id]
 
@@ -243,7 +243,7 @@ class cvpj_project_tracks:
 		return len(self.order)
 
 	def addspec__midi(self, track_id, uses_placements, is_indexed, indict):
-		plugin_obj = self.mainproject.plugin__addspec__midi(track_id, indict)
+		plugin_obj = self.convproj_obj.plugin__addspec__midi(track_id, indict)
 		plugin_obj.role = 'synth'
 
 		track_obj = self.add(track_id, 'instrument', uses_placements, is_indexed)
@@ -262,9 +262,9 @@ class cvpj_project_tracks:
 			for i in sortpos[n]: self.order += i
 
 class cvpj_project_groups:
-	def __init__(self, mainproject):
+	def __init__(self, convproj_obj):
 		self.data = {}
-		self.mainproject = mainproject
+		self.convproj_obj = convproj_obj
 
 	def __getitem__(self, k):
 		return self.data.__getitem__(k)
@@ -289,7 +289,7 @@ class cvpj_project_groups:
 
 	def count_usage(self):
 		groupcount = [x.group for _, x in self.data.items() if x.group != None]
-		groupcount += [x.group for _, x in self.mainproject.tracks.data.items() if x.group != None]
+		groupcount += [x.group for _, x in self.convproj_obj.tracks.data.items() if x.group != None]
 		return list(Counter(groupcount))
 
 	def remove_unused(self):
@@ -316,7 +316,7 @@ class cvpj_project_groups:
 				track_group[group_obj.group].append(['GROUP', groupid])
 			else: track_nongroup.append(['GROUP', groupid])
 
-		for trackid, track_obj in self.mainproject.tracks.iter():
+		for trackid, track_obj in self.convproj_obj.tracks.iter():
 			if track_obj.group: 
 				if track_obj.group not in track_group: track_group[track_obj.group] = []
 				track_group[track_obj.group].append(['TRACK', trackid])
@@ -327,10 +327,10 @@ class cvpj_project_groups:
 		return outl
 
 class cvpj_project_instruments:
-	def __init__(self, mainproject):
+	def __init__(self, convproj_obj):
 		self.data = {}
 		self.order = []
-		self.mainproject = mainproject
+		self.convproj_obj = convproj_obj
 
 	def __getitem__(self, k):
 		return self.data.__getitem__(k)
