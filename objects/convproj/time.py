@@ -87,6 +87,7 @@ class time_duration:
 
 	def set(self, value, timemode):
 		if type(value) not in [float, int]:
+			print('time_duration: numeric only. not'+str(type(value)))
 			raise ValueError('time_duration: numeric only')
 		self.value = value
 		self.timemode = timemode

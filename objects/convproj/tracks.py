@@ -13,11 +13,14 @@ from objects.convproj import placements
 from objects.convproj import placements_notes
 from objects.convproj import placements_audio
 from objects.convproj import placements_index
+from objects.convproj import placements_marker
 from objects.convproj import midi_inst
 from objects.convproj import autoticks
-from objects.convproj import placements_marker
 
 import copy
+import logging
+
+logger_project = logging.getLogger('project')
 
 class lanefit:
 	def __init__(self):

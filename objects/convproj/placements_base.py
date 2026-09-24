@@ -3,6 +3,7 @@
 
 from objects.convproj import time
 from objects.convproj import visual
+from functions import xtramath
 import copy
 
 def internal_addloops(pldata, eq_connect, loopcompat):
@@ -502,3 +503,74 @@ class cvpj_placements_multi_base:
 			new_data_notes.append(pl)
 
 		self.data = new_data_notes
+
+
+class cvpj_placements_multi_auto_base:
+	__slots__ = ['data','time_ppq','val_type','plclass']
+	def __init__(self, time_ppq, val_type, plclass):
+		self.time_ppq = time_ppq
+		self.val_type = val_type
+		self.data = []
+		self.plclass = plclass
+
+	def __iter__(self):
+		for x in self.data: yield x
+
+	def __len__(self):
+		return self.data.__len__()
+
+	def __bool__(self):
+		return bool(self.data)
+
+	def add(self, val_type):
+		pl_obj = self.plclass(self.time_ppq, self.val_type)
+		self.data.append(pl_obj)
+		return pl_obj
+
+	def get_dur(self):
+		return internal_get_dur(self.data)
+
+	def get_start(self):
+		return internal_get_start(self.data)
+
+	def add_loops(self, loopcompat):
+		self.data = internal_addloops(self.data, self.eq_connect, loopcompat)
+
+	def remove_loops(self, out__placement_loop):
+		self.data = internal_removeloops(self.data, out__placement_loop)
+
+	def eq_content(self, pl, prev):
+		if prev:
+			isvalid_a = pl.custom==prev.custom
+			isvalid_b = internal_eq_content(pl, prev)
+			return isvalid_a & isvalid_b
+		else:
+			return False
+
+	def eq_connect(self, pl, prev, loopcompat):
+		if prev:
+			isvalid_a = self.eq_content(pl, prev)
+			isvalid_b = internal_eq_connect(pl, prev, loopcompat)
+			return isvalid_a & isvalid_b
+		else:
+			return False
+
+	def check(self):
+		return len(self.data) != 0
+
+	def change_seconds(self, is_seconds, bpm, ppq):
+		for pl in self.data: 
+			pl.time.change_seconds(is_seconds, bpm, ppq)
+			pl.data.change_seconds(is_seconds, bpm, ppq)
+
+	def calc(self, mathtype, val1, val2, val3, val4):
+		for pl in self.data: pl.data.calc(mathtype, val1, val2, val3, val4)
+
+	def funcval(self, i_function):
+		for pl in self.data: pl.data.funcval(i_function)
+
+	def change_timings(self, time_ppq):
+		for pl in self.data:
+			pl.time.change_timing(self.time_ppq, time_ppq)
+			pl.data.change_timings(time_ppq)
+		self.time_ppq = time_ppq

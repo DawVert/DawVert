@@ -139,6 +139,6 @@ class input_fl_mobile_old(plugins.base):
 			if a_loc:
 				auto_obj = cvpj_automation.create(a_loc, 'float', True)
 				for pos, val in data.items():
-					pos = (pos-256)/8
-					val = v_add+(val/v_div)
-					auto_obj.add_autopoint(pos, val, None)
+					pos = (int(pos)-256)/8
+					val = v_add+(int(val)/v_div)
+					auto_obj.add_autopoint(float(pos), float(val), None)

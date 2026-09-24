@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from functions import xtramath
-from functions import data_bytes
 from functions import data_values
 from objects import audio_data
 import struct
@@ -23,6 +22,9 @@ class cvpj_wave:
 		self.visname = ''
 		self.author = ''
 		self.data = {}
+
+	def __len__(self, k):
+		return self.points.__len__(k)
 
 	def json__make(self):
 		outjson = {}

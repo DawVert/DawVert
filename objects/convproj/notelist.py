@@ -508,15 +508,15 @@ class cvpj_notelist:
 
 	def get_dur(self):
 		tab = self.data.nl['pos']+self.data.nl['dur']
-		return max(tab) if tab.any() else 0
+		return float(max(tab) if tab.any() else 0)
 
 	def get_start(self):
 		tab = self.data.nl['pos']
-		return min(tab) if tab.any() else 0
+		return float(min(tab) if tab.any() else 0)
 
 	def get_start_end(self):
 		ma = self.data.nl['pos']+self.data.nl['dur']
-		return min(ma) if ma.any() else 0, max(ma) if ma.any() else 0
+		return float(min(ma) if ma.any() else 0, max(ma) if ma.any() else 0)
 
 	def edit_move(self, pos):
 		if verbose: print(len(self.data),'edit_move', pos)
