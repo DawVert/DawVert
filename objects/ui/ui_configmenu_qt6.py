@@ -35,6 +35,9 @@ class ConfigWindow(QWidget):
 		self.all_gridLayout = []
 		self.dict = {}
 
+		self.callb_name = None
+		self.callb_func = None
+
 	def add_group(self, name, label):
 		self.groupBox = QGroupBox()
 
@@ -189,14 +192,17 @@ class ConfigWindow(QWidget):
 
 	def set_value(self, key, value):
 		self.dict[key] = value
+		if self.callb_func: self.callb_func(self.callb_name, key, value)
 
 	def set_value_combo(self, key, data, value):
 		self.dict[key] = data.choices[value].id
+		if self.callb_func: self.callb_func(self.callb_name, key, data.choices[value].id)
 
 	def set_value_check(self, key, value):
 		self.dict[key] = bool(value)
+		if self.callb_func: self.callb_func(self.callb_name, key, bool(value))
 
-def show_gui(miniconfmenu_store_obj, dictval, windowtitle):
+def show_gui(miniconfmenu_store_obj, dictval, windowtitle, callb_name, callb_func):
 	if miniconfmenu_store_obj.parts:
 		sepparts = {}
 		for k, v in miniconfmenu_store_obj.parts.items():
@@ -207,6 +213,8 @@ def show_gui(miniconfmenu_store_obj, dictval, windowtitle):
 		window = ConfigWindow()
 		window.load_dict(dictval)
 		window.setWindowTitle(windowtitle)
+		window.callb_name = callb_name
+		window.callb_func = callb_func
 
 		groupnames = miniconfmenu_store_obj.groupnames
 

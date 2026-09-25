@@ -154,6 +154,7 @@ configdef_main = miniconfmenu_store()
 configdef_main.add_bool('language', False, 'Overwrite Output')
 cfgpart = configdef_main.add_enum('language', 'english', 'Language')
 cfgpart.add_choice('english','English')
+cfgpart.add_choice('english_shortcfg','English (Small Config Buttons)')
 cfgpart.add_choice('japanese','日本語 (Japanese)')
 cfgpart.add_choice('russian','Русский (Russian)')
 cfgpart.add_choice('chinese_trad','正體字 (Traditional Chinese)')
@@ -461,6 +462,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 		self.__update_convst()
 
+	def callback_update(self, cata, key, value):
+		if cata=='main':
+			if key=='language':
+				window.translate_from_ini('translation/%s.ini' % value)
+
 	def open_configmenu(self, name, _):
 		config_values = {}
 		config_def = miniconfmenu_store()
@@ -494,7 +500,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 			window_title = self.lab_cfg_outputplugin
 
 		if config_def is not None:
-			ui_configmenu_interface.show_gui(config_def, config_values, window_title)
+			ui_configmenu_interface.show_gui(config_def, config_values, window_title, name, self.callback_update)
 
 	def dragEnterEvent(self, event):
 		if event.mimeData().hasUrls(): event.accept()
