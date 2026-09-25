@@ -10,32 +10,32 @@ def read_timeline(x_part):
 	out = []
 	for x_inpart in x_part:
 		if x_inpart.tag == 'TimelineEvent':
-			timelinee_obj = zmaestro_TimelineEvent()
-			timelinee_obj.read(x_inpart)
-			out.append(timelinee_obj)
+			out.append(zmaestro_TimelineEvent(x_inpart))
 	return out
 
 class zmaestro_TimelineEvent:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.value = 0
 		self.position = 0
 		self.fade = ''
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xpart):
-		attrib = xpart.attrib
+	def read(self, xmldata):
+		attrib = xmldata.attrib
 		if 'Value' in attrib: self.value = float(attrib['Value'])
 		if 'Position' in attrib: self.position = float(attrib['Position'])
 		if 'Fade' in attrib: self.fade = attrib['Fade']
 
 class zmaestro_Note:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.pitch = 0
 		self.velocity = 0
 		self.length = 0
 		self.start = 0
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xpart):
-		attrib = xpart.attrib
+	def read(self, xmldata):
+		attrib = xmldata.attrib
 		if 'Pitch' in attrib: self.pitch = int(attrib['Pitch'])
 		if 'Velocity' in attrib: self.velocity = float(attrib['Velocity'])
 		if 'Length' in attrib: self.length = float(attrib['Length'])
@@ -44,31 +44,30 @@ class zmaestro_Note:
 # ============================================= MIDIDrumTrack =============================================
 
 class zmaestro_MIDIDrumPart:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.name = ''
 		self.start = 0
 		self.length = 0
 		self.repeats = 0
 		self.id = ''
 		self.notes = []
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xpart):
-		attrib = xpart.attrib
+	def read(self, xmldata):
+		attrib = xmldata.attrib
 		if 'Name' in attrib: self.name = attrib['Name']
 		if 'Start' in attrib: self.start = float(attrib['Start'])
 		if 'Length' in attrib: self.length = float(attrib['Length'])
 		if 'Repeats' in attrib: self.repeats = float(attrib['Repeats'])
 		if 'Id' in attrib: self.id = attrib['Id']
-		for x_part in xpart:
+		for x_part in xmldata:
 			if x_part.tag == 'Notes':
 				for x_inpart in x_part:
 					if x_inpart.tag == 'Note':
-						note_obj = zmaestro_Note()
-						note_obj.read(x_inpart)
-						self.notes.append(note_obj)
+						self.notes.append(zmaestro_Note(x_inpart))
 
 class zmaestro_MIDIDrumTrack:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.volume = 75
 		self.usevolumetimeline = False
 		self.pan = 50
@@ -82,9 +81,10 @@ class zmaestro_MIDIDrumTrack:
 		self.volumetimeline = []
 		self.pantimeline = []
 		self.parts = []
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xpart):
-		attrib = xpart.attrib
+	def read(self, xmldata):
+		attrib = xmldata.attrib
 		if 'Volume' in attrib: self.volume = int(attrib['Volume'])
 		if 'UseVolumeTimeline' in attrib: self.usevolumetimeline = getbool(attrib['UseVolumeTimeline'])
 		if 'Pan' in attrib: self.pan = int(attrib['Pan'])
@@ -96,44 +96,41 @@ class zmaestro_MIDIDrumTrack:
 		if 'InstrumentBank' in attrib: self.instrumentbank = int(attrib['InstrumentBank'])
 		if 'SoundFont' in attrib: self.soundfont = attrib['SoundFont']
  
-		for x_part in xpart:
+		for x_part in xmldata:
 			if x_part.tag == 'VolumeTimeline': self.volumetimeline = read_timeline(x_part)
 			if x_part.tag == 'PanTimeline': self.pantimeline = read_timeline(x_part)
 			if x_part.tag == 'Parts': 
 				for x_inpart in x_part:
 					if x_inpart.tag == 'MIDIDrumPart':
-						part_obj = zmaestro_MIDIPart()
-						part_obj.read(x_inpart)
-						self.parts.append(part_obj)
+						self.parts.append(zmaestro_MIDIPart(x_inpart))
 
 # ============================================= MIDITrack =============================================
 
 class zmaestro_MIDIPart:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.name = ''
 		self.start = 0
 		self.length = 0
 		self.repeats = 0
 		self.id = ''
 		self.notes = []
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xpart):
-		attrib = xpart.attrib
+	def read(self, xmldata):
+		attrib = xmldata.attrib
 		if 'Name' in attrib: self.name = attrib['Name']
 		if 'Start' in attrib: self.start = float(attrib['Start'])
 		if 'Length' in attrib: self.length = float(attrib['Length'])
 		if 'Repeats' in attrib: self.repeats = float(attrib['Repeats'])
 		if 'Id' in attrib: self.id = attrib['Id']
-		for x_part in xpart:
+		for x_part in xmldata:
 			if x_part.tag == 'Notes':
 				for x_inpart in x_part:
 					if x_inpart.tag == 'Note':
-						note_obj = zmaestro_Note()
-						note_obj.read(x_inpart)
-						self.notes.append(note_obj)
+						self.notes.append(zmaestro_Note(x_inpart))
 
 class zmaestro_MIDITrack:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.volume = 75
 		self.usevolumetimeline = False
 		self.pan = 50
@@ -147,9 +144,10 @@ class zmaestro_MIDITrack:
 		self.volumetimeline = []
 		self.pantimeline = []
 		self.parts = []
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xpart):
-		attrib = xpart.attrib
+	def read(self, xmldata):
+		attrib = xmldata.attrib
 		if 'Volume' in attrib: self.volume = int(attrib['Volume'])
 		if 'UseVolumeTimeline' in attrib: self.usevolumetimeline = getbool(attrib['UseVolumeTimeline'])
 		if 'Pan' in attrib: self.pan = int(attrib['Pan'])
@@ -161,31 +159,30 @@ class zmaestro_MIDITrack:
 		if 'InstrumentBank' in attrib: self.instrumentbank = int(attrib['InstrumentBank'])
 		if 'SoundFont' in attrib: self.soundfont = attrib['SoundFont']
  
-		for x_part in xpart:
+		for x_part in xmldata:
 			if x_part.tag == 'VolumeTimeline': self.volumetimeline = read_timeline(x_part)
 			if x_part.tag == 'PanTimeline': self.pantimeline = read_timeline(x_part)
 			if x_part.tag == 'Parts': 
 				for x_inpart in x_part:
 					if x_inpart.tag == 'MIDIPart':
-						part_obj = zmaestro_MIDIPart()
-						part_obj.read(x_inpart)
-						self.parts.append(part_obj)
+						self.parts.append(zmaestro_MIDIPart(x_inpart))
 
 # ============================================= AudioTrack =============================================
 
 class zmaestro_LiveAudioEffect:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.type = ''
 		self.params = {}
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xpart):
-		attrib = xpart.attrib
+	def read(self, xmldata):
+		attrib = xmldata.attrib
 		typetxt = '{http://www.w3.org/2001/XMLSchema-instance}type'
 		if typetxt in attrib: self.type = attrib[typetxt]
-		for x_inpart in xpart: self.params[x_inpart.tag] = x_inpart.text
+		for x_inpart in xmldata: self.params[x_inpart.tag] = x_inpart.text
 
 class zmaestro_AudioPart:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.currenttempo = 120
 		self.id = None
 		self.length = 0
@@ -197,9 +194,10 @@ class zmaestro_AudioPart:
 		self.start = 0
 		self.channels = None
 		self.format = {}
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xpart):
-		attrib = xpart.attrib
+	def read(self, xmldata):
+		attrib = xmldata.attrib
 
 		if 'CurrentTempo' in attrib: self.currenttempo = float(attrib['CurrentTempo'])
 		if 'Id' in attrib: self.id = attrib['Id']
@@ -211,14 +209,14 @@ class zmaestro_AudioPart:
 		if 'Repeats' in attrib: self.repeats = float(attrib['Repeats'])
 		if 'Start' in attrib: self.start = float(attrib['Start'])
 
-		for x_part in xpart:
+		for x_part in xmldata:
 			if x_part.tag == 'Channels': self.channels = base64.b64decode(x_part.text)
 			if x_part.tag == 'Format': 
 				for x_inpart in x_part:
 					self.format[x_inpart.tag] = x_inpart.text
 
 class zmaestro_AudioTrack:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.volume = 75
 		self.usevolumetimeline = False
 		self.pan = 50
@@ -231,9 +229,10 @@ class zmaestro_AudioTrack:
 		self.pantimeline = []
 		self.parts = []
 		self.fx = []
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xpart):
-		attrib = xpart.attrib
+	def read(self, xmldata):
+		attrib = xmldata.attrib
 		if 'Volume' in attrib: self.volume = int(attrib['Volume'])
 		if 'UseVolumeTimeline' in attrib: self.usevolumetimeline = getbool(attrib['UseVolumeTimeline'])
 		if 'Pan' in attrib: self.pan = int(attrib['Pan'])
@@ -243,21 +242,17 @@ class zmaestro_AudioTrack:
 		if 'Icon' in attrib: self.icon = attrib['Icon']
 		if 'Frequency' in attrib: self.frequency = int(attrib['Frequency'])
  
-		for x_part in xpart:
+		for x_part in xmldata:
 			if x_part.tag == 'VolumeTimeline': self.volumetimeline = read_timeline(x_part)
 			if x_part.tag == 'PanTimeline': self.pantimeline = read_timeline(x_part)
 			if x_part.tag == 'Parts': 
 				for x_inpart in x_part:
 					if x_inpart.tag == 'AudioPart':
-						part_obj = zmaestro_AudioPart()
-						part_obj.read(x_inpart)
-						self.parts.append(part_obj)
+						self.parts.append(zmaestro_AudioPart(x_inpart))
 			if x_part.tag == 'LiveEffects': 
 				for x_inpart in x_part:
 					if x_inpart.tag == 'LiveAudioEffect':
-						fx_obj = zmaestro_LiveAudioEffect()
-						fx_obj.read(x_inpart)
-						self.fx.append(fx_obj)
+						self.fx.append(zmaestro_LiveAudioEffect(x_inpart))
 
 # ============================================= MAIN =============================================
 
@@ -338,16 +333,10 @@ class zmaestro_song:
 			if x_part.tag == 'Tracks':
 				for x_inpart in x_part:
 					if x_inpart.tag == 'MIDITrack':
-						track_obj = zmaestro_MIDITrack()
-						track_obj.read(x_inpart)
-						self.tracks.append(['MIDITrack', track_obj])
+						self.tracks.append(['MIDITrack', zmaestro_MIDITrack(x_inpart)])
 					if x_inpart.tag == 'MIDIDrumTrack':
-						track_obj = zmaestro_MIDIDrumTrack()
-						track_obj.read(x_inpart)
-						self.tracks.append(['MIDIDrumTrack', track_obj])
+						self.tracks.append(['MIDIDrumTrack', zmaestro_MIDIDrumTrack(x_inpart)])
 					if x_inpart.tag == 'AudioTrack':
-						track_obj = zmaestro_AudioTrack()
-						track_obj.read(x_inpart)
-						self.tracks.append(['AudioTrack', track_obj])
+						self.tracks.append(['AudioTrack', zmaestro_AudioTrack(x_inpart)])
 			if x_part.tag == 'VolumeTimeline': self.volumetimeline = read_timeline(x_part)
 			if x_part.tag == 'PanTimeline': self.pantimeline = read_timeline(x_part)

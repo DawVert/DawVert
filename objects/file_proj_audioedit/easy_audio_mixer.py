@@ -6,14 +6,15 @@ import xml.etree.ElementTree as ET
 def getbool(v): return v=='true'
 
 class easyamixr_EAM1_AutomationPointClass:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.BeatN = 0
 		self.Value = 0
 		self.ID = 0
 		self.Selected = False
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, x_data):
-		for xpart in x_data:
+	def read(self, xmldata):
+		for xpart in xmldata:
 			tagname = xpart.tag
 			if tagname == 'BeatN': self.BeatN = float(xpart.text)
 			if tagname == 'Value': self.Value = float(xpart.text)
@@ -21,7 +22,7 @@ class easyamixr_EAM1_AutomationPointClass:
 			if tagname == 'Selected': self.Selected = getbool(xpart.text)
 
 class easyamixr_EAM1_AutomationClass:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.ID = 0
 		self.DestinationID = 0
 		self.AutomationType = 'Volume'
@@ -32,9 +33,10 @@ class easyamixr_EAM1_AutomationClass:
 		self.Visible = True
 		self.DisplayMode = 'Lineal'
 		self.Points = []
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, x_data):
-		for xpart in x_data:
+	def read(self, xmldata):
+		for xpart in xmldata:
 			tagname = xpart.tag
 			if tagname == 'ID': self.ID = int(xpart.text)
 			if tagname == 'DestinationID': self.DestinationID = int(xpart.text)
@@ -48,12 +50,10 @@ class easyamixr_EAM1_AutomationClass:
 			if tagname == 'Points':
 				for t in xpart:
 					if t.tag == 'AutomationPointClass':
-						pointc = easyamixr_EAM1_AutomationPointClass()
-						pointc.read(t)
-						self.Points.append(pointc)
+						self.Points.append(easyamixr_EAM1_AutomationPointClass(t))
 
 class easyamixr_EAM1_WaveEventClass:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.ID = 0
 		self.FilePath = ''
 		self.StartSampleMS = 0
@@ -64,9 +64,10 @@ class easyamixr_EAM1_WaveEventClass:
 		self.FadeOUT_LengthBeats = 0
 		self.Muted = False
 		self.Gain = 0
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, x_data):
-		for xpart in x_data:
+	def read(self, xmldata):
+		for xpart in xmldata:
 			tagname = xpart.tag
 			if tagname == 'ID': self.ID = int(xpart.text)
 			if tagname == 'FilePath': self.FilePath = xpart.text
@@ -80,16 +81,17 @@ class easyamixr_EAM1_WaveEventClass:
 			if tagname == 'Gain': self.Gain = float(xpart.text)
 
 class easyamixr_EAM1_FxInfo:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.bypass = False
 		self.dllPath = ''
 		self.displayName = ''
 		self.effectVersion = 1
 		self.effectType = 0
 		self.ID = 0
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, x_data):
-		for xpart in x_data:
+	def read(self, xmldata):
+		for xpart in xmldata:
 			tagname = xpart.tag
 			if tagname == 'bypass': self.bypass = getbool(xpart.text)
 			if tagname == 'dllPath': self.dllPath = xpart.text
@@ -99,7 +101,7 @@ class easyamixr_EAM1_FxInfo:
 			if tagname == 'ID': self.ID = int(xpart.text)
 
 class easyamixr_EAM1_AudioChannel:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.ID = 0
 		self.Name = ''
 		self.OutputID = 0
@@ -123,9 +125,10 @@ class easyamixr_EAM1_AudioChannel:
 		self.FXList = []
 		self.EventsList = []
 		self.AutomationList = []
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, x_data):
-		for xpart in x_data:
+	def read(self, xmldata):
+		for xpart in xmldata:
 			tagname = xpart.tag
 			if tagname == 'ID': self.ID = int(xpart.text)
 			if tagname == 'Name': self.Name = xpart.text
@@ -150,24 +153,18 @@ class easyamixr_EAM1_AudioChannel:
 			if tagname == 'FXList':
 				for t in xpart:
 					if t.tag == 'FxInfo':
-						fxi = easyamixr_EAM1_FxInfo()
-						fxi.read(t)
-						self.FXList.append(fxi)
+						self.FXList.append(easyamixr_EAM1_FxInfo(t))
 			if tagname == 'EventsList':
 				for t in xpart:
 					if t.tag == 'WaveEventClass':
-						wavee = easyamixr_EAM1_WaveEventClass()
-						wavee.read(t)
-						self.EventsList.append(wavee)
+						self.EventsList.append(easyamixr_EAM1_WaveEventClass(t))
 			if tagname == 'AutomationList':
 				for t in xpart:
 					if t.tag == 'AutomationClass':
-						autoc = easyamixr_EAM1_AutomationClass()
-						autoc.read(t)
-						self.AutomationList.append(autoc)
+						self.AutomationList.append(easyamixr_EAM1_AutomationClass(t))
 
 class easyamixr_EAMFormat1:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.VideoInfo = None
 		self.MinorVersion = 2
 		self.ChannelsOrder = []
@@ -180,9 +177,10 @@ class easyamixr_EAMFormat1:
 		self.ExportTagSettings = {}
 		self.TrackEditorAlign = 1
 		self.SaveFileDPI = 96
+		if xmldata is not None: self.read(xmldata)
 
-	def read(self, x_data):
-		for xpart in x_data:
+	def read(self, xmldata):
+		for xpart in xmldata:
 			tagname = xpart.tag
 			if tagname == 'ExportTagSettings': 
 				self.ExportTagSettings = {}
@@ -199,9 +197,7 @@ class easyamixr_EAMFormat1:
 			if tagname == 'AudioChannelsList':
 				for t in xpart:
 					if t.tag == 'AudioChannel':
-						chan = easyamixr_EAM1_AudioChannel()
-						chan.read(t)
-						self.AudioChannelsList.append(chan)
+						self.AudioChannelsList.append(easyamixr_EAM1_AudioChannel(t))
 
 class easyamixr_proj:
 	def __init__(self):
@@ -212,7 +208,5 @@ class easyamixr_proj:
 		x_root = ET.parse(input_file).getroot()
 		for xpart in x_root:
 			if xpart.tag == 'Format': self.Format = xpart.text
-			if xpart.tag == 'EAMFormat1': 
-				self.EAMFormat1 = easyamixr_EAMFormat1()
-				self.EAMFormat1.read(xpart)
+			if xpart.tag == 'EAMFormat1': self.EAMFormat1 = easyamixr_EAMFormat1(xpart)
 		return True

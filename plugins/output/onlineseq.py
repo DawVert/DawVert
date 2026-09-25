@@ -15,7 +15,7 @@ def create_auto(project_obj, cvpj_automation, os_target, os_param, autoloc, mul)
 		autopoints_obj.remove_instant()
 		autopoints_obj.add_instant()
 		for autopoint_obj in autopoints_obj:
-			os_marker = proj_onlineseq.onlineseq_marker(None)
+			os_marker = proj_onlineseq.onlineseq_marker()
 			os_marker.pos = autopoint_obj.pos
 			os_marker.value = autopoint_obj.value*mul
 			os_marker.type = 0 if autopoint_obj.instant_mode else 1
@@ -99,7 +99,7 @@ class output_onlineseq(plugins.base):
 			else: repeatedolinst[onlineseqinst] += 1 
 			onlineseqnum = int(onlineseqinst + repeatedolinst[onlineseqinst]*10000)
 
-			iparams = proj_onlineseq.onlineseq_inst_param(None)
+			iparams = proj_onlineseq.onlineseq_inst_param()
 			iparams.vol = track_obj.params.get('vol', 1).value
 			iparams.pan = track_obj.params.get('pan', 0).value
 

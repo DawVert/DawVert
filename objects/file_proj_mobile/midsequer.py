@@ -7,11 +7,12 @@ import logging
 # ============================================= track ============================================= 
 
 class midsequer_event_note:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.note = 60
 		self.vel = 100
 		self.dur = 1
 		self.time = 0
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -21,9 +22,10 @@ class midsequer_event_note:
 			elif n == 't': self.time = int(v)
 
 class midsequer_track_ini:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.inst_pc = 0
 		self.volume = 100
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
@@ -34,9 +36,10 @@ class midsequer_track_ini:
 				if pc: self.inst_pc = int(pc)
 
 class midsequer_track:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.ini = midsequer_track_ini()
 		self.evts = []
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
@@ -45,16 +48,15 @@ class midsequer_track:
 			if name == 'evts': 
 				for x_evt in x_part:
 					if x_evt.tag == 'nt':
-						n = midsequer_event_note()
-						n.read(x_evt)
-						self.evts.append(n)
+						self.evts.append(midsequer_event_note(x_evt))
 
 # ============================================= data ============================================= 
 
 class midsequer_data_mstr:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.tempo = 120
 		self.tim_sig = [4, 4]
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
@@ -67,25 +69,24 @@ class midsequer_data_mstr:
 				if ts_2: self.tim_sig[1] = int(ts_2)
 
 class midsequer_data:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.mstr = midsequer_data_mstr()
 		self.tracks = []
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
 			name = x_part.tag
 			if name == 'mstr': self.mstr.read(x_part)
-			if name == 'trk': 
-				track = midsequer_track()
-				track.read(x_part)
-				self.tracks.append(track)
+			if name == 'trk': self.tracks.append(midsequer_track(x_part))
 
 # ============================================= sng ============================================= 
 
 class midsequer_sng_meta:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.title = ''
 		self.create_date = False
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
@@ -94,9 +95,10 @@ class midsequer_sng_meta:
 			if name == 'create_date': self.create_date = x_part.text
 
 class midsequer_sng:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.meta = midsequer_sng_meta()
 		self.data = midsequer_data()
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
@@ -107,9 +109,10 @@ class midsequer_sng:
 # ============================================= main ============================================= 
 
 class midsequer_editstate:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.filename = ''
 		self.edited = False
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:

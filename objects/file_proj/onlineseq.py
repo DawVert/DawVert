@@ -15,19 +15,20 @@ def dict2list(i_dict):
 
 class onlineseq_marker:
 	__slots__ = ['pos','value','type','id','param']
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.pos = 0
 		self.value = 0
 		self.type = 0
 		self.id = 0
 		self.param = 0
+		if indict is not None: self.read(indict)
 
-		if pd != None:
-			if '1' in pd: self.pos = int2float(int(pd['1']))
-			if '2' in pd: self.param = int(pd['2'])
-			if '3' in pd: self.id = int(pd['3'])
-			if '4' in pd: self.value = int2float(int(pd['4']))
-			if '5' in pd: self.type = int(pd['5'])
+	def read(self, indict):
+		if '1' in indict: self.pos = int2float(int(indict['1']))
+		if '2' in indict: self.param = int(indict['2'])
+		if '3' in indict: self.id = int(indict['3'])
+		if '4' in indict: self.value = int2float(int(indict['4']))
+		if '5' in indict: self.type = int(indict['5'])
 
 	def write(self):
 		outjson = {}
@@ -41,18 +42,20 @@ class onlineseq_marker:
 # ============================================= inst ============================================= 
 
 class onlineseq_synth_env:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.enabled = 0
 		self.attack = 0
 		self.decay = 0
 		self.sustain = 0
 		self.release = 0
-		if pd != None:
-			if '1' in pd: self.enabled = int(pd['1'])
-			if '2' in pd: self.attack = int2float(int(pd['2']))
-			if '4' in pd: self.decay = int2float(int(pd['4']))
-			if '5' in pd: self.sustain = int2float(int(pd['5']))
-			if '6' in pd: self.release = int2float(int(pd['6']))
+		if indict is not None: self.read(indict)
+
+	def read(self, indict):
+		if '1' in indict: self.enabled = int(indict['1'])
+		if '2' in indict: self.attack = int2float(int(indict['2']))
+		if '4' in indict: self.decay = int2float(int(indict['4']))
+		if '5' in indict: self.sustain = int2float(int(indict['5']))
+		if '6' in indict: self.release = int2float(int(indict['6']))
 
 	def write(self):
 		outjson = {}
@@ -64,7 +67,7 @@ class onlineseq_synth_env:
 		return outjson
 
 class onlineseq_synth:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.shape = 0
 		self.env_vol = None
 		self.env_filt = None
@@ -77,20 +80,21 @@ class onlineseq_synth:
 		self.lfo_freq_custom = 0
 		self.lfo_amount = 0
 		self.lfo_dest = 0
+		if indict is not None: self.read(indict)
 
-		if pd != None:
-			if '1' in pd: self.shape = int(pd['1'])
-			if '2' in pd: self.env_vol = onlineseq_synth_env(pd['2'])
-			if '3' in pd: self.env_filt = onlineseq_synth_env(pd['3'])
-			if '4' in pd: self.filter_freq = int2float(int(pd['4']))
-			if '5' in pd: self.filter_reso = int2float(int(pd['5']))
-			if '6' in pd: self.filter_type = int(pd['6'])
-			if '7' in pd: self.lfo_on = int(pd['7'])
-			if '8' in pd: self.lfo_shape = int(pd['8'])
-			if '9' in pd: self.lfo_freq = int2float(int(pd['9']))
-			if '10' in pd: self.lfo_amount = int2float(int(pd['10']))
-			if '11' in pd: self.lfo_dest = int(pd['11'])
-			if '12' in pd: self.lfo_freq_custom = int(pd['12'])
+	def read(self, indict):
+		if '1' in indict: self.shape = int(indict['1'])
+		if '2' in indict: self.env_vol = onlineseq_synth_env(indict['2'])
+		if '3' in indict: self.env_filt = onlineseq_synth_env(indict['3'])
+		if '4' in indict: self.filter_freq = int2float(int(indict['4']))
+		if '5' in indict: self.filter_reso = int2float(int(indict['5']))
+		if '6' in indict: self.filter_type = int(indict['6'])
+		if '7' in indict: self.lfo_on = int(indict['7'])
+		if '8' in indict: self.lfo_shape = int(indict['8'])
+		if '9' in indict: self.lfo_freq = int2float(int(indict['9']))
+		if '10' in indict: self.lfo_amount = int2float(int(indict['10']))
+		if '11' in indict: self.lfo_dest = int(indict['11'])
+		if '12' in indict: self.lfo_freq_custom = int(indict['12'])
 
 	def write(self):
 		outjson = {}
@@ -109,7 +113,7 @@ class onlineseq_synth:
 		return outjson
 
 class onlineseq_inst_param:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.vol = 1
 		self.delay_on = 0
 		self.reverb_on = 0
@@ -129,34 +133,35 @@ class onlineseq_inst_param:
 		self.name = None
 		self.used_fx = []
 		self.synth = None
+		if indict is not None: self.read(indict)
 
-		if pd != None:
-			if '1' in pd: self.vol = int2float(int(pd['1']))
-			if '2' in pd: 
-				self.delay_on = int(pd['2'])
-				if self.delay_on: self.used_fx.append('delay')
-			if '3' in pd: self.reverb_on = int(pd['3'])
-			if '4' in pd: self.pan = int2float(int(pd['4']))
-			if '5' in pd: self.enable_eq = int(pd['5'])
-			if '6' in pd: self.eq_low = int2float(int(pd['6']))
-			if '7' in pd: self.eq_mid = int2float(int(pd['7']))
-			if '8' in pd: self.eq_high = int2float(int(pd['8']))
-			if '9' in pd: self.detune = int2float(int(pd['9']))
-			if '10' in pd: self.reverb_type = int(pd['10'])
-			if '11' in pd: self.reverb_wet = int2float(int(pd['11']))
-			if '12' in pd: self.distort_type = int(pd['12'])
-			if '13' in pd: self.distort_wet = int2float(int(pd['13']))
-			if '15' in pd: self.name = pd['15']
+	def read(self, indict):
+		if '1' in indict: self.vol = int2float(int(indict['1']))
+		if '2' in indict: 
+			self.delay_on = int(indict['2'])
+			if self.delay_on: self.used_fx.append('delay')
+		if '3' in indict: self.reverb_on = int(indict['3'])
+		if '4' in indict: self.pan = int2float(int(indict['4']))
+		if '5' in indict: self.enable_eq = int(indict['5'])
+		if '6' in indict: self.eq_low = int2float(int(indict['6']))
+		if '7' in indict: self.eq_mid = int2float(int(indict['7']))
+		if '8' in indict: self.eq_high = int2float(int(indict['8']))
+		if '9' in indict: self.detune = int2float(int(indict['9']))
+		if '10' in indict: self.reverb_type = int(indict['10'])
+		if '11' in indict: self.reverb_wet = int2float(int(indict['11']))
+		if '12' in indict: self.distort_type = int(indict['12'])
+		if '13' in indict: self.distort_wet = int2float(int(indict['13']))
+		if '15' in indict: self.name = indict['15']
 
-			if '14' in pd: self.synth = onlineseq_synth(pd['14'])
-			if '18' in pd: self.bitcrush_on = int(pd['18'])
-			if '19' in pd: self.bitcrush_depth = int(pd['19'])
-			if '20' in pd: self.bitcrush_level = int2float(int(pd['20']))
+		if '14' in indict: self.synth = onlineseq_synth(indict['14'])
+		if '18' in indict: self.bitcrush_on = int(indict['18'])
+		if '19' in indict: self.bitcrush_depth = int(indict['19'])
+		if '20' in indict: self.bitcrush_level = int2float(int(indict['20']))
 
-			if self.bitcrush_on and (('18' in pd) or ('19' in pd) or ('20' in pd)): self.used_fx.append('bitcrush')
-			if self.enable_eq and (('6' in pd) or ('7' in pd) or ('9' in pd)): self.used_fx.append('eq')
-			if self.reverb_on and (('10' in pd) or ('11' in pd)): self.used_fx.append('reverb')
-			if self.distort_type and (('12' in pd) or ('13' in pd)): self.used_fx.append('distort')
+		if self.bitcrush_on and (('18' in indict) or ('19' in indict) or ('20' in indict)): self.used_fx.append('bitcrush')
+		if self.enable_eq and (('6' in indict) or ('7' in indict) or ('9' in indict)): self.used_fx.append('eq')
+		if self.reverb_on and (('10' in indict) or ('11' in indict)): self.used_fx.append('reverb')
+		if self.distort_type and (('12' in indict) or ('13' in indict)): self.used_fx.append('distort')
 
 	def write(self):
 		outjson = {}

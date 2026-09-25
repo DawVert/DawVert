@@ -4,22 +4,22 @@
 from lxml import etree as ET
 DEBUG_IN_OUT = False
 
-def set_value(xml_proj, name, val):
-	tempxml = ET.SubElement(xml_proj, name)
+def set_value(xmldata, name, val):
+	tempxml = ET.SubElement(xmldata, name)
 	if val is not None: tempxml.text = str(val)
 	return tempxml
 
 class qtractor_connect:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.index = 0
 		self.client = None
 		self.port = None
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		trackattrib = xml_proj.attrib
+	def read(self, xmldata):
+		trackattrib = xmldata.attrib
 		if 'index' in trackattrib: self.index = int(trackattrib['index'])
-		for xmlpart in xml_proj:
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'client': self.client = xmlpart.text
 			if xmlpart.tag == 'port': self.port = xmlpart.text
 
@@ -32,15 +32,15 @@ class qtractor_connect:
 # --------------------------------------------------------- MIDI MAP ---------------------------------------------------------
 
 class qtractor_midi_patch:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.channel = 0
 		self.midi_bank_sel_method = 0
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		trackattrib = xml_proj.attrib
+	def read(self, xmldata):
+		trackattrib = xmldata.attrib
 		if 'channel' in trackattrib: self.channel = int(trackattrib['channel'])
-		for xmlpart in xml_proj:
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'midi-bank-sel-method': self.midi_bank_sel_method = int(xmlpart.text)
 
 	def write(self, in_xml):
@@ -51,15 +51,15 @@ class qtractor_midi_patch:
 # --------------------------------------------------------- MIDI ENGINE ---------------------------------------------------------
 
 class qtractor_midi_control:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.mmc_mode = 'duplex'
 		self.mmc_device = 127
 		self.spp_mode = 'duplex'
 		self.clock_mode = 'none'
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'mmc-mode': self.mmc_mode = xmlpart.text
 			if xmlpart.tag == 'mmc-device': self.mmc_device = int(xmlpart.text)
 			if xmlpart.tag == 'spp-mode': self.spp_mode = xmlpart.text
@@ -73,7 +73,7 @@ class qtractor_midi_control:
 		set_value(tempxml, 'clock-mode', self.clock_mode)
 
 class qtractor_midi_bus:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.mode = 'duplex'
 		self.name = 'Master'
 		self.monitor = 0
@@ -97,11 +97,11 @@ class qtractor_midi_bus:
 
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		trackattrib = xml_proj.attrib
+	def read(self, xmldata):
+		trackattrib = xmldata.attrib
 		if 'mode' in trackattrib: self.mode = trackattrib['mode']
 		if 'name' in trackattrib: self.name = trackattrib['name']
-		for xmlpart in xml_proj:
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'monitor': self.monitor = int(xmlpart.text)
 			if xmlpart.tag == 'input-gain': self.input_gain = float(xmlpart.text)
 			if xmlpart.tag == 'input-panning': self.input_panning = float(xmlpart.text)
@@ -150,13 +150,13 @@ class qtractor_midi_bus:
 		for x in self.midi_map: x.write(midi_mapxml)
 
 class qtractor_midi_engine:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.midi_control = qtractor_midi_control(None)
 		self.midi_bus = qtractor_midi_bus(None)
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'midi-control': self.midi_control.read(xmlpart)
 			if xmlpart.tag == 'midi-bus': self.midi_bus.read(xmlpart)
 
@@ -168,13 +168,13 @@ class qtractor_midi_engine:
 # --------------------------------------------------------- AUDIO ENGINE ---------------------------------------------------------
 
 class qtractor_audio_control:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.transport_mode = 'duplex'
 		self.timebase = 1
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'transport-mode': self.transport_mode = xmlpart.text
 			if xmlpart.tag == 'timebase': self.timebase = float(xmlpart.text)
 
@@ -184,7 +184,7 @@ class qtractor_audio_control:
 		set_value(tempxml, 'timebase', self.timebase)
 
 class qtractor_audio_bus:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.mode = 'duplex'
 		self.name = 'Master'
 		self.monitor = 0
@@ -203,11 +203,11 @@ class qtractor_audio_bus:
 		self.output_connects = []
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		trackattrib = xml_proj.attrib
+	def read(self, xmldata):
+		trackattrib = xmldata.attrib
 		if 'mode' in trackattrib: self.mode = trackattrib['mode']
 		if 'name' in trackattrib: self.name = trackattrib['name']
-		for xmlpart in xml_proj:
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'monitor': self.monitor = int(xmlpart.text)
 			if xmlpart.tag == 'channels': self.channels = int(xmlpart.text)
 			if xmlpart.tag == 'auto-connect': self.auto_connect = int(xmlpart.text)
@@ -253,13 +253,13 @@ class qtractor_audio_bus:
 		for x in self.output_connects: x.write(connectsxml)
 
 class qtractor_audio_engine:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.audio_control = qtractor_audio_control(None)
 		self.audio_bus = qtractor_audio_bus(None)
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'audio-control': self.audio_control.read(xmlpart)
 			if xmlpart.tag == 'audio-bus': self.audio_bus.read(xmlpart)
 
@@ -271,7 +271,7 @@ class qtractor_audio_engine:
 # --------------------------------------------------------- CONTROLLER ---------------------------------------------------------
 
 class qtractor_controller:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.index = 0
 		self.name = ""
 		self.type = ""
@@ -285,13 +285,13 @@ class qtractor_controller:
 		self.latch = 0
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		trackattrib = xml_proj.attrib
+	def read(self, xmldata):
+		trackattrib = xmldata.attrib
 		if 'index' in trackattrib: self.index = trackattrib['index']
 		if 'name' in trackattrib: self.name = trackattrib['name']
 		if 'type' in trackattrib: self.type = trackattrib['type']
 
-		for xmlpart in xml_proj:
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'channel': self.channel = int(xmlpart.text)
 			if xmlpart.tag == 'param': self.param = int(xmlpart.text)
 			if xmlpart.tag == 'logarithmic': self.logarithmic = int(xmlpart.text)
@@ -316,7 +316,7 @@ class qtractor_controller:
 # --------------------------------------------------------- CLIP ---------------------------------------------------------
 
 class qtractor_clip_properties:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.name = ''
 		self.start = 0
 		self.offset = 0
@@ -330,8 +330,8 @@ class qtractor_clip_properties:
 		self.fade_out_type = ''
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'name': self.name = xmlpart.text
 			if xmlpart.tag == 'start': self.start = int(xmlpart.text)
 			if xmlpart.tag == 'offset': self.offset = int(xmlpart.text)
@@ -360,7 +360,7 @@ class qtractor_clip_properties:
 		if self.fade_out_type: fade_out.set('type', self.fade_out_type)
 
 class qtractor_clip_audioclip:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.filename = ''
 		self.time_stretch = 1
 		self.pitch_shift = 1
@@ -370,8 +370,8 @@ class qtractor_clip_audioclip:
 		self.rubberband_finer_r3 = 0
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'filename': self.filename = xmlpart.text
 			if xmlpart.tag == 'time-stretch': self.time_stretch = float(xmlpart.text)
 			if xmlpart.tag == 'pitch-shift': self.pitch_shift = float(xmlpart.text)
@@ -391,7 +391,7 @@ class qtractor_clip_audioclip:
 		set_value(tempxml, 'rubberband-finer-r3', self.rubberband_finer_r3)
 
 class qtractor_clip_midiclip:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.filename = ''
 		self.track_channel = 1
 		self.revision = 2
@@ -399,8 +399,8 @@ class qtractor_clip_midiclip:
 		self.editor_size = ''
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'filename': self.filename = xmlpart.text
 			if xmlpart.tag == 'track-channel': self.track_channel = xmlpart.text
 			if xmlpart.tag == 'revision': self.revision = xmlpart.text
@@ -416,19 +416,19 @@ class qtractor_clip_midiclip:
 		if self.editor_size: set_value(tempxml, 'editor-size', self.editor_size)
 
 class qtractor_clip:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.name = ''
 		self.properties = qtractor_clip_properties(None)
 		self.audioclip = None
 		self.midiclip = None
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		trackattrib = xml_proj.attrib
+	def read(self, xmldata):
+		trackattrib = xmldata.attrib
 
 		if 'name' in trackattrib: self.name = trackattrib['name']
 
-		for xmlpart in xml_proj:
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'properties': self.properties.read(xmlpart)
 			if xmlpart.tag == 'audio-clip': self.audioclip = qtractor_clip_audioclip(xmlpart)
 			if xmlpart.tag == 'midi-clip': self.midiclip = qtractor_clip_midiclip(xmlpart)
@@ -443,16 +443,17 @@ class qtractor_clip:
 # --------------------------------------------------------- PLUGINS ---------------------------------------------------------
 
 class qtractor_plugins:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.plugins = []
 		self.plug_audio_output_bus = None
 		self.audio_output_auto_connect = None
+		if xmldata is not None: self.read(xmldata)
 
 	def __iter__(self):
 		return self.plugins.__iter__()
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'plugin': self.plugins.append(qtractor_plugin(xmlpart))
 			if xmlpart.tag == 'audio-output-bus': self.plug_audio_output_bus = xmlpart.text
 			if xmlpart.tag == 'audio-output-auto-connect': self.audio_output_auto_connect = xmlpart.text
@@ -464,17 +465,17 @@ class qtractor_plugins:
 		if self.audio_output_auto_connect is not None: set_value(tempxml, 'audio-output-auto-connect', self.audio_output_auto_connect)
 
 class qtractor_plugin_param:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.index = ''
 		self.name = ''
 		self.value = '0'
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		trackattrib = xml_proj.attrib
+	def read(self, xmldata):
+		trackattrib = xmldata.attrib
 		if 'index' in trackattrib: self.index = trackattrib['index']
 		if 'name' in trackattrib: self.name = trackattrib['name']
-		self.value = xml_proj.text
+		self.value = xmldata.text
 
 	def write(self, in_xml):
 		tempxml = ET.SubElement(in_xml, 'param')
@@ -483,7 +484,7 @@ class qtractor_plugin_param:
 		tempxml.text = str(self.value)
 
 class qtractor_plugin:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.type = ''
 		self.alias = ''
 		self.filename = ''
@@ -500,12 +501,12 @@ class qtractor_plugin:
 		self.controllers = []
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		trackattrib = xml_proj.attrib
+	def read(self, xmldata):
+		trackattrib = xmldata.attrib
 
 		if 'type' in trackattrib: self.type = trackattrib['type']
 
-		for xmlpart in xml_proj:
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'filename': self.filename = xmlpart.text
 			if xmlpart.tag == 'index': self.index = xmlpart.text
 			if xmlpart.tag == 'label': self.label = xmlpart.text
@@ -556,7 +557,7 @@ class qtractor_plugin:
 # --------------------------------------------------------- CURVE ---------------------------------------------------------
 
 class qtractor_track_curve_item:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.index = 0
 		self.mode = ''
 		self.name = ''
@@ -574,15 +575,15 @@ class qtractor_track_curve_item:
 
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
+	def read(self, xmldata):
 		self.used = True
-		trackattrib = xml_proj.attrib
+		trackattrib = xmldata.attrib
 
 		if 'index' in trackattrib: self.index = int(trackattrib['index'])
 		if 'mode' in trackattrib: self.mode = trackattrib['mode']
 		if 'name' in trackattrib: self.name = trackattrib['name']
 
-		for xmlpart in xml_proj:
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'type': self.p_type = xmlpart.text
 			if xmlpart.tag == 'channel': self.p_channel = int(xmlpart.text)
 			if xmlpart.tag == 'param': self.p_param = int(xmlpart.text)
@@ -610,16 +611,16 @@ class qtractor_track_curve_item:
 
 
 class qtractor_track_curve_file:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.used = False
 		self.filename = ''
 		self.current = -1
 		self.curve_items = []
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
+	def read(self, xmldata):
 		self.used = True
-		for xmlpart in xml_proj:
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'filename': self.filename = xmlpart.text
 			if xmlpart.tag == 'current': self.current = int(xmlpart.text)
 			if xmlpart.tag == 'curve-items': 
@@ -639,7 +640,7 @@ class qtractor_track_curve_file:
 # --------------------------------------------------------- TRACK ---------------------------------------------------------
 
 class qtractor_track_properties:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.input_bus = ''
 		self.output_bus = ''
 		self.midi_omni = None
@@ -648,8 +649,8 @@ class qtractor_track_properties:
 		self.midi_drums = None
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'input-bus': self.input_bus = xmlpart.text
 			if xmlpart.tag == 'output-bus': self.output_bus = xmlpart.text
 			if xmlpart.tag == 'midi-omni': self.midi_omni = xmlpart.text
@@ -667,7 +668,7 @@ class qtractor_track_properties:
 		if self.midi_drums is not None: set_value(tempxml, 'midi-drums', str(self.midi_drums))
 
 class qtractor_track_state:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.mute = 0
 		self.solo = 0
 		self.record = 0
@@ -676,8 +677,8 @@ class qtractor_track_state:
 		self.panning = 0
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'mute': self.mute = int(xmlpart.text)
 			if xmlpart.tag == 'solo': self.solo = int(xmlpart.text)
 			if xmlpart.tag == 'record': self.record = int(xmlpart.text)
@@ -695,14 +696,14 @@ class qtractor_track_state:
 		set_value(tempxml, 'panning', str(self.panning))
 
 class qtractor_track_view:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.height = 96
 		self.background_color = None
 		self.foreground_color = None
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'height': self.height = int(xmlpart.text)
 			if xmlpart.tag == 'background-color': self.background_color = xmlpart.text
 			if xmlpart.tag == 'foreground-color': self.foreground_color = xmlpart.text
@@ -714,7 +715,7 @@ class qtractor_track_view:
 		if self.foreground_color: set_value(tempxml, 'foreground-color', str(self.foreground_color))
 
 class qtractor_track:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.name = ''
 		self.type = ''
 		self.properties = qtractor_track_properties(None)
@@ -727,13 +728,13 @@ class qtractor_track:
 		self.audio_output_auto_connect = None
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		trackattrib = xml_proj.attrib
+	def read(self, xmldata):
+		trackattrib = xmldata.attrib
 
 		if 'name' in trackattrib: self.name = trackattrib['name']
 		if 'type' in trackattrib: self.type = trackattrib['type']
 
-		for xmlpart in xml_proj:
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'properties': self.properties.read(xmlpart)
 			if xmlpart.tag == 'state': self.state.read(xmlpart)
 			if xmlpart.tag == 'view': self.view.read(xmlpart)
@@ -763,7 +764,7 @@ class qtractor_track:
 # --------------------------------------------------------- PROJECT ---------------------------------------------------------
 
 class qtractor_proj_properties:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.directory = ''
 		self.description = ''
 		self.sample_rate = 48000
@@ -773,8 +774,8 @@ class qtractor_proj_properties:
 		self.beat_divisor = 2
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'directory': self.directory = xmlpart.text
 			if xmlpart.tag == 'description': self.description = xmlpart.text
 			if xmlpart.tag == 'sample-rate': self.sample_rate = int(xmlpart.text)
@@ -794,15 +795,15 @@ class qtractor_proj_properties:
 		set_value(tempxml, 'beat-divisor', self.beat_divisor)
 
 class qtractor_proj_state:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.loop_start = 0
 		self.loop_end = 0
 		self.punch_in = 0
 		self.punch_out = 0
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'loop-start': self.loop_start = int(xmlpart.text)
 			if xmlpart.tag == 'loop-end': self.loop_end = int(xmlpart.text)
 			if xmlpart.tag == 'punch-in': self.punch_in = int(xmlpart.text)
@@ -816,13 +817,13 @@ class qtractor_proj_state:
 		set_value(tempxml, 'punch-out', self.punch_out)
 
 class qtractor_proj_files:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.audio_list = {}
 		self.midi_list = {}
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		for xmlpart in xml_proj:
+	def read(self, xmldata):
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'audio-list': 
 				for xmlinpart in xmlpart:
 					if xmlinpart.tag == 'file': 
@@ -849,7 +850,7 @@ class qtractor_proj_files:
 			xmlfile.text = filename
 
 class qtractor_tempo_map:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.bar = 0
 		self.frame = 0
 		self.tempo = 120
@@ -858,12 +859,12 @@ class qtractor_tempo_map:
 		self.beat_divisor = 0
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		trackattrib = xml_proj.attrib
+	def read(self, xmldata):
+		trackattrib = xmldata.attrib
 		if 'bar' in trackattrib: self.bar = int(trackattrib['bar'])
 		if 'frame' in trackattrib: self.frame = int(trackattrib['frame'])
 
-		for xmlpart in xml_proj:
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'tempo': self.tempo = float(xmlpart.text)
 			if xmlpart.tag == 'beat-type': self.beat_type = int(xmlpart.text)
 			if xmlpart.tag == 'beats-per-bar': self.beats_per_bar = int(xmlpart.text)
@@ -879,7 +880,7 @@ class qtractor_tempo_map:
 		set_value(tempxml, 'beat-divisor', str(self.beat_divisor))
 
 class qtractor_marker:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.accidentals = 0
 		self.mode = 0
 		self.frame = 0
@@ -888,11 +889,11 @@ class qtractor_marker:
 
 		if xmldata is not None: self.read(xmldata)
 
-	def read(self, xml_proj):
-		trackattrib = xml_proj.attrib
+	def read(self, xmldata):
+		trackattrib = xmldata.attrib
 		if 'frame' in trackattrib: self.frame = int(trackattrib['frame'])
 
-		for xmlpart in xml_proj:
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'accidentals': self.accidentals = int(xmlpart.text)
 			if xmlpart.tag == 'mode': self.mode = int(xmlpart.text)
 			if xmlpart.tag == 'text': self.text = xmlpart.text
@@ -922,14 +923,14 @@ class qtractor_project:
 		self.metadata = {}
 		parser = ET.XMLParser()
 		xml_data = ET.parse(input_file, parser)
-		xml_proj = xml_data.getroot()
-		if xml_proj == None: raise ProjectFileParserException('qtractor: no XML root found')
+		xmldata = xml_data.getroot()
+		if xmldata == None: raise ProjectFileParserException('qtractor: no XML root found')
 
-		trackattrib = xml_proj.attrib
+		trackattrib = xmldata.attrib
 		if 'name' in trackattrib: self.name = trackattrib['name']
 		if 'version' in trackattrib: self.version = trackattrib['version']
 
-		for xmlpart in xml_proj:
+		for xmlpart in xmldata:
 			if xmlpart.tag == 'devices': 
 				for xmlinpart in xmlpart:
 					if xmlinpart.tag == 'audio-engine': self.devices.append(qtractor_audio_engine(xmlinpart))
@@ -952,32 +953,32 @@ class qtractor_project:
 						self.tracks.append(qtractor_track(xmlinpart))
 
 		if DEBUG_IN_OUT:
-			outfile = ET.ElementTree(xml_proj)
+			outfile = ET.ElementTree(xmldata)
 			outfile.write('debug_in.xml', xml_declaration = True)
 			self.write_to_file('debug_out.xml')
 
 		return True
 
 	def write_to_file(self, output_file):
-		xml_proj = ET.Element("session")
+		xmldata = ET.Element("session")
 
-		xml_proj.set('name', self.name)
-		xml_proj.set('version', self.version)
-		self.properties.write(xml_proj)
-		self.state.write(xml_proj)
-		self.files.write(xml_proj)
+		xmldata.set('name', self.name)
+		xmldata.set('version', self.version)
+		self.properties.write(xmldata)
+		self.state.write(xmldata)
+		self.files.write(xmldata)
 		if self.devices:
-			devicesxml = ET.SubElement(xml_proj, 'devices')
+			devicesxml = ET.SubElement(xmldata, 'devices')
 			for x in self.devices: x.write(devicesxml)
 		if self.tempo_map:
-			tempo_mapxml = ET.SubElement(xml_proj, 'tempo-map')
+			tempo_mapxml = ET.SubElement(xmldata, 'tempo-map')
 			for x in self.tempo_map: x.write(tempo_mapxml)
 		if self.markers:
-			markersxml = ET.SubElement(xml_proj, 'markers')
+			markersxml = ET.SubElement(xmldata, 'markers')
 			for x in self.markers: x.write(markersxml)
-		tracksxml = ET.SubElement(xml_proj, 'tracks')
+		tracksxml = ET.SubElement(xmldata, 'tracks')
 		for x in self.tracks: x.write(tracksxml)
 
-		outfile = ET.ElementTree(xml_proj)
+		outfile = ET.ElementTree(xmldata)
 		ET.indent(outfile, space=" ", level=0)
 		outfile.write(output_file, doctype="<!DOCTYPE qtractorSession>")

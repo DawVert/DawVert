@@ -54,7 +54,7 @@ class wavtool_connections:
 # =================================================== PROJECT ===================================================
 
 class wavtool_clip:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.type = 'MIDI'
 		self.color = '#333333'
 		self.name = ''
@@ -75,33 +75,34 @@ class wavtool_clip:
 		self.audioBufferId = ''
 		self.receivingRecordedBuffers = False
 		self.id = None
+		if indict is not None: self.read(indict)
 
-		if pd != None:
-			for n, v in pd.items():
-				if n=='type': self.type = v
-				elif n=='color': self.color = v
-				elif n=='name': self.name = v
-				elif n=='loopStart': self.loopStart = v
-				elif n=='loopEnd': self.loopEnd = v
-				elif n=='loopEnabled': self.loopEnabled = v
-				elif n=='fadeIn': self.fadeIn = v
-				elif n=='fadeOut': self.fadeOut = v
-				elif n=='readStart': self.readStart = v
-				elif n=='lifted': self.lifted = v
-				elif n=='timelineStart': self.timelineStart = v
-				elif n=='timelineEnd': self.timelineEnd = v
-				elif n=='notes': self.notes = v
-				elif n=='ccs': 
-					self.ccs = v
-					if self.ccs: 
-						logger_projparse.warning('wavtool: clip: ccs found but unimplemented.')
-				elif n=='gain': self.gain = v
-				elif n=='audioBufferId': self.audioBufferId = v
-				elif n=='transpose': self.transpose = v
-				elif n=='warp': self.warp = v
-				elif n=='receivingRecordedBuffers': self.receivingRecordedBuffers = v
-				elif n=='id' in pd: self.id = v
-				else: logger_projparse.warning('wavtool: clip: unimplemented attrib: '+n)
+	def read(self, indict):
+		for n, v in indict.items():
+			if n=='type': self.type = v
+			elif n=='color': self.color = v
+			elif n=='name': self.name = v
+			elif n=='loopStart': self.loopStart = v
+			elif n=='loopEnd': self.loopEnd = v
+			elif n=='loopEnabled': self.loopEnabled = v
+			elif n=='fadeIn': self.fadeIn = v
+			elif n=='fadeOut': self.fadeOut = v
+			elif n=='readStart': self.readStart = v
+			elif n=='lifted': self.lifted = v
+			elif n=='timelineStart': self.timelineStart = v
+			elif n=='timelineEnd': self.timelineEnd = v
+			elif n=='notes': self.notes = v
+			elif n=='ccs': 
+				self.ccs = v
+				if self.ccs: 
+					logger_projparse.warning('wavtool: clip: ccs found but unimplemented.')
+			elif n=='gain': self.gain = v
+			elif n=='audioBufferId': self.audioBufferId = v
+			elif n=='transpose': self.transpose = v
+			elif n=='warp': self.warp = v
+			elif n=='receivingRecordedBuffers': self.receivingRecordedBuffers = v
+			elif n=='id' in indict: self.id = v
+			else: logger_projparse.warning('wavtool: clip: unimplemented attrib: '+n)
 
 	def write(self):
 		wt_clip = {}
@@ -143,7 +144,7 @@ class wavtool_clip:
 		return wt_clip
 
 class wavtool_track:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.id = None
 		self.armed = False
 		self.type = ''
@@ -166,32 +167,33 @@ class wavtool_track:
 		self.role = None
 		self.preset = None
 		self.presetId = None
+		if indict is not None: self.read(indict)
 
-		if pd != None:
-			for n, v in pd.items():
-				if n=='armed' in pd: self.armed = v
-				elif n=='type' in pd: self.type = v
-				elif n=='name' in pd: self.name = v
-				elif n=='height' in pd: self.height = v
-				elif n=='hasTimelineSelection' in pd: self.hasTimelineSelection = v
-				elif n=='gain' in pd: self.gain = v
-				elif n=='balance' in pd: self.balance = v
-				elif n=='color' in pd: self.color = v
-				elif n=='mute' in pd: self.mute = v
-				elif n=='solo' in pd: self.solo = v
-				elif n=='channelStripId' in pd: self.channelStripId = v
-				elif n=='monitorInput' in pd: self.monitorInput = v
-				elif n=='points' in pd: self.points = v
-				elif n=='clips' in pd: 
-					for c in v: self.clips.append(wavtool_clip(c))
-				elif n=='input' in pd: self.input = v
-				elif n=='setting' in pd: self.setting = v
-				elif n=='id' in pd: self.id = v
-				elif n=='hasHeaderSelection' in pd: self.hasHeaderSelection = v
-				elif n=='role' in pd: self.role = v
-				elif n=='preset' in pd: self.preset = v
-				elif n=='presetId' in pd: self.presetId = v
-				else: logger_projparse.warning('wavtool: track: unimplemented attrib: '+n)
+	def read(self, indict):
+		for n, v in indict.items():
+			if n=='armed' in indict: self.armed = v
+			elif n=='type' in indict: self.type = v
+			elif n=='name' in indict: self.name = v
+			elif n=='height' in indict: self.height = v
+			elif n=='hasTimelineSelection' in indict: self.hasTimelineSelection = v
+			elif n=='gain' in indict: self.gain = v
+			elif n=='balance' in indict: self.balance = v
+			elif n=='color' in indict: self.color = v
+			elif n=='mute' in indict: self.mute = v
+			elif n=='solo' in indict: self.solo = v
+			elif n=='channelStripId' in indict: self.channelStripId = v
+			elif n=='monitorInput' in indict: self.monitorInput = v
+			elif n=='points' in indict: self.points = v
+			elif n=='clips' in indict: 
+				for c in v: self.clips.append(wavtool_clip(c))
+			elif n=='input' in indict: self.input = v
+			elif n=='setting' in indict: self.setting = v
+			elif n=='id' in indict: self.id = v
+			elif n=='hasHeaderSelection' in indict: self.hasHeaderSelection = v
+			elif n=='role' in indict: self.role = v
+			elif n=='preset' in indict: self.preset = v
+			elif n=='presetId' in indict: self.presetId = v
+			else: logger_projparse.warning('wavtool: track: unimplemented attrib: '+n)
 
 	def write(self, trackid):
 		wt_track = {}
@@ -218,7 +220,7 @@ class wavtool_track:
 		return wt_track
 
 class wavtool_project:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.id = ''
 		self.metronome = False
 		self.midiOverdub = True
@@ -257,79 +259,81 @@ class wavtool_project:
 
 		self.devices.add_track('master')
 
-		if pd != None:
-			for n, v in pd.items():
-				if n=='id': self.id = v
-				elif n=='metronome': self.metronome = v
-				elif n=='midiOverdub': self.midiOverdub = v
-				elif n=='loopStart': self.loopStart = v
-				elif n=='loopEnd': self.loopEnd = v
-				elif n=='loopLifted': self.loopLifted = v
-				elif n=='loopEnabled': self.loopEnabled = v
-				elif n=='markers': self.markers = v
-				elif n=='bpm': self.bpm = v
-				elif n=='beatNumerator': self.beatNumerator = v
-				elif n=='beatDenominator': self.beatDenominator = v
-				elif n=='name': self.name = v
-				elif n=='arrangementFocusCategory': self.arrangementFocusCategory = v
-				elif n=='conductorMessageHistory': self.conductorMessageHistory = v
-				elif n=='conductorUserMessage': self.conductorUserMessage = v
-				elif n=='tracks':
-					for track in v:
-						trackid = track['id']
-						self.devices.add_track(trackid)
-						self.tracks[trackid] = wavtool_track(track)
+		if indict is not None: self.read(indict)
 
-				elif n=='devices':
-					for dev_id, dev_data in v.items():
-						dev_trackId = dev_data['trackId']
+	def read(self, indict):
+		for n, v in indict.items():
+			if n=='id': self.id = v
+			elif n=='metronome': self.metronome = v
+			elif n=='midiOverdub': self.midiOverdub = v
+			elif n=='loopStart': self.loopStart = v
+			elif n=='loopEnd': self.loopEnd = v
+			elif n=='loopLifted': self.loopLifted = v
+			elif n=='loopEnabled': self.loopEnabled = v
+			elif n=='markers': self.markers = v
+			elif n=='bpm': self.bpm = v
+			elif n=='beatNumerator': self.beatNumerator = v
+			elif n=='beatDenominator': self.beatDenominator = v
+			elif n=='name': self.name = v
+			elif n=='arrangementFocusCategory': self.arrangementFocusCategory = v
+			elif n=='conductorMessageHistory': self.conductorMessageHistory = v
+			elif n=='conductorUserMessage': self.conductorUserMessage = v
+			elif n=='tracks':
+				for track in v:
+					trackid = track['id']
+					self.devices.add_track(trackid)
+					self.tracks[trackid] = wavtool_track(track)
 
-						device_obj = self.devices.add_device(dev_trackId, dev_id)
-						for n, d in dev_data.items():
-							if n == 'name': device_obj.name = d
-							elif n == 'x': device_obj.x = d
-							elif n == 'y': device_obj.y = d
-							elif n == 'type': device_obj.type = d
-							elif n == 'sourceId': device_obj.sourceId = d
-							else: device_obj.data[n] = d
+			elif n=='devices':
+				for dev_id, dev_data in v.items():
+					dev_trackId = dev_data['trackId']
 
-						#print('DEVICE', dev_trackId, dev_id, device_obj.name)
+					device_obj = self.devices.add_device(dev_trackId, dev_id)
+					for n, d in dev_data.items():
+						if n == 'name': device_obj.name = d
+						elif n == 'x': device_obj.x = d
+						elif n == 'y': device_obj.y = d
+						elif n == 'type': device_obj.type = d
+						elif n == 'sourceId': device_obj.sourceId = d
+						else: device_obj.data[n] = d
+
+					#print('DEVICE', dev_trackId, dev_id, device_obj.name)
 
 
-				elif n=='deviceRouting':
-					for dev_to, dev_from in v.items():
-						from_t, from_i = dev_from.split('.')
-						to_t, to_i = dev_to.split('.')
-						self.devices.add_cable(from_t, from_i, to_t, to_i)
-	
-					#print('CON', from_t, from_i, to_t, to_i)
+			elif n=='deviceRouting':
+				for dev_to, dev_from in v.items():
+					from_t, from_i = dev_from.split('.')
+					to_t, to_i = dev_to.split('.')
+					self.devices.add_cable(from_t, from_i, to_t, to_i)
 
-				elif n=='timelineSelectionStart': self.timelineSelectionStart = v
-				elif n=='timelineSelectionEnd': self.timelineSelectionEnd = v
-				elif n=='countIn': self.countIn = v
-				elif n=='focusedSignal': self.focusedSignal = v
-				elif n=='bpmAutomation': self.bpmAutomation = v
-				elif n=='clipSelectionStart': self.clipSelectionStart = v
-				elif n=='clipSelectionEnd': self.clipSelectionEnd = v
-				elif n=='headerAnchorTrackId': self.headerAnchorTrackId = v
-				elif n=='skills': self.skills = v
-				elif n=='panelTree': self.panelTree = v
-				elif n=='focusedTrackId': self.focusedTrackId = v
-				elif n=='selectedDeviceId': self.selectedDeviceId = v
-				elif n=='timelineAnchorTrackId': self.timelineAnchorTrackId = v
-				elif n=='editorTypeIntent': self.editorTypeIntent = v
-				elif n=='autoArmMIDI': self.autoArmMIDI = v
-				elif n=='composerHasAuthority': self.composerHasAuthority = v
-				elif n=='skillStack': self.skillStack = v
-				else: logger_projparse.warning('wavtool: project: unimplemented attrib: '+n)
+				#print('CON', from_t, from_i, to_t, to_i)
 
-			if DEBUG_IN_OUT:
-				import json
-				f = open('debug_in.json', 'w')
-				f.write(json.dumps(pd, indent = 2))
-	
-				f = open('debug_out.json', 'w')
-				f.write(json.dumps(self.write(), indent = 2))
+			elif n=='timelineSelectionStart': self.timelineSelectionStart = v
+			elif n=='timelineSelectionEnd': self.timelineSelectionEnd = v
+			elif n=='countIn': self.countIn = v
+			elif n=='focusedSignal': self.focusedSignal = v
+			elif n=='bpmAutomation': self.bpmAutomation = v
+			elif n=='clipSelectionStart': self.clipSelectionStart = v
+			elif n=='clipSelectionEnd': self.clipSelectionEnd = v
+			elif n=='headerAnchorTrackId': self.headerAnchorTrackId = v
+			elif n=='skills': self.skills = v
+			elif n=='panelTree': self.panelTree = v
+			elif n=='focusedTrackId': self.focusedTrackId = v
+			elif n=='selectedDeviceId': self.selectedDeviceId = v
+			elif n=='timelineAnchorTrackId': self.timelineAnchorTrackId = v
+			elif n=='editorTypeIntent': self.editorTypeIntent = v
+			elif n=='autoArmMIDI': self.autoArmMIDI = v
+			elif n=='composerHasAuthority': self.composerHasAuthority = v
+			elif n=='skillStack': self.skillStack = v
+			else: logger_projparse.warning('wavtool: project: unimplemented attrib: '+n)
+
+		if DEBUG_IN_OUT:
+			import json
+			f = open('debug_in.json', 'w')
+			f.write(json.dumps(indict, indent = 2))
+
+			f = open('debug_out.json', 'w')
+			f.write(json.dumps(self.write(), indent = 2))
 
 	def write(self):
 		wt_out = {}

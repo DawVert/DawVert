@@ -9,11 +9,11 @@ def getbool(v): return v=='true'
 # ============================================= drumkit ============================================= 
 
 class hydrogen_drumkitComponent:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.id = 0
 		self.name = ''
 		self.volume = 1
-		if xmldata: self.read(xmldata)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
@@ -25,7 +25,7 @@ class hydrogen_drumkitComponent:
 # ============================================= instrument ============================================= 
 
 class hydrogen_layer:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.filename = ''
 		self.min = 0
 		self.max = 0
@@ -41,7 +41,7 @@ class hydrogen_layer:
 		self.rubberdivider = 1
 		self.rubberCsettings = 0
 		self.rubberPitch = 1
-		if xmldata: self.read(xmldata)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
@@ -63,11 +63,11 @@ class hydrogen_layer:
 			if name == 'rubberPitch': self.rubberPitch = float(x_part.text)
 
 class hydrogen_instrumentComponent:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.component_id = 0
 		self.gain = 1
 		self.layers = []
-		if xmldata: self.read(xmldata)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
@@ -77,7 +77,7 @@ class hydrogen_instrumentComponent:
 			if name == 'layer': self.layers.append(hydrogen_layer(x_part))
 
 class hydrogen_instrument:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.id = 0
 		self.name = ''
 		self.drumkitPath = ''
@@ -111,7 +111,7 @@ class hydrogen_instrument:
 		self.FX3Level = 0
 		self.FX4Level = 0
 		self.instrumentComponent = hydrogen_instrumentComponent(None)
-		if xmldata: self.read(xmldata)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
@@ -153,7 +153,7 @@ class hydrogen_instrument:
 # ============================================= pattern ============================================= 
 
 class hydrogen_note:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.position = 0
 		self.leadlag = 0
 		self.velocity = 0.8
@@ -164,7 +164,7 @@ class hydrogen_note:
 		self.instrument = 0
 		self.note_off = False
 		self.probability = 1
-		if xmldata: self.read(xmldata)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
@@ -181,14 +181,14 @@ class hydrogen_note:
 			if name == 'probability': self.probability = float(x_part.text)
 
 class hydrogen_pattern:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.name = ''
 		self.info = ''
 		self.category = ''
 		self.size = 192
 		self.denominator = 4
 		self.noteList = []
-		if xmldata: self.read(xmldata)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
@@ -206,10 +206,10 @@ class hydrogen_pattern:
 # ============================================= main ============================================= 
 
 class hydrogen_virtualpattern:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.name = ''
 		self.virtual = ''
-		if xmldata: self.read(xmldata)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
@@ -218,10 +218,10 @@ class hydrogen_virtualpattern:
 			if name == 'virtual': self.info = x_part.text
 
 class hydrogen_path:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.adjust = None
 		self.points = {}
-		if xmldata: self.read(xmldata)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		self.adjust = xmldata.get('adjust')
@@ -230,10 +230,10 @@ class hydrogen_path:
 			if name == 'point': self.points[float(x_part.get('x'))] = float(x_part.get('y'))
 
 class hydrogen_newBPM:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.bar = 0
 		self.bpm = 120
-		if xmldata: self.read(xmldata)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:
@@ -242,10 +242,10 @@ class hydrogen_newBPM:
 			if name == 'BPM': self.bpm = float(x_part.text)
 
 class hydrogen_newTAG:
-	def __init__(self, xmldata):
+	def __init__(self, xmldata=None):
 		self.bar = 0
 		self.tag = ''
-		if xmldata: self.read(xmldata)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for x_part in xmldata:

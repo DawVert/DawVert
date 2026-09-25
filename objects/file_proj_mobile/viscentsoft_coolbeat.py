@@ -4,41 +4,41 @@
 import json
 
 class coolbeat_auto_main:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.state = False
 		self.sections = []
-		if indata is not None: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'state' in indata: self.state = indata['state']
-		if 'sections' in indata: self.sections = [coolbeat_auto_section(x) for x in indata['sections']]
+	def read(self, indict):
+		if 'state' in indict: self.state = indict['state']
+		if 'sections' in indict: self.sections = [coolbeat_auto_section(x) for x in indict['sections']]
 
 class coolbeat_auto_section:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.startTick = 0
 		self.length = 0
 		self.nodes = []
-		if indata is not None: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'startTick' in indata: self.startTick = indata['startTick']
-		if 'length' in indata: self.length = indata['length']
-		if 'nodes' in indata: self.nodes = [coolbeat_auto_node(x) for x in indata['nodes']]
+	def read(self, indict):
+		if 'startTick' in indict: self.startTick = indict['startTick']
+		if 'length' in indict: self.length = indict['length']
+		if 'nodes' in indict: self.nodes = [coolbeat_auto_node(x) for x in indict['nodes']]
 
 class coolbeat_auto_node:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.position = 0
 		self.value = 0
-		if indata is not None: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'position' in indata: self.position = indata['position']
-		if 'value' in indata: self.value = indata['value']
+	def read(self, indict):
+		if 'position' in indict: self.position = indict['position']
+		if 'value' in indict: self.value = indict['value']
 
 # --------------------------------------------------------- TRACK ---------------------------------------------------------
 
 class coolbeat_track:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.type = 0
 		self.label = ""
 		self.volume = 0.5
@@ -61,74 +61,74 @@ class coolbeat_track:
 		self.filePath = ""
 		self.presetIndex = 0
 		self.pitchRange = 1
-		if indata is not None: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'type' in indata: self.type = indata['type']
-		if 'label' in indata: self.label = indata['label']
-		if 'volume' in indata: self.volume = indata['volume']
-		if 'pan' in indata: self.pan = indata['pan']
-		if 'muteState' in indata: self.muteState = indata['muteState']
-		if 'solo' in indata: self.solo = indata['solo']
-		if 'showingAuto' in indata: self.showingAuto = indata['showingAuto']
-		if 'currentAutoIndex' in indata: self.currentAutoIndex = indata['currentAutoIndex']
-		if 'scTrackIndex' in indata: self.scTrackIndex = indata['scTrackIndex']
-		if 'fileName' in indata: self.fileName = indata['fileName']
-		if 'soundPack' in indata: self.soundPack = indata['soundPack']
-		if 'isSample' in indata: self.isSample = indata['isSample']
-		if 'sections' in indata: self.sections = [coolbeat_section(x) for x in indata['sections']]
-		if 'autos' in indata: self.autos = [coolbeat_auto_main(x) for x in indata['autos']]
-		if 'tempo' in indata: self.tempo = indata['tempo']
-		if 'channels' in indata: self.channels = [coolbeat_track_channel(x) for x in indata['channels']]
-		if 'filePath' in indata: self.filePath = indata['filePath']
-		if 'presetIndex' in indata: self.presetIndex = indata['presetIndex']
-		if 'pitchRange' in indata: self.pitchRange = indata['pitchRange']
+	def read(self, indict):
+		if 'type' in indict: self.type = indict['type']
+		if 'label' in indict: self.label = indict['label']
+		if 'volume' in indict: self.volume = indict['volume']
+		if 'pan' in indict: self.pan = indict['pan']
+		if 'muteState' in indict: self.muteState = indict['muteState']
+		if 'solo' in indict: self.solo = indict['solo']
+		if 'showingAuto' in indict: self.showingAuto = indict['showingAuto']
+		if 'currentAutoIndex' in indict: self.currentAutoIndex = indict['currentAutoIndex']
+		if 'scTrackIndex' in indict: self.scTrackIndex = indict['scTrackIndex']
+		if 'fileName' in indict: self.fileName = indict['fileName']
+		if 'soundPack' in indict: self.soundPack = indict['soundPack']
+		if 'isSample' in indict: self.isSample = indict['isSample']
+		if 'sections' in indict: self.sections = [coolbeat_section(x) for x in indict['sections']]
+		if 'autos' in indict: self.autos = [coolbeat_auto_main(x) for x in indict['autos']]
+		if 'tempo' in indict: self.tempo = indict['tempo']
+		if 'channels' in indict: self.channels = [coolbeat_track_channel(x) for x in indict['channels']]
+		if 'filePath' in indict: self.filePath = indict['filePath']
+		if 'presetIndex' in indict: self.presetIndex = indict['presetIndex']
+		if 'pitchRange' in indict: self.pitchRange = indict['pitchRange']
 
 class coolbeat_section:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.startTick = 0
 		self.length = 0
 		self.startOffsetTick = 0
 		self.endOffsetTick = 0
 		self.notes = []
 		self.label = ""
-		if indata is not None: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'startTick' in indata: self.startTick = indata['startTick']
-		if 'length' in indata: self.length = indata['length']
-		if 'startOffsetTick' in indata: self.startOffsetTick = indata['startOffsetTick']
-		if 'endOffsetTick' in indata: self.endOffsetTick = indata['endOffsetTick']
-		if 'notes' in indata: self.notes = [coolbeat_note(x) for x in indata['notes']]
-		if 'label' in indata: self.label = indata['label']
+	def read(self, indict):
+		if 'startTick' in indict: self.startTick = indict['startTick']
+		if 'length' in indict: self.length = indict['length']
+		if 'startOffsetTick' in indict: self.startOffsetTick = indict['startOffsetTick']
+		if 'endOffsetTick' in indict: self.endOffsetTick = indict['endOffsetTick']
+		if 'notes' in indict: self.notes = [coolbeat_note(x) for x in indict['notes']]
+		if 'label' in indict: self.label = indict['label']
 
 class coolbeat_note:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.startTick = 0
 		self.length = 120
 		self.key = 67
 		self.volume = 1
-		if indata is not None: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'startTick' in indata: self.startTick = indata['startTick']
-		if 'length' in indata: self.length = indata['length']
-		if 'key' in indata: self.key = indata['key']
-		if 'volume' in indata: self.volume = indata['volume']
+	def read(self, indict):
+		if 'startTick' in indict: self.startTick = indict['startTick']
+		if 'length' in indict: self.length = indict['length']
+		if 'key' in indict: self.key = indict['key']
+		if 'volume' in indict: self.volume = indict['volume']
 
 class coolbeat_track_channel:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.fileName = ""
 		self.soundPack = "BasicSoundPack"
 		self.volume = 1
 		self.pan = 0.5
-		if indata is not None: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'fileName' in indata: self.fileName = indata['fileName']
-		if 'soundPack' in indata: self.soundPack = indata['soundPack']
-		if 'volume' in indata: self.volume = indata['volume']
-		if 'pan' in indata: self.pan = indata['pan']
+	def read(self, indict):
+		if 'fileName' in indict: self.fileName = indict['fileName']
+		if 'soundPack' in indict: self.soundPack = indict['soundPack']
+		if 'volume' in indict: self.volume = indict['volume']
+		if 'pan' in indict: self.pan = indict['pan']
 
 # --------------------------------------------------------- MAIN ---------------------------------------------------------
 
@@ -148,12 +148,12 @@ class coolbeat_root:
 		self.read(projectdata)
 		return True
 
-	def read(self, indata):
+	def read(self, indict):
 		self.__init__()
-		if 'version' in indata: self.version = indata['version']
-		if 'tempo' in indata: self.tempo = indata['tempo']
-		if 'timeSigType' in indata: self.timeSigType = indata['timeSigType']
-		if 'masterVolume' in indata: self.masterVolume = indata['masterVolume']
-		if 'masterPan' in indata: self.masterPan = indata['masterPan']
-		if 'masterAutos' in indata: self.masterAutos = [coolbeat_auto_main(x) for x in indata['masterAutos']]
-		if 'tracks' in indata: self.tracks = [coolbeat_track(x) for x in indata['tracks']]
+		if 'version' in indict: self.version = indict['version']
+		if 'tempo' in indict: self.tempo = indict['tempo']
+		if 'timeSigType' in indict: self.timeSigType = indict['timeSigType']
+		if 'masterVolume' in indict: self.masterVolume = indict['masterVolume']
+		if 'masterPan' in indict: self.masterPan = indict['masterPan']
+		if 'masterAutos' in indict: self.masterAutos = [coolbeat_auto_main(x) for x in indict['masterAutos']]
+		if 'tracks' in indict: self.tracks = [coolbeat_track(x) for x in indict['tracks']]

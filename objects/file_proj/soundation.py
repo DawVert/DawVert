@@ -7,14 +7,14 @@ logger_projparse = logging.getLogger('projparse')
 # ============================================= device ============================================= 
 
 class soundation_param:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.value = 0
 		self.automation = []
 		self.has_auto = False
-		if pd != None: self.read(pd)
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'value': 
 				self.value = v
 			elif n == 'automation': 
@@ -55,23 +55,24 @@ class soundation_paramset:
 			dictin[n] = param_data
 
 class soundation_device:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.rackName = None
 		self.identifier = None
 		self.bypass = None
 		self.params = soundation_paramset()
 		self.data = {}
+		if indict is not None: self.read(indict)
 
-		if pd != None:
-			for n, v in pd.items():
-				if n == 'bypass': self.bypass = v
-				elif n == 'rackName': self.rackName = v
-				elif n == 'identifier': self.identifier = v
+	def read(self, indict):
+		for n, v in indict.items():
+			if n == 'bypass': self.bypass = v
+			elif n == 'rackName': self.rackName = v
+			elif n == 'identifier': self.identifier = v
+			else: 
+				if isinstance(v, dict) and 'value' in v: 
+					self.params.add_from_sng(n, v)
 				else: 
-					if isinstance(v, dict) and 'value' in v: 
-						self.params.add_from_sng(n, v)
-					else: 
-						self.data[n] = v
+					self.data[n] = v
 
 	def write(self):
 		sng_device = {}
@@ -85,7 +86,7 @@ class soundation_device:
 # ============================================= track ============================================= 
 
 class soundation_region:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.color = None
 		self.position = 0
 		self.autoStretchBpm = None
@@ -105,10 +106,10 @@ class soundation_region:
 		self.pitchShiftSemitones = 0
 		self.pitchShiftCents = 0
 		self.formantCorrection = 0
-		if pd != None: self.read(pd)
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'color': self.color = v
 			elif n == 'position': self.position = v
 			elif n == 'autoStretchBpm': self.autoStretchBpm = v
@@ -154,7 +155,7 @@ class soundation_region:
 		return sng_region
 
 class soundation_channel:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.name = ''
 		self.type = ''
 		self.mute = False
@@ -168,10 +169,10 @@ class soundation_channel:
 		self.regions = []
 		self.instrument = None
 		self.userSetName = None
-		if pd != None: self.read(pd)
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'name': self.name = v
 			elif n == 'type': self.type = v
 			elif n == 'color': self.color = v
@@ -207,7 +208,7 @@ class soundation_channel:
 # ============================================= song ============================================= 
 
 class soundation_project:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.version = 2.3
 		self.studio = "3.124.5"
 		self.bpm = 120
@@ -216,10 +217,10 @@ class soundation_project:
 		self.loopStart = 0
 		self.loopEnd = 4102
 		self.channels = []
-		if pd != None: self.read(pd)
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'version': self.version = v
 			elif n == 'studio': self.studio = v
 			elif n == 'bpm': self.bpm = v
