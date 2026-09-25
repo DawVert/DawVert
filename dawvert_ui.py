@@ -52,7 +52,7 @@ class gui_config():
 		self.main['dd_outpath'] = 'beside_original'
 		self.main['overwrite_out'] = False
 		self.main['auto_convert'] = False
-		self.main['language'] = 'english'
+		self.main['language'] = 'en-US'
 
 		self.session = {}
 		self.session['current_in_plug'] = None
@@ -153,12 +153,17 @@ miniconfmenu_store = ui_configmenu.miniconfmenu_store
 configdef_main = miniconfmenu_store()
 configdef_main.add_bool('language', False, 'Overwrite Output')
 cfgpart = configdef_main.add_enum('language', 'english', 'Language')
-cfgpart.add_choice('english','English')
-cfgpart.add_choice('english_shortcfg','English (Small Config Buttons)')
-cfgpart.add_choice('japanese','日本語 (Japanese)')
-cfgpart.add_choice('russian','Русский (Russian)')
-cfgpart.add_choice('chinese_trad','正體字 (Traditional Chinese)')
-cfgpart.add_choice('chinese_simp','简化字 (Simplified Chinese)')
+
+path_locale_fol = './data_ui/locale/'
+path_locale_def = './data_ui/locales.json'
+if os.path.exists(path_locale_def):
+	try:
+		with open(path_locale_def, encoding="utf8") as f:
+			defjson = json.load(f)
+			for ccode, data in defjson.items():
+				cfgpart.add_choice(ccode,data['name'])
+	except:
+		pass
 
 configdef_main.add_bool('overwrite_out', False, 'Overwrite Output')
 configdef_main.set_group('dd', 'Drag/Drop')
@@ -465,7 +470,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 	def callback_update(self, cata, key, value):
 		if cata=='main':
 			if key=='language':
-				window.translate_from_ini('translation/%s.ini' % value)
+				self.change_lang(value)
 
 	def open_configmenu(self, name, _):
 		config_values = {}
@@ -748,9 +753,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 			self.worker.update_ui.connect(self.__update_ui_ele)
 			self.thread.start()
 
+	def change_lang(self, ccode):
+		window.translate_from_ini(path_locale_fol+('%s.ini' % ccode))
+
 dawvert_config.load_file('config.json')
 app = QtWidgets.QApplication(sys.argv)
 window = MainWindow()
-if 'language' in dawvert_config.main: window.translate_from_ini('translation/%s.ini' % dawvert_config.main['language'])
+if 'language' in dawvert_config.main: window.change_lang(dawvert_config.main['language'])
 window.show()
 app.exec()

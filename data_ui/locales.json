@@ -1,0 +1,8 @@
+{
+	"en-US": {"name": "English"},
+	"en-US_shortcfg": {"name": "English (Small Config Buttons)"},
+	"zh-cn": {"name": "简化字 (Simplified Chinese)"},
+	"zh-tw": {"name": "正體字 (Traditional Chinese)"},
+	"ja": {"name": "日本語 (Japanese)"},
+	"ru": {"name": "Русский (Russian)"}
+}
