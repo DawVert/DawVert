@@ -66,7 +66,6 @@ class zquence_group:
 								if not isinstance(self.attrib[attribval[0]], list): 
 									self.attrib[attribval[0]] = [attribval[1]]
 								self.attrib[attribval[0]].append(attribval[1])
-
 							else: self.attrib[attribval[0]] = attribval[1]
 					elif ptoken.type=='GROUP':
 						gname = ptoken.value

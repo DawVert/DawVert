@@ -10,7 +10,7 @@ import copy
 class cvpj_placements_autopoints(placements_base.cvpj_placements_multi_auto_base):
 	__slots__ = ['data','time_ppq','val_type']
 	def __init__(self, time_ppq, val_type):
-		super().__init__(time_ppq, cvpj_placement_autopoints)
+		super().__init__(time_ppq, val_type, cvpj_placement_autopoints)
 
 	def sort(self):
 		ta_bsort = {}

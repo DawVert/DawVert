@@ -10,7 +10,7 @@ from objects.convproj import placements_base
 class cvpj_placements_autoticks(placements_base.cvpj_placements_multi_auto_base):
 	__slots__ = ['data','time_ppq','val_type']
 	def __init__(self, time_ppq, val_type):
-		super().__init__(time_ppq, cvpj_placement_autoticks)
+		super().__init__(time_ppq, val_type, cvpj_placement_autoticks)
 
 	def sort(self):
 		self.data = placements_base.internal_sort(self.data)

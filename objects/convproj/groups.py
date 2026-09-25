@@ -1,6 +1,11 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from objects.convproj import tracks
+
+import logging
+logger_project = logging.getLogger('project')
+
 def routetrackord(trackord, groupdata, outl, insidegroup):
 	for t, i in trackord:
 		outl.append([t, i, insidegroup])
@@ -49,7 +54,7 @@ class cvpj_groups:
 
 	def add(self, groupid):
 		logger_project.info('Group - '+groupid)
-		self.data[groupid] = tracks.cvpj_track('group', self.time_ppq, False, False)
+		self.data[groupid] = tracks.cvpj_track('group', self.convproj_obj.time_ppq, False, False)
 		return self.data[groupid]
 
 	def get(self, groupid):
