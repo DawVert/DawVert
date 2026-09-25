@@ -40,8 +40,6 @@ class converterstate():
 
 dragdroploctexts = ['Beside Original', 'In "output" folder', 'Always out.*']
 
-globalstore.extplug.load()
-
 dawvert_intent = dv_core.dawvert_intent()
 dawvert_intent.config_load('./__config/config.ini')
 
@@ -276,44 +274,6 @@ class ConversionWorker(QtCore.QObject):
 			print(traceback.format_exc())
 		self.finished.emit()
 
-class PlugScanWorker(QtCore.QObject):
-	finished = QtCore.pyqtSignal()
-	update_ui = QtCore.pyqtSignal(list)
-
-	def __init__(self, *args, **kwargs):
-		super(PlugScanWorker, self).__init__(*args, **kwargs)
-
-	def run(self):
-		if not converterstate.is_plugscan:
-			try:
-				oldplugcount = globalstore.extplug.count('all')
-				converterstate.is_plugscan = True
-				dv_plugins.load_plugindir('externalsearch', '')
-		
-				externalsearch_obj = dv_plugins.create_selector('externalsearch')
-				for shortname, dvplugin in externalsearch_obj.iter_dvp():
-					self.update_ui.emit([0, 'Scanning '+dvplugin.name+'...'])
-					dvplugin.plug_obj.import_plugins()
-				globalstore.extplug.write()
-	
-				newplugcount = globalstore.extplug.count('all')
-				if newplugcount>oldplugcount:
-					self.update_ui.emit([0, 'Done, '+str(newplugcount-oldplugcount)+' new plugins found.'])
-				else:
-					self.update_ui.emit([0, 'Done.'])
-
-				vst2_count = globalstore.extplug.count('vst2')
-				vst3_count = globalstore.extplug.count('vst3')
-				clap_count = globalstore.extplug.count('clap')
-				self.update_ui.emit([1, [vst2_count, vst3_count, clap_count]])
-			except:
-				self.update_ui.emit([0, 'Error. See Console.'])
-				print(traceback.format_exc())
-				pass
-	
-			converterstate.is_plugscan = False
-		self.finished.emit()
-
 filedetector_obj = format_detect.file_detector()
 filedetector_obj.load_def('data_main/autodetect.xml')
 
@@ -364,7 +324,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 		self.ui.ConvertButton.setEnabled(False)
 		self.ui.ConvertButton.clicked.connect(self.__do_convert)
-		self.ui.PluginScanButton.clicked.connect(self.__do_extplugscan)
 
 		self.ui.AutoDetectButton.clicked.connect(self.__do_auto_detect)
 
@@ -372,7 +331,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		for x in dawvert_core.output_get_pluginsets_names(): self.ui.ListWidget_OutPlugSet.addItem(x)
 
 		self.__update_convst()
-		self.__display_extplugcount()
 
 		self.ui.ConfigMain.clicked.connect(functools.partial(self.open_configmenu, 'main'))
 		self.ui.ConfigSoundFont.clicked.connect(functools.partial(self.open_configmenu, 'soundfont'))
@@ -436,7 +394,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 		import configparser
 		config = configparser.ConfigParser()
-		config.read_file(open(filename))
+		config.read(filename, encoding="utf8")
 		if 'main' in config:
 			locpart = config['main']
 			if 'title' in locpart: self.setWindowTitle(locpart['title'])
@@ -537,14 +495,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 		if config_def is not None:
 			ui_configmenu_interface.show_gui(config_def, config_values, window_title)
-
-	def __display_extplugcount(self):
-		vst2_count = globalstore.extplug.count('vst2')
-		vst3_count = globalstore.extplug.count('vst3')
-		clap_count = globalstore.extplug.count('clap')
-		self.ui.ExtCountVST2.setText('VST2: '+str(vst2_count))
-		self.ui.ExtCountVST3.setText('VST3: '+str(vst3_count))
-		self.ui.ExtCountCLAP.setText('CLAP: '+str(clap_count))
 
 	def dragEnterEvent(self, event):
 		if event.mimeData().hasUrls(): event.accept()
@@ -773,15 +723,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 			self.ui.StatusText.setText('Status: '+update_data[0])
 			self.ui.SubStatusText.setText(update_data[1])
 
-	def __update_ui_ele_ext(self, n):
-		update_type, update_data = n
-		if update_type == 0:
-			self.ui.PluginScanStatus.setText(update_data)
-		if update_type == 1:
-			self.ui.ExtCountVST2.setText('VST2: '+str(update_data[0]))
-			self.ui.ExtCountVST3.setText('VST3: '+str(update_data[1]))
-			self.ui.ExtCountCLAP.setText('CLAP: '+str(update_data[2]))
-
 	def __do_convert(self):
 		if not converterstate.is_converting:
 			converterstate.is_converting = True
@@ -799,18 +740,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 			self.worker.finished.connect(self.worker.deleteLater)
 			self.thread.finished.connect(self.thread.deleteLater)
 			self.worker.update_ui.connect(self.__update_ui_ele)
-			self.thread.start()
-
-	def __do_extplugscan(self):
-		if not converterstate.is_plugscan:
-			self.thread = QtCore.QThread(parent=self)
-			self.worker = PlugScanWorker()
-			self.worker.moveToThread(self.thread)
-			self.thread.started.connect(self.worker.run)
-			self.worker.finished.connect(self.thread.quit)
-			self.worker.finished.connect(self.worker.deleteLater)
-			self.thread.finished.connect(self.thread.deleteLater)
-			self.worker.update_ui.connect(self.__update_ui_ele_ext)
 			self.thread.start()
 
 dawvert_config.load_file('config.json')
