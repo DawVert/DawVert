@@ -4,6 +4,7 @@
 from objects.convproj import params
 from objects.convproj import tracks
 from objects.convproj import visual
+from objects.convproj import sends
 import logging
 
 logger_project = logging.getLogger('project')

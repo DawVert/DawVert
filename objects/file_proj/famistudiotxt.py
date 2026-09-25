@@ -25,11 +25,12 @@ def read_regs(cmd_params, startname, size):
 	return regdata
 
 class dpcm_sample:
-	def __init__(self):
+	def __init__(self, block_obj=None):
 		self.Name = ''
 		self.Color = None
 		self.Data = b''
 		#if data: self.data_bytes = bytes.fromhex(self.data_txt)
+		if block_obj is not None: self.read(block_obj)
 
 	def read(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -45,12 +46,13 @@ class dpcm_sample:
 		if self.Data: cmd_params['Data'] = self.Data
 
 class dpcm_mapping:
-	def __init__(self):
+	def __init__(self, block_obj=None):
 		self.Note = ''
 		self.Sample = ''
 		self.Pitch = 15
 		self.Loop = False
 		self.Bank = -1
+		if block_obj is not None: self.read(block_obj)
 
 	def read(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -70,12 +72,13 @@ class dpcm_mapping:
 		if self.Bank>-1: cmd_params['Bank'] = self.Bank
 
 class fs_arpeggio:
-	def __init__(self):
+	def __init__(self, block_obj=None):
 		self.Values = []
 		self.Length = 0
 		self.Loop = 0
 		self.Name = ''
 		self.Color = ''
+		if block_obj is not None: self.read(block_obj)
 
 	def read(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -95,13 +98,14 @@ class fs_arpeggio:
 		cmd_params['Values'] = ','.join([str(x) for x in self.Values])
 
 class fs_envelope:
-	def __init__(self):
+	def __init__(self, block_obj=None):
 		self.Type = ''
 		self.Values = []
 		self.Length = 0
 		self.Loop = -1
 		self.Relative = False
 		self.Release = -1
+		if block_obj is not None: self.read(block_obj)
 
 	def read(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -124,7 +128,7 @@ class fs_envelope:
 		if self.Values: cmd_params['Values'] = ','.join([str(x) for x in self.Values])
 
 class fs_instrument:
-	def __init__(self):
+	def __init__(self, block_obj=None):
 		self.Name = ''
 		self.Color = ''
 		self.Expansion = ''
@@ -157,6 +161,7 @@ class fs_instrument:
 		self.EPSMSquareEnvelopeShape = 0
 		self.EPSMSquareEnvelopeAutoPitch = True
 		self.EPSMSquareEnvelopeAutoPitchOctave = 3
+		if block_obj is not None: self.read(block_obj)
 
 	def read(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -184,15 +189,8 @@ class fs_instrument:
 		self.EpsmRegs = read_regs(cmd_params, 'EpsmReg', 31)
 
 		for i in block_obj:
-			if i.name == 'Envelope': 
-				o = fs_envelope()
-				o.read(i)
-				self.Envelopes.append(o)
-
-			if i.name == 'DPCMMapping': 
-				o = dpcm_mapping()
-				o.read(i)
-				self.DPCMMappings.append(o)
+			if i.name == 'Envelope': self.Envelopes.append(fs_envelope(i))
+			if i.name == 'DPCMMapping': self.DPCMMappings.append(dpcm_mapping(i))
 
 	def write(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -233,7 +231,7 @@ class fs_instrument:
 		for x in self.DPCMMappings: x.write(block_obj.add_block('DPCMMapping'))
 
 class fs_note:
-	def __init__(self):
+	def __init__(self, block_obj=None):
 		self.Time = 0
 		self.Value = ''
 		self.Duration = 0
@@ -248,6 +246,7 @@ class fs_note:
 		self.Arpeggio = None
 		self.Release = None
 		self.DutyCycle = None
+		if block_obj is not None: self.read(block_obj)
 
 	def read(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -284,20 +283,18 @@ class fs_note:
 		if self.DutyCycle is not None: cmd_params['DutyCycle'] = self.DutyCycle
 
 class fs_pattern:
-	def __init__(self):
+	def __init__(self, block_obj=None):
 		self.Name = ''
 		self.Color = ''
 		self.Notes = []
+		if block_obj is not None: self.read(block_obj)
 
 	def read(self, block_obj):
 		cmd_params = block_obj.attrib
 		if 'Name' in cmd_params: self.Name = cmd_params['Name']
 		if 'Color' in cmd_params: self.Color = cmd_params['Color']
 		for i in block_obj:
-			if i.name == 'Note': 
-				o = fs_note()
-				o.read(i)
-				self.Notes.append(o)
+			if i.name == 'Note': self.Notes.append(fs_note(i))
 
 	def write(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -306,7 +303,7 @@ class fs_pattern:
 		for x in self.Notes: x.write(block_obj.add_block('Note'))
 
 class fs_patterncustomsettings:
-	def __init__(self):
+	def __init__(self, block_obj=None):
 		self.Time = 4
 		self.Length = 16
 		self.BeatLength = 4
@@ -316,6 +313,7 @@ class fs_patterncustomsettings:
 
 	def get_bpm(self):
 		return get_bpm(self.Groove, self.BeatLength)
+		if block_obj is not None: self.read(block_obj)
 
 	def read(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -336,9 +334,10 @@ class fs_patterncustomsettings:
 		cmd_params['BeatLength'] = self.BeatLength
 
 class fs_patterninstance:
-	def __init__(self):
+	def __init__(self, block_obj=None):
 		self.Time = 0
 		self.Pattern = ''
+		if block_obj is not None: self.read(block_obj)
 
 	def read(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -351,23 +350,18 @@ class fs_patterninstance:
 		cmd_params['Pattern'] = self.Pattern
 
 class fs_channel:
-	def __init__(self):
+	def __init__(self, block_obj=None):
 		self.Type = ''
 		self.Patterns = []
 		self.PatternInstances = []
+		if block_obj is not None: self.read(block_obj)
 
 	def read(self, block_obj):
 		cmd_params = block_obj.attrib
 		if 'Type' in cmd_params: self.Type = cmd_params['Type']
 		for i in block_obj:
-			if i.name == 'Pattern': 
-				o = fs_pattern()
-				o.read(i)
-				self.Patterns.append(o)
-			if i.name == 'PatternInstance': 
-				o = fs_patterninstance()
-				o.read(i)
-				self.PatternInstances.append(o)
+			if i.name == 'Pattern': self.Patterns.append(fs_pattern(i))
+			if i.name == 'PatternInstance': self.PatternInstances.append(fs_patterninstance(i))
 
 	def write(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -376,7 +370,7 @@ class fs_channel:
 		for x in self.PatternInstances: x.write(block_obj.add_block('PatternInstance'))
 
 class fs_song:
-	def __init__(self):
+	def __init__(self, block_obj=None):
 		self.Name = ''
 		self.Color = None
 		self.Length = 1
@@ -391,6 +385,7 @@ class fs_song:
 
 	def get_bpm(self):
 		return get_bpm(self.Groove, self.BeatLength)
+		if block_obj is not None: self.read(block_obj)
 
 	def read(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -405,15 +400,8 @@ class fs_song:
 		if 'GroovePaddingMode' in cmd_params: self.GroovePaddingMode = cmd_params['GroovePaddingMode']
 
 		for i in block_obj:
-			if i.name == 'Channel': 
-				o = fs_channel()
-				o.read(i)
-				self.Channels.append(o)
-
-			if i.name == 'PatternCustomSettings': 
-				o = fs_patterncustomsettings()
-				o.read(i)
-				self.PatternCustomSettings.append(o)
+			if i.name == 'Channel': self.Channels.append(fs_channel(i))
+			if i.name == 'PatternCustomSettings': self.PatternCustomSettings.append(fs_patterncustomsettings(i))
 
 	def write(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -517,7 +505,7 @@ class famistudiotxt_block:
 
 
 class famistudiotxt_project:
-	def __init__(self):
+	def __init__(self, block_obj=None):
 		self.Version = ''
 		self.TempoMode = ''
 		self.Name = ''
@@ -557,6 +545,7 @@ class famistudiotxt_project:
 		self.VRC6TrebleRolloffHz = -1
 		self.VRC7TrebleDb = 0
 		self.VRC7TrebleRolloffHz = -1
+		if block_obj is not None: self.read(block_obj)
 
 	def read(self, block_obj):
 		cmd_params = block_obj.attrib
@@ -595,30 +584,11 @@ class famistudiotxt_project:
 		if 'VRC7TrebleRolloffHz' in cmd_params: self.VRC7TrebleRolloffHz = float(cmd_params['VRC7TrebleRolloffHz'])
 
 		for i in block_obj:
-			if i.name == 'DPCMSample': 
-				o = dpcm_sample()
-				o.read(i)
-				self.DPCMSamples.append(o)
-
-			if i.name == 'Instrument': 
-				o = fs_instrument()
-				o.read(i)
-				self.Instruments.append(o)
-
-			if i.name == 'Arpeggio': 
-				o = fs_arpeggio()
-				o.read(i)
-				self.Arpeggios.append(o)
-
-			if i.name == 'Song': 
-				o = fs_song()
-				o.read(i)
-				self.Songs.append(o)
-
-			if i.name == 'DPCMMapping': 
-				o = dpcm_mapping()
-				o.read(i)
-				self.DPCMMappings.append(o)
+			if i.name == 'DPCMSample': self.DPCMSamples.append(dpcm_sample(i))
+			if i.name == 'Instrument': self.Instruments.append(fs_instrument(i))
+			if i.name == 'Arpeggio': self.Arpeggios.append(fs_arpeggio(i))
+			if i.name == 'Song': self.Songs.append(fs_song(i))
+			if i.name == 'DPCMMapping': self.DPCMMappings.append(dpcm_mapping(i))
 
 	def write(self, block_obj):
 		block_obj.name = 'Project'
