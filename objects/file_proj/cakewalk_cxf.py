@@ -4,17 +4,18 @@
 import json
 
 class cxf_meta:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.type = "cxf"
 		self.version = "1.0"
 		self.clientId = "Next"
 		self.clientVersion = "1.0.1.605"
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'type' in indata: self.type = indata['type']
-		if 'version' in indata: self.version = indata['version']
-		if 'clientId' in indata: self.clientId = indata['clientId']
-		if 'clientVersion' in indata: self.clientVersion = indata['clientVersion']
+	def read(self, indict):
+		if 'type' in indict: self.type = indict['type']
+		if 'version' in indict: self.version = indict['version']
+		if 'clientId' in indict: self.clientId = indict['clientId']
+		if 'clientVersion' in indict: self.clientVersion = indict['clientVersion']
 
 	def write(self):
 		outdata = {}
@@ -25,17 +26,18 @@ class cxf_meta:
 		return outdata
 
 class cxf_song:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = ""
 		self.stamp = ""
 		self.name = ""
 		self.forkable = False
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'id' in indata: self.id = indata['id']
-		if 'stamp' in indata: self.stamp = indata['stamp']
-		if 'name' in indata: self.name = indata['name']
-		if 'forkable' in indata: self.forkable = indata['forkable']
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'stamp' in indict: self.stamp = indict['stamp']
+		if 'name' in indict: self.name = indict['name']
+		if 'forkable' in indict: self.forkable = indict['forkable']
 
 	def write(self):
 		outdata = {}
@@ -46,13 +48,14 @@ class cxf_song:
 		return outdata
 
 class cxf_metronome:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.bpm = 120
 		self.signature = {"notesCount": 4,"noteValue": 4}
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'bpm' in indata: self.bpm = indata['bpm']
-		if 'signature' in indata: self.signature = indata['signature']
+	def read(self, indict):
+		if 'bpm' in indict: self.bpm = indict['bpm']
+		if 'signature' in indict: self.signature = indict['signature']
 
 	def write(self):
 		outdata = {}
@@ -61,18 +64,19 @@ class cxf_metronome:
 		return outdata
 
 class cxf_sample:
-	def __init__(self, indata):
+	def __init__(self, indict):
 		self.id = ""
 		self.isMidi = False
 		self.name = "regions-mix"
 		self.file = None
-		if indata: self.read(indata)
+		if indict: self.read(indict)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'id' in indata: self.id = indata['id']
-		if 'isMidi' in indata: self.isMidi = indata['isMidi']
-		if 'name' in indata: self.name = indata['name']
-		if 'file' in indata: self.file = indata['file']
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'isMidi' in indict: self.isMidi = indict['isMidi']
+		if 'name' in indict: self.name = indict['name']
+		if 'file' in indict: self.file = indict['file']
 
 	def write(self):
 		outdata = {}
@@ -83,16 +87,17 @@ class cxf_sample:
 		return outdata
 
 class cxf_autopoint:
-	def __init__(self, indata):
+	def __init__(self, indict):
 		self.position = 0
 		self.utposition = None
 		self.value = 0
-		if indata: self.read(indata)
+		if indict: self.read(indict)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'position' in indata: self.position = indata['position']
-		if 'utposition' in indata: self.utposition = indata['utposition']
-		if 'value' in indata: self.value = indata['value']
+	def read(self, indict):
+		if 'position' in indict: self.position = indict['position']
+		if 'utposition' in indict: self.utposition = indict['utposition']
+		if 'value' in indict: self.value = indict['value']
 
 	def write(self):
 		outdata = {}
@@ -102,11 +107,12 @@ class cxf_autopoint:
 		return outdata
 
 class cxf_automation:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.points = []
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		self.points = [cxf_autopoint(x) for x in indata]
+	def read(self, indict):
+		self.points = [cxf_autopoint(x) for x in indict]
 
 	def add_point(self, position, value):
 		point = cxf_autopoint(None)
@@ -118,7 +124,7 @@ class cxf_automation:
 		return [x.write() for x in self.points]
 
 class cxf_plugin:
-	def __init__(self, indata):
+	def __init__(self, indict):
 		self.format = ""
 		self.name = ""
 		self.uniqueId = 0
@@ -126,20 +132,21 @@ class cxf_plugin:
 		self.bypass = False
 		self.automation = {}
 		self.params = {}
-		if indata: self.read(indata)
+		if indict: self.read(indict)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'format' in indata: self.format = indata['format']
-		if 'name' in indata: self.name = indata['name']
-		if 'uniqueId' in indata: self.uniqueId = indata['uniqueId']
-		if 'slug' in indata: self.slug = indata['slug']
-		if 'bypass' in indata: self.bypass = indata['bypass']
-		if 'automation' in indata: 
-			for n, a in indata['automation'].items():
+	def read(self, indict):
+		if 'format' in indict: self.format = indict['format']
+		if 'name' in indict: self.name = indict['name']
+		if 'uniqueId' in indict: self.uniqueId = indict['uniqueId']
+		if 'slug' in indict: self.slug = indict['slug']
+		if 'bypass' in indict: self.bypass = indict['bypass']
+		if 'automation' in indict: 
+			for n, a in indict['automation'].items():
 				auto_obj = cxf_automation()
 				auto_obj.read(a)
 				self.automation[n] = auto_obj
-		if 'params' in indata: self.params = indata['params']
+		if 'params' in indict: self.params = indict['params']
 
 	def write(self):
 		outdata = {}
@@ -154,7 +161,7 @@ class cxf_plugin:
 		return outdata
 
 class cxf_auxChannel:
-	def __init__(self, indata):
+	def __init__(self, indict):
 		self.type = ""
 		self.id = ""
 		self.order = 0
@@ -169,32 +176,33 @@ class cxf_auxChannel:
 		self.idOutput = ""
 		self.automation = {}
 		self.auxSends = []
-		if indata: self.read(indata)
+		if indict: self.read(indict)
 
 	def add_effect(self):
 		o = cxf_plugin(None)
 		self.effects.append(o)
 		return o
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'type' in indata: self.type = indata['type']
-		if 'id' in indata: self.id = indata['id']
-		if 'order' in indata: self.order = indata['order']
-		if 'name' in indata: self.name = indata['name']
-		if 'colorName' in indata: self.colorName = indata['colorName']
-		if 'color' in indata: self.color = indata['color']
-		if 'volume' in indata: self.volume = indata['volume']
-		if 'pan' in indata: self.pan = indata['pan']
-		if 'isMuted' in indata: self.isMuted = indata['isMuted']
-		if 'isSolo' in indata: self.isSolo = indata['isSolo']
-		if 'effects' in indata: self.effects = [cxf_plugin(x) for x in indata['effects']]
-		if 'idOutput' in indata: self.idOutput = indata['idOutput']
-		if 'automation' in indata: 
-			for n, a in indata['automation'].items():
+	def read(self, indict):
+		if 'type' in indict: self.type = indict['type']
+		if 'id' in indict: self.id = indict['id']
+		if 'order' in indict: self.order = indict['order']
+		if 'name' in indict: self.name = indict['name']
+		if 'colorName' in indict: self.colorName = indict['colorName']
+		if 'color' in indict: self.color = indict['color']
+		if 'volume' in indict: self.volume = indict['volume']
+		if 'pan' in indict: self.pan = indict['pan']
+		if 'isMuted' in indict: self.isMuted = indict['isMuted']
+		if 'isSolo' in indict: self.isSolo = indict['isSolo']
+		if 'effects' in indict: self.effects = [cxf_plugin(x) for x in indict['effects']]
+		if 'idOutput' in indict: self.idOutput = indict['idOutput']
+		if 'automation' in indict: 
+			for n, a in indict['automation'].items():
 				auto_obj = cxf_automation()
 				auto_obj.read(a)
 				self.automation[n] = auto_obj
-		if 'auxSends' in indata: self.auxSends = [cxf_auxSend(x) for x in indata['auxSends']]
+		if 'auxSends' in indict: self.auxSends = [cxf_auxSend(x) for x in indict['auxSends']]
 
 	def add_auxSend(self):
 		o = cxf_auxSend(None)
@@ -221,7 +229,7 @@ class cxf_auxChannel:
 		return outdata
 
 class cxf_region:
-	def __init__(self, indata):
+	def __init__(self, indict):
 		self.file = ""
 		self.name = ""
 		self.sampleId = ""
@@ -231,18 +239,19 @@ class cxf_region:
 		self.startPosition = 0
 		self.endPosition = 0
 		self.loopLength = 0
-		if indata: self.read(indata)
+		if indict: self.read(indict)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'file' in indata: self.file = indata['file']
-		if 'name' in indata: self.name = indata['name']
-		if 'sampleId' in indata: self.sampleId = indata['sampleId']
-		if 'sampleOffset' in indata: self.sampleOffset = indata['sampleOffset']
-		if 'sampleStartPosition' in indata: self.sampleStartPosition = indata['sampleStartPosition']
-		if 'playbackRate' in indata: self.playbackRate = indata['playbackRate']
-		if 'startPosition' in indata: self.startPosition = indata['startPosition']
-		if 'endPosition' in indata: self.endPosition = indata['endPosition']
-		if 'loopLength' in indata: self.loopLength = indata['loopLength']
+	def read(self, indict):
+		if 'file' in indict: self.file = indict['file']
+		if 'name' in indict: self.name = indict['name']
+		if 'sampleId' in indict: self.sampleId = indict['sampleId']
+		if 'sampleOffset' in indict: self.sampleOffset = indict['sampleOffset']
+		if 'sampleStartPosition' in indict: self.sampleStartPosition = indict['sampleStartPosition']
+		if 'playbackRate' in indict: self.playbackRate = indict['playbackRate']
+		if 'startPosition' in indict: self.startPosition = indict['startPosition']
+		if 'endPosition' in indict: self.endPosition = indict['endPosition']
+		if 'loopLength' in indict: self.loopLength = indict['loopLength']
 
 	def write(self):
 		outdata = {}
@@ -267,21 +276,22 @@ class cxf_region:
 			)
 
 class cxf_auxSend:
-	def __init__(self, indata):
+	def __init__(self, indict):
 		self.id = ""
 		self.bypass = False
 		self.sendLevel = 1.0
 		self.sendPan = 0.0
 		self.automation = {}
-		if indata: self.read(indata)
+		if indict: self.read(indict)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'id' in indata: self.id = indata['id']
-		if 'bypass' in indata: self.bypass = indata['bypass']
-		if 'sendLevel' in indata: self.sendLevel = indata['sendLevel']
-		if 'sendPan' in indata: self.sendPan = indata['sendPan']
-		if 'automation' in indata: 
-			for n, a in indata['automation'].items():
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'bypass' in indict: self.bypass = indict['bypass']
+		if 'sendLevel' in indict: self.sendLevel = indict['sendLevel']
+		if 'sendPan' in indict: self.sendPan = indict['sendPan']
+		if 'automation' in indict: 
+			for n, a in indict['automation'].items():
 				auto_obj = cxf_automation()
 				auto_obj.read(a)
 				self.automation[n] = auto_obj
@@ -297,7 +307,7 @@ class cxf_auxSend:
 		return outdata
 
 class cxf_track:
-	def __init__(self, indata):
+	def __init__(self, indict):
 		self.type = "Instrument"
 		self.id = ""
 		self.order = 0
@@ -316,7 +326,7 @@ class cxf_track:
 		self.idOutput = ""
 		self.automation = {}
 		self.auxSends = []
-		if indata: self.read(indata)
+		if indict: self.read(indict)
 
 	def add_auxSend(self):
 		o = cxf_auxSend(None)
@@ -332,27 +342,28 @@ class cxf_track:
 		o = cxf_plugin(None)
 		self.synth = o
 		return o
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'type' in indata: self.type = indata['type']
-		if 'id' in indata: self.id = indata['id']
-		if 'order' in indata: self.order = indata['order']
-		if 'parentId' in indata: self.parentId = indata['parentId']
-		if 'synth' in indata: self.synth = cxf_plugin(indata['synth'])
-		if 'soundbank' in indata: self.soundbank = indata['soundbank']
-		if 'name' in indata: self.name = indata['name']
-		if 'colorName' in indata: self.colorName = indata['colorName']
-		if 'color' in indata: self.color = indata['color']
-		if 'volume' in indata: self.volume = indata['volume']
-		if 'pan' in indata: self.pan = indata['pan']
-		if 'isMuted' in indata: self.isMuted = indata['isMuted']
-		if 'isSolo' in indata: self.isSolo = indata['isSolo']
-		if 'regions' in indata: self.regions = [cxf_region(x) for x in indata['regions']]
-		if 'effects' in indata: self.effects = [cxf_plugin(x) for x in indata['effects']]
-		if 'auxSends' in indata: self.auxSends = [cxf_auxSend(x) for x in indata['auxSends']]
-		if 'idOutput' in indata: self.idOutput = indata['idOutput']
-		if 'automation' in indata: 
-			for n, a in indata['automation'].items():
+	def read(self, indict):
+		if 'type' in indict: self.type = indict['type']
+		if 'id' in indict: self.id = indict['id']
+		if 'order' in indict: self.order = indict['order']
+		if 'parentId' in indict: self.parentId = indict['parentId']
+		if 'synth' in indict: self.synth = cxf_plugin(indict['synth'])
+		if 'soundbank' in indict: self.soundbank = indict['soundbank']
+		if 'name' in indict: self.name = indict['name']
+		if 'colorName' in indict: self.colorName = indict['colorName']
+		if 'color' in indict: self.color = indict['color']
+		if 'volume' in indict: self.volume = indict['volume']
+		if 'pan' in indict: self.pan = indict['pan']
+		if 'isMuted' in indict: self.isMuted = indict['isMuted']
+		if 'isSolo' in indict: self.isSolo = indict['isSolo']
+		if 'regions' in indict: self.regions = [cxf_region(x) for x in indict['regions']]
+		if 'effects' in indict: self.effects = [cxf_plugin(x) for x in indict['effects']]
+		if 'auxSends' in indict: self.auxSends = [cxf_auxSend(x) for x in indict['auxSends']]
+		if 'idOutput' in indict: self.idOutput = indict['idOutput']
+		if 'automation' in indict: 
+			for n, a in indict['automation'].items():
 				auto_obj = cxf_automation()
 				auto_obj.read(a)
 				self.automation[n] = auto_obj
@@ -387,22 +398,23 @@ class cxf_track:
 		return outdata
 
 class cxf_arrangertrack_section:
-	def __init__(self, indata):
+	def __init__(self, indict):
 		self.id = 1
 		self.name = ""
 		self.typeId = 0
 		self.color = 0
 		self.startTimeArrTicks = 0
 		self.endTimeArrTicks = 0
-		if indata: self.read(indata)
+		if indict: self.read(indict)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'id' in indata: self.id = indata['id']
-		if 'name' in indata: self.name = indata['name']
-		if 'typeId' in indata: self.typeId = indata['typeId']
-		if 'color' in indata: self.color = indata['color']
-		if 'startTimeArrTicks' in indata: self.startTimeArrTicks = indata['startTimeArrTicks']
-		if 'endTimeArrTicks' in indata: self.endTimeArrTicks = indata['endTimeArrTicks']
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'name' in indict: self.name = indict['name']
+		if 'typeId' in indict: self.typeId = indict['typeId']
+		if 'color' in indict: self.color = indict['color']
+		if 'startTimeArrTicks' in indict: self.startTimeArrTicks = indict['startTimeArrTicks']
+		if 'endTimeArrTicks' in indict: self.endTimeArrTicks = indict['endTimeArrTicks']
 
 	def write(self):
 		outdata = {}
@@ -415,7 +427,7 @@ class cxf_arrangertrack_section:
 		return outdata
 
 class cxf_arrangertrack:
-	def __init__(self, indata):
+	def __init__(self, indict):
 		self.id = 1
 		self.name = ""
 		self.index = 0
@@ -424,17 +436,18 @@ class cxf_arrangertrack:
 		self.isActive = 1
 		self.timeFormat = "musical"
 		self.sections = []
-		if indata: self.read(indata)
+		if indict: self.read(indict)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'id' in indata: self.id = indata['id']
-		if 'name' in indata: self.name = indata['name']
-		if 'index' in indata: self.index = indata['index']
-		if 'visibleIndex' in indata: self.visibleIndex = indata['visibleIndex']
-		if 'isVisible' in indata: self.isVisible = indata['isVisible']
-		if 'isActive' in indata: self.isActive = indata['isActive']
-		if 'timeFormat' in indata: self.timeFormat = indata['timeFormat']
-		if 'sections' in indata: self.sections = [cxf_arrangertrack_section(x) for x in indata['sections']]
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'name' in indict: self.name = indict['name']
+		if 'index' in indict: self.index = indict['index']
+		if 'visibleIndex' in indict: self.visibleIndex = indict['visibleIndex']
+		if 'isVisible' in indict: self.isVisible = indict['isVisible']
+		if 'isActive' in indict: self.isActive = indict['isActive']
+		if 'timeFormat' in indict: self.timeFormat = indict['timeFormat']
+		if 'sections' in indict: self.sections = [cxf_arrangertrack_section(x) for x in indict['sections']]
 
 	def add_section(self):
 		section = cxf_arrangertrack_section(None)
@@ -454,13 +467,14 @@ class cxf_arrangertrack:
 		return outdata
 
 class cxf_arranger:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.arrangerTracks = []
 		self.used = False
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'arrangerTracks' in indata: 
-			self.arrangerTracks = [cxf_arrangertrack(x) for x in indata['arrangerTracks']]
+	def read(self, indict):
+		if 'arrangerTracks' in indict: 
+			self.arrangerTracks = [cxf_arrangertrack(x) for x in indict['arrangerTracks']]
 			self.used = True
 
 	def write(self):
@@ -469,7 +483,7 @@ class cxf_arranger:
 		return outdata
 
 class cxf_project:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.meta = cxf_meta()
 		self.stamp = ""
 		self.song = cxf_song()
@@ -497,19 +511,20 @@ class cxf_project:
 		o = cxf_track(None)
 		self.tracks.append(o)
 		return o
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'meta' in indata: self.meta.read(indata['meta'])
-		if 'stamp' in indata: self.stamp = indata['stamp']
-		if 'song' in indata: self.song.read(indata['song'])
-		if 'description' in indata: self.description = indata['description']
-		if 'metronome' in indata: self.metronome.read(indata['metronome'])
-		if 'mainBusId' in indata: self.mainBusId = indata['mainBusId']
-		if 'tempoTrack' in indata: self.tempoTrack = indata['tempoTrack']
-		self.samples = [cxf_sample(x) for x in indata['samples']]
-		self.auxChannels = [cxf_auxChannel(x) for x in indata['auxChannels']]
-		self.tracks = [cxf_track(x) for x in indata['tracks']]
-		if 'arranger' in indata: self.arranger.read(indata['arranger'])
+	def read(self, indict):
+		if 'meta' in indict: self.meta.read(indict['meta'])
+		if 'stamp' in indict: self.stamp = indict['stamp']
+		if 'song' in indict: self.song.read(indict['song'])
+		if 'description' in indict: self.description = indict['description']
+		if 'metronome' in indict: self.metronome.read(indict['metronome'])
+		if 'mainBusId' in indict: self.mainBusId = indict['mainBusId']
+		if 'tempoTrack' in indict: self.tempoTrack = indict['tempoTrack']
+		self.samples = [cxf_sample(x) for x in indict['samples']]
+		self.auxChannels = [cxf_auxChannel(x) for x in indict['auxChannels']]
+		self.tracks = [cxf_track(x) for x in indict['tracks']]
+		if 'arranger' in indict: self.arranger.read(indict['arranger'])
 		return True
 
 	def load_from_file(self, input_file):

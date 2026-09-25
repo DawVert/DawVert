@@ -578,7 +578,7 @@ class cvpj_project:
 
 	def sampleref__remove_nonaudiopl(self):
 		sflist = list(self.samplerefs)
-		for trackid, track_obj in self.track__iter():
+		for trackid, track_obj in self.tracks.iter():
 			for audiopl_obj in track_obj.placements.pl_audio:
 				if audiopl_obj.sample.sampleref in sflist: sflist.remove(audiopl_obj.sample.sampleref)
 

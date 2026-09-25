@@ -10,7 +10,7 @@ from PyQt6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDoubleSpinBox,
 	QGridLayout, QGroupBox, QHBoxLayout, QLabel,
 	QLayout, QLineEdit, QMainWindow, QSizePolicy,
-	QSpinBox, QVBoxLayout, QWidget, QFormLayout)
+	QSpinBox, QVBoxLayout, QWidget, QFormLayout, QFileDialog)
 
 import functools
 
@@ -89,6 +89,30 @@ class ConfigWindow(QWidget):
 		sizePolicy.setHorizontalStretch(0)
 		sizePolicy.setVerticalStretch(0)
 		return sizePolicy
+
+	def add_control_file_open(self, name, data):
+		sizePolicy = self.gen_sizePolicy()
+
+		self.control = QLineEdit(self.current_groupbox)
+		self.control.setObjectName(u"editor_"+name)
+		sizePolicy.setHeightForWidth(self.control.sizePolicy().hasHeightForWidth())
+		self.control.setSizePolicy(sizePolicy)
+		self.temp_layout = self.premake_hl(name, data)
+		self.temp_layout.addWidget(self.control)
+
+		self.control_tool = QtWidgets.QToolButton()
+		self.control_tool.setObjectName("InputFileButton")
+		self.control_tool.setText("...")
+		self.control_tool.clicked.connect(functools.partial(self.set_value_file, name, self.control))
+		self.controls.append(self.control_tool)
+
+		self.temp_layout.addWidget(self.control_tool)
+		self.control.textChanged.connect(functools.partial(self.set_value, name))
+		inval = None
+		if name in self.dict: inval = self.dict[name]
+		elif data.value_def: inval = data.value_def
+		if inval: self.control.setText(inval)
+		self.controls.append(self.control)
 
 	def add_control_text(self, name, data):
 		sizePolicy = self.gen_sizePolicy()
@@ -190,6 +214,12 @@ class ConfigWindow(QWidget):
 	def showui(self):
 		self.show()
 
+	def set_value_file(self, key, textctrl):
+		filename, _filter = QFileDialog.getOpenFileName(self, "Open File", "", "")
+		textctrl.setText(filename)
+		self.dict[key] = filename
+		if self.callb_func: self.callb_func(self.callb_name, key, filename)
+
 	def set_value(self, key, value):
 		self.dict[key] = value
 		if self.callb_func: self.callb_func(self.callb_name, key, value)
@@ -222,6 +252,7 @@ def show_gui(miniconfmenu_store_obj, dictval, windowtitle, callb_name, callb_fun
 			window.add_group(k, groupnames[k] if k in groupnames else k)
 			for vk, vv in v.items():
 				proptype = vv.type
+				if proptype=='file_open': window.add_control_file_open(vk, vv)
 				if proptype=='text': window.add_control_text(vk, vv)
 				if proptype=='int': window.add_control_int(vk, vv)
 				if proptype=='float': window.add_control_float(vk, vv)

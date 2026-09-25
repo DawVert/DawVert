@@ -8,25 +8,25 @@ from objects.exceptions import ProjectFileParserException
 DEBUG_IN_OUT = False
 
 class jummbox_filter:
-	def __init__(self, pd, starttxt):
+	def __init__(self, indict, starttxt):
 		self.Filter = []
 		self.FilterType = False
 		self.SimpleCut = 10
 		self.SimplePeak = 0
 		self.SubFilters0 = []
-		if pd and starttxt:
-			if starttxt+'Filter' in pd: self.Filter = pd[starttxt+'Filter']
-			if starttxt+'FilterType' in pd: self.FilterType = pd[starttxt+'FilterType']
-			if starttxt+'SimpleCut' in pd: self.SimpleCut = pd[starttxt+'SimpleCut']
-			if starttxt+'SimplePeak' in pd: self.SimplePeak = pd[starttxt+'SimplePeak']
-			if starttxt+'SubFilters0' in pd: self.SubFilters0 = pd[starttxt+'SubFilters0']
+		if indict and starttxt:
+			if starttxt+'Filter' in indict: self.Filter = indict[starttxt+'Filter']
+			if starttxt+'FilterType' in indict: self.FilterType = indict[starttxt+'FilterType']
+			if starttxt+'SimpleCut' in indict: self.SimpleCut = indict[starttxt+'SimpleCut']
+			if starttxt+'SimplePeak' in indict: self.SimplePeak = indict[starttxt+'SimplePeak']
+			if starttxt+'SubFilters0' in indict: self.SubFilters0 = indict[starttxt+'SubFilters0']
 
-	def write(self, pd, starttxt):
-		pd[starttxt+'Filter'] = self.Filter
-		pd[starttxt+'FilterType'] = self.FilterType
-		pd[starttxt+'SimpleCut'] = self.SimpleCut
-		pd[starttxt+'SimplePeak'] = self.SimplePeak
-		pd[starttxt+'SubFilters0'] = self.SubFilters0
+	def write(self, indict, starttxt):
+		indict[starttxt+'Filter'] = self.Filter
+		indict[starttxt+'FilterType'] = self.FilterType
+		indict[starttxt+'SimpleCut'] = self.SimpleCut
+		indict[starttxt+'SimplePeak'] = self.SimplePeak
+		indict[starttxt+'SubFilters0'] = self.SubFilters0
 
 class jummbox_instrument_effects:
 	def __init__(self):
@@ -66,63 +66,63 @@ class jummbox_instrument_effects:
 
 		self.detuneCents = 0
 
-	def write(self, pd):
-		pd['effects'] = self.used
+	def write(self, indict):
+		indict['effects'] = self.used
 
 		if 'transition type' in self.used:
-			pd['transition'] = self.transition
-			pd['clicklessTransition'] = self.clicklessTransition
+			indict['transition'] = self.transition
+			indict['clicklessTransition'] = self.clicklessTransition
 	
 		if 'chord type' in self.used:
-			pd['chord'] = self.chord
-			pd['fastTwoNoteArp'] = self.fastTwoNoteArp
-			pd['arpeggioSpeed'] = self.arpeggioSpeed
+			indict['chord'] = self.chord
+			indict['fastTwoNoteArp'] = self.fastTwoNoteArp
+			indict['arpeggioSpeed'] = self.arpeggioSpeed
 	
 		if 'note filter' in self.used:
-			self.notefilter.write(pd, 'note')
+			self.notefilter.write(indict, 'note')
 	
 		if 'pitch shift' in self.used:
-			pd['pitchShiftSemitones'] = self.pitchShiftSemitones
+			indict['pitchShiftSemitones'] = self.pitchShiftSemitones
 	
 		if 'detune' in self.used:
-			pd['detuneCents'] = self.detuneCents
+			indict['detuneCents'] = self.detuneCents
 
 		if 'vibrato' in self.used:
-			pd['vibrato'] = self.vibrato
-			pd['vibratoDepth'] = self.vibratoDepth
-			pd['vibratoDelay'] = self.vibratoDelay
-			pd['vibratoSpeed'] = self.vibratoSpeed
-			pd['vibratoType'] = self.vibratoType
+			indict['vibrato'] = self.vibrato
+			indict['vibratoDepth'] = self.vibratoDepth
+			indict['vibratoDelay'] = self.vibratoDelay
+			indict['vibratoSpeed'] = self.vibratoSpeed
+			indict['vibratoType'] = self.vibratoType
 	
 		if 'distortion' in self.used:
-			pd['distortion'] = self.distortion
+			indict['distortion'] = self.distortion
 	
 		if 'bitcrusher' in self.used:
-			pd['bitcrusherOctave'] = self.bitcrusherOctave
-			pd['bitcrusherQuantization'] = self.bitcrusherQuantization
+			indict['bitcrusherOctave'] = self.bitcrusherOctave
+			indict['bitcrusherQuantization'] = self.bitcrusherQuantization
 	
 		if 'panning' in self.used:
-			pd['pan'] = self.pan
-			pd['panDelay'] = self.panDelay
+			indict['pan'] = self.pan
+			indict['panDelay'] = self.panDelay
 	
 		if 'chorus' in self.used:
-			pd['chorus'] = self.chorus
+			indict['chorus'] = self.chorus
 	
 		if 'echo' in self.used:
-			pd['echoSustain'] = self.echoSustain
-			pd['echoDelayBeats'] = self.echoDelayBeats
+			indict['echoSustain'] = self.echoSustain
+			indict['echoDelayBeats'] = self.echoDelayBeats
 	
 		if 'reverb' in self.used:
-			pd['reverb'] = self.reverb
+			indict['reverb'] = self.reverb
 	
 class jummbox_instrument:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.type = 'pitch'
 		self.preset = None
 		self.volume = 0
 		self.fadeInSeconds = 0
 		self.fadeOutTicks = -1
-		self.filter = jummbox_filter(pd, 'eq')
+		self.filter = jummbox_filter(indict, 'eq')
 		self.envelopes = []
 		self.data = {}
 		self.fx = jummbox_instrument_effects()
@@ -135,52 +135,53 @@ class jummbox_instrument:
 		self.modFilterTypes = [0, 0, 0, 0, 0, 0]
 		self.modStatuses = []
 		self.drums = {}
+		if indict is not None: self.read(indict)
 
-		if pd != None:
-			self.filter = jummbox_filter(pd, 'eq')
-			fx_obj = self.fx
-			fx_obj.notefilter = jummbox_filter(pd, 'note')
-			for n, v in pd.items():
-				if n == 'type': self.type = v
-				elif n == 'preset': self.preset = v
-				elif n == 'volume': self.volume = v
-				elif n == 'envelopeSpeed': self.envelopeSpeed = v
-				elif n == 'discreteEnvelope': self.discreteEnvelope = v
-				elif n == 'drums': self.drums = v
-				elif n == 'modChannels': self.modChannels = v
-				elif n == 'modInstruments': self.modInstruments = v
-				elif n == 'modSettings': self.modSettings = v
-				elif n == 'modStatuses': self.modStatuses = v
-				elif n == 'modFilterTypes': self.modFilterTypes = v
-				elif n == 'octaveScrollBar': self.octaveScrollBar = v
-				elif n == 'fadeInSeconds': self.fadeInSeconds = v
-				elif n == 'fadeOutTicks': self.fadeOutTicks = v
-				elif n == 'effects': fx_obj.used = v
-				elif n == 'transition': fx_obj.transition = v
-				elif n == 'clicklessTransition': fx_obj.clicklessTransition = v
-				elif n == 'pan': fx_obj.pan = v
-				elif n == 'panDelay': fx_obj.panDelay = v
-				elif n == 'chord': fx_obj.chord = v
-				elif n == 'fastTwoNoteArp': fx_obj.fastTwoNoteArp = v
-				elif n == 'arpeggioSpeed': fx_obj.arpeggioSpeed = v
-				elif n == 'chorus': fx_obj.chorus = v
-				elif n == 'reverb': fx_obj.reverb = v
-				elif n == 'distortion': fx_obj.distortion = v
-				elif n == 'echoSustain': fx_obj.echoSustain = v
-				elif n == 'echoDelayBeats': fx_obj.echoDelayBeats = v
-				elif n == 'bitcrusherQuantization': fx_obj.bitcrusherQuantization = v
-				elif n == 'bitcrusherOctave': fx_obj.bitcrusherOctave = v
-				elif n == 'vibrato': fx_obj.vibrato = v
-				elif n == 'vibratoDepth': fx_obj.vibratoDepth = v
-				elif n == 'vibratoDelay': fx_obj.vibratoDelay = v
-				elif n == 'vibratoSpeed': fx_obj.vibratoSpeed = v
-				elif n == 'vibratoType': fx_obj.vibratoType = v
-				elif n == 'pitchShiftSemitones': fx_obj.pitchShiftSemitones = v
-				elif n == 'detuneCents': fx_obj.detuneCents = v
-				elif n == 'envelopes': self.envelopes = v
-				elif n in ['eqFilter','eqFilterType','eqSimpleCut','eqSimplePeak','noteFilter','noteFilterType','noteSimpleCut','noteSimplePeak']: pass
-				elif n.startswith('eqSubFilters') or n.startswith('noteSubFilters'): pass
-				else: self.data[n] = v
+	def read(self, indict):
+		self.filter = jummbox_filter(indict, 'eq')
+		fx_obj = self.fx
+		fx_obj.notefilter = jummbox_filter(indict, 'note')
+		for n, v in indict.items():
+			if n == 'type': self.type = v
+			elif n == 'preset': self.preset = v
+			elif n == 'volume': self.volume = v
+			elif n == 'envelopeSpeed': self.envelopeSpeed = v
+			elif n == 'discreteEnvelope': self.discreteEnvelope = v
+			elif n == 'drums': self.drums = v
+			elif n == 'modChannels': self.modChannels = v
+			elif n == 'modInstruments': self.modInstruments = v
+			elif n == 'modSettings': self.modSettings = v
+			elif n == 'modStatuses': self.modStatuses = v
+			elif n == 'modFilterTypes': self.modFilterTypes = v
+			elif n == 'octaveScrollBar': self.octaveScrollBar = v
+			elif n == 'fadeInSeconds': self.fadeInSeconds = v
+			elif n == 'fadeOutTicks': self.fadeOutTicks = v
+			elif n == 'effects': fx_obj.used = v
+			elif n == 'transition': fx_obj.transition = v
+			elif n == 'clicklessTransition': fx_obj.clicklessTransition = v
+			elif n == 'pan': fx_obj.pan = v
+			elif n == 'panDelay': fx_obj.panDelay = v
+			elif n == 'chord': fx_obj.chord = v
+			elif n == 'fastTwoNoteArp': fx_obj.fastTwoNoteArp = v
+			elif n == 'arpeggioSpeed': fx_obj.arpeggioSpeed = v
+			elif n == 'chorus': fx_obj.chorus = v
+			elif n == 'reverb': fx_obj.reverb = v
+			elif n == 'distortion': fx_obj.distortion = v
+			elif n == 'echoSustain': fx_obj.echoSustain = v
+			elif n == 'echoDelayBeats': fx_obj.echoDelayBeats = v
+			elif n == 'bitcrusherQuantization': fx_obj.bitcrusherQuantization = v
+			elif n == 'bitcrusherOctave': fx_obj.bitcrusherOctave = v
+			elif n == 'vibrato': fx_obj.vibrato = v
+			elif n == 'vibratoDepth': fx_obj.vibratoDepth = v
+			elif n == 'vibratoDelay': fx_obj.vibratoDelay = v
+			elif n == 'vibratoSpeed': fx_obj.vibratoSpeed = v
+			elif n == 'vibratoType': fx_obj.vibratoType = v
+			elif n == 'pitchShiftSemitones': fx_obj.pitchShiftSemitones = v
+			elif n == 'detuneCents': fx_obj.detuneCents = v
+			elif n == 'envelopes': self.envelopes = v
+			elif n in ['eqFilter','eqFilterType','eqSimpleCut','eqSimplePeak','noteFilter','noteFilterType','noteSimpleCut','noteSimplePeak']: pass
+			elif n.startswith('eqSubFilters') or n.startswith('noteSubFilters'): pass
+			else: self.data[n] = v
 
 	def write(self, b_format, b_version):
 		jummbox_inst = {}
@@ -210,14 +211,16 @@ class jummbox_instrument:
 
 class jummbox_note:
 	__slots__ = ['pitches','points','continuesLastPattern']
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.pitches = []
 		self.points = []
 		self.continuesLastPattern = None
-		if pd:
-			self.pitches = pd['pitches']
-			self.points = [[x['tick'],x['pitchBend'],x['volume'],x['forMod']] for x in pd['points']]
-			if 'continuesLastPattern' in pd: self.continuesLastPattern = pd['continuesLastPattern']
+		if indict is not None: self.read(indict)
+
+	def read(self, indict):
+		self.pitches = indict['pitches']
+		self.points = [[x['tick'],x['pitchBend'],x['volume'],x['forMod']] for x in indict['points']]
+		if 'continuesLastPattern' in indict: self.continuesLastPattern = indict['continuesLastPattern']
 
 	def write(self):
 		pat = {}
@@ -228,29 +231,33 @@ class jummbox_note:
 
 
 class jummbox_pattern:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.notes = []
-		if pd:
-			if 'notes' in pd: self.notes = [jummbox_note(x) for x in pd['notes']]
+		if indict is not None: self.read(indict)
+
+	def read(self, indict):
+		if 'notes' in indict: self.notes = [jummbox_note(x) for x in indict['notes']]
 
 	def write(self):
 		return {'notes': [x.write() for x in self.notes]}
 
 class jummbox_channel:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.type = "pitch"
 		self.name = ''
 		self.instruments = []
 		self.patterns = []
 		self.sequence = []
 		self.octaveScrollBar = 4
-		if pd != None:
-			if 'type' in pd: self.type = pd['type']
-			if 'name' in pd: self.name = pd['name']
-			if 'instruments' in pd: self.instruments = [jummbox_instrument(x) for x in pd['instruments']]
-			if 'patterns' in pd: self.patterns = [jummbox_pattern(x) for x in pd['patterns']]
-			if 'sequence' in pd: self.sequence = pd['sequence']
-			if 'octaveScrollBar' in pd: self.octaveScrollBar = pd['octaveScrollBar']
+		if indict is not None: self.read(indict)
+
+	def read(self, indict):
+		if 'type' in indict: self.type = indict['type']
+		if 'name' in indict: self.name = indict['name']
+		if 'instruments' in indict: self.instruments = [jummbox_instrument(x) for x in indict['instruments']]
+		if 'patterns' in indict: self.patterns = [jummbox_pattern(x) for x in indict['patterns']]
+		if 'sequence' in indict: self.sequence = indict['sequence']
+		if 'octaveScrollBar' in indict: self.octaveScrollBar = indict['octaveScrollBar']
 
 	def write(self, b_format, b_version):
 		jummbox_chan = {}
@@ -264,7 +271,7 @@ class jummbox_channel:
 
 
 class jummbox_project:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.name = ""
 		self.format = "BeepBox"
 		self.version = 5
@@ -289,33 +296,33 @@ class jummbox_project:
 		self.patternInstruments = False
 		self.channels = []
 		self.customSamples = []
-		if pd is not None: self.load(pd)
+		if indict is not None: self.load(indict)
 
-	def load(self, pd):
-		if 'name' in pd: self.name = pd['name']
-		if 'format' in pd: self.format = pd['format']
-		if 'version' in pd: self.version = pd['version']
-		if 'scale' in pd: self.scale = pd['scale']
-		if 'key' in pd: self.key = pd['key']
-		if 'keyOctave' in pd: self.keyOctave = pd['keyOctave']
-		if 'customScale' in pd: self.customScale = pd['customScale']
-		if 'customSamples' in pd: self.customSamples = pd['customSamples']
-		if 'introBars' in pd: self.introBars = pd['introBars']
-		if 'loopBars' in pd: self.loopBars = pd['loopBars']
-		if 'beatsPerBar' in pd: self.beatsPerBar = pd['beatsPerBar']
-		if 'ticksPerBeat' in pd: self.ticksPerBeat = pd['ticksPerBeat']
-		if 'beatsPerMinute' in pd: self.beatsPerMinute = pd['beatsPerMinute']
-		if 'reverb' in pd: self.reverb = pd['reverb']
-		if 'masterGain' in pd: self.masterGain = pd['masterGain']
-		if 'compressionThreshold' in pd: self.compressionThreshold = pd['compressionThreshold']
-		if 'limitThreshold' in pd: self.limitThreshold = pd['limitThreshold']
-		if 'limitDecay' in pd: self.limitDecay = pd['limitDecay']
-		if 'limitRise' in pd: self.limitRise = pd['limitRise']
-		if 'limitRatio' in pd: self.limitRatio = pd['limitRatio']
-		if 'compressionRatio' in pd: self.compressionRatio = pd['compressionRatio']
-		if 'layeredInstruments' in pd: self.layeredInstruments = pd['layeredInstruments']
-		if 'patternInstruments' in pd: self.patternInstruments = pd['patternInstruments']
-		if 'channels' in pd: self.channels = [jummbox_channel(x) for x in pd['channels']]
+	def load(self, indict):
+		if 'name' in indict: self.name = indict['name']
+		if 'format' in indict: self.format = indict['format']
+		if 'version' in indict: self.version = indict['version']
+		if 'scale' in indict: self.scale = indict['scale']
+		if 'key' in indict: self.key = indict['key']
+		if 'keyOctave' in indict: self.keyOctave = indict['keyOctave']
+		if 'customScale' in indict: self.customScale = indict['customScale']
+		if 'customSamples' in indict: self.customSamples = indict['customSamples']
+		if 'introBars' in indict: self.introBars = indict['introBars']
+		if 'loopBars' in indict: self.loopBars = indict['loopBars']
+		if 'beatsPerBar' in indict: self.beatsPerBar = indict['beatsPerBar']
+		if 'ticksPerBeat' in indict: self.ticksPerBeat = indict['ticksPerBeat']
+		if 'beatsPerMinute' in indict: self.beatsPerMinute = indict['beatsPerMinute']
+		if 'reverb' in indict: self.reverb = indict['reverb']
+		if 'masterGain' in indict: self.masterGain = indict['masterGain']
+		if 'compressionThreshold' in indict: self.compressionThreshold = indict['compressionThreshold']
+		if 'limitThreshold' in indict: self.limitThreshold = indict['limitThreshold']
+		if 'limitDecay' in indict: self.limitDecay = indict['limitDecay']
+		if 'limitRise' in indict: self.limitRise = indict['limitRise']
+		if 'limitRatio' in indict: self.limitRatio = indict['limitRatio']
+		if 'compressionRatio' in indict: self.compressionRatio = indict['compressionRatio']
+		if 'layeredInstruments' in indict: self.layeredInstruments = indict['layeredInstruments']
+		if 'patternInstruments' in indict: self.patternInstruments = indict['patternInstruments']
+		if 'channels' in indict: self.channels = [jummbox_channel(x) for x in indict['channels']]
 
 	def load_from_file(self, input_file):
 		f = open(input_file, 'r', encoding='utf8')

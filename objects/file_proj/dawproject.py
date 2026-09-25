@@ -26,7 +26,7 @@ def indent(elem, level=0):
             elem.tail = i
 
 class dawproject_transport:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.Tempo = param.dawproject_param_numeric('Tempo')
 		self.Tempo.max = 600
 		self.Tempo.min = 20
@@ -37,6 +37,7 @@ class dawproject_transport:
 		self.TimeSignature = param.dawproject_param_timesignature('TimeSignature')
 		self.TimeSignature.denominator = 4
 		self.TimeSignature.numerator = 4
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		for x_part in xml_data:
@@ -49,9 +50,10 @@ class dawproject_transport:
 		self.TimeSignature.write(tempxml)
 
 class dawproject_application:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.name = ''
 		self.version = ''
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'name' in xml_data.attrib: self.name = xml_data.attrib['name']
@@ -65,10 +67,11 @@ class dawproject_application:
 # ----------------------------------------- ARRANGEMENT -----------------------------------------
 
 class dawproject_lanecontainer:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.lanes = []
 		self.id = ''
 		self.timeUnit = ''
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'id' in xml_data.attrib: self.id = xml_data.attrib['id']
@@ -87,10 +90,11 @@ class dawproject_lanecontainer:
 		for x in self.lanes: x.write(tempxml)
 
 class dawproject_marker:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.time = None
 		self.name = None
 		self.color = None
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'time' in xml_data.attrib: self.time = float(xml_data.attrib['time'])
@@ -104,16 +108,15 @@ class dawproject_marker:
 		if self.color: tempxml.set('color', self.color)
 
 class dawproject_markers:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.markers = []
 		self.id = ''
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'id' in xml_data.attrib: self.id = xml_data.attrib['id']
 		for x_part in xml_data:
-			marker_obj = dawproject_marker()
-			marker_obj.read(x_part)
-			self.markers.append(marker_obj)
+			self.markers.append(dawproject_marker(x_part))
 
 	def write(self, xmltag):
 		tempxml = ET.SubElement(xmltag, 'Markers')
@@ -121,12 +124,13 @@ class dawproject_markers:
 		for x in self.markers: x.write(tempxml)
 
 class dawproject_arrangement:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.id = ''
 		self.lanes = dawproject_lanecontainer()
 		self.tempoautomation = None
 		self.timesignatureautomation = None
 		self.markers = None
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'id' in xml_data.attrib: self.id = xml_data.attrib['id']
@@ -134,14 +138,11 @@ class dawproject_arrangement:
 			if x_part.tag == 'Lanes': 
 				self.lanes.read(x_part)
 			if x_part.tag == 'TempoAutomation': 
-				self.tempoautomation = points.dawproject_points()
-				self.tempoautomation.read(x_part)
+				self.tempoautomation = points.dawproject_points(x_part)
 			if x_part.tag == 'TimeSignatureAutomation': 
-				self.timesignatureautomation = points.dawproject_points_timesig()
-				self.timesignatureautomation.read(x_part)
+				self.timesignatureautomation = points.dawproject_points_timesig(x_part)
 			if x_part.tag == 'Markers': 
-				self.markers = dawproject_markers()
-				self.markers.read(x_part)
+				self.markers = dawproject_markers(x_part)
 
 	def write(self, xmltag):
 		tempxml = ET.SubElement(xmltag, 'Arrangement')
@@ -168,9 +169,7 @@ class dawproject_song:
 			if x_part.tag == 'Structure': 
 				for x_trackpart in x_part:
 					if x_trackpart.tag == 'Track': 
-						track_obj = track.dawproject_track()
-						track_obj.read(x_trackpart)
-						self.tracks.append(track_obj)
+						self.tracks.append(track.dawproject_track(x_trackpart))
 
 		if DEBUG_IN_OUT:
 			outfile = ET.ElementTree(x_root)

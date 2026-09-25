@@ -337,9 +337,10 @@ class output_amped(plugins.base):
 				amped_region.name = notespl_obj.visual.name if notespl_obj.visual.name else ''
 				amped_region.mute = int(notespl_obj.muted)
 
-				notespl_obj.notelist.sort()
-				notespl_obj.notelist.mod_limit(-60, 67)
-				for cnote in nle_obj.notelist.iter_notes():
+				cvpj_notelist = notespl_obj.notelist
+				cvpj_notelist.sort()
+				cvpj_notelist.mod_limit(-60, 67)
+				for cnote in cvpj_notelist.iter_notes():
 					if 0 <= cnote.key+60 <= 128:
 						notedata = {
 							"position": float(cnote.pos)/4, 

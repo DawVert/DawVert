@@ -2,40 +2,42 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 class amped_contentGuid:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.is_custom = False
 		self.id = None
+		if indict is not None: self.read(indict)
 
-		if pd != None:
-			if 'userAudio' in pd:
-				self.is_custom = True
-				self.id = pd['userAudio']['exportedId']
-			else:
-				self.id = pd
+	def read(self, indict):
+		if 'userAudio' in indict:
+			self.is_custom = True
+			self.id = indict['userAudio']['exportedId']
+		else:
+			self.id = indict
 
 	def write(self):
 		return {"userAudio": {"exportedId": self.id}} if self.is_custom else self.id
 
 class amped_automation:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.param = ''
 		self.is_device = False
 		self.deviceid = 0
 		self.points = []
 		self.spec = None
+		if indict is not None: self.read(indict)
 
-		if pd:
-			if 'param' in pd:
-				paramname = pd['param']
-				if isinstance(paramname, dict):
-					self.param = paramname['name']
-					self.deviceid = paramname['deviceId']
-					self.is_device = True
-				else:
-					self.param = paramname
+	def read(self, indict):
+		if 'param' in indict:
+			paramname = indict['param']
+			if isinstance(paramname, dict):
+				self.param = paramname['name']
+				self.deviceid = paramname['deviceId']
+				self.is_device = True
+			else:
+				self.param = paramname
 
-			if 'points' in pd: self.points = pd['points']
-			if 'spec' in pd: self.spec = pd['spec']
+		if 'points' in indict: self.points = indict['points']
+		if 'spec' in indict: self.spec = indict['spec']
 
 	def write(self):
 		amped_auto = {}
@@ -45,7 +47,7 @@ class amped_automation:
 		return amped_auto
 
 class amped_clip:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.contentGuid = amped_contentGuid(None)
 		self.position = 0
 		self.gain = 1
@@ -56,18 +58,19 @@ class amped_clip:
 		self.reversed = False
 		self.fadeIn = 0
 		self.fadeOut = 0
+		if indict is not None: self.read(indict)
 
-		if pd != None:
-			if 'position' in pd: self.position = pd['position']
-			if 'gain' in pd: self.gain = pd['gain']
-			if 'length' in pd: self.length = pd['length']
-			if 'offset' in pd: self.offset = pd['offset']
-			if 'stretch' in pd: self.stretch = pd['stretch']
-			if 'pitchShift' in pd: self.pitchShift = pd['pitchShift']
-			if 'reversed' in pd: self.reversed = pd['reversed']
-			if 'fadeIn' in pd: self.fadeIn = pd['fadeIn']
-			if 'fadeOut' in pd: self.fadeOut = pd['fadeOut']
-			if 'contentGuid' in pd: self.contentGuid = amped_contentGuid(pd['contentGuid'])
+	def read(self, indict):
+		if 'position' in indict: self.position = indict['position']
+		if 'gain' in indict: self.gain = indict['gain']
+		if 'length' in indict: self.length = indict['length']
+		if 'offset' in indict: self.offset = indict['offset']
+		if 'stretch' in indict: self.stretch = indict['stretch']
+		if 'pitchShift' in indict: self.pitchShift = indict['pitchShift']
+		if 'reversed' in indict: self.reversed = indict['reversed']
+		if 'fadeIn' in indict: self.fadeIn = indict['fadeIn']
+		if 'fadeOut' in indict: self.fadeOut = indict['fadeOut']
+		if 'contentGuid' in indict: self.contentGuid = amped_contentGuid(indict['contentGuid'])
 
 	def write(self):
 		amped_clip = {}
@@ -84,14 +87,14 @@ class amped_clip:
 		return amped_clip
 
 class amped_region:
-	def __init__(self, pd, color):
+	def __init__(self, color, indict=None):
 		self.id = 0
 		self.position = 0
 		self.length = 8
 		self.offset = 0
 		self.loop = 0
 		self.name = ""
-		self.color = None
+		self.color = color
 		self.mute = 0
 
 		self.clips = []
@@ -99,21 +102,23 @@ class amped_region:
 		self.midi_notes = []
 		self.midi_events = []
 		self.midi_chords = []
-		if pd != None:
-			if 'id' in pd: self.id = pd['id']
-			if 'position' in pd: self.position = pd['position']
-			if 'length' in pd: self.length = pd['length']
-			if 'offset' in pd: self.offset = pd['offset']
-			if 'loop' in pd: self.loop = pd['loop']
-			if 'name' in pd: self.name = pd['name']
-			if 'mute' in pd: self.mute = pd['mute']
-			self.color = pd['color'] if 'color' in pd else color
-			if 'midi' in pd: 
-				mididata = pd['midi']
-				if 'notes' in mididata: self.midi_notes = mididata['notes']
-				if 'events' in mididata: self.midi_events = mididata['events']
-				if 'chords' in mididata: self.midi_chords = mididata['chords']
-			if 'clips' in pd: self.clips = [amped_clip(clip) for clip in pd['clips']]
+		if indict is not None: self.read(indict)
+
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'position' in indict: self.position = indict['position']
+		if 'length' in indict: self.length = indict['length']
+		if 'offset' in indict: self.offset = indict['offset']
+		if 'loop' in indict: self.loop = indict['loop']
+		if 'name' in indict: self.name = indict['name']
+		if 'mute' in indict: self.mute = indict['mute']
+		if 'color' in indict: self.color = indict['color']
+		if 'midi' in indict: 
+			mididata = indict['midi']
+			if 'notes' in mididata: self.midi_notes = mididata['notes']
+			if 'events' in mididata: self.midi_events = mididata['events']
+			if 'chords' in mididata: self.midi_chords = mididata['chords']
+		if 'clips' in indict: self.clips = [amped_clip(clip) for clip in indict['clips']]
 
 	def write(self):
 		amped_region = {}
@@ -130,14 +135,16 @@ class amped_region:
 		return amped_region
 
 class amped_param:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.id = 0
 		self.name = ''
 		self.value = 0
-		if pd != None:
-			if 'id' in pd: self.id = pd['id']
-			if 'name' in pd: self.name = pd['name']
-			if 'value' in pd: self.value = pd['value']
+		if indict is not None: self.read(indict)
+
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'name' in indict: self.name = indict['name']
+		if 'value' in indict: self.value = indict['value']
 
 	def write(self):
 		amped_param = {}
@@ -147,7 +154,7 @@ class amped_param:
 		return amped_param
 
 class amped_device:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.id = 0
 		self.className = ''
 		self.label = ''
@@ -155,16 +162,17 @@ class amped_device:
 		self.preset = None
 		self.bypass = True
 		self.data = {}
+		if indict is not None: self.read(indict)
 
-		if pd != None:
-			for n, v in pd.items():
-				if n == 'id': self.id = v
-				elif n == 'className': self.className = v
-				elif n == 'label': self.label = v
-				elif n == 'params': self.params = [amped_param(p) for p in v]
-				elif n == 'preset': self.preset = v
-				elif n == 'bypass': self.bypass = v
-				else: self.data[n] = v
+	def read(self, indict):
+		for n, v in indict.items():
+			if n == 'id': self.id = v
+			elif n == 'className': self.className = v
+			elif n == 'label': self.label = v
+			elif n == 'params': self.params = [amped_param(p) for p in v]
+			elif n == 'preset': self.preset = v
+			elif n == 'bypass': self.bypass = v
+			else: self.data[n] = v
 
 	def add_param(self, id, name, value):
 		d_amped_param = amped_param(None)
@@ -184,9 +192,8 @@ class amped_device:
 		amped_device = amped_device | self.data
 		return amped_device
 
-
 class amped_track:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.id = 0
 		self.name = ""
 		self.color = "mint"
@@ -198,22 +205,23 @@ class amped_track:
 		self.regions = []
 		self.devices = []
 		self.automations = []
+		if indict is not None: self.read(indict)
 
-		if pd != None:
-			if 'id' in pd: self.id = pd['id']
-			if 'name' in pd: self.name = pd['name']
-			if 'color' in pd: self.color = pd['color']
-			if 'pan' in pd: self.pan = pd['pan']
-			if 'volume' in pd: self.volume = pd['volume']
-			if 'mute' in pd: self.mute = pd['mute']
-			if 'solo' in pd: self.solo = pd['solo']
-			if 'armed' in pd: self.armed = pd['armed']
-			if 'regions' in pd: self.regions = [amped_region(region, self.color) for region in pd['regions']]
-			if 'devices' in pd: self.devices = [amped_device(device) for device in pd['devices']]
-			if 'automations' in pd: self.automations = [amped_automation(device) for device in pd['automations']]
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'name' in indict: self.name = indict['name']
+		if 'color' in indict: self.color = indict['color']
+		if 'pan' in indict: self.pan = indict['pan']
+		if 'volume' in indict: self.volume = indict['volume']
+		if 'mute' in indict: self.mute = indict['mute']
+		if 'solo' in indict: self.solo = indict['solo']
+		if 'armed' in indict: self.armed = indict['armed']
+		if 'regions' in indict: self.regions = [amped_region(self.color, region) for region in indict['regions']]
+		if 'devices' in indict: self.devices = [amped_device(device) for device in indict['devices']]
+		if 'automations' in indict: self.automations = [amped_automation(device) for device in indict['automations']]
 
 	def add_region(self, position, duration, offset, idnum):
-		amped_obj = amped_region(None, 'lime')
+		amped_obj = amped_region('lime', None)
 		amped_obj.id = idnum
 		amped_obj.position = position/4
 		amped_obj.length = duration/4
@@ -255,13 +263,14 @@ class amped_track:
 		return amped_track
 
 class amped_masterTrack:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.volume = 1
 		self.devices = []
+		if indict is not None: self.read(indict)
 
-		if pd != None:
-			if 'volume' in pd: self.volume = pd['volume']
-			if 'devices' in pd: self.devices = [amped_device(device) for device in pd['devices']]
+	def read(self, indict):
+		if 'volume' in indict: self.volume = indict['volume']
+		if 'devices' in indict: self.devices = [amped_device(device) for device in indict['devices']]
 
 	def write(self):
 		amped_mastrack = {}
@@ -270,7 +279,7 @@ class amped_masterTrack:
 		return amped_mastrack
 
 class amped_project:
-	def __init__(self, pd):
+	def __init__(self, indict=None):
 		self.fileFormat = 'AMPED SONG v1.3'
 		self.createdFrom = None
 		self.createdWith = None
@@ -286,27 +295,28 @@ class amped_project:
 		self.timesig_den = 4
 		self.metronome = {"active": False, "level": 1}
 		self.playheadPosition = 0
+		if indict is not None: self.read(indict)
 
-		if pd != None:
-			if 'fileFormat' in pd: self.fileFormat = pd['fileFormat']
-			if 'createdFrom' in pd: self.createdFrom = pd['createdFrom']
-			if 'createdWith' in pd: self.createdWith = pd['createdWith']
-			if 'settings' in pd: self.settings = pd['settings']
-			if 'tracks' in pd:
-				for track in pd['tracks']: self.tracks.append(amped_track(track))
-			if 'masterTrack' in pd: self.masterTrack = amped_masterTrack(pd['masterTrack'])
-			if 'looping' in pd: 
-				looping = pd['looping']
-				if 'active' in looping: self.loop_active = looping['active']
-				if 'start' in looping: self.loop_start = looping['start']
-				if 'end' in looping: self.loop_end = looping['end']
-			if 'tempo' in pd: self.tempo = pd['tempo']
-			if 'timeSignature' in pd: 
-				timeSignature = pd['timeSignature']
-				if 'num' in timeSignature: self.timesig_num = timeSignature['num']
-				if 'den' in timeSignature: self.timesig_den = timeSignature['den']
-			if 'metronome' in pd: self.metronome = pd['metronome']
-			if 'playheadPosition' in pd: self.playheadPosition = pd['playheadPosition']
+	def read(self, indict):
+		if 'fileFormat' in indict: self.fileFormat = indict['fileFormat']
+		if 'createdFrom' in indict: self.createdFrom = indict['createdFrom']
+		if 'createdWith' in indict: self.createdWith = indict['createdWith']
+		if 'settings' in indict: self.settings = indict['settings']
+		if 'tracks' in indict:
+			for track in indict['tracks']: self.tracks.append(amped_track(track))
+		if 'masterTrack' in indict: self.masterTrack = amped_masterTrack(indict['masterTrack'])
+		if 'looping' in indict: 
+			looping = indict['looping']
+			if 'active' in looping: self.loop_active = looping['active']
+			if 'start' in looping: self.loop_start = looping['start']
+			if 'end' in looping: self.loop_end = looping['end']
+		if 'tempo' in indict: self.tempo = indict['tempo']
+		if 'timeSignature' in indict: 
+			timeSignature = indict['timeSignature']
+			if 'num' in timeSignature: self.timesig_num = timeSignature['num']
+			if 'den' in timeSignature: self.timesig_den = timeSignature['den']
+		if 'metronome' in indict: self.metronome = indict['metronome']
+		if 'playheadPosition' in indict: self.playheadPosition = indict['playheadPosition']
 
 	def write(self):
 		amped_proj = {}

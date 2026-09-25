@@ -6,14 +6,14 @@ import json
 # --------------------------------------------------------- AUTOMATION ---------------------------------------------------------
 
 class bandlab_autopoint:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.position = 0
 		self.value = 0
-		if indata: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'position' in indata: self.position = indata['position']
-		if 'value' in indata: self.value = indata['value']
+	def read(self, indict):
+		if 'position' in indict: self.position = indict['position']
+		if 'value' in indict: self.value = indict['value']
 
 	def write(self):
 		return {'position': self.position, 'value': self.value}
@@ -22,8 +22,8 @@ class bandlab_automation:
 	def __init__(self):
 		self.points = []
 
-	def read(self, indata):
-		self.points = [bandlab_autopoint(x) for x in indata]
+	def read(self, indict):
+		self.points = [bandlab_autopoint(x) for x in indict]
 
 	def add_point(self, position, value):
 		point = bandlab_autopoint(None)
@@ -35,16 +35,16 @@ class bandlab_automation:
 		return [x.write() for x in self.points]
 
 class bandlab_track_automation:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.id = None
 		self.pan = bandlab_automation()
 		self.volume = bandlab_automation()
-		if indata: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'id' in indata: self.id = indata['id']
-		if 'pan' in indata: self.pan.read(indata['pan'])
-		if 'volume' in indata: self.volume.read(indata['volume'])
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'pan' in indict: self.pan.read(indict['pan'])
+		if 'volume' in indict: self.volume.read(indict['volume'])
 
 	def write(self):
 		outdata = {}
@@ -56,22 +56,22 @@ class bandlab_track_automation:
 # --------------------------------------------------------- DEVICES ---------------------------------------------------------
 
 class bandlab_effect:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.automation = {}
 		self.bypass = False
 		self.params = {}
 		self.slug = ''
-		if indata: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'automation' in indata: 
-			for n, a in indata['automation'].items():
+	def read(self, indict):
+		if 'automation' in indict: 
+			for n, a in indict['automation'].items():
 				auto_obj = bandlab_automation()
 				auto_obj.read(a)
 				self.automation[n] = auto_obj
-		if 'bypass' in indata: self.bypass = indata['bypass']
-		if 'params' in indata: self.params = indata['params']
-		if 'slug' in indata: self.slug = indata['slug']
+		if 'bypass' in indict: self.bypass = indict['bypass']
+		if 'params' in indict: self.params = indict['params']
+		if 'slug' in indict: self.slug = indict['slug']
 
 	def write(self):
 		outdata = {}
@@ -83,7 +83,7 @@ class bandlab_effect:
 		return outdata
 
 class bandlab_autoPitch:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.algorithm = "original"
 		self.bypass = True
 		self.mix = 1.0
@@ -93,18 +93,18 @@ class bandlab_autoPitch:
 		self.targetNotes = []
 		self.tonic = "tonic_C"
 		self.version = "0.2"
-		if indata: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'algorithm' in indata: self.algorithm = indata['algorithm']
-		if 'bypass' in indata: self.bypass = indata['bypass']
-		if 'mix' in indata: self.mix = indata['mix']
-		if 'responseTime' in indata: self.responseTime = indata['responseTime']
-		if 'scale' in indata: self.scale = indata['scale']
-		if 'slug' in indata: self.slug = indata['slug']
-		if 'targetNotes' in indata: self.targetNotes = indata['targetNotes']
-		if 'tonic' in indata: self.tonic = indata['tonic']
-		if 'version' in indata: self.version = indata['version']
+	def read(self, indict):
+		if 'algorithm' in indict: self.algorithm = indict['algorithm']
+		if 'bypass' in indict: self.bypass = indict['bypass']
+		if 'mix' in indict: self.mix = indict['mix']
+		if 'responseTime' in indict: self.responseTime = indict['responseTime']
+		if 'scale' in indict: self.scale = indict['scale']
+		if 'slug' in indict: self.slug = indict['slug']
+		if 'targetNotes' in indict: self.targetNotes = indict['targetNotes']
+		if 'tonic' in indict: self.tonic = indict['tonic']
+		if 'version' in indict: self.version = indict['version']
 
 	def write(self):
 		outdata = {}
@@ -122,7 +122,7 @@ class bandlab_autoPitch:
 # --------------------------------------------------------- CLIP ---------------------------------------------------------
 
 class bandlab_region:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.endPosition = 0
 		self.fadeIn = 0.0
 		self.fadeOut = 0.0
@@ -140,25 +140,25 @@ class bandlab_region:
 		self.trackId = ""
 		self.file = ""
 		self.post = {}
-		if indata: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'endPosition' in indata: self.endPosition = indata['endPosition']
-		if 'fadeIn' in indata: self.fadeIn = indata['fadeIn']
-		if 'fadeOut' in indata: self.fadeOut = indata['fadeOut']
-		if 'gain' in indata: self.gain = indata['gain']
-		if 'id' in indata: self.id = indata['id']
-		if 'key' in indata: self.key = indata['key']
-		if 'loopLength' in indata: self.loopLength = indata['loopLength']
-		if 'name' in indata: self.name = indata['name']
-		if 'pitchShift' in indata: self.pitchShift = indata['pitchShift']
-		if 'playbackRate' in indata: self.playbackRate = indata['playbackRate']
-		if 'sampleId' in indata: self.sampleId = indata['sampleId']
-		if 'sampleOffset' in indata: self.sampleOffset = indata['sampleOffset']
-		if 'sampleStartPosition' in indata: self.sampleStartPosition = indata['sampleStartPosition']
-		if 'startPosition' in indata: self.startPosition = indata['startPosition']
-		if 'trackId' in indata: self.trackId = indata['trackId']
-		if 'file' in indata: self.file = indata['file']
+	def read(self, indict):
+		if 'endPosition' in indict: self.endPosition = indict['endPosition']
+		if 'fadeIn' in indict: self.fadeIn = indict['fadeIn']
+		if 'fadeOut' in indict: self.fadeOut = indict['fadeOut']
+		if 'gain' in indict: self.gain = indict['gain']
+		if 'id' in indict: self.id = indict['id']
+		if 'key' in indict: self.key = indict['key']
+		if 'loopLength' in indict: self.loopLength = indict['loopLength']
+		if 'name' in indict: self.name = indict['name']
+		if 'pitchShift' in indict: self.pitchShift = indict['pitchShift']
+		if 'playbackRate' in indict: self.playbackRate = indict['playbackRate']
+		if 'sampleId' in indict: self.sampleId = indict['sampleId']
+		if 'sampleOffset' in indict: self.sampleOffset = indict['sampleOffset']
+		if 'sampleStartPosition' in indict: self.sampleStartPosition = indict['sampleStartPosition']
+		if 'startPosition' in indict: self.startPosition = indict['startPosition']
+		if 'trackId' in indict: self.trackId = indict['trackId']
+		if 'file' in indict: self.file = indict['file']
 
 	def write(self):
 		outdata = {}
@@ -181,14 +181,14 @@ class bandlab_region:
 		return outdata
 
 class bandlab_pattern:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.notes = []
 		self.sampleId = ''
-		if indata: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'notes' in indata: self.notes = indata['notes']
-		if 'sampleId' in indata: self.sampleId = indata['sampleId']
+	def read(self, indict):
+		if 'notes' in indict: self.notes = indict['notes']
+		if 'sampleId' in indict: self.sampleId = indict['sampleId']
 
 	def write(self):
 		outdata = {}
@@ -199,18 +199,18 @@ class bandlab_pattern:
 # --------------------------------------------------------- TRACK ---------------------------------------------------------
 
 class bandlab_auxChannel:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.effects = None
 		self.id = ''
 		self.preset = 'sharedReverb'
 		self.returnLevel = 1.0
-		if indata: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'effects' in indata: self.effects = indata['effects']
-		if 'id' in indata: self.id = indata['id']
-		if 'preset' in indata: self.preset = indata['preset']
-		if 'returnLevel' in indata: self.returnLevel = indata['returnLevel']
+	def read(self, indict):
+		if 'effects' in indict: self.effects = indict['effects']
+		if 'id' in indict: self.id = indict['id']
+		if 'preset' in indict: self.preset = indict['preset']
+		if 'returnLevel' in indict: self.returnLevel = indict['returnLevel']
 
 	def write(self):
 		outdata = {}
@@ -221,16 +221,16 @@ class bandlab_auxChannel:
 		return outdata
 
 class bandlab_auxSend:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.automation = bandlab_automation()
 		self.id = ''
 		self.sendLevel = 0.0
-		if indata: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'automation' in indata: self.automation.read(indata['automation'])
-		if 'id' in indata: self.id = indata['id']
-		if 'sendLevel' in indata: self.sendLevel = indata['sendLevel']
+	def read(self, indict):
+		if 'automation' in indict: self.automation.read(indict['automation'])
+		if 'id' in indict: self.id = indict['id']
+		if 'sendLevel' in indict: self.sendLevel = indict['sendLevel']
 
 	def write(self):
 		outdata = {}
@@ -240,7 +240,7 @@ class bandlab_auxSend:
 		return outdata
 
 class bandlab_track:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.automation = None
 		self.autoPitch = None
 		self.auxSends = []
@@ -276,43 +276,43 @@ class bandlab_track:
 		self.volume = 1.0
 		self.assetFormat = ""
 
-		if indata: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'automation' in indata: self.automation = bandlab_track_automation(indata['automation'])
-		if 'autoPitch' in indata: 
-			if indata['autoPitch']:
-				self.autoPitch = bandlab_autoPitch(indata['autoPitch'])
-		if 'auxSends' in indata: self.auxSends = [bandlab_auxSend(x) for x in indata['auxSends']]
-		if 'canEdit' in indata: self.canEdit = indata['canEdit']
-		if 'color' in indata: self.color = indata['color']
-		if 'colorName' in indata: self.colorName = indata['colorName']
+	def read(self, indict):
+		if 'automation' in indict: self.automation = bandlab_track_automation(indict['automation'])
+		if 'autoPitch' in indict: 
+			if indict['autoPitch']:
+				self.autoPitch = bandlab_autoPitch(indict['autoPitch'])
+		if 'auxSends' in indict: self.auxSends = [bandlab_auxSend(x) for x in indict['auxSends']]
+		if 'canEdit' in indict: self.canEdit = indict['canEdit']
+		if 'color' in indict: self.color = indict['color']
+		if 'colorName' in indict: self.colorName = indict['colorName']
 
-		if 'effects' in indata: self.effects = [bandlab_effect(x) for x in indata['effects']]
-		if 'effectsData' in indata: self.effectsData = indata['effectsData']
+		if 'effects' in indict: self.effects = [bandlab_effect(x) for x in indict['effects']]
+		if 'effectsData' in indict: self.effectsData = indict['effectsData']
 
-		if 'id' in indata: self.id = indata['id']
-		if 'inputEffect' in indata: self.inputEffect = indata['inputEffect']
-		if 'isFrozen' in indata: self.isFrozen = indata['isFrozen']
-		if 'isMuted' in indata: self.isMuted = indata['isMuted']
-		if 'isSolo' in indata: self.isSolo = indata['isSolo']
-		if 'loopPack' in indata: self.loopPack = indata['loopPack']
-		if 'name' in indata: self.name = indata['name']
-		if 'order' in indata: self.order = indata['order']
-		if 'pan' in indata: self.pan = indata['pan']
-		if 'patterns' in indata: self.patterns = [bandlab_pattern(x) for x in indata['patterns']] if indata['patterns'] else None
-		if 'preset' in indata: self.preset = indata['preset']
-		if 'regions' in indata: self.regions = [bandlab_region(x) for x in indata['regions']]
-		if 'regionsMix' in indata: self.regionsMix = bandlab_region(indata['regionsMix'])
+		if 'id' in indict: self.id = indict['id']
+		if 'inputEffect' in indict: self.inputEffect = indict['inputEffect']
+		if 'isFrozen' in indict: self.isFrozen = indict['isFrozen']
+		if 'isMuted' in indict: self.isMuted = indict['isMuted']
+		if 'isSolo' in indict: self.isSolo = indict['isSolo']
+		if 'loopPack' in indict: self.loopPack = indict['loopPack']
+		if 'name' in indict: self.name = indict['name']
+		if 'order' in indict: self.order = indict['order']
+		if 'pan' in indict: self.pan = indict['pan']
+		if 'patterns' in indict: self.patterns = [bandlab_pattern(x) for x in indict['patterns']] if indict['patterns'] else None
+		if 'preset' in indict: self.preset = indict['preset']
+		if 'regions' in indict: self.regions = [bandlab_region(x) for x in indict['regions']]
+		if 'regionsMix' in indict: self.regionsMix = bandlab_region(indict['regionsMix'])
 
-		if 'revisionId' in indata: self.revisionId = indata['revisionId']
-		if 'sampleId' in indata: self.sampleId = indata['sampleId']
-		if 'samplerKit' in indata: self.samplerKit = indata['samplerKit']
-		if 'soundbank' in indata: self.soundbank = indata['soundbank']
-		if 'trackGroupId' in indata: self.trackGroupId = indata['trackGroupId']
-		if 'type' in indata: self.type = indata['type']
-		if 'volume' in indata: self.volume = indata['volume']
-		if 'assetFormat' in indata: self.assetFormat = indata['assetFormat']
+		if 'revisionId' in indict: self.revisionId = indict['revisionId']
+		if 'sampleId' in indict: self.sampleId = indict['sampleId']
+		if 'samplerKit' in indict: self.samplerKit = indict['samplerKit']
+		if 'soundbank' in indict: self.soundbank = indict['soundbank']
+		if 'trackGroupId' in indict: self.trackGroupId = indict['trackGroupId']
+		if 'type' in indict: self.type = indict['type']
+		if 'volume' in indict: self.volume = indict['volume']
+		if 'assetFormat' in indict: self.assetFormat = indict['assetFormat']
 
 	def write(self):
 		outdata = {}
@@ -351,7 +351,7 @@ class bandlab_track:
 		return outdata
 
 class bandlab_sample:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.creatorId = ""
 		self.device = None
 		self.duration = 0.0
@@ -362,19 +362,19 @@ class bandlab_sample:
 		self.source = "BandLabWeb-10.1.135"
 		self.status = "Empty"
 		self.waveform = None
-		if indata: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'creatorId' in indata: self.creatorId = indata['creatorId']
-		if 'device' in indata: self.device = indata['device']
-		if 'duration' in indata: self.duration = indata['duration']
-		if 'file' in indata: self.file = indata['file']
-		if 'id' in indata: self.id = indata['id']
-		if 'isMidi' in indata: self.isMidi = indata['isMidi']
-		if 'name' in indata: self.name = indata['name']
-		if 'source' in indata: self.source = indata['source']
-		if 'status' in indata: self.status = indata['status']
-		if 'waveform' in indata: self.waveform = indata['waveform']
+	def read(self, indict):
+		if 'creatorId' in indict: self.creatorId = indict['creatorId']
+		if 'device' in indict: self.device = indict['device']
+		if 'duration' in indict: self.duration = indict['duration']
+		if 'file' in indict: self.file = indict['file']
+		if 'id' in indict: self.id = indict['id']
+		if 'isMidi' in indict: self.isMidi = indict['isMidi']
+		if 'name' in indict: self.name = indict['name']
+		if 'source' in indict: self.source = indict['source']
+		if 'status' in indict: self.status = indict['status']
+		if 'waveform' in indict: self.waveform = indict['waveform']
 
 	def write(self):
 		outdata = {}
@@ -391,16 +391,16 @@ class bandlab_sample:
 		return outdata
 
 class bandlab_samplerKits_sample:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.file = ''
 		self.id = ''
 		self.status = 'Ready'
-		if indata: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		if 'file' in indata: self.file = indata['file']
-		if 'id' in indata: self.id = indata['id']
-		if 'status' in indata: self.status = indata['status']
+	def read(self, indict):
+		if 'file' in indict: self.file = indict['file']
+		if 'id' in indict: self.id = indict['id']
+		if 'status' in indict: self.status = indict['status']
 
 	def write(self):
 		outdata = {}
@@ -410,12 +410,12 @@ class bandlab_samplerKits_sample:
 		return outdata
 
 class bandlab_samplerKits:
-	def __init__(self, indata):
+	def __init__(self, indict=None):
 		self.samples = []
-		if indata: self.read(indata)
+		if indict is not None: self.read(indict)
 
-	def read(self, indata):
-		self.samples = [bandlab_samplerKits_sample(x) for x in indata['samples']]
+	def read(self, indict):
+		self.samples = [bandlab_samplerKits_sample(x) for x in indict['samples']]
 
 	def write(self):
 		outdata = {}
@@ -462,45 +462,45 @@ class bandlab_project:
 		self.volume = 1.0
 		self.blxVersion = '1.0'
 
-	def read(self, indata):
-		if 'canEdit' in indata: self.canEdit = indata['canEdit']
-		if 'canEditSettings' in indata: self.canEditSettings = indata['canEditSettings']
-		if 'canMaster' in indata: self.canMaster = indata['canMaster']
-		if 'canPublish' in indata: self.canPublish = indata['canPublish']
-		if 'clientId' in indata: self.clientId = indata['clientId']
-		if 'counters' in indata: self.counters = indata['counters']
-		if 'createdOn' in indata: self.createdOn = indata['createdOn']
-		if 'stamp' in indata: self.stamp = indata['stamp']
-		if 'modifiedOn' in indata: self.modifiedOn = indata['modifiedOn']
-		if 'parentId' in indata: self.parentId = indata['parentId']
-		if 'place' in indata: self.place = indata['place']
-		if 'trackGroups' in indata: self.trackGroups = indata['trackGroups']
-		if 'volume' in indata: self.volume = indata['volume']
-		if 'blxVersion' in indata: self.blxVersion = indata['blxVersion']
-		if 'postId' in indata: self.postId = indata['postId']
-		if 'post' in indata: self.post = indata['post']
-		if 'mixdown' in indata: 
+	def read(self, indict):
+		if 'canEdit' in indict: self.canEdit = indict['canEdit']
+		if 'canEditSettings' in indict: self.canEditSettings = indict['canEditSettings']
+		if 'canMaster' in indict: self.canMaster = indict['canMaster']
+		if 'canPublish' in indict: self.canPublish = indict['canPublish']
+		if 'clientId' in indict: self.clientId = indict['clientId']
+		if 'counters' in indict: self.counters = indict['counters']
+		if 'createdOn' in indict: self.createdOn = indict['createdOn']
+		if 'stamp' in indict: self.stamp = indict['stamp']
+		if 'modifiedOn' in indict: self.modifiedOn = indict['modifiedOn']
+		if 'parentId' in indict: self.parentId = indict['parentId']
+		if 'place' in indict: self.place = indict['place']
+		if 'trackGroups' in indict: self.trackGroups = indict['trackGroups']
+		if 'volume' in indict: self.volume = indict['volume']
+		if 'blxVersion' in indict: self.blxVersion = indict['blxVersion']
+		if 'postId' in indict: self.postId = indict['postId']
+		if 'post' in indict: self.post = indict['post']
+		if 'mixdown' in indict: 
 			self.mixdown = bandlab_sample(None)
-			self.mixdown.read(indata['mixdown'])
+			self.mixdown.read(indict['mixdown'])
 
-		if 'id' in indata: self.id = indata['id']
-		if 'isFork' in indata: self.isFork = indata['isFork']
-		if 'isLiked' in indata: self.isLiked = indata['isLiked']
-		if 'isPublic' in indata: self.isPublic = indata['isPublic']
-		if 'key' in indata: self.key = indata['key']
-		if 'lyrics' in indata: self.lyrics = indata['lyrics']
-		if 'mastering' in indata: self.mastering = indata['mastering']
-		if 'metronome' in indata: self.metronome = indata['metronome']
-		if 'song' in indata: self.song = indata['song']
+		if 'id' in indict: self.id = indict['id']
+		if 'isFork' in indict: self.isFork = indict['isFork']
+		if 'isLiked' in indict: self.isLiked = indict['isLiked']
+		if 'isPublic' in indict: self.isPublic = indict['isPublic']
+		if 'key' in indict: self.key = indict['key']
+		if 'lyrics' in indict: self.lyrics = indict['lyrics']
+		if 'mastering' in indict: self.mastering = indict['mastering']
+		if 'metronome' in indict: self.metronome = indict['metronome']
+		if 'song' in indict: self.song = indict['song']
 
-		if 'creator' in indata: self.creator = indata['creator']
-		if 'description' in indata: self.description = indata['description']
-		if 'genres' in indata: self.genres = indata['genres']
+		if 'creator' in indict: self.creator = indict['creator']
+		if 'description' in indict: self.description = indict['description']
+		if 'genres' in indict: self.genres = indict['genres']
 
-		self.auxChannels = [bandlab_auxChannel(x) for x in indata['auxChannels']]
-		self.tracks = [bandlab_track(x) for x in indata['tracks']]
-		self.samples = [bandlab_sample(x) for x in indata['samples']]
-		self.samplerKits = bandlab_samplerKits(indata['samplerKits'])
+		self.auxChannels = [bandlab_auxChannel(x) for x in indict['auxChannels']]
+		self.tracks = [bandlab_track(x) for x in indict['tracks']]
+		self.samples = [bandlab_sample(x) for x in indict['samples']]
+		self.samplerKits = bandlab_samplerKits(indict['samplerKits'])
 
 	def load_from_file(self, input_file):
 		f = open(input_file, 'rb')

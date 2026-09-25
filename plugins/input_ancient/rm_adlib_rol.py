@@ -24,7 +24,7 @@ class input_adlib_rol(plugins.base):
 		in_dict['projtype'] = 'rm'
 
 	def get_configdef(self, configdef):
-		configdef.add_text('bank_file', 'STANDARD.BNK', 'Bank File')
+		configdef.add_file_open('bank_file', '', 'Bank File')
 		configdef.set_group('visual', 'Visual')
 		configdef.add_bool('keep_def_name', False, 'Keep Default Track Names')
 

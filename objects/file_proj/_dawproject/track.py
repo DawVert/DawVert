@@ -3,13 +3,14 @@ from objects.file_proj._dawproject import param
 from objects.file_proj._dawproject import device
 
 class dawproject_send:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.destination = None
 		self.type = None
 		self.id = None
 
 		self.enable = param.dawproject_param_bool('Enable')
 		self.volume = param.dawproject_param_numeric('Volume')
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'destination' in xml_data.attrib: self.destination = xml_data.attrib['destination']
@@ -29,7 +30,7 @@ class dawproject_send:
 		self.volume.write(tempxml)
 
 class dawproject_channel:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.audioChannels = None
 		self.destination = None
 		self.role = None
@@ -55,6 +56,7 @@ class dawproject_channel:
 		self.volume.unit = 'linear'
 		self.volume.value = 1
 		self.volume.name = 'Volume'
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'audioChannels' in xml_data.attrib: self.audioChannels = xml_data.attrib['audioChannels']
@@ -69,9 +71,7 @@ class dawproject_channel:
 			if x_part.tag == 'Sends': 
 				for x_sendpart in x_part:
 					if x_sendpart.tag == 'Send': 
-						send_obj = dawproject_send()
-						send_obj.read(x_sendpart)
-						self.sends.append(send_obj)
+						self.sends.append(dawproject_send(x_sendpart))
 			if x_part.tag == 'Devices': 
 				for x_devipart in x_part:
 					device_obj = device.dawproject_device(x_devipart.tag)
@@ -100,7 +100,7 @@ class dawproject_channel:
 		self.volume.write(tempxml)
 
 class dawproject_track:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.contentType = None
 		self.loaded = None
 		self.id = None
@@ -109,6 +109,7 @@ class dawproject_track:
 		self.channel = dawproject_channel()
 		self.tracks = []
 		self.comment = ''
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'contentType' in xml_data.attrib: self.contentType = xml_data.attrib['contentType']

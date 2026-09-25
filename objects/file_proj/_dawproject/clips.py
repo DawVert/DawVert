@@ -3,13 +3,14 @@ from objects.file_proj._dawproject import param
 from objects.file_proj._dawproject import points
 
 class dawproject_audio:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.algorithm = None
 		self.channels = None
 		self.duration = None
 		self.sampleRate = None
 		self.id = None
 		self.file = param.dawproject_param_path('File')
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'algorithm' in xml_data.attrib: self.algorithm = xml_data.attrib['algorithm']
@@ -30,9 +31,10 @@ class dawproject_audio:
 		self.file.write(tempxml)
 
 class dawproject_warppoint:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.time = None
 		self.contentTime = None
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'time' in xml_data.attrib: self.time = float(xml_data.attrib['time'])
@@ -44,12 +46,13 @@ class dawproject_warppoint:
 		if self.contentTime != None: tempxml.set('contentTime', str(self.contentTime))
 
 class dawproject_warps:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.contentTimeUnit = None
 		self.timeUnit = None
 		self.id = None
 		self.points = []
 		self.audio = None
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'contentTimeUnit' in xml_data.attrib: self.contentTimeUnit = xml_data.attrib['contentTimeUnit']
@@ -57,12 +60,9 @@ class dawproject_warps:
 		if 'id' in xml_data.attrib: self.id = xml_data.attrib['id']
 		for x_part in xml_data:
 			if x_part.tag == 'Warp': 
-				warppoint_obj = dawproject_warppoint()
-				warppoint_obj.read(x_part)
-				self.points.append(warppoint_obj)
+				self.points.append(dawproject_warppoint(warppoint_obj))
 			if x_part.tag == 'Audio': 
-				self.audio = dawproject_audio()
-				self.audio.read(x_part)
+				self.audio = dawproject_audio(x_part)
 
 	def write(self, xmltag):
 		tempxml = ET.SubElement(xmltag, 'Warps')
@@ -73,7 +73,7 @@ class dawproject_warps:
 		for x in self.points: x.write(tempxml)
 
 class dawproject_note:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.time = None
 		self.duration = None
 		self.channel = None
@@ -82,6 +82,7 @@ class dawproject_note:
 		self.rel = None
 		self.points = None
 		self.lanes = None
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'time' in xml_data.attrib: self.time = float(xml_data.attrib['time'])
@@ -92,11 +93,9 @@ class dawproject_note:
 		if 'rel' in xml_data.attrib: self.rel = float(xml_data.attrib['rel'])
 		for x_part in xml_data:
 			if x_part.tag == 'Points':
-				self.points = points.dawproject_points()
-				self.points.read(x_part)
+				self.points = points.dawproject_points(x_part)
 			if x_part.tag == 'Lanes':
-				self.lanes = dawproject_lane()
-				self.lanes.read(x_part)
+				self.lanes = dawproject_lane(x_part)
 
 	def write(self, xmltag):
 		tempxml = ET.SubElement(xmltag, 'Note')
@@ -110,22 +109,19 @@ class dawproject_note:
 		if self.lanes: self.lanes.write(tempxml)
 
 class dawproject_notes:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.notes = []
 		self.id = ''
 		self.points = []
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'id' in xml_data.attrib: self.id = xml_data.attrib['id']
 		for x_part in xml_data:
 			if x_part.tag == 'Note': 
-				note_obj = dawproject_note()
-				note_obj.read(x_part)
-				self.notes.append(note_obj)
+				self.notes.append(dawproject_note(x_part))
 			if x_part.tag == 'Points': 
-				points_obj = points.dawproject_points()
-				points_obj.read(x_part)
-				self.points.append(points_obj)
+				self.points.append(points.dawproject_points(x_part))
 
 	def write(self, xmltag):
 		tempxml = ET.SubElement(xmltag, 'Notes')
@@ -134,7 +130,7 @@ class dawproject_notes:
 		for x in self.points: x.write(tempxml, 'Points')
 
 class dawproject_clip:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.time = None
 		self.duration = None
 		self.timeUnit = None
@@ -155,8 +151,7 @@ class dawproject_clip:
 		self.audio = None
 		self.lanes = None
 		self.contentTimeUnit = None
-
-
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'time' in xml_data.attrib: self.time = float(xml_data.attrib['time'])
@@ -174,21 +169,11 @@ class dawproject_clip:
 		if 'color' in xml_data.attrib: self.color = xml_data.attrib['color']
 		if 'enable' in xml_data.attrib: self.enable = xml_data.attrib['enable']=='true'
 		for x_part in xml_data:
-			if x_part.tag == 'Clips': 
-				self.clips = dawproject_clips()
-				self.clips.read(x_part)
-			if x_part.tag == 'Notes': 
-				self.notes = dawproject_notes()
-				self.notes.read(x_part)
-			if x_part.tag == 'Warps': 
-				self.warps = dawproject_warps()
-				self.warps.read(x_part)
-			if x_part.tag == 'Audio': 
-				self.audio = dawproject_audio()
-				self.audio.read(x_part)
-			if x_part.tag == 'Lanes': 
-				self.lanes = dawproject_lane()
-				self.lanes.read(x_part)
+			if x_part.tag == 'Clips': self.clips = dawproject_clips(x_part)
+			if x_part.tag == 'Notes': self.notes = dawproject_notes(x_part)
+			if x_part.tag == 'Warps': self.warps = dawproject_warps(x_part)
+			if x_part.tag == 'Audio': self.audio = dawproject_audio(x_part)
+			if x_part.tag == 'Lanes': self.lanes = dawproject_lane(x_part)
 
 	def write(self, xmltag):
 		tempxml = ET.SubElement(xmltag, 'Clip')
@@ -213,17 +198,16 @@ class dawproject_clip:
 		if self.lanes: self.lanes.write(tempxml)
 
 class dawproject_clips:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.clips = []
 		self.id = ''
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'id' in xml_data.attrib: self.id = xml_data.attrib['id']
 		for x_part in xml_data:
 			if x_part.tag == 'Clip': 
-				clip_obj = dawproject_clip()
-				clip_obj.read(x_part)
-				self.clips.append(clip_obj)
+				self.clips.append(dawproject_clip(x_part))
 
 	def write(self, xmltag):
 		tempxml = ET.SubElement(xmltag, 'Clips')
@@ -231,7 +215,7 @@ class dawproject_clips:
 		for x in self.clips: x.write(tempxml)
 
 class dawproject_lane:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.clips = None
 		self.warps = None
 		self.audio = None
@@ -242,6 +226,7 @@ class dawproject_lane:
 		self.fadeTimeUnit = None
 		self.fadeInTime = None
 		self.fadeOutTime = None
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'track' in xml_data.attrib: self.track = xml_data.attrib['track']
@@ -250,22 +235,11 @@ class dawproject_lane:
 		if 'fadeInTime' in xml_data.attrib: self.fadeInTime = float(xml_data.attrib['fadeInTime'])
 		if 'fadeOutTime' in xml_data.attrib: self.fadeOutTime = float(xml_data.attrib['fadeOutTime'])
 		for x_part in xml_data:
-			if x_part.tag == 'Clips': 
-				self.clips = dawproject_clips()
-				self.clips.read(x_part)
-			if x_part.tag == 'Warps': 
-				self.warps = dawproject_warps()
-				self.warps.read(x_part)
-			if x_part.tag == 'Points': 
-				points_obj = points.dawproject_points()
-				points_obj.read(x_part)
-				self.points.append(points_obj)
-			if x_part.tag == 'Audio': 
-				self.audio = dawproject_audio()
-				self.audio.read(x_part)
-			if x_part.tag == 'Notes': 
-				self.notes = dawproject_notes()
-				self.notes.read(x_part)
+			if x_part.tag == 'Clips': self.clips = dawproject_clips(x_part)
+			if x_part.tag == 'Warps': self.warps = dawproject_warps(x_part)
+			if x_part.tag == 'Points': self.points.append(points.dawproject_points(x_part))
+			if x_part.tag == 'Audio': self.audio = dawproject_audio(x_part)
+			if x_part.tag == 'Notes': self.notes = dawproject_notes(x_part)
 
 	def write(self, xmltag):
 		tempxml = ET.SubElement(xmltag, 'Lanes')

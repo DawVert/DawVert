@@ -2,12 +2,13 @@ import xml.etree.ElementTree as ET
 from objects.file_proj._dawproject import param
 
 class dawproject_band:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.type = None
 		self.gain = param.dawproject_param_numeric('Gain')
 		self.freq = param.dawproject_param_numeric('Freq')
 		self.q = param.dawproject_param_numeric('Q')
 		self.enabled = param.dawproject_param_bool('Enabled')
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'type' in xml_data.attrib: self.type = xml_data.attrib['type']
@@ -26,7 +27,7 @@ class dawproject_band:
 		self.enabled.write(tempxml)
 
 class dawproject_realparameter:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.parameterID = None
 		self.id = None
 		self.name = None
@@ -34,6 +35,7 @@ class dawproject_realparameter:
 		self.min = 0
 		self.unit = "normalized" 
 		self.value = None
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'id' in xml_data.attrib: self.id = xml_data.attrib['id']
@@ -81,13 +83,9 @@ class dawproject_device:
 			elif x_part.tag == 'State': self.state.read(x_part)
 			elif x_part.tag == 'Parameters': 
 				for x_rpart in x_part:
-					realparameter_obj = dawproject_realparameter()
-					realparameter_obj.read(x_rpart)
-					self.realparameter.append(realparameter_obj)
+					self.realparameter.append(dawproject_realparameter(x_rpart))
 			elif x_part.tag == 'Band': 
-				band_obj = dawproject_band()
-				band_obj.read(x_part)
-				self.bands.append(band_obj)
+				self.bands.append(dawproject_band(x_part))
 			else:
 				isbool = False
 				if 'value' in x_part.attrib and 'unit' not in x_part.attrib:
@@ -114,6 +112,5 @@ class dawproject_device:
 		for x in self.realparameter: x.write(parameters)
 		self.enabled.write(tempxml)
 		self.state.write(tempxml)
-		for _, x in self.params.items():
-			x.write(tempxml)
+		for _, x in self.params.items(): x.write(tempxml)
 		for x in self.bands: x.write(tempxml)

@@ -1,9 +1,10 @@
 import xml.etree.ElementTree as ET
 
 class dawproject_pointtarget:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.expression = None
 		self.parameter = None
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'expression' in xml_data.attrib: self.expression = xml_data.attrib['expression']
@@ -15,15 +16,17 @@ class dawproject_pointtarget:
 		if self.parameter != None: tempxml.set('parameter', self.parameter)
 
 class dawproject_realpoint:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.time = None
 		self.interpolation = None
 		self.value = None
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'time' in xml_data.attrib: self.time = float(xml_data.attrib['time'])
 		if 'interpolation' in xml_data.attrib: self.interpolation = xml_data.attrib['interpolation']
 		if 'value' in xml_data.attrib: self.value = float(xml_data.attrib['value'])
+
 	def write(self, xmltag):
 		tempxml = ET.SubElement(xmltag, 'RealPoint')
 		if self.value != None: tempxml.set('value',  '%.6f' % self.value)
@@ -31,9 +34,10 @@ class dawproject_realpoint:
 		if self.time != None: tempxml.set('time',  '%.6f' % self.time)
 
 class dawproject_boolpoint:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.time = None
 		self.value = None
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'time' in xml_data.attrib: self.time = float(xml_data.attrib['time'])
@@ -45,28 +49,24 @@ class dawproject_boolpoint:
 		if self.time != None: tempxml.set('time', '%.6f' % self.time)
 
 class dawproject_points:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.id = None
 		self.unit = None
 		self.points = []
 		self.points_bool = []
 		self.target = None
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'id' in xml_data.attrib: self.id = xml_data.attrib['id']
 		if 'unit' in xml_data.attrib: self.unit = xml_data.attrib['unit']
 		for x_part in xml_data:
 			if x_part.tag == 'RealPoint': 
-				point_obj = dawproject_realpoint()
-				point_obj.read(x_part)
-				self.points.append(point_obj)
+				self.points.append(dawproject_realpoint(x_part))
 			if x_part.tag == 'BoolPoint': 
-				point_obj = dawproject_boolpoint()
-				point_obj.read(x_part)
-				self.points_bool.append(point_obj)
+				self.points_bool.append(dawproject_boolpoint(x_part))
 			if x_part.tag == 'Target': 
-				self.target = dawproject_pointtarget()
-				self.target.read(x_part)
+				self.target = dawproject_pointtarget(x_part)
 
 	def write(self, xmltag, name):
 		tempxml = ET.SubElement(xmltag, name)
@@ -77,10 +77,11 @@ class dawproject_points:
 		for x in self.points_bool: x.write(tempxml)
 
 class dawproject_timesigpoint:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.time = None
 		self.numerator = 4
 		self.denominator = 4
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'time' in xml_data.attrib: self.time = float(xml_data.attrib['time'])
@@ -94,23 +95,21 @@ class dawproject_timesigpoint:
 		if self.time != None: tempxml.set('time',  '%.6f' % self.time)
 
 class dawproject_points_timesig:
-	def __init__(self):
+	def __init__(self, xml_data=None):
 		self.id = None
 		self.unit = None
 		self.points = []
 		self.target = None
+		if xml_data is not None: self.read(xml_data)
 
 	def read(self, xml_data):
 		if 'id' in xml_data.attrib: self.id = xml_data.attrib['id']
 		if 'unit' in xml_data.attrib: self.unit = xml_data.attrib['unit']
 		for x_part in xml_data:
 			if x_part.tag == 'TimeSignaturePoint': 
-				point_obj = dawproject_timesigpoint()
-				point_obj.read(x_part)
-				self.points.append(point_obj)
+				self.points.append(dawproject_timesigpoint(x_part))
 			if x_part.tag == 'Target': 
-				self.target = dawproject_pointtarget()
-				self.target.read(x_part)
+				self.target = dawproject_pointtarget(x_part)
 
 	def write(self, xmltag, name):
 		tempxml = ET.SubElement(xmltag, name)

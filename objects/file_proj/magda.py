@@ -6,15 +6,16 @@ DEBUGSTUFF = False
 # =========================================== clip ===========================================
 
 class magda_clip_auto_handle:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.dx = 0
 		self.dy = 0
 		self.linked = True
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'dx' in j: self.dx = j['dx']
-		if 'dy' in j: self.dy = j['dy']
-		if 'linked' in j: self.linked = j['linked']
+	def read(self, indict):
+		if 'dx' in indict: self.dx = indict['dx']
+		if 'dy' in indict: self.dy = indict['dy']
+		if 'linked' in indict: self.linked = indict['linked']
 
 	def write(self):
 		o = {}
@@ -24,7 +25,7 @@ class magda_clip_auto_handle:
 		return o
 
 class magda_clip_auto_midiCCData:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.controller = 0
 		self.beatPosition = 0
 		self.value = 0
@@ -32,15 +33,16 @@ class magda_clip_auto_midiCCData:
 		self.tension = 0.0
 		self.inHandle = magda_clip_auto_handle()
 		self.outHandle = magda_clip_auto_handle()
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'controller' in j: self.controller = j['controller']
-		if 'beatPosition' in j: self.beatPosition = j['beatPosition']
-		if 'value' in j: self.value = j['value']
-		if 'curveType' in j: self.curveType = j['curveType']
-		if 'tension' in j: self.tension = j['tension']
-		if 'inHandle' in j: self.inHandle.read(j['inHandle'])
-		if 'outHandle' in j: self.outHandle.read(j['outHandle'])
+	def read(self, indict):
+		if 'controller' in indict: self.controller = indict['controller']
+		if 'beatPosition' in indict: self.beatPosition = indict['beatPosition']
+		if 'value' in indict: self.value = indict['value']
+		if 'curveType' in indict: self.curveType = indict['curveType']
+		if 'tension' in indict: self.tension = indict['tension']
+		if 'inHandle' in indict: self.inHandle.read(indict['inHandle'])
+		if 'outHandle' in indict: self.outHandle.read(indict['outHandle'])
 
 	def write(self):
 		o = {}
@@ -54,21 +56,22 @@ class magda_clip_auto_midiCCData:
 		return o
 
 class magda_clip_auto_midiPitchBendData:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.beatPosition = 0
 		self.value = 0
 		self.curveType = 0
 		self.tension = 0.0
 		self.inHandle = magda_clip_auto_handle()
 		self.outHandle = magda_clip_auto_handle()
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'beatPosition' in j: self.beatPosition = j['beatPosition']
-		if 'value' in j: self.value = j['value']
-		if 'curveType' in j: self.curveType = j['curveType']
-		if 'tension' in j: self.tension = j['tension']
-		if 'inHandle' in j: self.inHandle.read(j['inHandle'])
-		if 'outHandle' in j: self.outHandle.read(j['outHandle'])
+	def read(self, indict):
+		if 'beatPosition' in indict: self.beatPosition = indict['beatPosition']
+		if 'value' in indict: self.value = indict['value']
+		if 'curveType' in indict: self.curveType = indict['curveType']
+		if 'tension' in indict: self.tension = indict['tension']
+		if 'inHandle' in indict: self.inHandle.read(indict['inHandle'])
+		if 'outHandle' in indict: self.outHandle.read(indict['outHandle'])
 
 	def write(self):
 		o = {}
@@ -81,13 +84,14 @@ class magda_clip_auto_midiPitchBendData:
 		return o
 
 class magda_clip_audio_source:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.filePath = ''
 		self.durationSeconds = 0
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'filePath' in j: self.filePath = j['filePath']
-		if 'durationSeconds' in j: self.durationSeconds = j['durationSeconds']
+	def read(self, indict):
+		if 'filePath' in indict: self.filePath = indict['filePath']
+		if 'durationSeconds' in indict: self.durationSeconds = indict['durationSeconds']
 
 	def write(self):
 		o = {}
@@ -96,15 +100,16 @@ class magda_clip_audio_source:
 		return o
 
 class magda_clip_audio_interpretation:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.bpm = 120
 		self.totalBeats = 4
 		self.totalBeatsLocked = False
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'bpm' in j: self.bpm = j['bpm']
-		if 'totalBeats' in j: self.totalBeats = j['totalBeats']
-		if 'totalBeatsLocked' in j: self.totalBeatsLocked = j['totalBeatsLocked']
+	def read(self, indict):
+		if 'bpm' in indict: self.bpm = indict['bpm']
+		if 'totalBeats' in indict: self.totalBeats = indict['totalBeats']
+		if 'totalBeatsLocked' in indict: self.totalBeatsLocked = indict['totalBeatsLocked']
 
 	def write(self):
 		o = {}
@@ -114,7 +119,7 @@ class magda_clip_audio_interpretation:
 		return o
 
 class magda_clip_audio_playback:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.offsetSeconds = 0.0
 		self.offsetBeats = 0.0
 		self.loopStartSeconds = 0.0
@@ -123,14 +128,14 @@ class magda_clip_audio_playback:
 		self.loopLengthBeats = 0.0
 		self.speedRatio = 1.0
 	
-	def read(self, j):
-		if 'offsetSeconds' in j: self.offsetSeconds = j['offsetSeconds']
-		if 'offsetBeats' in j: self.offsetBeats = j['offsetBeats']
-		if 'loopStartSeconds' in j: self.loopStartSeconds = j['loopStartSeconds']
-		if 'loopLengthSeconds' in j: self.loopLengthSeconds = j['loopLengthSeconds']
-		if 'loopStartBeats' in j: self.loopStartBeats = j['loopStartBeats']
-		if 'loopLengthBeats' in j: self.loopLengthBeats = j['loopLengthBeats']
-		if 'speedRatio' in j: self.speedRatio = j['speedRatio']
+	def read(self, indict):
+		if 'offsetSeconds' in indict: self.offsetSeconds = indict['offsetSeconds']
+		if 'offsetBeats' in indict: self.offsetBeats = indict['offsetBeats']
+		if 'loopStartSeconds' in indict: self.loopStartSeconds = indict['loopStartSeconds']
+		if 'loopLengthSeconds' in indict: self.loopLengthSeconds = indict['loopLengthSeconds']
+		if 'loopStartBeats' in indict: self.loopStartBeats = indict['loopStartBeats']
+		if 'loopLengthBeats' in indict: self.loopLengthBeats = indict['loopLengthBeats']
+		if 'speedRatio' in indict: self.speedRatio = indict['speedRatio']
 	
 	def write(self):
 		o = {}
@@ -144,21 +149,22 @@ class magda_clip_audio_playback:
 		return o
 
 class magda_clip_audio:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.source = magda_clip_audio_source()
 		self.interpretation = magda_clip_audio_interpretation()
 		self.playback = magda_clip_audio_playback()
 		self.warpEnabled = False
 		self.warpMarkers = {}
 		self.timeStretchMode = 0
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'source' in j: self.source.read(j['source'])
-		if 'interpretation' in j: self.interpretation.read(j['interpretation'])
-		if 'playback' in j: self.playback.read(j['playback'])
-		if 'warpEnabled' in j: self.warpEnabled = j['warpEnabled']
-		if 'warpMarkers' in j: self.warpMarkers = j['warpMarkers']
-		if 'timeStretchMode' in j: self.timeStretchMode = j['timeStretchMode']
+	def read(self, indict):
+		if 'source' in indict: self.source.read(indict['source'])
+		if 'interpretation' in indict: self.interpretation.read(indict['interpretation'])
+		if 'playback' in indict: self.playback.read(indict['playback'])
+		if 'warpEnabled' in indict: self.warpEnabled = indict['warpEnabled']
+		if 'warpMarkers' in indict: self.warpMarkers = indict['warpMarkers']
+		if 'timeStretchMode' in indict: self.timeStretchMode = indict['timeStretchMode']
 
 	def write(self):
 		o = {}
@@ -171,17 +177,18 @@ class magda_clip_audio:
 		return o
 
 class magda_clip_midiNote:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.noteNumber = 60
 		self.velocity = 100
 		self.startBeat = 0
 		self.lengthBeats = 1
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'noteNumber' in j: self.noteNumber = j['noteNumber']
-		if 'velocity' in j: self.velocity = j['velocity']
-		if 'startBeat' in j: self.startBeat = j['startBeat']
-		if 'lengthBeats' in j: self.lengthBeats = j['lengthBeats']
+	def read(self, indict):
+		if 'noteNumber' in indict: self.noteNumber = indict['noteNumber']
+		if 'velocity' in indict: self.velocity = indict['velocity']
+		if 'startBeat' in indict: self.startBeat = indict['startBeat']
+		if 'lengthBeats' in indict: self.lengthBeats = indict['lengthBeats']
 
 	def write(self):
 		o = {}
@@ -192,7 +199,7 @@ class magda_clip_midiNote:
 		return o
 
 class magda_clip:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = 0
 		self.trackId = 1
 		self.name = ""
@@ -237,69 +244,63 @@ class magda_clip:
 		self.audio = None
 		self.midiCCData = []
 		self.midiPitchBendData = []
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'id' in j: self.id = j['id']
-		if 'trackId' in j: self.trackId = j['trackId']
-		if 'name' in j: self.name = j['name']
-		if 'colour' in j: self.colour = j['colour']
-		if 'type' in j: self.type = j['type']
-		if 'view' in j: self.view = j['view']
-		if 'loopEnabled' in j: self.loopEnabled = j['loopEnabled']
-		if 'sceneIndex' in j: self.sceneIndex = j['sceneIndex']
-		if 'launchMode' in j: self.launchMode = j['launchMode']
-		if 'launchQuantize' in j: self.launchQuantize = j['launchQuantize']
-		if 'followAction' in j: self.followAction = j['followAction']
-		if 'followActionDelayBeats' in j: self.followActionDelayBeats = j['followActionDelayBeats']
-		if 'followActionLoopCount' in j: self.followActionLoopCount = j['followActionLoopCount']
-		if 'placement' in j: self.placement = j['placement']
-		if 'gridAutoGrid' in j: self.gridAutoGrid = j['gridAutoGrid']
-		if 'gridNumerator' in j: self.gridNumerator = j['gridNumerator']
-		if 'gridDenominator' in j: self.gridDenominator = j['gridDenominator']
-		if 'gridSnapEnabled' in j: self.gridSnapEnabled = j['gridSnapEnabled']
-		if 'volumeDB' in j: self.volumeDB = j['volumeDB']
-		if 'gainDB' in j: self.gainDB = j['gainDB']
-		if 'pan' in j: self.pan = j['pan']
-		if 'fadeIn' in j: self.fadeIn = j['fadeIn']
-		if 'fadeOut' in j: self.fadeOut = j['fadeOut']
-		if 'fadeInType' in j: self.fadeInType = j['fadeInType']
-		if 'fadeOutType' in j: self.fadeOutType = j['fadeOutType']
-		if 'fadeInBehaviour' in j: self.fadeInBehaviour = j['fadeInBehaviour']
-		if 'fadeOutBehaviour' in j: self.fadeOutBehaviour = j['fadeOutBehaviour']
-		if 'autoCrossfade' in j: self.autoCrossfade = j['autoCrossfade']
-		if 'launchFadeSamples' in j: self.launchFadeSamples = j['launchFadeSamples']
-		if 'pitchChange' in j: self.pitchChange = j['pitchChange']
-		if 'transpose' in j: self.transpose = j['transpose']
-		if 'autoPitch' in j: self.autoPitch = j['autoPitch']
-		if 'autoPitchMode' in j: self.autoPitchMode = j['autoPitchMode']
-		if 'isReversed' in j: self.isReversed = j['isReversed']
-		if 'autoDetectBeats' in j: self.autoDetectBeats = j['autoDetectBeats']
-		if 'beatSensitivity' in j: self.beatSensitivity = j['beatSensitivity']
-		if 'leftChannelActive' in j: self.leftChannelActive = j['leftChannelActive']
-		if 'rightChannelActive' in j: self.rightChannelActive = j['rightChannelActive']
-		if 'autoTempo' in j: self.autoTempo = j['autoTempo']
-		if 'loopLengthBeats' in j: self.loopLengthBeats = j['loopLengthBeats']
-		if 'midiNotes' in j: 
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'trackId' in indict: self.trackId = indict['trackId']
+		if 'name' in indict: self.name = indict['name']
+		if 'colour' in indict: self.colour = indict['colour']
+		if 'type' in indict: self.type = indict['type']
+		if 'view' in indict: self.view = indict['view']
+		if 'loopEnabled' in indict: self.loopEnabled = indict['loopEnabled']
+		if 'sceneIndex' in indict: self.sceneIndex = indict['sceneIndex']
+		if 'launchMode' in indict: self.launchMode = indict['launchMode']
+		if 'launchQuantize' in indict: self.launchQuantize = indict['launchQuantize']
+		if 'followAction' in indict: self.followAction = indict['followAction']
+		if 'followActionDelayBeats' in indict: self.followActionDelayBeats = indict['followActionDelayBeats']
+		if 'followActionLoopCount' in indict: self.followActionLoopCount = indict['followActionLoopCount']
+		if 'placement' in indict: self.placement = indict['placement']
+		if 'gridAutoGrid' in indict: self.gridAutoGrid = indict['gridAutoGrid']
+		if 'gridNumerator' in indict: self.gridNumerator = indict['gridNumerator']
+		if 'gridDenominator' in indict: self.gridDenominator = indict['gridDenominator']
+		if 'gridSnapEnabled' in indict: self.gridSnapEnabled = indict['gridSnapEnabled']
+		if 'volumeDB' in indict: self.volumeDB = indict['volumeDB']
+		if 'gainDB' in indict: self.gainDB = indict['gainDB']
+		if 'pan' in indict: self.pan = indict['pan']
+		if 'fadeIn' in indict: self.fadeIn = indict['fadeIn']
+		if 'fadeOut' in indict: self.fadeOut = indict['fadeOut']
+		if 'fadeInType' in indict: self.fadeInType = indict['fadeInType']
+		if 'fadeOutType' in indict: self.fadeOutType = indict['fadeOutType']
+		if 'fadeInBehaviour' in indict: self.fadeInBehaviour = indict['fadeInBehaviour']
+		if 'fadeOutBehaviour' in indict: self.fadeOutBehaviour = indict['fadeOutBehaviour']
+		if 'autoCrossfade' in indict: self.autoCrossfade = indict['autoCrossfade']
+		if 'launchFadeSamples' in indict: self.launchFadeSamples = indict['launchFadeSamples']
+		if 'pitchChange' in indict: self.pitchChange = indict['pitchChange']
+		if 'transpose' in indict: self.transpose = indict['transpose']
+		if 'autoPitch' in indict: self.autoPitch = indict['autoPitch']
+		if 'autoPitchMode' in indict: self.autoPitchMode = indict['autoPitchMode']
+		if 'isReversed' in indict: self.isReversed = indict['isReversed']
+		if 'autoDetectBeats' in indict: self.autoDetectBeats = indict['autoDetectBeats']
+		if 'beatSensitivity' in indict: self.beatSensitivity = indict['beatSensitivity']
+		if 'leftChannelActive' in indict: self.leftChannelActive = indict['leftChannelActive']
+		if 'rightChannelActive' in indict: self.rightChannelActive = indict['rightChannelActive']
+		if 'autoTempo' in indict: self.autoTempo = indict['autoTempo']
+		if 'loopLengthBeats' in indict: self.loopLengthBeats = indict['loopLengthBeats']
+		if 'midiNotes' in indict: 
 			self.midiNotes = []
-			for x in j['midiNotes']:
-				t = magda_clip_midiNote()
-				t.read(x)
-				self.midiNotes.append(t)
-		if 'audio' in j: 
-			self.audio = magda_clip_audio()
-			self.audio.read(j['audio'])
-		if 'midiCCData' in j: 
+			for x in indict['midiNotes']: 
+				self.midiNotes.append(magda_clip_midiNote(x))
+		if 'audio' in indict: 
+			self.audio = magda_clip_audio(indict['audio'])
+		if 'midiCCData' in indict: 
 			self.midiCCData = []
-			for x in j['midiCCData']:
-				t = magda_clip_auto_midiCCData()
-				t.read(x)
-				self.midiCCData.append(t)
-		if 'midiPitchBendData' in j: 
+			for x in indict['midiCCData']: 
+				self.midiCCData.append(magda_clip_auto_midiCCData(x))
+		if 'midiPitchBendData' in indict: 
 			self.midiPitchBendData = []
-			for x in j['midiPitchBendData']:
-				t = magda_clip_auto_midiPitchBendData()
-				t.read(x)
-				self.midiPitchBendData.append(t)
+			for x in indict['midiPitchBendData']:
+				self.midiPitchBendData.append(magda_clip_auto_midiPitchBendData(x))
 
 	def write(self):
 		o = {}
@@ -352,7 +353,7 @@ class magda_clip:
 # =========================================== chainelement ===========================================
 
 class magda_chainElement_rack_chain:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = 1
 		self.name = ""
 		self.outputIndex = 0
@@ -364,17 +365,17 @@ class magda_chainElement_rack_chain:
 		self.expanded = True
 		self.elements = []
 	
-	def read(self, j):
-		if 'id' in j: self.id = j['id']
-		if 'name' in j: self.name = j['name']
-		if 'outputIndex' in j: self.outputIndex = j['outputIndex']
-		if 'muted' in j: self.muted = j['muted']
-		if 'solo' in j: self.solo = j['solo']
-		if 'bypassed' in j: self.bypassed = j['bypassed']
-		if 'volume' in j: self.volume = j['volume']
-		if 'pan' in j: self.pan = j['pan']
-		if 'expanded' in j: self.expanded = j['expanded']
-		if 'elements' in j: self.elements = j['elements']
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'name' in indict: self.name = indict['name']
+		if 'outputIndex' in indict: self.outputIndex = indict['outputIndex']
+		if 'muted' in indict: self.muted = indict['muted']
+		if 'solo' in indict: self.solo = indict['solo']
+		if 'bypassed' in indict: self.bypassed = indict['bypassed']
+		if 'volume' in indict: self.volume = indict['volume']
+		if 'pan' in indict: self.pan = indict['pan']
+		if 'expanded' in indict: self.expanded = indict['expanded']
+		if 'elements' in indict: self.elements = indict['elements']
 	
 	def write(self):
 		o = {}
@@ -391,7 +392,7 @@ class magda_chainElement_rack_chain:
 		return o
 
 class magda_chainElement_rack:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = 0
 		self.name = ""
 		self.bypassed = False
@@ -403,29 +404,26 @@ class magda_chainElement_rack:
 		self.chains = []
 		self.macros = []
 		self.mods = []
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'id' in j: self.id = j['id']
-		if 'name' in j: self.name = j['name']
-		if 'bypassed' in j: self.bypassed = j['bypassed']
-		if 'expanded' in j: self.expanded = j['expanded']
-		if 'modPanelOpen' in j: self.modPanelOpen = j['modPanelOpen']
-		if 'paramPanelOpen' in j: self.paramPanelOpen = j['paramPanelOpen']
-		if 'volume' in j: self.volume = j['volume']
-		if 'pan' in j: self.pan = j['pan']
-		if 'chains' in j: 
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'name' in indict: self.name = indict['name']
+		if 'bypassed' in indict: self.bypassed = indict['bypassed']
+		if 'expanded' in indict: self.expanded = indict['expanded']
+		if 'modPanelOpen' in indict: self.modPanelOpen = indict['modPanelOpen']
+		if 'paramPanelOpen' in indict: self.paramPanelOpen = indict['paramPanelOpen']
+		if 'volume' in indict: self.volume = indict['volume']
+		if 'pan' in indict: self.pan = indict['pan']
+		if 'chains' in indict: 
 			self.chains = []
-			for x in j['chains']:
-				t = magda_chainElement_rack_chain()
-				t.read(x)
-				self.chains.append(t)
-		if 'macros' in j: 
+			for x in indict['chains']:
+				self.chains.append(magda_chainElement_rack_chain(x))
+		if 'macros' in indict: 
 			self.macros = []
-			for x in j['macros']:
-				t = magda_macros()
-				t.read(x)
-				self.macros.append(t)
-		if 'mods' in j: self.mods = j['mods']
+			for x in indict['macros']:
+				self.macros.append(magda_macros(x))
+		if 'mods' in indict: self.mods = indict['mods']
 
 	def write(self):
 		o = {}
@@ -443,7 +441,7 @@ class magda_chainElement_rack:
 		return o
 
 class magda_chainElement_device_param:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.paramIndex = 0
 		self.name = ""
 		self.unit = ""
@@ -466,28 +464,28 @@ class magda_chainElement_device_param:
 		self.labelTicks = []
 		self.valueTable = []
 	
-	def read(self, j):
-		if 'paramIndex' in j: self.paramIndex = j['paramIndex']
-		if 'name' in j: self.name = j['name']
-		if 'unit' in j: self.unit = j['unit']
-		if 'minValue' in j: self.minValue = j['minValue']
-		if 'maxValue' in j: self.maxValue = j['maxValue']
-		if 'defaultValue' in j: self.defaultValue = j['defaultValue']
-		if 'currentValue' in j: self.currentValue = j['currentValue']
-		if 'teMinValue' in j: self.teMinValue = j['teMinValue']
-		if 'teMaxValue' in j: self.teMaxValue = j['teMaxValue']
-		if 'scale' in j: self.scale = j['scale']
-		if 'skewFactor' in j: self.skewFactor = j['skewFactor']
-		if 'scaleAnchor' in j: self.scaleAnchor = j['scaleAnchor']
-		if 'displayFormat' in j: self.displayFormat = j['displayFormat']
-		if 'modulatable' in j: self.modulatable = j['modulatable']
-		if 'bipolarModulation' in j: self.bipolarModulation = j['bipolarModulation']
-		if 'gateSlotIndex' in j: self.gateSlotIndex = j['gateSlotIndex']
-		if 'gateNegated' in j: self.gateNegated = j['gateNegated']
-		if 'hidden' in j: self.hidden = j['hidden']
-		if 'choices' in j: self.choices = j['choices']
-		if 'labelTicks' in j: self.labelTicks = j['labelTicks']
-		if 'valueTable' in j: self.valueTable = j['valueTable']
+	def read(self, indict):
+		if 'paramIndex' in indict: self.paramIndex = indict['paramIndex']
+		if 'name' in indict: self.name = indict['name']
+		if 'unit' in indict: self.unit = indict['unit']
+		if 'minValue' in indict: self.minValue = indict['minValue']
+		if 'maxValue' in indict: self.maxValue = indict['maxValue']
+		if 'defaultValue' in indict: self.defaultValue = indict['defaultValue']
+		if 'currentValue' in indict: self.currentValue = indict['currentValue']
+		if 'teMinValue' in indict: self.teMinValue = indict['teMinValue']
+		if 'teMaxValue' in indict: self.teMaxValue = indict['teMaxValue']
+		if 'scale' in indict: self.scale = indict['scale']
+		if 'skewFactor' in indict: self.skewFactor = indict['skewFactor']
+		if 'scaleAnchor' in indict: self.scaleAnchor = indict['scaleAnchor']
+		if 'displayFormat' in indict: self.displayFormat = indict['displayFormat']
+		if 'modulatable' in indict: self.modulatable = indict['modulatable']
+		if 'bipolarModulation' in indict: self.bipolarModulation = indict['bipolarModulation']
+		if 'gateSlotIndex' in indict: self.gateSlotIndex = indict['gateSlotIndex']
+		if 'gateNegated' in indict: self.gateNegated = indict['gateNegated']
+		if 'hidden' in indict: self.hidden = indict['hidden']
+		if 'choices' in indict: self.choices = indict['choices']
+		if 'labelTicks' in indict: self.labelTicks = indict['labelTicks']
+		if 'valueTable' in indict: self.valueTable = indict['valueTable']
 	
 	def write(self):
 		o = {}
@@ -515,7 +513,7 @@ class magda_chainElement_device_param:
 		return o
 
 class magda_chainElement_device:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = 0
 		self.name = ""
 		self.pluginId = ""
@@ -539,41 +537,38 @@ class magda_chainElement_device:
 		self.mods = []
 		self.currentParameterPage = 0
 		self.pluginState = ""
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'id' in j: self.id = j['id']
-		if 'name' in j: self.name = j['name']
-		if 'pluginId' in j: self.pluginId = j['pluginId']
-		if 'manufacturer' in j: self.manufacturer = j['manufacturer']
-		if 'format' in j: self.format = j['format']
-		if 'isInstrument' in j: self.isInstrument = j['isInstrument']
-		if 'deviceType' in j: self.deviceType = j['deviceType']
-		if 'uniqueId' in j: self.uniqueId = j['uniqueId']
-		if 'fileOrIdentifier' in j: self.fileOrIdentifier = j['fileOrIdentifier']
-		if 'bypassed' in j: self.bypassed = j['bypassed']
-		if 'expanded' in j: self.expanded = j['expanded']
-		if 'modPanelOpen' in j: self.modPanelOpen = j['modPanelOpen']
-		if 'gainPanelOpen' in j: self.gainPanelOpen = j['gainPanelOpen']
-		if 'paramPanelOpen' in j: self.paramPanelOpen = j['paramPanelOpen']
-		if 'aiPanelOpen' in j: self.aiPanelOpen = j['aiPanelOpen']
-		if 'parameters' in j: 
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'name' in indict: self.name = indict['name']
+		if 'pluginId' in indict: self.pluginId = indict['pluginId']
+		if 'manufacturer' in indict: self.manufacturer = indict['manufacturer']
+		if 'format' in indict: self.format = indict['format']
+		if 'isInstrument' in indict: self.isInstrument = indict['isInstrument']
+		if 'deviceType' in indict: self.deviceType = indict['deviceType']
+		if 'uniqueId' in indict: self.uniqueId = indict['uniqueId']
+		if 'fileOrIdentifier' in indict: self.fileOrIdentifier = indict['fileOrIdentifier']
+		if 'bypassed' in indict: self.bypassed = indict['bypassed']
+		if 'expanded' in indict: self.expanded = indict['expanded']
+		if 'modPanelOpen' in indict: self.modPanelOpen = indict['modPanelOpen']
+		if 'gainPanelOpen' in indict: self.gainPanelOpen = indict['gainPanelOpen']
+		if 'paramPanelOpen' in indict: self.paramPanelOpen = indict['paramPanelOpen']
+		if 'aiPanelOpen' in indict: self.aiPanelOpen = indict['aiPanelOpen']
+		if 'parameters' in indict: 
 			self.parameters = []
-			for x in j['parameters']:
-				t = magda_chainElement_device_param()
-				t.read(x)
-				self.parameters.append(t)
-		if 'visibleParameters' in j: self.visibleParameters = j['visibleParameters']
-		if 'gainValue' in j: self.gainValue = j['gainValue']
-		if 'gainDb' in j: self.gainDb = j['gainDb']
-		if 'macros' in j: 
+			for x in indict['parameters']:
+				self.parameters.append(magda_chainElement_device_param(x))
+		if 'visibleParameters' in indict: self.visibleParameters = indict['visibleParameters']
+		if 'gainValue' in indict: self.gainValue = indict['gainValue']
+		if 'gainDb' in indict: self.gainDb = indict['gainDb']
+		if 'macros' in indict: 
 			self.macros = []
-			for x in j['macros']:
-				t = magda_macros()
-				t.read(x)
-				self.macros.append(t)
-		if 'mods' in j: self.mods = j['mods']
-		if 'currentParameterPage' in j: self.currentParameterPage = j['currentParameterPage']
-		if 'pluginState' in j: self.pluginState = j['pluginState']
+			for x in indict['macros']:
+				self.macros.append(magda_macros(x))
+		if 'mods' in indict: self.mods = indict['mods']
+		if 'currentParameterPage' in indict: self.currentParameterPage = indict['currentParameterPage']
+		if 'pluginState' in indict: self.pluginState = indict['pluginState']
 
 	def write(self):
 		o = {}
@@ -605,15 +600,16 @@ class magda_chainElement_device:
 # =========================================== track ===========================================
 
 class magda_track_mod_curvePoint:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.phase = 0
 		self.value = 0
 		self.tension = 0
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'phase' in j: self.phase = j['phase']
-		if 'value' in j: self.value = j['value']
-		if 'tension' in j: self.tension = j['tension']
+	def read(self, indict):
+		if 'phase' in indict: self.phase = indict['phase']
+		if 'value' in indict: self.value = indict['value']
+		if 'tension' in indict: self.tension = indict['tension']
 
 	def write(self):
 		o = {}
@@ -623,15 +619,16 @@ class magda_track_mod_curvePoint:
 		return o
 
 class magda_track_mod_link:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.target = {}
 		self.amount = 0
 		self.bipolar = False
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'target' in j: self.target = j['target']
-		if 'amount' in j: self.amount = j['amount']
-		if 'bipolar' in j: self.bipolar = j['bipolar']
+	def read(self, indict):
+		if 'target' in indict: self.target = indict['target']
+		if 'amount' in indict: self.amount = indict['amount']
+		if 'bipolar' in indict: self.bipolar = indict['bipolar']
 
 	def write(self):
 		o = {}
@@ -641,7 +638,7 @@ class magda_track_mod_link:
 		return o
 
 class magda_track_mod:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = 0
 		self.name = ""
 		self.type = 0
@@ -666,40 +663,36 @@ class magda_track_mod:
 		self.curvePoints = []
 		self.links = []
 	
-	def read(self, j):
-		if 'id' in j: self.id = j['id']
-		if 'name' in j: self.name = j['name']
-		if 'type' in j: self.type = j['type']
-		if 'enabled' in j: self.enabled = j['enabled']
-		if 'rate' in j: self.rate = j['rate']
-		if 'waveform' in j: self.waveform = j['waveform']
-		if 'phase' in j: self.phase = j['phase']
-		if 'phaseOffset' in j: self.phaseOffset = j['phaseOffset']
-		if 'value' in j: self.value = j['value']
-		if 'tempoSync' in j: self.tempoSync = j['tempoSync']
-		if 'syncDivision' in j: self.syncDivision = j['syncDivision']
-		if 'triggerMode' in j: self.triggerMode = j['triggerMode']
-		if 'oneShot' in j: self.oneShot = j['oneShot']
-		if 'useLoopRegion' in j: self.useLoopRegion = j['useLoopRegion']
-		if 'loopStart' in j: self.loopStart = j['loopStart']
-		if 'loopEnd' in j: self.loopEnd = j['loopEnd']
-		if 'midiChannel' in j: self.midiChannel = j['midiChannel']
-		if 'midiNote' in j: self.midiNote = j['midiNote']
-		if 'audioAttackMs' in j: self.audioAttackMs = j['audioAttackMs']
-		if 'audioReleaseMs' in j: self.audioReleaseMs = j['audioReleaseMs']
-		if 'curvePreset' in j: self.curvePreset = j['curvePreset']
-		if 'curvePoints' in j: 
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'name' in indict: self.name = indict['name']
+		if 'type' in indict: self.type = indict['type']
+		if 'enabled' in indict: self.enabled = indict['enabled']
+		if 'rate' in indict: self.rate = indict['rate']
+		if 'waveform' in indict: self.waveform = indict['waveform']
+		if 'phase' in indict: self.phase = indict['phase']
+		if 'phaseOffset' in indict: self.phaseOffset = indict['phaseOffset']
+		if 'value' in indict: self.value = indict['value']
+		if 'tempoSync' in indict: self.tempoSync = indict['tempoSync']
+		if 'syncDivision' in indict: self.syncDivision = indict['syncDivision']
+		if 'triggerMode' in indict: self.triggerMode = indict['triggerMode']
+		if 'oneShot' in indict: self.oneShot = indict['oneShot']
+		if 'useLoopRegion' in indict: self.useLoopRegion = indict['useLoopRegion']
+		if 'loopStart' in indict: self.loopStart = indict['loopStart']
+		if 'loopEnd' in indict: self.loopEnd = indict['loopEnd']
+		if 'midiChannel' in indict: self.midiChannel = indict['midiChannel']
+		if 'midiNote' in indict: self.midiNote = indict['midiNote']
+		if 'audioAttackMs' in indict: self.audioAttackMs = indict['audioAttackMs']
+		if 'audioReleaseMs' in indict: self.audioReleaseMs = indict['audioReleaseMs']
+		if 'curvePreset' in indict: self.curvePreset = indict['curvePreset']
+		if 'curvePoints' in indict: 
 			self.curvePoints = []
-			for x in j['curvePoints']:
-				t = magda_track_mod_curvePoint()
-				t.read(x)
-				self.curvePoints.append(t)
-		if 'links' in j: 
+			for x in indict['curvePoints']:
+				self.curvePoints.append(magda_track_mod_curvePoint(x))
+		if 'links' in indict: 
 			self.links = []
-			for x in j['links']:
-				t = magda_track_mod_link()
-				t.read(x)
-				self.links.append(t)
+			for x in indict['links']:
+				self.links.append(magda_track_mod_link(x))
 	
 	def write(self):
 		o = {}
@@ -729,17 +722,18 @@ class magda_track_mod:
 		return o
 
 class magda_macros:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = 0
 		self.name = ""
 		self.value = 0.5
 		self.links = []
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'id' in j: self.id = j['id']
-		if 'name' in j: self.name = j['name']
-		if 'value' in j: self.value = j['value']
-		if 'links' in j: self.links = j['links']
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'name' in indict: self.name = indict['name']
+		if 'value' in indict: self.value = indict['value']
+		if 'links' in indict: self.links = indict['links']
 
 	def write(self):
 		o = {}
@@ -750,17 +744,18 @@ class magda_macros:
 		return o
 
 class magda_track_viewSetting:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.visible = True
 		self.locked = False
 		self.collapsed = False
 		self.height = 80
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'visible' in j: self.visible = j['visible']
-		if 'locked' in j: self.locked = j['locked']
-		if 'collapsed' in j: self.collapsed = j['collapsed']
-		if 'height' in j: self.height = j['height']
+	def read(self, indict):
+		if 'visible' in indict: self.visible = indict['visible']
+		if 'locked' in indict: self.locked = indict['locked']
+		if 'collapsed' in indict: self.collapsed = indict['collapsed']
+		if 'height' in indict: self.height = indict['height']
 
 	def write(self):
 		o = {}
@@ -771,17 +766,18 @@ class magda_track_viewSetting:
 		return o
 
 class magda_track_send:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.busIndex = 0
 		self.level = 1
 		self.preFader = False
 		self.destTrackId = 0
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'busIndex' in j: self.busIndex = j['busIndex']
-		if 'level' in j: self.level = j['level']
-		if 'preFader' in j: self.preFader = j['preFader']
-		if 'destTrackId' in j: self.destTrackId = j['destTrackId']
+	def read(self, indict):
+		if 'busIndex' in indict: self.busIndex = indict['busIndex']
+		if 'level' in indict: self.level = indict['level']
+		if 'preFader' in indict: self.preFader = indict['preFader']
+		if 'destTrackId' in indict: self.destTrackId = indict['destTrackId']
 
 	def write(self):
 		o = {}
@@ -792,7 +788,7 @@ class magda_track_send:
 		return o
 
 class magda_track:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.idnum = 1
 		self.type = 0
 		self.name = ""
@@ -832,69 +828,58 @@ class magda_track:
 		self.viewSettings['Arrange'] = magda_track_viewSetting()
 		self.viewSettings['Mix'] = magda_track_viewSetting()
 		self.viewSettings['Master'] = magda_track_viewSetting()
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'id' in j: self.idnum = j['id']
-		if 'type' in j: self.type = j['type']
-		if 'name' in j: self.name = j['name']
-		if 'colour' in j: self.colour = j['colour']
-		if 'parentId' in j: self.parentId = j['parentId']
-		if 'childIds' in j: self.childIds = j['childIds']
-		if 'volume' in j: self.volume = j['volume']
-		if 'pan' in j: self.pan = j['pan']
-		if 'manualVolume' in j: self.manualVolume = j['manualVolume']
-		if 'manualPan' in j: self.manualPan = j['manualPan']
-		if 'muted' in j: self.muted = j['muted']
-		if 'soloed' in j: self.soloed = j['soloed']
-		if 'recordArmed' in j: self.recordArmed = j['recordArmed']
-		if 'inputMonitor' in j: self.inputMonitor = j['inputMonitor']
-		if 'frozen' in j: self.frozen = j['frozen']
-		if 'playbackMode' in j: self.playbackMode = j['playbackMode']
-		if 'viewSettings' in j: 
+	def read(self, indict):
+		if 'id' in indict: self.idnum = indict['id']
+		if 'type' in indict: self.type = indict['type']
+		if 'name' in indict: self.name = indict['name']
+		if 'colour' in indict: self.colour = indict['colour']
+		if 'parentId' in indict: self.parentId = indict['parentId']
+		if 'childIds' in indict: self.childIds = indict['childIds']
+		if 'volume' in indict: self.volume = indict['volume']
+		if 'pan' in indict: self.pan = indict['pan']
+		if 'manualVolume' in indict: self.manualVolume = indict['manualVolume']
+		if 'manualPan' in indict: self.manualPan = indict['manualPan']
+		if 'muted' in indict: self.muted = indict['muted']
+		if 'soloed' in indict: self.soloed = indict['soloed']
+		if 'recordArmed' in indict: self.recordArmed = indict['recordArmed']
+		if 'inputMonitor' in indict: self.inputMonitor = indict['inputMonitor']
+		if 'frozen' in indict: self.frozen = indict['frozen']
+		if 'playbackMode' in indict: self.playbackMode = indict['playbackMode']
+		if 'viewSettings' in indict: 
 			self.viewSettings = {}
-			for k, v in j['viewSettings'].items():
-				vs = magda_track_viewSetting()
-				vs.read(v)
-				self.viewSettings[k] = vs
-		if 'midiInputDevice' in j: self.midiInputDevice = j['midiInputDevice']
-		if 'midiOutputDevice' in j: self.midiOutputDevice = j['midiOutputDevice']
-		if 'audioInputDevice' in j: self.audioInputDevice = j['audioInputDevice']
-		if 'audioOutputDevice' in j: self.audioOutputDevice = j['audioOutputDevice']
-		if 'auxBusIndex' in j: self.auxBusIndex = j['auxBusIndex']
-		if 'sends' in j: 
+			for k, v in indict['viewSettings'].items():
+				self.viewSettings[k] = magda_track_viewSetting(v)
+		if 'midiInputDevice' in indict: self.midiInputDevice = indict['midiInputDevice']
+		if 'midiOutputDevice' in indict: self.midiOutputDevice = indict['midiOutputDevice']
+		if 'audioInputDevice' in indict: self.audioInputDevice = indict['audioInputDevice']
+		if 'audioOutputDevice' in indict: self.audioOutputDevice = indict['audioOutputDevice']
+		if 'auxBusIndex' in indict: self.auxBusIndex = indict['auxBusIndex']
+		if 'sends' in indict: 
 			self.sends = []
-			for v in j['sends']:
-				vs = magda_track_send()
-				vs.read(v)
-				self.sends.append(vs)
-		if 'chainElements' in j: 
+			for v in indict['sends']:
+				self.sends.append(magda_track_send(v))
+		if 'chainElements' in indict: 
 			self.chainElements = []
-			for x in j['chainElements']:
+			for x in indict['chainElements']:
 				ctype = x['type']
 				if ctype=='device':
-					dev = magda_chainElement_device()
-					dev.read(x['device'])
-					self.chainElements.append(dev)
+					self.chainElements.append(magda_chainElement_device(x['device']))
 				if ctype=='rack':
-					dev = magda_chainElement_rack()
-					dev.read(x['rack'])
-					self.chainElements.append(dev)
-		if 'trackMods' in j: 
+					self.chainElements.append(magda_chainElement_rack(x['rack']))
+		if 'trackMods' in indict: 
 			self.trackMods = []
-			for x in j['trackMods']:
-				t = magda_track_mod()
-				t.read(x)
-				self.trackMods.append(t)
-		if 'trackMacros' in j: 
+			for x in indict['trackMods']:
+				self.trackMods.append(magda_track_mod(x))
+		if 'trackMacros' in indict: 
 			self.trackMacros = []
-			for x in j['trackMacros']:
-				t = magda_macros()
-				t.read(x)
-				self.trackMacros.append(t)
-		if 'globalModsPanelOpen' in j: self.globalModsPanelOpen = j['globalModsPanelOpen']
-		if 'globalMacrosPanelOpen' in j: self.globalMacrosPanelOpen = j['globalMacrosPanelOpen']
-		if 'selectedGlobalModIndex' in j: self.selectedGlobalModIndex = j['selectedGlobalModIndex']
-		if 'selectedGlobalMacroIndex' in j: self.selectedGlobalMacroIndex = j['selectedGlobalMacroIndex']
+			for x in indict['trackMacros']:
+				self.trackMacros.append(magda_macros(x))
+		if 'globalModsPanelOpen' in indict: self.globalModsPanelOpen = indict['globalModsPanelOpen']
+		if 'globalMacrosPanelOpen' in indict: self.globalMacrosPanelOpen = indict['globalMacrosPanelOpen']
+		if 'selectedGlobalModIndex' in indict: self.selectedGlobalModIndex = indict['selectedGlobalModIndex']
+		if 'selectedGlobalMacroIndex' in indict: self.selectedGlobalMacroIndex = indict['selectedGlobalMacroIndex']
 
 	def write(self):
 		o = {}
@@ -938,15 +923,16 @@ class magda_track:
 # =========================================== automation ===========================================
 
 class magda_automation_Handle:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.beatOffset = 0
 		self.value = 0
 		self.linked = True
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'beatOffset' in j: self.beatOffset = j['beatOffset']
-		if 'value' in j: self.value = j['value']
-		if 'linked' in j: self.linked = j['linked']
+	def read(self, indict):
+		if 'beatOffset' in indict: self.beatOffset = indict['beatOffset']
+		if 'value' in indict: self.value = indict['value']
+		if 'linked' in indict: self.linked = indict['linked']
 
 	def write(self):
 		o = {}
@@ -956,7 +942,7 @@ class magda_automation_Handle:
 		return o
 
 class magda_automation_absolutePoint:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = 1
 		self.beatPosition = 0
 		self.value = 0
@@ -964,15 +950,16 @@ class magda_automation_absolutePoint:
 		self.tension = 0.0
 		self.inHandle = magda_automation_Handle()
 		self.outHandle = magda_automation_Handle()
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'id' in j: self.id = j['id']
-		if 'beatPosition' in j: self.beatPosition = j['beatPosition']
-		if 'value' in j: self.value = j['value']
-		if 'curveType' in j: self.curveType = j['curveType']
-		if 'tension' in j: self.tension = j['tension']
-		if 'inHandle' in j: self.inHandle.read(j['inHandle'])
-		if 'outHandle' in j: self.outHandle.read(j['outHandle'])
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'beatPosition' in indict: self.beatPosition = indict['beatPosition']
+		if 'value' in indict: self.value = indict['value']
+		if 'curveType' in indict: self.curveType = indict['curveType']
+		if 'tension' in indict: self.tension = indict['tension']
+		if 'inHandle' in indict: self.inHandle.read(indict['inHandle'])
+		if 'outHandle' in indict: self.outHandle.read(indict['outHandle'])
 
 	def write(self):
 		o = {}
@@ -986,7 +973,7 @@ class magda_automation_absolutePoint:
 		return o
 
 class magda_automation_lane_target:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.type = 0
 		self.trackId = 0
 		self.devicePath = {}
@@ -994,15 +981,16 @@ class magda_automation_lane_target:
 		self.modId = -1
 		self.modParamIndex = -1
 		self.sendBusIndex = -1
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'type' in j: self.type = j['type']
-		if 'trackId' in j: self.trackId = j['trackId']
-		if 'devicePath' in j: self.devicePath = j['devicePath']
-		if 'paramIndex' in j: self.paramIndex = j['paramIndex']
-		if 'modId' in j: self.modId = j['modId']
-		if 'modParamIndex' in j: self.modParamIndex = j['modParamIndex']
-		if 'sendBusIndex' in j: self.sendBusIndex = j['sendBusIndex']
+	def read(self, indict):
+		if 'type' in indict: self.type = indict['type']
+		if 'trackId' in indict: self.trackId = indict['trackId']
+		if 'devicePath' in indict: self.devicePath = indict['devicePath']
+		if 'paramIndex' in indict: self.paramIndex = indict['paramIndex']
+		if 'modId' in indict: self.modId = indict['modId']
+		if 'modParamIndex' in indict: self.modParamIndex = indict['modParamIndex']
+		if 'sendBusIndex' in indict: self.sendBusIndex = indict['sendBusIndex']
 
 	def write(self):
 		o = {}
@@ -1016,7 +1004,7 @@ class magda_automation_lane_target:
 		return o
 
 class magda_automation_lane:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = 0
 		self.target = magda_automation_lane_target()
 		self.type = 0
@@ -1029,25 +1017,24 @@ class magda_automation_lane:
 		self.height = 60
 		self.absolutePoints = []
 		self.clipIds = []
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'id' in j: self.id = j['id']
-		if 'target' in j: self.target.read(j['target'])
-		if 'type' in j: self.type = j['type']
-		if 'name' in j: self.name = j['name']
-		if 'visible' in j: self.visible = j['visible']
-		if 'expanded' in j: self.expanded = j['expanded']
-		if 'bypass' in j: self.bypass = j['bypass']
-		if 'snapEditsToBeatGrid' in j: self.snapEditsToBeatGrid = j['snapEditsToBeatGrid']
-		if 'snapValue' in j: self.snapValue = j['snapValue']
-		if 'height' in j: self.height = j['height']
-		if 'absolutePoints' in j: 
+	def read(self, indict):
+		if 'id' in indict: self.id = indict['id']
+		if 'target' in indict: self.target.read(indict['target'])
+		if 'type' in indict: self.type = indict['type']
+		if 'name' in indict: self.name = indict['name']
+		if 'visible' in indict: self.visible = indict['visible']
+		if 'expanded' in indict: self.expanded = indict['expanded']
+		if 'bypass' in indict: self.bypass = indict['bypass']
+		if 'snapEditsToBeatGrid' in indict: self.snapEditsToBeatGrid = indict['snapEditsToBeatGrid']
+		if 'snapValue' in indict: self.snapValue = indict['snapValue']
+		if 'height' in indict: self.height = indict['height']
+		if 'absolutePoints' in indict: 
 			self.absolutePoints = []
-			for x in j['absolutePoints']:
-				t = magda_automation_absolutePoint()
-				t.read(x)
-				self.absolutePoints.append(t)
-		if 'clipIds' in j: self.clipIds = j['clipIds']
+			for x in indict['absolutePoints']:
+				self.absolutePoints.append(magda_automation_absolutePoint(x))
+		if 'clipIds' in indict: self.clipIds = indict['clipIds']
 
 	def write(self):
 		o = {}
@@ -1066,18 +1053,17 @@ class magda_automation_lane:
 		return o
 
 class magda_automation:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.clips = []
 		self.lanes = []
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'clips' in j: self.clips = j['clips']
-		if 'lanes' in j: 
+	def read(self, indict):
+		if 'clips' in indict: self.clips = indict['clips']
+		if 'lanes' in indict: 
 			self.lanes = []
-			for x in j['lanes']:
-				t = magda_automation_lane()
-				t.read(x)
-				self.lanes.append(t)
+			for x in indict['lanes']:
+				self.lanes.append(magda_automation_lane(x))
 
 	def write(self):
 		o = {}
@@ -1088,15 +1074,16 @@ class magda_automation:
 # =========================================== project ===========================================
 
 class magda_project_loop:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.enabled = False
 		self.startBeats = 0
 		self.endBeats = 0
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'enabled' in j: self.enabled = j['enabled']
-		if 'startBeats' in j: self.startBeats = j['startBeats']
-		if 'endBeats' in j: self.endBeats = j['endBeats']
+	def read(self, indict):
+		if 'enabled' in indict: self.enabled = indict['enabled']
+		if 'startBeats' in indict: self.startBeats = indict['startBeats']
+		if 'endBeats' in indict: self.endBeats = indict['endBeats']
 
 	def write(self):
 		o = {}
@@ -1106,17 +1093,18 @@ class magda_project_loop:
 		return o
 
 class magda_project_zoom:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.horizontalZoom = 5.0
 		self.verticalZoom = 1.0
 		self.scrollX = 0
 		self.scrollY = 0
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'horizontalZoom' in j: self.horizontalZoom = j['horizontalZoom']
-		if 'verticalZoom' in j: self.verticalZoom = j['verticalZoom']
-		if 'scrollX' in j: self.scrollX = j['scrollX']
-		if 'scrollY' in j: self.scrollY = j['scrollY']
+	def read(self, indict):
+		if 'horizontalZoom' in indict: self.horizontalZoom = indict['horizontalZoom']
+		if 'verticalZoom' in indict: self.verticalZoom = indict['verticalZoom']
+		if 'scrollX' in indict: self.scrollX = indict['scrollX']
+		if 'scrollY' in indict: self.scrollY = indict['scrollY']
 
 	def write(self):
 		o = {}
@@ -1127,7 +1115,7 @@ class magda_project_zoom:
 		return o
 
 class magda_project:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.name = ''
 		self.tempo = 120.0
 		self.timeSignature = [4,4]
@@ -1137,17 +1125,18 @@ class magda_project:
 		self.keyQuality = 0
 		self.loop = magda_project_loop()
 		self.zoom = magda_project_zoom()
+		if indict is not None: self.read(indict)
 
-	def read(self, j):
-		if 'name' in j: self.name = j['name']
-		if 'tempo' in j: self.tempo = j['tempo']
-		if 'timeSignature' in j: self.timeSignature = j['timeSignature']
-		if 'projectLength' in j: self.projectLength = j['projectLength']
-		if 'sampleRate' in j: self.sampleRate = j['sampleRate']
-		if 'keyRoot' in j: self.keyRoot = j['keyRoot']
-		if 'keyQuality' in j: self.keyQuality = j['keyQuality']
-		if 'loop' in j: self.loop.read(j['loop'])
-		if 'zoom' in j: self.zoom.read(j['zoom'])
+	def read(self, indict):
+		if 'name' in indict: self.name = indict['name']
+		if 'tempo' in indict: self.tempo = indict['tempo']
+		if 'timeSignature' in indict: self.timeSignature = indict['timeSignature']
+		if 'projectLength' in indict: self.projectLength = indict['projectLength']
+		if 'sampleRate' in indict: self.sampleRate = indict['sampleRate']
+		if 'keyRoot' in indict: self.keyRoot = indict['keyRoot']
+		if 'keyQuality' in indict: self.keyQuality = indict['keyQuality']
+		if 'loop' in indict: self.loop.read(indict['loop'])
+		if 'zoom' in indict: self.zoom.read(indict['zoom'])
 
 	def write(self):
 		o = {}
@@ -1163,7 +1152,7 @@ class magda_project:
 		return o
 
 class magda_session:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.magdaVersion = ''
 		self.lastModified = ''
 		self.project = magda_project()
@@ -1171,6 +1160,7 @@ class magda_session:
 		self.clips = []
 		self.automation = magda_automation()
 		self.projectBindings = []
+		if indict is not None: self.read_json(indict)
 
 	def load_from_file(self, input_file):
 		f = open(input_file, 'rb')
@@ -1179,24 +1169,18 @@ class magda_session:
 		self.read_json(projectdata)
 		return True
 
-	def read_json(self, j):
-		if 'magdaVersion' in j: self.magdaVersion = j['magdaVersion']
-		if 'lastModified' in j: self.lastModified = j['lastModified']
-		if 'projectBindings' in j: self.projectBindings = j['projectBindings']
-		if 'project' in j: self.project.read(j['project'])
-		if 'tracks' in j: 
+	def read_json(self, indict):
+		if 'magdaVersion' in indict: self.magdaVersion = indict['magdaVersion']
+		if 'lastModified' in indict: self.lastModified = indict['lastModified']
+		if 'projectBindings' in indict: self.projectBindings = indict['projectBindings']
+		if 'project' in indict: self.project.read(indict['project'])
+		if 'tracks' in indict: 
 			self.tracks = []
-			for x in j['tracks']:
-				t = magda_track()
-				t.read(x)
-				self.tracks.append(t)
-		if 'clips' in j: 
+			for x in indict['tracks']: self.tracks.append(magda_track(x))
+		if 'clips' in indict: 
 			self.clips = []
-			for x in j['clips']:
-				t = magda_clip()
-				t.read(x)
-				self.clips.append(t)
-		if 'automation' in j: self.automation.read(j['automation'])
+			for x in indict['clips']: self.clips.append(magda_clip(x))
+		if 'automation' in indict: self.automation.read(indict['automation'])
 
 		if DEBUGSTUFF:
 			f = open('magda_in.json', 'w')

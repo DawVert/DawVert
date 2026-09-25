@@ -82,6 +82,15 @@ class miniconfmenu_store():
 		self.parts[idval] = storepart
 		return storepart
 
+	def add_file_open(self, idval, defaultval, name):
+		storepart = miniconfmenu_storepart()
+		storepart.type = 'file_open'
+		storepart.name = name
+		storepart.value_def = defaultval
+		storepart.group = self.curgroup
+		self.parts[idval] = storepart
+		return storepart
+
 	def add_text(self, idval, defaultval, name):
 		storepart = miniconfmenu_storepart()
 		storepart.type = 'text'

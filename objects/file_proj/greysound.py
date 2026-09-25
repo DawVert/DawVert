@@ -9,16 +9,17 @@ logger_projparse = logging.getLogger('projparse')
 DEBUG_IN_OUT = True
 
 class greysound_insert:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = ""
 		self.trackId = ""
 		self.slotIndex = ""
 		self.pluginType = 0
 		self.bypassed = 0
 		self.parameters = 0
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'id': self.id = v
 			elif n == 'trackId': self.trackId = v
 			elif n == 'slotIndex': self.slotIndex = v
@@ -38,7 +39,7 @@ class greysound_insert:
 		return out
 
 class greysound_send:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = ""
 		self.sourceTrackId = 0
 		self.destinationTrackId = 0
@@ -47,9 +48,10 @@ class greysound_send:
 		self.channelPans = [0]
 		self.bypassed = False
 		self.preFader = False
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'id': self.id = v
 			elif n == 'sourceTrackId': self.sourceTrackId = v
 			elif n == 'destinationTrackId': self.destinationTrackId = v
@@ -73,13 +75,14 @@ class greysound_send:
 		return out
 
 class greysound_marker:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = ""
 		self.name = ""
 		self.position = {}
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'id': self.id = v
 			elif n == 'name': self.name = v
 			elif n == 'position': self.position = v
@@ -93,14 +96,15 @@ class greysound_marker:
 		return out
 
 class greysound_midinote:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.pitch = 60
 		self.startTicks = 0
 		self.durationTicks = 3840
 		self.velocity = 100
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'pitch': self.pitch = v
 			elif n == 'startTicks': self.startTicks = v
 			elif n == 'durationTicks': self.durationTicks = v
@@ -116,14 +120,15 @@ class greysound_midinote:
 		return out
 
 class greysound_clip:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = ""
 		self.filename = ""
 		self.storagePath = ""
 		self.durationSec = 0
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'id': self.id = v
 			elif n == 'filename': self.filename = v
 			elif n == 'storagePath': self.storagePath = v
@@ -139,7 +144,7 @@ class greysound_clip:
 		return out
 
 class greysound_region:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = ""
 		self.trackId = 0
 		self.start = {}
@@ -154,9 +159,10 @@ class greysound_region:
 		self.midiNotes = []
 		self.loopEnabled = False
 		self.loopLength = {}
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'id': self.id = v
 			elif n == 'trackId': self.trackId = v
 			elif n == 'start': self.start = v
@@ -170,10 +176,7 @@ class greysound_region:
 			elif n == 'clipGain': self.clipGain = v
 			elif n == 'midiNotes':
 				self.midiNotes = []
-				for t in v:
-					o = greysound_midinote()
-					o.read(t)
-					self.midiNotes.append(o)
+				for t in v: self.midiNotes.append(greysound_midinote(t))
 			elif n == 'loopEnabled': self.loopEnabled = v
 			elif n == 'loopLength': self.loopLength = v
 			else: logger_projparse.warning('greysound: region: unimplemented attrib: '+n)
@@ -195,7 +198,7 @@ class greysound_region:
 		return out
 
 class greysound_automationLane_target:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.type = "TRACK"
 		self.parameterId = ""
 		self.label = ""
@@ -203,9 +206,10 @@ class greysound_automationLane_target:
 		self.maxValue = 1
 		self.defaultValue = 0
 		self.unit = None
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'type': self.type = v
 			elif n == 'parameterId': self.parameterId = v
 			elif n == 'label': self.label = v
@@ -227,13 +231,14 @@ class greysound_automationLane_target:
 		return out
 
 class greysound_automationLane_point:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = ""
 		self.position = {}
 		self.value = 0
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'id': self.id = v
 			elif n == 'position': self.position = v
 			elif n == 'value': self.value = v
@@ -247,16 +252,17 @@ class greysound_automationLane_point:
 		return out
 
 class greysound_automationLane:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = ""
 		self.trackId = 0
 		self.target = greysound_automationLane_target()
 		self.points = []
 		self.bypassed = False
 		self.visible = False
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'id': self.id = v
 			elif n == 'trackId': self.trackId = v
 			elif n == 'target': self.target.read(v)
@@ -281,7 +287,7 @@ class greysound_automationLane:
 		return out
 
 class greysound_track:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.id = 1
 		self.name = "Track"
 		self.type = "AUDIO"
@@ -298,9 +304,10 @@ class greysound_track:
 		self.position = 0
 		self.outputRouting = None
 		self.automationLanes = []
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'id': self.id = v
 			elif n == 'name': self.name = v
 			elif n == 'type': self.type = v
@@ -345,7 +352,7 @@ class greysound_track:
 		return out
 
 class greysound_session:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.schemaVersion = 1
 		self.metadata = {}
 		self.tempo = 120
@@ -369,9 +376,10 @@ class greysound_session:
 		self.playheadPosition = {"ticks": 0, "millis": 0}
 		self.keySignature = {"root": "C", "quality": "major"}
 		self.timeFormat = "min:sec"
+		if indict is not None: self.read(indict)
 
-	def read(self, pd):
-		for n, v in pd.items():
+	def read(self, indict):
+		for n, v in indict.items():
 			if n == 'schemaVersion': 
 				self.schemaVersion = v
 				if self.schemaVersion!=1:
@@ -380,40 +388,22 @@ class greysound_session:
 			elif n == 'tempo': self.tempo = v
 			elif n == 'tracks': 
 				self.tracks = []
-				for t in v:
-					o = greysound_track()
-					o.read(t)
-					self.tracks.append(o)
+				for t in v: self.tracks.append(greysound_track(t))
 			elif n == 'clips': 
 				self.clips = []
-				for t in v:
-					o = greysound_clip()
-					o.read(t)
-					self.clips.append(o)
+				for t in v: self.clips.append(greysound_clip(t))
 			elif n == 'regions': 
 				self.regions = []
-				for t in v:
-					o = greysound_region()
-					o.read(t)
-					self.regions.append(o)
+				for t in v: self.regions.append(greysound_region(t))
 			elif n == 'markers':
 				self.markers = []
-				for t in v:
-					o = greysound_marker()
-					o.read(t)
-					self.markers.append(o)
+				for t in v: self.markers.append(greysound_marker(t))
 			elif n == 'sends':
 				self.sends = []
-				for t in v:
-					o = greysound_send()
-					o.read(t)
-					self.sends.append(o)
+				for t in v: self.sends.append(greysound_send(t))
 			elif n == 'inserts': 
 				self.inserts = []
-				for t in v:
-					o = greysound_insert()
-					o.read(t)
-					self.inserts.append(o)
+				for t in v: self.inserts.append(greysound_insert(t))
 			elif n == 'preferredAudioInputDeviceId': self.preferredAudioInputDeviceId = v
 			elif n == 'preferredAudioOutputDeviceId': self.preferredAudioOutputDeviceId = v
 			elif n == 'preferredMidiInputDeviceId': self.preferredMidiInputDeviceId = v

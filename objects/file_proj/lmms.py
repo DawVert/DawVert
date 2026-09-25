@@ -106,7 +106,7 @@ class lmms_param:
 			xmldata.set(self.name+'_syncmode', str(self.sync_mode))
 
 class lmms_automationpattern:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.pos = 0
 		self.mute = 0
 		self.len = 0
@@ -117,6 +117,7 @@ class lmms_automationpattern:
 
 		self.auto_points = {}
 		self.auto_target = []
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -152,13 +153,14 @@ class lmms_automationpattern:
 
 class lmms_note:
 	__slots__ = ['vol','pos','key','len','pan','auto']
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.vol = 100
 		self.pos = 0
 		self.key = 0
 		self.len = 0
 		self.pan = 0
 		self.auto = {}
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -171,9 +173,7 @@ class lmms_note:
 		for xmlpart in xmldata:
 			if xmlpart.tag == 'automationpattern':
 				for subxml in xmlpart:
-					auto_obj = lmms_automationpattern()
-					auto_obj.read(subxml)
-					self.auto[subxml.tag] = auto_obj
+					self.auto[subxml.tag] = lmms_automationpattern(subxml)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, 'note')
@@ -188,7 +188,7 @@ class lmms_note:
 				auto_obj.write(automationpatternxml, name)
 
 class lmms_pattern:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.type = 1
 		self.steps = 16
 		self.pos = 0
@@ -196,6 +196,7 @@ class lmms_pattern:
 		self.name = ''
 		self.color = ''
 		self.notes = []
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -207,10 +208,7 @@ class lmms_pattern:
 			if n == 'color': self.color = v
 
 		for xmlpart in xmldata:
-			if xmlpart.tag == 'note':
-				note_obj = lmms_note()
-				note_obj.read(xmlpart)
-				self.notes.append(note_obj)
+			if xmlpart.tag == 'note': self.notes.append(lmms_note(xmlpart))
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, 'pattern')
@@ -225,7 +223,7 @@ class lmms_pattern:
 			note_obj.write(tempxml)
 
 class lmms_arpeggiator:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.arp = lmms_param('arp', 0)
 		self.arpmiss = lmms_param('arpmiss', 0)
 		self.arptime = lmms_param('arptime', 100)
@@ -236,6 +234,7 @@ class lmms_arpeggiator:
 		self.arpgate = lmms_param('arpgate', 100)
 		self.arpmode = lmms_param('arpmode', 0)
 		self.arpcycle = lmms_param('arpcycle', 0)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		self.arp.read(xmldata)
@@ -263,10 +262,11 @@ class lmms_arpeggiator:
 		self.arpcycle.write(tempxml)
 		
 class lmms_chordcreator:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.chord_enabled = lmms_param('chord-enabled', 0)
 		self.chord = lmms_param('chord', 0)
 		self.chordrange = lmms_param('chordrange', 0)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		self.chord_enabled.read(xmldata)
@@ -280,7 +280,7 @@ class lmms_chordcreator:
 		self.chordrange.write(tempxml)
 		
 class lmms_midiport:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.inputchannel = 0
 		self.fixedoutputnote = -1
 		self.outputchannel = 1
@@ -293,6 +293,7 @@ class lmms_midiport:
 		self.inputcontroller = 0
 		self.writable = 0
 		self.inports = []
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -410,7 +411,7 @@ class lmms_eldata:
 		self.elres.write(tempxml)
 
 class lmms_effect:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.name = ''
 		self.autoquit = lmms_param('autoquit', 1)
 		self.gate = lmms_param('gate', 0)
@@ -418,6 +419,7 @@ class lmms_effect:
 		self.wet = lmms_param('wet', 1)
 		self.plugin = lmms_plugin()
 		self.keys = {}
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -450,18 +452,17 @@ class lmms_effect:
 			attribute_xml.set('name', str(n))
 
 class lmms_fxchain:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.enabled = lmms_param('enabled', 1)
 		self.effects = []
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		self.enabled.read(xmldata)
 
 		for xmlpart in xmldata:
 			if xmlpart.tag == 'effect':
-				effect_obj = lmms_effect()
-				effect_obj.read(xmlpart)
-				self.effects.append(effect_obj)
+				self.effects.append(lmms_effect(xmlpart))
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, 'fxchain')
@@ -471,9 +472,10 @@ class lmms_fxchain:
 		self.enabled.write(tempxml)
 
 class lmms_ladspa_param:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.link = lmms_param('link', 0)
 		self.data = lmms_param('data', 0)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		self.link.read(xmldata)
@@ -510,7 +512,7 @@ class lmms_vst_param:
 			tempxml.set('value', str(self.value))
 
 class lmms_plugin:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.name = ''
 		self.params = {}
 		self.custom = {}
@@ -518,6 +520,7 @@ class lmms_plugin:
 		self.ladspa_ports = 0
 		self.ladspa_link = -1
 		self.vst_params = {}
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		self.name = xmldata.tag
@@ -527,9 +530,7 @@ class lmms_plugin:
 			self.ladspa_ports = int(xmldata.get('ports'))
 			self.ladspa_link = int(ladlink if ladlink else 0)
 			for xmlpart in xmldata:
-				ladspa_param_obj = lmms_ladspa_param()
-				ladspa_param_obj.read(xmlpart)
-				self.ladspa_params[xmlpart.tag] = ladspa_param_obj
+				self.ladspa_params[xmlpart.tag] = lmms_ladspa_param(xmlpart)
 		elif self.name in ['vestige', 'vsteffect']:
 			for n, v in xmldata.attrib.items():
 				isvstparam = False
@@ -617,9 +618,10 @@ class lmms_plugin:
 						vst_param.write(tempxml, paramid)
 
 class lmms_instrument:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.name = 'audiofileprocessor'
 		self.plugin = lmms_plugin()
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -634,13 +636,14 @@ class lmms_instrument:
 		self.plugin.write(tempxml)
 
 class lmms_sampletco:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.sample_rate = 0
 		self.len = 0
 		self.muted = 0
 		self.pos = 0
 		self.off = -1
 		self.src = ''
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -661,7 +664,7 @@ class lmms_sampletco:
 		if self.sample_rate: tempxml.set('sample_rate', str(self.sample_rate))
 
 class lmms_instrumenttrack:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.vol = lmms_param('vol', 100)
 		self.fxch = lmms_param('fxch', -1)
 		self.pitch = lmms_param('pitch', 0)
@@ -675,6 +678,7 @@ class lmms_instrumenttrack:
 		self.midiport = lmms_midiport()
 		self.fxchain = lmms_fxchain()
 		self.instrument = lmms_instrument()
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		self.vol.read(xmldata)
@@ -712,11 +716,12 @@ class lmms_instrumenttrack:
 		self.fxchain.write(tempxml)
 		
 class lmms_sampletrack:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.fxchain = lmms_fxchain()
 		self.vol = lmms_param('vol', 100)
 		self.pan = lmms_param('pan', 0)
 		self.fxch = lmms_param('fxch', -1)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		self.vol.read(xmldata)
@@ -733,13 +738,14 @@ class lmms_sampletrack:
 		self.fxchain.write(tempxml)
 
 class lmms_bbtco:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.pos = 0
 		self.muted = 0
 		self.color = 0
 		self.len = 0
 		self.usestyle = 0
 		self.name = ''
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -760,9 +766,10 @@ class lmms_bbtco:
 		tempxml.set('name', self.name)
 
 class lmms_bbtrack:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.trackcontainer = lmms_trackcontainer('bbtrackcontainer')
 		self.trackcontainer_used = False
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for xmlpart in xmldata:
@@ -775,7 +782,7 @@ class lmms_bbtrack:
 		if self.trackcontainer_used: self.trackcontainer.write(tempxml)
 		
 class lmms_track:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.muted = lmms_param('muted', 0)
 		self.solo = lmms_param('solo', 0)
 		self.type = 0
@@ -789,6 +796,7 @@ class lmms_track:
 		self.automationpatterns = []
 		self.sampletcos = []
 		self.bbtcos = []
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		self.muted.read(xmldata)
@@ -807,21 +815,13 @@ class lmms_track:
 			if xmlpart.tag == 'sampletrack':
 				self.sampletrack.read(xmlpart)
 			if xmlpart.tag in ['pattern', 'midiclip']:
-				pattern_obj = lmms_pattern()
-				pattern_obj.read(xmlpart)
-				self.patterns.append(pattern_obj)
+				self.patterns.append(lmms_pattern(xmlpart))
 			if xmlpart.tag in ['automationpattern', 'automationclip']:
-				automationpattern_obj = lmms_automationpattern()
-				automationpattern_obj.read(xmlpart)
-				self.automationpatterns.append(automationpattern_obj)
+				self.automationpatterns.append(lmms_automationpattern(xmlpart))
 			if xmlpart.tag in ['sampletco', 'sampleclip']:
-				sampletco_obj = lmms_sampletco()
-				sampletco_obj.read(xmlpart)
-				self.sampletcos.append(sampletco_obj)
+				self.sampletcos.append(lmms_sampletco(xmlpart))
 			if xmlpart.tag in ['bbtco', 'patternclip']:
-				bbtco_obj = lmms_bbtco()
-				bbtco_obj.read(xmlpart)
-				self.bbtcos.append(bbtco_obj)
+				self.bbtcos.append(lmms_bbtco(xmlpart))
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, 'track')
@@ -847,7 +847,7 @@ class lmms_track:
 				automationpattern_obj.write(tempxml, 'automationpattern')
 
 class lmms_window:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.x = -1
 		self.y = -1
 		self.minimized = -1
@@ -855,6 +855,7 @@ class lmms_window:
 		self.visible = -1
 		self.maximized = -1
 		self.width = -1
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -877,7 +878,7 @@ class lmms_window:
 		if self.width != -1: xmldata.set('width', str(self.width))
 
 class lmms_fxchannel:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.volume = lmms_param('volume', 1)
 		self.soloed = lmms_param('soloed', 0)
 		self.muted = lmms_param('muted', 0)
@@ -885,6 +886,7 @@ class lmms_fxchannel:
 		self.color = ''
 		self.fxchain = lmms_fxchain()
 		self.sends = {}
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		self.volume.read(xmldata)
@@ -914,17 +916,16 @@ class lmms_fxchannel:
 			param_obj.write(send_xml)
 
 class lmms_fxmixer:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.window = lmms_window()
 		self.fxchannels = {}
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		self.window.read(xmldata)
 		for xmlpart in xmldata:
 			if xmlpart.tag in ['fxchannel', 'mixerchannel']:
-				fxchannel_obj = lmms_fxchannel()
-				fxchannel_obj.read(xmlpart)
-				self.fxchannels[int(xmlpart.get('num'))] = fxchannel_obj
+				self.fxchannels[int(xmlpart.get('num'))] = lmms_fxchannel(xmlpart)
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, 'fxmixer')
@@ -945,9 +946,7 @@ class lmms_trackcontainer:
 
 		for xmlpart in xmldata:
 			if xmlpart.tag == 'track':
-				track_obj = lmms_track()
-				track_obj.read(xmlpart)
-				self.tracks.append(track_obj)
+				self.tracks.append(lmms_track(xmlpart))
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, 'trackcontainer')
@@ -958,9 +957,10 @@ class lmms_trackcontainer:
 			track_obj.write(tempxml)
 
 class lmms_projectnotes:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.window = lmms_window()
 		self.text = ''
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		self.window.read(xmldata)
@@ -972,10 +972,11 @@ class lmms_projectnotes:
 		tempxml.text = self.text
 
 class lmms_timeline:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.lp1pos = 0
 		self.lpstate = 0
 		self.lp0pos = 0
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for n, v in xmldata.attrib.items():
@@ -990,7 +991,7 @@ class lmms_timeline:
 		tempxml.set('lp0pos', str(self.lp0pos))
 
 class lmms_lfocontroller:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.type = 1
 		self.userwavefile = ''
 		self.name = ''
@@ -1000,6 +1001,7 @@ class lmms_lfocontroller:
 		self.phase = lmms_param('phase', 0)
 		self.wave = lmms_param('wave', 0)
 		self.multiplier = lmms_param('multiplier', 0)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		if 'name' in xmldata.attrib: self.name = xmldata.attrib['name']
@@ -1025,7 +1027,7 @@ class lmms_lfocontroller:
 		tempxml.set('userwavefile', self.userwavefile)
 
 class lmms_song:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.trackcontainer = lmms_trackcontainer('song')
 		self.tracks = []
 		self.fxmixer = lmms_fxmixer()
@@ -1035,6 +1037,7 @@ class lmms_song:
 		self.projectnotes = lmms_projectnotes()
 		self.timeline = lmms_timeline()
 		self.controllers = []
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		for xmlpart in xmldata:
@@ -1058,9 +1061,7 @@ class lmms_song:
 			if xmlpart.tag == 'controllers':
 				for subxml in xmlpart:
 					if subxml.tag == 'lfocontroller':
-						ctrlr_obj = lmms_lfocontroller()
-						ctrlr_obj.read(subxml)
-						self.controllers.append(ctrlr_obj)
+						self.controllers.append(lmms_lfocontroller(subxml))
 
 	def write(self, xmldata):
 		tempxml = ET.SubElement(xmldata, 'song')
@@ -1081,12 +1082,13 @@ class lmms_song:
 				ctrlr_obj.write(controllers_xml)
 
 class lmms_head:
-	def __init__(self):
+	def __init__(self, xmldata=None):
 		self.timesig_numerator = lmms_param('timesig_numerator', 4)
 		self.timesig_denominator = lmms_param('timesig_denominator', 4)
 		self.mastervol = lmms_param('mastervol', 100)
 		self.masterpitch = lmms_param('masterpitch', 0)
 		self.bpm = lmms_param('bpm', 140)
+		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
 		self.timesig_numerator.read(xmldata)

@@ -12,7 +12,11 @@ from pathlib import Path
 from plugins import base as dv_plugins
 
 from PyQt6 import QtWidgets, uic, QtCore, QtGui
-from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFileDialog
+from PyQt6.QtWidgets import (QApplication, QMainWindow,
+	QCheckBox, QComboBox, QDoubleSpinBox,
+	QGridLayout, QGroupBox, QHBoxLayout, QLabel,
+	QLayout, QLineEdit, QMainWindow, QSizePolicy,
+	QSpinBox, QVBoxLayout, QWidget, QFormLayout, QFileDialog, QTextEdit)
 
 import logging
 import os
@@ -174,11 +178,11 @@ cfgpart.add_choice('out_folder','In "output" folder')
 cfgpart.add_choice('out_file','Always out.')
 
 configdef_soundfont = miniconfmenu_store()
-configdef_soundfont.add_text("gm", '', "GM")
-configdef_soundfont.add_text("xg", '', "XG")
-configdef_soundfont.add_text("gs", '', "GS")
-configdef_soundfont.add_text("mt32", '', "MT32")
-configdef_soundfont.add_text("mariopaint", '', "Mario Paint")
+configdef_soundfont.add_file_open("gm", '', "GM")
+configdef_soundfont.add_file_open("xg", '', "XG")
+configdef_soundfont.add_file_open("gs", '', "GS")
+configdef_soundfont.add_file_open("mt32", '', "MT32")
+configdef_soundfont.add_file_open("mariopaint", '', "Mario Paint")
 
 configdef_conversion = miniconfmenu_store()
 configdef_conversion.add_int('songnum', 0, 'Song Number')
@@ -285,6 +289,11 @@ filedetector_obj.load_def('data_main/autodetect.xml')
 
 DEBUG_VIEW = 0
 
+class logging_object():
+	def __init__(self, Layout):
+		control = QTextEdit()
+		Layout.addWidget(control)
+
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 	def __init__(self, *args, obj=None, **kwargs):
 		super(MainWindow, self).__init__(*args, **kwargs)
@@ -381,6 +390,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 			dawvert_config.main['overwrite_out'] = False
 			dawvert_config.main['auto_convert'] = False
 		if 'output_samples' in cfgsession: self.ui.OutputSamplePath.setText(cfgsession['output_samples'])
+
+		#self.logging_ui_obj = logging_object(self.ui.verticalLayout)
 
 	def closeEvent(self, event):
 		ui_o = self.ui

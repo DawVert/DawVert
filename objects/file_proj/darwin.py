@@ -4,53 +4,55 @@
 import json
 
 class darwin_note:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.durationTicks = 0
 		self.pitch = 60
 		self.startTick = 0
 		self.velocity = 100
+		if indict is not None: self.read(indict)
 
-	def read(self, trackdata):
-		if 'durationTicks' in trackdata: self.durationTicks = trackdata['durationTicks']
-		if 'pitch' in trackdata: self.pitch = trackdata['pitch']
-		if 'startTick' in trackdata: self.startTick = trackdata['startTick']
-		if 'velocity' in trackdata: self.velocity = trackdata['velocity']
+	def read(self, indict):
+		if 'durationTicks' in indict: self.durationTicks = indict['durationTicks']
+		if 'pitch' in indict: self.pitch = indict['pitch']
+		if 'startTick' in indict: self.startTick = indict['startTick']
+		if 'velocity' in indict: self.velocity = indict['velocity']
 
 	def write(self):
-		out = {}
-		out['durationTicks'] = self.durationTicks
-		out['pitch'] = self.pitch
-		out['startTick'] = self.startTick
-		out['velocity'] = self.velocity
-		return out
+		outdict = {}
+		outdict['durationTicks'] = self.durationTicks
+		outdict['pitch'] = self.pitch
+		outdict['startTick'] = self.startTick
+		outdict['velocity'] = self.velocity
+		return outdict
 
 class darwin_clip:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.clipType = "midi"
 		self.durationTicks = 128
 		self.notes = []
 		self.startTick = 0
+		if indict is not None: self.read(indict)
 
-	def read(self, trackdata):
-		if 'clipType' in trackdata: self.clipType = trackdata['clipType']
-		if 'durationTicks' in trackdata: self.durationTicks = trackdata['durationTicks']
-		if 'startTick' in trackdata: self.startTick = trackdata['startTick']
-		if 'notes' in trackdata: 
-			for t in trackdata['notes']:
+	def read(self, indict):
+		if 'clipType' in indict: self.clipType = indict['clipType']
+		if 'durationTicks' in indict: self.durationTicks = indict['durationTicks']
+		if 'startTick' in indict: self.startTick = indict['startTick']
+		if 'notes' in indict: 
+			for t in indict['notes']:
 				note_obj = darwin_note()
 				note_obj.read(t)
 				self.notes.append(note_obj)
 
 	def write(self):
-		out = {}
-		out['clipType'] = self.clipType
-		out['durationTicks'] = self.durationTicks
-		out['notes'] = [x.write() for x in self.notes]
-		out['startTick'] = self.startTick
-		return out
+		outdict = {}
+		outdict['clipType'] = self.clipType
+		outdict['durationTicks'] = self.durationTicks
+		outdict['notes'] = [x.write() for x in self.notes]
+		outdict['startTick'] = self.startTick
+		return outdict
 
 class darwin_track:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.clips = []
 		self.color = "#888888"
 		self.folderExpanded = True
@@ -65,47 +67,48 @@ class darwin_track:
 		self.timingOffsetMs = 0
 		self.visible = True
 		self.volume = 1
+		if indict is not None: self.read(indict)
 
-	def read(self, trackdata):
-		if 'clips' in trackdata: 
-			for t in trackdata['clips']:
+	def read(self, indict):
+		if 'clips' in indict: 
+			for t in indict['clips']:
 				clip_obj = darwin_clip()
 				clip_obj.read(t)
 				self.clips.append(clip_obj)
-		if 'color' in trackdata: self.color = trackdata['color']
-		if 'folderExpanded' in trackdata: self.folderExpanded = trackdata['folderExpanded']
-		if 'id' in trackdata: self.id = trackdata['id']
-		if 'instrumentName' in trackdata: self.instrumentName = trackdata['instrumentName']
-		if 'isFolder' in trackdata: self.isFolder = trackdata['isFolder']
-		if 'muted' in trackdata: self.muted = trackdata['muted']
-		if 'name' in trackdata: self.name = trackdata['name']
-		if 'pan' in trackdata: self.pan = trackdata['pan']
-		if 'parentFolderId' in trackdata: self.parentFolderId = trackdata['parentFolderId']
-		if 'solo' in trackdata: self.solo = trackdata['solo']
-		if 'timingOffsetMs' in trackdata: self.timingOffsetMs = trackdata['timingOffsetMs']
-		if 'visible' in trackdata: self.visible = trackdata['visible']
-		if 'volume' in trackdata: self.volume = trackdata['volume']
+		if 'color' in indict: self.color = indict['color']
+		if 'folderExpanded' in indict: self.folderExpanded = indict['folderExpanded']
+		if 'id' in indict: self.id = indict['id']
+		if 'instrumentName' in indict: self.instrumentName = indict['instrumentName']
+		if 'isFolder' in indict: self.isFolder = indict['isFolder']
+		if 'muted' in indict: self.muted = indict['muted']
+		if 'name' in indict: self.name = indict['name']
+		if 'pan' in indict: self.pan = indict['pan']
+		if 'parentFolderId' in indict: self.parentFolderId = indict['parentFolderId']
+		if 'solo' in indict: self.solo = indict['solo']
+		if 'timingOffsetMs' in indict: self.timingOffsetMs = indict['timingOffsetMs']
+		if 'visible' in indict: self.visible = indict['visible']
+		if 'volume' in indict: self.volume = indict['volume']
 
 	def write(self):
-		out = {}
-		out['clips'] = [x.write() for x in self.clips]
-		out['color'] = self.color
-		out['folderExpanded'] = self.folderExpanded
-		out['id'] = self.id
-		out['instrumentName'] = self.instrumentName
-		out['isFolder'] = self.isFolder
-		out['muted'] = self.muted
-		out['name'] = self.name
-		out['pan'] = self.pan
-		out['parentFolderId'] = self.parentFolderId
-		out['solo'] = self.solo
-		out['timingOffsetMs'] = self.timingOffsetMs
-		out['visible'] = self.visible
-		out['volume'] = self.volume
-		return out
+		outdict = {}
+		outdict['clips'] = [x.write() for x in self.clips]
+		outdict['color'] = self.color
+		outdict['folderExpanded'] = self.folderExpanded
+		outdict['id'] = self.id
+		outdict['instrumentName'] = self.instrumentName
+		outdict['isFolder'] = self.isFolder
+		outdict['muted'] = self.muted
+		outdict['name'] = self.name
+		outdict['pan'] = self.pan
+		outdict['parentFolderId'] = self.parentFolderId
+		outdict['solo'] = self.solo
+		outdict['timingOffsetMs'] = self.timingOffsetMs
+		outdict['visible'] = self.visible
+		outdict['volume'] = self.volume
+		return outdict
 
 class darwin_project:
-	def __init__(self):
+	def __init__(self, indict=None):
 		self.bpm = 128
 		self.formatVersion = 1
 		self.masterTrack = darwin_track()
@@ -117,26 +120,27 @@ class darwin_project:
 		projectdata = json.load(f)
 		self.read(projectdata)
 		return True
+		if indict is not None: self.read(indict)
 
-	def read(self, projectdata):
-		if 'bpm' in projectdata: self.bpm = projectdata['bpm']
-		if 'formatVersion' in projectdata: self.formatVersion = projectdata['formatVersion']
-		if 'name' in projectdata: self.name = projectdata['name']
-		if 'masterTrack' in projectdata: self.masterTrack.read(projectdata['masterTrack'])
-		if 'tracks' in projectdata: 
-			for t in projectdata['tracks']:
+	def read(self, indict):
+		if 'bpm' in indict: self.bpm = indict['bpm']
+		if 'formatVersion' in indict: self.formatVersion = indict['formatVersion']
+		if 'name' in indict: self.name = indict['name']
+		if 'masterTrack' in indict: self.masterTrack.read(indict['masterTrack'])
+		if 'tracks' in indict: 
+			for t in indict['tracks']:
 				track_obj = darwin_track()
 				track_obj.read(t)
 				self.tracks.append(track_obj)
 
 	def write(self):
-		out = {}
-		out['bpm'] = self.bpm
-		out['formatVersion'] = self.formatVersion
-		out['name'] = self.name
-		out['masterTrack'] = self.masterTrack.write()
-		out['tracks'] = [x.write() for x in self.tracks]
-		return out
+		outdict = {}
+		outdict['bpm'] = self.bpm
+		outdict['formatVersion'] = self.formatVersion
+		outdict['name'] = self.name
+		outdict['masterTrack'] = self.masterTrack.write()
+		outdict['tracks'] = [x.write() for x in self.tracks]
+		return outdict
 
 	def save_to_file(self, output_file):
 		f = open(output_file, 'w')

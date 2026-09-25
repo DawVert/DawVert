@@ -60,7 +60,7 @@ class output_bandlab(plugins.base):
 		globalstore.idvals.load('bandlab_midi_map', './data_main/idvals/bandlab_map_midi.csv')
 		idvals_bandlab_inst = globalstore.idvals.get('bandlab_midi_map')
 
-		#auxchannel_obj = proj_bandlab.bandlab_auxChannel(None)
+		#auxchannel_obj = proj_bandlab.bandlab_auxChannel()
 		#auxchannel_obj.id = 'aux1'
 		#project_obj.auxChannels.append(auxchannel_obj)
 
@@ -78,7 +78,7 @@ class output_bandlab(plugins.base):
 
 		project_obj.parentId = str(uuid.uuid4())
 
-		self.samplerKits = proj_bandlab.bandlab_samplerKits(None)
+		self.samplerKits = proj_bandlab.bandlab_samplerKits()
 
 		creatorId = str(uuid.uuid4())
 		project_obj.creator['id'] = creatorId
@@ -131,7 +131,7 @@ class output_bandlab(plugins.base):
 			sampleref_assoc[sampleref_id] = uuiddata
 			sampleref_ext[sampleref_id] = sampleref_obj.fileref.file.extension
 
-			bl_sample = proj_bandlab.bandlab_sample(None) 
+			bl_sample = proj_bandlab.bandlab_sample() 
 			bl_sample.creatorId = creatorId
 			dur_sec = sampleref_obj.get_dur_sec()
 			if dur_sec: bl_sample.duration = dur_sec
@@ -143,11 +143,11 @@ class output_bandlab(plugins.base):
 		for trackid, track_obj in cvpj_tracks.iter():
 
 			if track_obj.type in ['instrument', 'midi', 'audio']:
-				blx_track = proj_bandlab.bandlab_track(None) 
-				blx_track.automation = proj_bandlab.bandlab_track_automation(None)
+				blx_track = proj_bandlab.bandlab_track() 
+				blx_track.automation = proj_bandlab.bandlab_track_automation()
 				blx_track.automation.id = str(uuid.uuid4())
 				blx_track.id = str(uuid.uuid4())
-				#auxsend_obj = proj_bandlab.bandlab_auxSend(None)
+				#auxsend_obj = proj_bandlab.bandlab_auxSend()
 				#auxsend_obj.id = 'aux1'
 				#blx_track.auxSends.append(auxsend_obj)
 
@@ -173,13 +173,13 @@ class output_bandlab(plugins.base):
 				if track_obj.type == 'audio':
 					blx_track.type = 'voice'
 					blx_track.effectsData = {"displayName": None, "link": None, "originalPresetId": None}
-					blx_track.autoPitch = proj_bandlab.bandlab_autoPitch(None)
+					blx_track.autoPitch = proj_bandlab.bandlab_autoPitch()
 					track_obj.placements.pl_audio.sort()
 					for audiopl_obj in track_obj.placements.pl_audio:
 						sp_obj = audiopl_obj.sample
 						
 						if sp_obj.sampleref in sampleref_assoc:
-							blx_region = proj_bandlab.bandlab_region(None)
+							blx_region = proj_bandlab.bandlab_region()
 	
 							ref_found, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
 	
@@ -253,13 +253,13 @@ class output_bandlab(plugins.base):
 
 						if uuiddata not in notelist_assoc:
 							notelist_assoc[uuiddata] = midipl_obj.midievents
-							bl_sample = proj_bandlab.bandlab_sample(None) 
+							bl_sample = proj_bandlab.bandlab_sample() 
 							bl_sample.creatorId = creatorId
 							bl_sample.isMidi = True
 							bl_sample.id = uuiddata
 							project_obj.samples.append(bl_sample)
 
-						blx_region = proj_bandlab.bandlab_region(None)
+						blx_region = proj_bandlab.bandlab_region()
 						add_region_common(blx_region, midipl_obj, blx_track, tempomul, True, 1)
 						blx_region.file = uuiddata+'.mid'
 						blx_track.regions.append(blx_region)
@@ -323,7 +323,7 @@ def make_plugins_fx(convproj_obj, autoPitch, effects, fxslots_audio, tempomul):
 					autoPitch.mix = fx_wet
 
 			elif plugin_obj.check_wildmatch('native', 'bandlab', None):
-				blx_effect = proj_bandlab.bandlab_effect(None)
+				blx_effect = proj_bandlab.bandlab_effect()
 				blx_effect.slug = plugin_obj.type.subtype
 
 				dseto_obj = globalstore.datapack.get_obj('bandlab', 'fx', blx_effect.slug)
