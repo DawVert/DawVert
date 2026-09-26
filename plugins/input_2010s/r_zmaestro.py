@@ -135,8 +135,8 @@ class input_zmaestro(plugins.base):
 					track_obj.is_drum = True
 					track_obj.is_multinote_drum = True
 
-				do_automation(convproj_obj, cvpj_trackid, 'vol', zm_track.volumetimeline, zm_track.usevolumetimeline)
-				do_automation(convproj_obj, cvpj_trackid, 'pan', zm_track.pantimeline, zm_track.usepantimeline)
+				do_automation(cvpj_automation, cvpj_trackid, 'vol', zm_track.volumetimeline, zm_track.usevolumetimeline)
+				do_automation(cvpj_automation, cvpj_trackid, 'pan', zm_track.pantimeline, zm_track.usepantimeline)
 
 				for part in zm_track.parts:
 					placement_obj = track_obj.placements.add_notes()
@@ -207,8 +207,8 @@ class input_zmaestro(plugins.base):
 					plugin_obj.role = 'fx'
 					track_obj.plugin_autoplace(plugin_obj, fxid)
 
-				do_automation(convproj_obj, cvpj_trackid, 'vol', zm_track.volumetimeline, zm_track.usevolumetimeline)
-				do_automation(convproj_obj, cvpj_trackid, 'pan', zm_track.pantimeline, zm_track.usepantimeline)
+				do_automation(cvpj_automation, cvpj_trackid, 'vol', zm_track.volumetimeline, zm_track.usevolumetimeline)
+				do_automation(cvpj_automation, cvpj_trackid, 'pan', zm_track.pantimeline, zm_track.usepantimeline)
 
 				for num, part in enumerate(zm_track.parts):
 					placement_obj = track_obj.placements.add_audio()

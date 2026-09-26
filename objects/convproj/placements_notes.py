@@ -155,3 +155,14 @@ class cvpj_placements_notes(placements_base.cvpj_placements_multi_base):
 		plb_obj.locked = midip.locked
 		self.data.append(plb_obj)
 		return plb_obj
+
+	def add_loops(self, loopcompat):
+		self.data = placements_base.internal_addloops(self.data, self.eq_connect, loopcompat)
+
+	def eq_content(self, pl, prev):
+		if prev:
+			isvalid_a = pl.notelist==prev.notelist
+			isvalid_b = placements_base.internal_eq_content(pl, prev)
+			return isvalid_a and isvalid_b
+		else:
+			return False

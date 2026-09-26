@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from objects.convproj import tracks
+from collections import Counter
 
 import logging
 logger_project = logging.getLogger('project')

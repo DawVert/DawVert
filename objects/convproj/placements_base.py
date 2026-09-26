@@ -449,9 +449,7 @@ class cvpj_placements_multi_base:
 
 	def eq_content(self, pl, prev):
 		if prev:
-			isvalid_a = pl.custom==prev.custom
-			isvalid_b = internal_eq_content(pl, prev)
-			return isvalid_a & isvalid_b
+			return internal_eq_content(pl, prev)
 		else:
 			return False
 
@@ -541,9 +539,7 @@ class cvpj_placements_multi_auto_base:
 
 	def eq_content(self, pl, prev):
 		if prev:
-			isvalid_a = pl.custom==prev.custom
-			isvalid_b = internal_eq_content(pl, prev)
-			return isvalid_a & isvalid_b
+			return internal_eq_content(pl, prev)
 		else:
 			return False
 

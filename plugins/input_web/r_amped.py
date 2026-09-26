@@ -389,6 +389,7 @@ class input_amped(plugins.base):
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(1.0)
+		convproj_obj.do_actions.append('do_addloop')
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav', 'mp3', 'ogg', 'flac']

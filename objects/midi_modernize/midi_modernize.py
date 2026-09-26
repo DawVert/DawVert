@@ -105,7 +105,7 @@ class midi_modernize:
 		cvpj_timemarkers = convproj_obj.timemarkers
 
 		for x in midievents_obj:
-			pos = (x['pos']-offset)+inpos
+			pos = (int(x['pos'])-offset)+inpos
 			condpos = (dur+inpos)>(pos)>=0 if dur>=0 else True
 
 			if condpos:

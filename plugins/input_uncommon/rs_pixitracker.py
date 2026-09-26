@@ -85,7 +85,7 @@ class input_cvpj_f(plugins.base):
 
 		if not dawvert_intent.input_get_param('tracker_mode', 0):
 			convproj_obj.type = 'rs'
-			convproj_obj.set_timings(4) 
+			convproj_obj.set_timings(1.0) 
 			convproj_obj.params.add('bpm', project_obj.bpm, 'float')
 			convproj_obj.track_master.params.add('vol', project_obj.vol/100, 'float')
 
@@ -140,7 +140,7 @@ class input_cvpj_f(plugins.base):
 
 			curpos = 0
 			for pat_num in project_obj.order:
-				#size = project_obj.patterns[pat_num].length
+				size = project_obj.patterns[pat_num].length
 				scenepl_obj = convproj_obj.scene__add_pl()
 				scenepl_obj.position = curpos
 				scenepl_obj.duration = size

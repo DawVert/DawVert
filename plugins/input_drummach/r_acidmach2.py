@@ -110,7 +110,7 @@ class input_petaporon(plugins.base):
 						fldso = globalstore.datapack.get_obj('acid_machine_2', 'plugin_fx', str(fxtype))
 						for num, control in enumerate(fxdata['controls']):
 							dset_param = fldso.params.get(str(num))
-							if dset_param: plugin_obj.dset_param__add(str(num), control, dset_param)
+							if dset_param: plugin_obj.datapack_param__add(str(num), control, dset_param)
 							else: plugin_obj.params.add(str(num), control, 'float')
 
 		# ---------- mixer ----------

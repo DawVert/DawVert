@@ -49,7 +49,7 @@ class timesigblocks:
 		cur_splitdata = self.splitdata.create_cursor()
 
 		mode = dawvert_intent.splitter_mode if dawvert_intent else 0
-		detect_start = dawvert_intent.splitter_detect_start if dawvert_intent else True
+		detect_start = dawvert_intent.splitter_detect_start
 
 		ppq = convproj_obj.time_ppq
 
@@ -84,16 +84,46 @@ class timesigblocks:
 		remove_pos_clones(self.splitdata)
 		add_dur_end(self.splitdata)
 
-		if mode == 0:
+		if mode == 'timesig_num':
 			for u in self.splitdata.get_used():
-				for val in xtramath.gen_float_range(float(u['start']), float(u['end']), ppq*float(u['numerator'])):
+				psize = ppq*float(u['numerator'])
+				for val in xtramath.gen_float_range(float(u['start']), float(u['end']), psize):
 					cur_splitdata.add()
 					cur_splitdata['start'] = val
 					cur_splitdata['numerator'] = u['numerator']
 					cur_splitdata['denominator'] = u['denominator']
 
-		if mode == 1:
+		if mode == 'timesig_num_x2':
+			if detect_start:
+				startpos = 0
+				if convproj_obj.transport.loop_start:
+					startpos = convproj_obj.transport.loop_start
+				if not startpos:
+					startpos = convproj_obj.transport.start_pos
 
+				useddata = self.splitdata.get_used()
+				poslist = useddata['start']
+				if max(poslist)>startpos and startpos not in poslist:
+					timesigid = np.searchsorted(poslist, startpos)
+					betweenval = useddata[timesigid]
+
+					cur_splitdata.add()
+					cur_splitdata['start'] = startpos
+					cur_splitdata['numerator'] = betweenval['numerator']
+					cur_splitdata['denominator'] = betweenval['denominator']
+
+			remove_pos_clones(self.splitdata)
+			add_dur_end(self.splitdata)
+
+			for u in self.splitdata.get_used():
+				psize = ppq*int(u['numerator'])*2
+				for val in xtramath.gen_float_range(int(u['start']), int(u['end']), psize):
+					cur_splitdata.add()
+					cur_splitdata['start'] = val
+					cur_splitdata['numerator'] = u['numerator']
+					cur_splitdata['denominator'] = u['denominator']
+
+		if mode == 'timesig':
 			if detect_start:
 				startpos = 0
 				if convproj_obj.transport.loop_start:
@@ -119,37 +149,8 @@ class timesigblocks:
 			add_dur_end(self.splitdata)
 
 			for u in self.splitdata.get_used():
-				for val in xtramath.gen_float_range(int(u['start']), int(u['end']), int(ppq*(u['numerator']*u['denominator']))):
-					cur_splitdata.add()
-					cur_splitdata['start'] = val
-					cur_splitdata['numerator'] = u['numerator']
-					cur_splitdata['denominator'] = u['denominator']
-
-		if mode == 2:
-
-			if detect_start:
-				startpos = 0
-				if convproj_obj.transport.loop_start:
-					startpos = convproj_obj.transport.loop_start
-				if not startpos:
-					startpos = convproj_obj.transport.start_pos
-
-				useddata = self.splitdata.get_used()
-				poslist = useddata['start']
-				if max(poslist)>startpos and startpos not in poslist:
-					timesigid = np.searchsorted(poslist, startpos)
-					betweenval = useddata[timesigid]
-
-					cur_splitdata.add()
-					cur_splitdata['start'] = startpos
-					cur_splitdata['numerator'] = betweenval['numerator']
-					cur_splitdata['denominator'] = betweenval['denominator']
-
-			remove_pos_clones(self.splitdata)
-			add_dur_end(self.splitdata)
-
-			for u in self.splitdata.get_used():
-				for val in xtramath.gen_float_range(int(u['start']), int(u['end']), int(ppq*int(u['numerator']*2))):
+				psize = ppq*int(u['numerator'])*int(u['denominator'])
+				for val in xtramath.gen_float_range(int(u['start']), int(u['end']), psize):
 					cur_splitdata.add()
 					cur_splitdata['start'] = val
 					cur_splitdata['numerator'] = u['numerator']

@@ -259,10 +259,11 @@ class input_onlinesequencer(plugins.base):
 			catgrp = {}
 			for k, v in multig.items():
 				dset_obj = dset_cat_obj.objects.get(str(k))
-				if 'group' in dset_obj.data:
-					catname = dset_obj.data['group']
-					if catname not in catgrp: catgrp[catname] = []
-					catgrp[catname] += v
+				if dset_obj is not None:
+					if 'group' in dset_obj.data:
+						catname = dset_obj.data['group']
+						if catname not in catgrp: catgrp[catname] = []
+						catgrp[catname] += v
 
 			for k, v in catgrp.items():
 				dset_obj = dset_cat_obj.objects.get(str(k))

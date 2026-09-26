@@ -57,6 +57,8 @@ def do_sampleref(convproj_obj, als_sampleref, sampleref_obj):
 		if samp_hz: als_sampleref.DefaultSampleRate = int(samp_hz)
 
 def do_param(convproj_obj, cvpj_params, cvpj_name, cvpj_fallback, cvpj_type, cvpj_autoloc, als_param, als_auto):
+	cvpj_automation = convproj_obj.automation
+	
 	outval = 0
 	if cvpj_type == 'float':
 		outval = cvpj_params.get(cvpj_name, cvpj_fallback).value

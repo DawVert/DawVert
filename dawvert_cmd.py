@@ -99,7 +99,8 @@ if args.soundfont != None: dawvert_intent.path_soundfonts['global'] = args.sound
 if args.songnum != None: dawvert_intent.songnum = int(args.songnum)-1
 if args.extrafile != None: dawvert_intent.input_params['extra_file'] = args.extrafile
 if args.mi2m__output_unused_nle == True: dawvert_intent.flags_compat.append('mi2m-output-unused-nle')
-if args.splitter_mode != None: dawvert_intent.splitter_mode = int(args.splitter_mode)
+if args.splitter_mode != None: dawvert_intent.splitter_mode = args.splitter_mode
+else: dawvert_intent.splitter_mode = "timesig_num"
 if args.splitter_detect_start != None: dawvert_intent.splitter_detect_start = bool(int(args.splitter_detect_start))
 
 plug_conv.load_plugins()

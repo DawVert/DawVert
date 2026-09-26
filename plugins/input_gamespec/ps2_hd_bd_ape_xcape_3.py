@@ -167,7 +167,7 @@ class input_petaporon(plugins.base):
 		in_dict['projtype'] = 'cm'
 
 	def get_configdef(self, configdef):
-		configdef.add_text('sampfile', '', 'VAG Sample File (.BD)')
+		configdef.add_file_open('sampfile', '', 'VAG Sample File (.BD)')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects import audio_data

@@ -42,8 +42,6 @@ class converterstate():
 	is_converting = False
 	is_plugscan = False
 
-dragdroploctexts = ['Beside Original', 'In "output" folder', 'Always out.*']
-
 dawvert_intent = dv_core.dawvert_intent()
 dawvert_intent.config_load('./__config/config.ini')
 
@@ -188,7 +186,10 @@ configdef_conversion = miniconfmenu_store()
 configdef_conversion.add_int('songnum', 0, 'Song Number')
 configdef_conversion.add_bool('output_unused_nle', False, 'MI2M: Output Unused Patterns')
 configdef_conversion.set_group('splitter', 'Notelist Splitter')
-configdef_conversion.add_int('splitter_mode', 0, 'Mode')
+cfgpart = configdef_conversion.add_enum('splitter_mode', 0, 'Mode')
+cfgpart.add_choice('timesig', 'TimeSig-Based')
+cfgpart.add_choice('timesig_num', 'Numerator')
+cfgpart.add_choice('timesig_num_x2', 'Numerator*2')
 configdef_conversion.add_int('splitter_detect_start', 0, 'Detect Start')
 
 configdef_extplugs = miniconfmenu_store()
@@ -482,6 +483,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		if cata=='main':
 			if key=='language':
 				self.change_lang(value)
+			if key=='dd_outpath':
+				self.set_dd_output()
+				self.__change_output_path()
+			if key=='overwrite_out':
+				self.__update_convst()
 
 	def open_configmenu(self, name, _):
 		config_values = {}
@@ -522,25 +528,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 		if event.mimeData().hasUrls(): event.accept()
 		else: event.ignore()
 
-	def set_dd_output(self, f):
-		self.ui.InputFilePath.setText(f)
+	def set_dd_output(self):
+		filename = self.ui.InputFilePath.text()
 		if dawvert_config.main['dd_outpath'] == 'beside_original':
-			self.ui.OutputFilePath.setText(f.rsplit('.',1)[0])
-			self.ui.OutputSamplePath.setText(f.rsplit('.',1)[0]+'_samples')
+			self.ui.OutputFilePath.setText(filename.rsplit('.',1)[0])
+			self.ui.OutputSamplePath.setText(filename.rsplit('.',1)[0]+'_samples')
 		if dawvert_config.main['dd_outpath'] == 'out_folder':
-			outfile = os.path.join(globalstore.dawvert_script_path, 'output', os.path.basename(f))
+			outfile = os.path.join(globalstore.dawvert_script_path, 'output', os.path.basename(filename))
 			self.ui.OutputFilePath.setText(outfile.rsplit('.',1)[0])
 			self.ui.OutputSamplePath.setText(outfile.rsplit('.',1)[0]+'_samples')
 		if dawvert_config.main['dd_outpath'] == 'out_file':
 			outfile = os.path.join(globalstore.dawvert_script_path, 'out')
 			self.ui.OutputFilePath.setText(outfile.rsplit('.',1)[0])
-			samplepath = os.path.join(globalstore.dawvert_script_path, '__samples', os.path.basename(f))
+			samplepath = os.path.join(globalstore.dawvert_script_path, '__samples', os.path.basename(filename))
 			self.ui.OutputSamplePath.setText(samplepath)
 
 	def dropEvent(self, event):
 		files = [u.toLocalFile() for u in event.mimeData().urls()]
 		if files:
-			self.set_dd_output(files[0])
+			self.ui.InputFilePath.setText(files[0])
+			self.set_dd_output()
 			self.__do_auto_detect()
 			self.__change_output_path()
 			if dawvert_config.main['auto_convert']:
@@ -745,6 +752,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 			self.ui.StatusText.setText('Status: '+update_data[0])
 			self.ui.SubStatusText.setText(update_data[1])
 
+	def __finished_gui(self):
+		self.ui.ConvertButton.setEnabled(True)
+
 	def __do_convert(self):
 		if not converterstate.is_converting:
 			converterstate.is_converting = True
@@ -762,6 +772,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 			self.worker.finished.connect(self.worker.deleteLater)
 			self.thread.finished.connect(self.thread.deleteLater)
 			self.worker.update_ui.connect(self.__update_ui_ele)
+			self.worker.finished.connect(self.__finished_gui)
 			self.thread.start()
 
 	def change_lang(self, ccode):
