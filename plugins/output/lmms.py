@@ -370,19 +370,21 @@ class output_lmms(plugins.base):
 	def parse(self, i_cvpj_obj, dawvert_intent):
 		from objects.file_proj import lmms as proj_lmms
 
+		# ---------- setup ----------
 		global lmms_bpm
 		global cvpj_obj
 		global project_obj
 		global song_obj
 		
-		cvpj_tracks = i_cvpj_obj.tracks
-
 		cvpj_obj = i_cvpj_obj
 
 		globalstore.datapack.load('lmms', './data/datapack/app/lmms.xml')
 
-		i_cvpj_obj.change_timings(48)
+		# ---------- convproj objects ----------
+		cvpj_tracks = cvpj_obj.tracks
+		cvpj_metadata = cvpj_obj.metadata
 
+		# ---------- project ----------
 		project_obj = proj_lmms.lmms_project()
 		song_obj = project_obj.song
 		head_obj = project_obj.head
@@ -393,14 +395,19 @@ class output_lmms(plugins.base):
 		add_window_data(song_obj.pianoroll, 'main', 'piano_roll', [5,5], [970,480], False, False)
 		add_window_data(song_obj.projectnotes.window, 'main', 'automation_editor', [1,1], [860,400], False, False)
 
-		lmms_bpm = cvpj_obj.params.get('bpm', 140).value
+		cvpj_obj.change_timings(48)
 
+		# ---------- bpm and timesig ----------
+		lmms_bpm = cvpj_obj.params.get('bpm', 140).value
 		paramauto(head_obj.bpm, cvpj_obj.params, 'bpm', 120, None, ['main'], 'Main', 'Tempo')
-		paramauto(head_obj.masterpitch, cvpj_obj.params, 'pitch', 0, None, ['main'], 'Main', 'Pitch')
-		paramauto(head_obj.mastervol, cvpj_obj.params, 'vol', 1, [0, 100], ['main'], 'Main', 'Volume')
 		head_obj.timesig_numerator.value = cvpj_obj.timesig[0]
 		head_obj.timesig_denominator.value = cvpj_obj.timesig[1]
 
+		# ---------- master params ----------
+		paramauto(head_obj.masterpitch, cvpj_obj.params, 'pitch', 0, None, ['main'], 'Main', 'Pitch')
+		paramauto(head_obj.mastervol, cvpj_obj.params, 'vol', 1, [0, 100], ['main'], 'Main', 'Volume')
+
+		# ---------- tracks ----------
 		for trackid, track_obj in cvpj_tracks.iter():
 			autoloc = ['track', trackid]
 			trackname = track_obj.visual.name if track_obj.visual.name else 'noname'
@@ -629,8 +636,8 @@ class output_lmms(plugins.base):
 
 					encode_fxchain(samptrack_obj.fxchain, track_obj, trackname, autoloc)
 
+		# ---------- fxrack ----------
 		fxrack_obj = cvpj_obj.fxrack
-
 		for num, fxchannel_obj in fxrack_obj.iter():
 			autoloc = ['fxmixer', str(num)]
 			autoname = 'FX' + str(num)
@@ -673,19 +680,21 @@ class output_lmms(plugins.base):
 
 			song_obj.fxmixer.fxchannels[num] = lmms_fxchannel
 
-		if cvpj_obj.metadata.name: 
-			song_obj.projectnotes.text += '"'+cvpj_obj.metadata.name+'"'
-			if cvpj_obj.metadata.author: song_obj.projectnotes.text += ' by ' + cvpj_obj.metadata.author
+		# ---------- metadata ----------
+		if cvpj_metadata.name: 
+			song_obj.projectnotes.text += '"'+cvpj_metadata.name+'"'
+			if cvpj_metadata.author: song_obj.projectnotes.text += ' by ' + cvpj_metadata.author
 			song_obj.projectnotes.text += '<hr>'
 
-		if cvpj_obj.metadata.comment_text:
+		if cvpj_metadata.comment_text:
 			add_window_data(song_obj.projectnotes.window, 'main', 'project_notes', [728, 5], [389, 300], True, False)
 			song_obj.projectnotes.window.visible = 1
-			if cvpj_obj.metadata.comment_datatype == 'html': 
-				song_obj.projectnotes.text += cvpj_obj.metadata.comment_text
-			if cvpj_obj.metadata.comment_datatype == 'text': 
-				song_obj.projectnotes.text += cvpj_obj.metadata.comment_text.replace('\n', '<br/>').replace('\r', '<br/>')
+			if cvpj_metadata.comment_datatype == 'html': 
+				song_obj.projectnotes.text += cvpj_metadata.comment_text
+			if cvpj_metadata.comment_datatype == 'text': 
+				song_obj.projectnotes.text += cvpj_metadata.comment_text.replace('\n', '<br/>').replace('\r', '<br/>')
 
+		# ---------- transport ----------
 		if cvpj_obj.transport.loop_active:
 			song_obj.timeline.lpstate = int(cvpj_obj.transport.loop_active)
 			song_obj.timeline.lp0pos = cvpj_obj.transport.loop_start
@@ -695,5 +704,6 @@ class output_lmms(plugins.base):
 			song_obj.timeline.lp0pos = cvpj_obj.transport.start_pos
 			song_obj.timeline.lp1pos = cvpj_obj.get_dur()
 
+		# ---------- output ----------
 		if dawvert_intent.output_mode == 'file':
 			project_obj.save_to_file(dawvert_intent.output_file)

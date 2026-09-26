@@ -289,29 +289,36 @@ class output_cvpj(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import muse as proj_muse
 
-		cvpj_tracks = convproj_obj.tracks
-		
+		# ---------- setup ----------
 		global tracknum
 		global synthidnum
 		tracknum = 1
 		synthidnum = 4
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		
+		# ---------- project ----------
+		project_obj = proj_muse.muse_song()
+
+		# ---------- convproj params ----------
 		midiDivision = dawvert_intent.output_get_param('ppq', 384)
 
-		convproj_obj.change_timings(midiDivision)
+		# ---------- timing ----------
 		muse_bpm = convproj_obj.params.get('bpm', 120).value
-
-		project_obj = proj_muse.muse_song()
+		convproj_obj.change_timings(midiDivision)
 		project_obj.midiDivision = midiDivision
 
+		# ---------- route ----------
 		addroute_audioout(project_obj, 0, 0, 1, "system:playback_1")
 		addroute_audioout(project_obj, 1, 0, 1, "system:playback_2")
 
+		# ---------- audio output track ----------
 		muse_track = proj_muse.muse_track('AudioOutput')
 		muse_track.channels = 2
-
 		project_obj.tracks.append(muse_track)
 
+		# ---------- tracks ----------
 		for trackid, track_obj in cvpj_tracks.iter():
 
 			if track_obj.type == 'instrument':
@@ -327,6 +334,7 @@ class output_cvpj(plugins.base):
 			if track_obj.type == 'audio':
 				maketrack_wave(project_obj, track_obj.placements, convproj_obj, track_obj, muse_bpm, trackid)
 
+		# ---------- tempo ----------
 		tempo_point = proj_muse.muse_tempo()
 		tempo_point.at = 21474837
 		tempo_point.tick = 0
@@ -334,6 +342,7 @@ class output_cvpj(plugins.base):
 		project_obj.tempolist.events.append(tempo_point)
 		project_obj.tempolist.fix = mido.bpm2tempo(muse_bpm)
 
+		# ---------- timesig ----------
 		muse_numerator, muse_denominator = convproj_obj.timesig
 
 		timesig_point = proj_muse.muse_sig()
@@ -350,5 +359,6 @@ class output_cvpj(plugins.base):
 		#	timesig_point.denom = value[1]
 		#	project_obj.siglist.append(timesig_point)
 
+		# ---------- output ----------
 		if dawvert_intent.output_mode == 'file':
 			project_obj.save_to_file(dawvert_intent.output_file)

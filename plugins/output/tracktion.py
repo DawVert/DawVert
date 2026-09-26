@@ -407,6 +407,20 @@ def make_group(convproj_obj, sampleref_assoc, sampleref_obj_assoc, groupid, grou
 			make_level_plugin(wf_foldertrack)
 			groups_data[groupid] = wf_foldertrack
 
+def clip_cut_loop(wf_clip, time_obj):
+	if time_obj.cut_type == 'cut':
+		wf_clip.offset = time_obj.get_offset_real()
+	elif time_obj.cut_type == 'loop_eq':
+		offset, loopstart, loopend = time_obj.get_loop_data()
+		toffset = (offset/4)*tempomul
+		wf_clip.offset = 0
+		wf_clip.loopStartBeats = toffset
+		wf_clip.loopLengthBeats = (time_obj.get_loopend()/4)-toffset
+	elif time_obj.cut_type in ['loop', 'loop_off']:
+		wf_clip.offset = time_obj.get_offset_real()
+		wf_clip.loopStartBeats = (time_obj.get_loopstart()/4)
+		wf_clip.loopLengthBeats = (time_obj.get_loopend()/4)
+
 class output_tracktion_edit(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'output'
@@ -443,21 +457,8 @@ class output_tracktion_edit(plugins.base):
 		from objects.file_proj import tracktion_edit as proj_tracktion_edit
 		from objects.file_proj import tracktion_project as proj_tracktion_project
 
-		# ---------- convproj objects ----------
-		cvpj_tracks = convproj_obj.tracks
-		cvpj_groups = convproj_obj.groups
-		cvpj_automation = convproj_obj.automation
-
-		convproj_obj.change_timings(4.0)
-
-		tr_projectid = gen_hexid('1')
-		tr_editid = gen_hexid('2')
-
+		# ---------- setup ----------
 		globalstore.datapack.load('waveform', './data/datapack/app/waveform.xml')
-
-		mainp_obj = proj_tracktion_project.tracktion_project()
-		mainp_obj.projectId = tr_projectid
-		mainp_obj.props = {'name': convproj_obj.metadata.name, 'description': ''}
 
 		sampleref_assoc = {}
 		sampleref_obj_assoc = {}
@@ -465,6 +466,25 @@ class output_tracktion_edit(plugins.base):
 		videoref_assoc = {}
 		videoref_obj_assoc = {}
 
+		counter_id = counter.counter(1000, '')
+
+		convproj_obj.change_timings(4.0)
+
+		tr_projectid = gen_hexid('1')
+		tr_editid = gen_hexid('2')
+
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
+		cvpj_automation = convproj_obj.automation
+		cvpj_transport = convproj_obj.transport
+
+		# ---------- project ----------
+		mainp_obj = proj_tracktion_project.tracktion_project()
+		mainp_obj.projectId = tr_projectid
+		mainp_obj.props = {'name': convproj_obj.metadata.name, 'description': ''}
+
+		# ---------- sampleref ----------
 		for sampleref_id, sampleref_obj in convproj_obj.sampleref__iter():
 			tr_waveid = gen_hexid('3')
 			wave_obj = mainp_obj.objects[tr_waveid] = proj_tracktion_project.tracktion_project_object()
@@ -476,6 +496,7 @@ class output_tracktion_edit(plugins.base):
 			sampleref_assoc[sampleref_id] = tr_projectid+'/'+tr_waveid
 			sampleref_obj_assoc[sampleref_id] = sampleref_obj
 			
+		# ---------- videoref ----------
 		for videoref_id, videoref_obj in convproj_obj.videoref__iter():
 			tr_waveid = gen_hexid('4')
 			wave_obj = mainp_obj.objects[tr_waveid] = proj_tracktion_project.tracktion_project_object()
@@ -492,6 +513,7 @@ class output_tracktion_edit(plugins.base):
 		edit_obj.type = 'edit'
 		edit_obj.info = '(Created as the default edit for this project)|MediaObjectCategory|1'
 
+		# ---------- edit ----------
 		if dawvert_intent.output_mode == 'file':
 			basename = os.path.basename(dawvert_intent.output_file)
 			filename = os.path.splitext(basename)[0]
@@ -505,6 +527,7 @@ class output_tracktion_edit(plugins.base):
 		project_obj.modifiedBy = "DawVert"
 		project_obj.projectID = tr_projectid+'/'+tr_editid
 
+		# ---------- tempo ----------
 		bpm = convproj_obj.params.get('bpm', 140).value
 
 		project_obj.temposequence.tempo[0] = [bpm, 1]
@@ -518,19 +541,16 @@ class output_tracktion_edit(plugins.base):
 		#for pos, timesig in convproj_obj.timesig_auto:
 		#	project_obj.temposequence.timesig[float(pos)] = timesig
 
+		# ---------- transport ----------
 		transport_obj = project_obj.transport
+		transport_obj.looping = int(cvpj_transport.loop_active)
+		transport_obj.loopPoint1 = float(cvpj_transport.loop_start)
+		transport_obj.loopPoint2 = float(cvpj_transport.loop_end)
+		transport_obj.start = float(cvpj_transport.start_pos)
+		transport_obj.position = float(cvpj_transport.current_pos)
 
-		transport_obj.looping = int(convproj_obj.transport.loop_active)
-		transport_obj.loopPoint1 = float(convproj_obj.transport.loop_start)
-		transport_obj.loopPoint2 = float(convproj_obj.transport.loop_end)
-		transport_obj.start = float(convproj_obj.transport.start_pos)
-		transport_obj.position = float(convproj_obj.transport.current_pos)
-
-		counter_id = counter.counter(1000, '')
-
+		# ---------- arranger ----------
 		project_obj.arrangertrack.id_num = counter_id.get()
-		project_obj.markertrack.id_num = counter_id.get()
-
 		for timemarker_obj in convproj_obj.arranger:
 			wf_arrangerclip = proj_tracktion_edit.tracktion_arrangerclip()
 			if timemarker_obj.visual.name: wf_arrangerclip.name = timemarker_obj.visual.name
@@ -540,6 +560,8 @@ class output_tracktion_edit(plugins.base):
 			if timemarker_obj.visual.color: wf_arrangerclip.colour = 'ff'+timemarker_obj.visual.color.get_hex()
 			project_obj.arrangertrack.clips.append(wf_arrangerclip)
 
+		# ---------- timemarkers ----------
+		project_obj.markertrack.id_num = counter_id.get()
 		for num, timemarker_obj in enumerate(convproj_obj.timemarkers):
 			wf_arrangerclip = proj_tracktion_edit.tracktion_markerclip()
 			wf_arrangerclip.markerID = num
@@ -552,11 +574,13 @@ class output_tracktion_edit(plugins.base):
 
 		get_plugins(convproj_obj, convproj_obj.params, sampleref_assoc, sampleref_obj_assoc, project_obj.masterplugins, convproj_obj.track_master.plugslots.slots_audio)
 
+		# ---------- master_returns ----------
 		auxnums = {}
 		master_returns = convproj_obj.track_master.returns
 		for returnid, x in master_returns.items():
 			auxnums[returnid] = len(auxnums)
 
+		# ---------- groups ----------
 		groups_data = {}
 		for groupid, insidegroup in cvpj_groups.iter_inside():
 			wf_tracks = project_obj.tracks
@@ -569,6 +593,7 @@ class output_tracktion_edit(plugins.base):
 		groupassoc = {}
 		groupcounter = 20000
 
+		# ---------- tracks ----------
 		for trackid, track_obj in cvpj_tracks.iter():
 			wf_tracks = project_obj.tracks
 
@@ -602,31 +627,9 @@ class output_tracktion_edit(plugins.base):
 			get_plugins(convproj_obj, track_obj.params, sampleref_assoc, sampleref_obj_assoc, wf_track.plugins, track_obj.plugslots.slots_audio)
 
 			for notespl_obj in track_obj.placements.pl_notes:
-				time_obj = notespl_obj.time
-
 				wf_midiclip = proj_tracktion_edit.tracktion_midiclip()
 				wf_midiclip.id_num = counter_id.get()
-
-				wf_midiclip.start, wf_midiclip.length = time_obj.get_posdur_real()
-
-				tempomul = (120/time_obj.realtime_tempo)
-
-				if time_obj.cut_type == 'cut':
-					wf_midiclip.offset = time_obj.get_offset_real()
-				elif time_obj.cut_type == 'loop_eq':
-					offset, loopstart, loopend = time_obj.get_loop_data()
-					toffset = (offset/4)*tempomul
-					wf_midiclip.offset = 0
-					wf_midiclip.loopStartBeats = toffset
-					wf_midiclip.loopLengthBeats = (time_obj.get_loopend()/4)-toffset
-				elif time_obj.cut_type in ['loop', 'loop_off']:
-					wf_midiclip.offset = time_obj.get_offset_real()
-					wf_midiclip.loopStartBeats = (time_obj.get_loopstart()/4)
-					wf_midiclip.loopLengthBeats = (time_obj.get_loopend()/4)
-
-				if notespl_obj.visual.name: wf_midiclip.name = notespl_obj.visual.name
-				if notespl_obj.visual.color: wf_midiclip.colour = 'ff'+notespl_obj.visual.color.get_hex()
-				wf_midiclip.mute = int(notespl_obj.muted)
+				wf_track.midiclips.append(wf_midiclip)
 
 				if notespl_obj.group:
 					groupidtr = trackid+'_'+notespl_obj.group
@@ -635,6 +638,17 @@ class output_tracktion_edit(plugins.base):
 						groupcounter += 1
 					wf_midiclip.groupID = groupassoc[groupidtr]
 
+				# ---------- visual ----------
+				if notespl_obj.visual.name: wf_midiclip.name = notespl_obj.visual.name
+				if notespl_obj.visual.color: wf_midiclip.colour = 'ff'+notespl_obj.visual.color.get_hex()
+
+				# ---------- time ----------
+				time_obj = notespl_obj.time
+				wf_midiclip.start, wf_midiclip.length = time_obj.get_posdur_real()
+				clip_cut_loop(wf_midiclip, time_obj)
+
+				# ---------- notelist ----------
+				cvpj_notelist = notespl_obj.notelist
 				notespl_obj.notelist.sort()
 				for cnote in notespl_obj.notelist.iter_notes():
 					wf_note = proj_tracktion_edit.tracktion_note()
@@ -648,6 +662,8 @@ class output_tracktion_edit(plugins.base):
 						nautop[0] = cnote.auto.mod_pitch/100
 					wf_midiclip.sequence.notes.append(wf_note)
 
+				# ---------- auto ticks ----------
+				midiseqctrls = wf_midiclip.sequence.controls
 				for autoid, autodata in notespl_obj.auto_ticks.items():
 					if autoid.startswith('midi_cc_'):
 						try:
@@ -657,7 +673,7 @@ class output_tracktion_edit(plugins.base):
 								wf_ctrl.pos = p/4
 								wf_ctrl.ctype = ccnum
 								wf_ctrl.val = v<<7
-								wf_midiclip.sequence.controls.append(wf_ctrl)
+								midiseqctrls.append(wf_ctrl)
 						except: pass
 					if autoid == 'midi_pitch':
 						for p, v in autodata:
@@ -665,45 +681,31 @@ class output_tracktion_edit(plugins.base):
 							wf_ctrl.pos = p/4
 							wf_ctrl.ctype = 4101
 							wf_ctrl.val = v+8192
-							wf_midiclip.sequence.controls.append(wf_ctrl)
+							midiseqctrls.append(wf_ctrl)
 					if autoid == 'midi_pressure':
 						for p, v in autodata:
 							wf_ctrl = proj_tracktion_edit.tracktion_control()
 							wf_ctrl.pos = p/4
 							wf_ctrl.ctype = 4103
 							wf_ctrl.val = v<<7
-							wf_midiclip.sequence.controls.append(wf_ctrl)
+							midiseqctrls.append(wf_ctrl)
 					if autoid == 'midi_program':
 						for p, v in autodata:
 							wf_ctrl = proj_tracktion_edit.tracktion_control()
 							wf_ctrl.pos = p/4
 							wf_ctrl.ctype = 4097
 							wf_ctrl.val = v<<7
-							wf_midiclip.sequence.controls.append(wf_ctrl)
+							midiseqctrls.append(wf_ctrl)
 
 					#print(autoid, autodata)
 
-				wf_track.midiclips.append(wf_midiclip)
+				# ---------- fx ----------
+				wf_midiclip.mute = int(notespl_obj.muted)
 
 			for audiopl_obj in track_obj.placements.pl_audio:
-				time_obj = audiopl_obj.time
-
 				wf_audioclip = proj_tracktion_edit.tracktion_audioclip()
 				wf_audioclip.id_num = counter_id.get()
-
-				wf_audioclip.start, wf_audioclip.length = time_obj.get_posdur_real()
-
-				wf_audioclip.fadeIn = audiopl_obj.fade_in.get_dur_seconds(bpm)
-				wf_audioclip.fadeOut = audiopl_obj.fade_out.get_dur_seconds(bpm)
-
-				wf_audioclip.fadeInType = 1
-				wf_audioclip.fadeOutType = 1
-				if audiopl_obj.fade_in.shapetype: wf_audioclip.fadeInType = 4
-				if audiopl_obj.fade_out.shapetype: wf_audioclip.fadeOutType = 4
-
-				if audiopl_obj.visual.name: wf_audioclip.name = audiopl_obj.visual.name
-				if audiopl_obj.visual.color: wf_audioclip.colour = 'ff'+audiopl_obj.visual.color.get_hex()
-				wf_audioclip.mute = int(audiopl_obj.muted)
+				wf_track.audioclips.append(wf_audioclip)
 
 				if audiopl_obj.group:
 					groupidtr = trackid+'_'+audiopl_obj.group
@@ -712,6 +714,22 @@ class output_tracktion_edit(plugins.base):
 						groupcounter += 1
 					wf_audioclip.groupID = groupassoc[groupidtr]
 
+				# ---------- fade_in ----------
+				wf_audioclip.fadeIn = audiopl_obj.fade_in.get_dur_seconds(bpm)
+				wf_audioclip.fadeInType = 1
+				if audiopl_obj.fade_in.shapetype: wf_audioclip.fadeInType = 4
+
+				# ---------- fade_out ----------
+				wf_audioclip.fadeOut = audiopl_obj.fade_out.get_dur_seconds(bpm)
+				wf_audioclip.fadeOutType = 1
+				if audiopl_obj.fade_out.shapetype: wf_audioclip.fadeOutType = 4
+
+				# ---------- visual ----------
+				if audiopl_obj.visual.name: wf_audioclip.name = audiopl_obj.visual.name
+				if audiopl_obj.visual.color: wf_audioclip.colour = 'ff'+audiopl_obj.visual.color.get_hex()
+
+				# ---------- sample and stretch ----------
+				time_obj = audiopl_obj.time
 				sp_obj = audiopl_obj.sample
 				if sp_obj.sampleref in sampleref_assoc:
 					wf_audioclip.source = sampleref_assoc[sp_obj.sampleref]
@@ -771,23 +789,16 @@ class output_tracktion_edit(plugins.base):
 
 								wf_audioclip.loopinfo.numBeats = dur_sec*speed
 
+				# ---------- time ----------
+				wf_audioclip.start, wf_audioclip.length = time_obj.get_posdur_real()
+				clip_cut_loop(wf_audioclip, time_obj)
+
 				tempomul = (120/time_obj.realtime_tempo)
 
-				if time_obj.cut_type == 'cut':
-					wf_audioclip.offset = time_obj.get_offset_real()
-				elif time_obj.cut_type == 'loop_eq':
-					offset, loopstart, loopend = time_obj.get_loop_data()
-					toffset = (offset/4)*tempomul
-					wf_audioclip.offset = 0
-					wf_audioclip.loopStartBeats = toffset
-					wf_audioclip.loopLengthBeats = (time_obj.get_loopend()/4)-toffset
-				elif time_obj.cut_type in ['loop', 'loop_off']:
-					wf_audioclip.offset = time_obj.get_offset_real()
-					wf_audioclip.loopStartBeats = (time_obj.get_loopstart()/4)
-					wf_audioclip.loopLengthBeats = (time_obj.get_loopend()/4)
-
+				# ---------- fx ----------
 				wf_audioclip.gain = xtramath.to_db(sp_obj.vol)
 				wf_audioclip.pan = sp_obj.pan
+				wf_audioclip.mute = int(audiopl_obj.muted)
 
 				if sp_obj.pitch != 0:
 					afx = proj_tracktion_edit.tracktion_audioclip_fx()
@@ -801,8 +812,7 @@ class output_tracktion_edit(plugins.base):
 					afx.fx_type = 'reverse'
 					wf_audioclip.effects.append(afx)
 
-				wf_track.audioclips.append(wf_audioclip)
-
+			# ---------- sends ----------
 			sends_pre = []
 			sends_post = []
 
@@ -812,13 +822,13 @@ class output_tracktion_edit(plugins.base):
 				else:
 					sends_post.append([sendid, send_obj])
 
+			# ---------- keynotes ----------
 			if track_obj.visual_keynotes:
 				wf_plugin = proj_tracktion_edit.tracktion_plugin()
 				wf_plugin.plugtype = 'noteName'
 				wf_plugin.enabled = 1
 				wf_plugin.presetDirty = 1
-				for k, v in track_obj.visual_keynotes.items():
-					wf_plugin.params['note'+str(k+60)] = v.name
+				for k, v in track_obj.visual_keynotes.items(): wf_plugin.params['note'+str(k+60)] = v.name
 				wf_track.plugins.append(wf_plugin)
 
 			do_sends(convproj_obj, sends_pre, wf_track, auxnums)

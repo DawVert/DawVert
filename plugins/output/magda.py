@@ -129,24 +129,14 @@ class output_magda(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import magda as proj_magda
 
+		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_transport = convproj_obj.transport
 		
+		# ---------- setup ----------
 		convproj_obj.change_timings(1.0)
 		
-		session_obj = proj_magda.magda_session()
-		session_obj.magdaVersion = "0.9.0"
-
-		project_obj = session_obj.project
-		project_obj.tempo = convproj_obj.params.get('bpm', 120).value
-		if convproj_obj.metadata.name: project_obj.name = convproj_obj.metadata.name
-
-		project_obj.loop.enabled = convproj_obj.transport.loop_active
-		project_obj.loop.startBeats = convproj_obj.transport.loop_start
-		project_obj.loop.endBeats = convproj_obj.transport.loop_end
-
-		project_obj.projectLength = convproj_obj.get_dur()
-
 		numassoc_track = {}
 		numassoc_group = {}
 		numassoc_returns = {}
@@ -158,6 +148,24 @@ class output_magda(plugins.base):
 		auxbus = {}
 		curbus = -1
 
+		# ---------- project ----------
+		session_obj = proj_magda.magda_session()
+		session_obj.magdaVersion = "0.9.0"
+		project_obj = session_obj.project
+		project_obj.projectLength = convproj_obj.get_dur()
+
+		# ---------- bpm ----------
+		project_obj.tempo = convproj_obj.params.get('bpm', 120).value
+
+		# ---------- metadata ----------
+		if convproj_obj.metadata.name: project_obj.name = convproj_obj.metadata.name
+
+		# ---------- transport ----------
+		project_obj.loop.enabled = cvpj_transport.loop_active
+		project_obj.loop.startBeats = cvpj_transport.loop_start
+		project_obj.loop.endBeats = cvpj_transport.loop_end
+
+		# ---------- groupreturn ----------
 		if convproj_obj.fxtype in ['groupreturn', 'none']:
 			tracknum = 1
 
@@ -263,8 +271,6 @@ class output_magda(plugins.base):
 					magda_track.parentId = numassoc_group[insidegroup]
 					magda_track.audioOutputDevice = 'track:'+str(magda_track.parentId)
 
-
-
-
+		# ---------- output ----------
 		if dawvert_intent.output_mode == 'file':
 			session_obj.save_to_file(dawvert_intent.output_file)

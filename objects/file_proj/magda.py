@@ -127,7 +127,8 @@ class magda_clip_audio_playback:
 		self.loopStartBeats = 0.0
 		self.loopLengthBeats = 0.0
 		self.speedRatio = 1.0
-	
+		if indict is not None: self.read(indict)
+
 	def read(self, indict):
 		if 'offsetSeconds' in indict: self.offsetSeconds = indict['offsetSeconds']
 		if 'offsetBeats' in indict: self.offsetBeats = indict['offsetBeats']
@@ -364,7 +365,8 @@ class magda_chainElement_rack_chain:
 		self.pan = 0.0
 		self.expanded = True
 		self.elements = []
-	
+		if indict is not None: self.read(indict)
+
 	def read(self, indict):
 		if 'id' in indict: self.id = indict['id']
 		if 'name' in indict: self.name = indict['name']
@@ -463,7 +465,8 @@ class magda_chainElement_device_param:
 		self.choices = []
 		self.labelTicks = []
 		self.valueTable = []
-	
+		if indict is not None: self.read(indict)
+
 	def read(self, indict):
 		if 'paramIndex' in indict: self.paramIndex = indict['paramIndex']
 		if 'name' in indict: self.name = indict['name']
@@ -662,7 +665,8 @@ class magda_track_mod:
 		self.curvePreset = 0
 		self.curvePoints = []
 		self.links = []
-	
+		if indict is not None: self.read(indict)
+
 	def read(self, indict):
 		if 'id' in indict: self.id = indict['id']
 		if 'name' in indict: self.name = indict['name']

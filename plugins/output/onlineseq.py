@@ -46,19 +46,22 @@ class output_onlineseq(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import onlineseq as proj_onlineseq
 
+		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
 		
+		# ---------- setup ----------
+		globalstore.idvals.load('onlineseq_midi_map', './data_main/idvals/onlineseq_map_midi.csv')
+		idvals_onlineseq_inst = globalstore.idvals.get('onlineseq_midi_map')
+		repeatedolinst = {}
+
 		convproj_obj.change_timings(4.0)
 
+		# ---------- project ----------
 		project_obj = proj_onlineseq.onlineseq_project()
 		project_obj.bpm = int(convproj_obj.params.get('bpm', 120).value)
 
-		globalstore.idvals.load('onlineseq_midi_map', './data_main/idvals/onlineseq_map_midi.csv')
-		idvals_onlineseq_inst = globalstore.idvals.get('onlineseq_midi_map')
-
-		repeatedolinst = {}
-
+		# ---------- tracks ----------
 		for trackid, track_obj in cvpj_tracks.iter():
 			onlineseqinst = 43
 			midiinst = None
@@ -116,8 +119,10 @@ class output_onlineseq(plugins.base):
 			create_auto(project_obj, cvpj_automation, onlineseqnum, 2, ['track', trackid, 'pan'], 1)
 			create_auto(project_obj, cvpj_automation, onlineseqnum, 11, ['track', trackid, 'pitch'], 100)
 
+		# ---------- automation ----------
 		create_auto(project_obj, cvpj_automation, 0, 0, ['main', 'bpm'], 1)
 		create_auto(project_obj, cvpj_automation, 0, 8, ['master', 'vol'], 1)
 
+		# ---------- output ----------
 		if dawvert_intent.output_mode == 'file':
 			project_obj.save_to_file(dawvert_intent.output_file)

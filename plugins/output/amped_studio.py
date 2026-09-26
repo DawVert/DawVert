@@ -155,36 +155,42 @@ class output_amped(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import amped as proj_amped
 
-		cvpj_tracks = convproj_obj.tracks
-		
 		global counter_id
 		global counter_devid
 		global amped_obj
 		global europa_vals
 
-		convproj_obj.change_timings(4.0)
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
 
+		# ---------- setup ----------
 		counter_id = counter.counter(10000, '')
 		counter_devid = counter.counter(30000, '')
-
 		europa_vals = synth_nonfree_values.europa_valnames()
 
+		# ---------- project ----------
 		zip_bio = io.BytesIO()
 		zip_amped = zipfile.ZipFile(zip_bio, mode='w', compresslevel=None)
-
 		amped_obj = proj_amped.amped_project(None)
-		amped_obj.tempo = int(convproj_obj.params.get('bpm', 120).value)
-		amped_obj.timesig_num, amped_obj.timesig_den = convproj_obj.timesig
-		amped_obj.loop_active = convproj_obj.transport.loop_active
-		amped_obj.loop_start = convproj_obj.transport.loop_start/4
-		amped_obj.loop_end = convproj_obj.transport.loop_end/4
-		amped_obj.playheadPosition = convproj_obj.transport.current_pos
-
 		amped_obj.createdWith = "DawVert"
 		amped_obj.settings = {"deviceDelayCompensation": True}
-		amped_obj.masterTrack.volume = convproj_obj.track_master.params.get('vol', 1).value
-		#amped_obj.masterTrack.devices = amped_parse_effects(None, convproj_obj, convproj_obj.track_master.plugslots.slots_audio, None)
 
+		# ---------- master track ----------
+		amped_obj.masterTrack.volume = cvpj_master.params.get('vol', 1).value
+		#amped_obj.masterTrack.devices = amped_parse_effects(None, convproj_obj, cvpj_master.plugslots.slots_audio, None)
+
+		# ---------- transport ----------
+		convproj_obj.change_timings(4.0)
+		amped_obj.tempo = int(convproj_obj.params.get('bpm', 120).value)
+		amped_obj.timesig_num, amped_obj.timesig_den = convproj_obj.timesig
+		amped_obj.loop_active = cvpj_transport.loop_active
+		amped_obj.loop_start = cvpj_transport.loop_start/4
+		amped_obj.loop_end = cvpj_transport.loop_end/4
+		amped_obj.playheadPosition = cvpj_transport.current_pos
+
+		# ---------- sampleref ----------
 		audio_id = {}
 		audio_sampleref = {}
 		amped_filenames = {}
@@ -201,20 +207,25 @@ class output_amped(plugins.base):
 			audio_sampleref[sampleref_id] = sampleref_obj
 			audioidnum += 1
 
+		# ---------- tracks ----------
 		for trackid, track_obj in cvpj_tracks.iter():
 			amped_track = proj_amped.amped_track(None)
 			amped_track.id = counter_id.get()
 			amped_track.name = track_obj.visual.name if track_obj.visual.name else ''
+
+			# params
 			amped_track.pan = track_obj.params.get('pan', 0).value
 			amped_track.volume = track_obj.params.get('vol', 1.0).value
 			amped_track.mute = not track_obj.params.get('on', True).value
 			amped_track.solo = bool(track_obj.params.get('solo', False).value)
 
+			# armed
 			amped_track.armed = {
 				'mic': track_obj.armed.in_audio,
 				'keys': track_obj.armed.in_keys
 			}
 
+			# plugin
 			inst_supported = False
 			plugin_found, plugin_obj = convproj_obj.plugin__get(track_obj.plugslots.synth)
 			if plugin_found:
@@ -327,6 +338,7 @@ class output_amped(plugins.base):
 					amped_device.data['sf2Preset'] = {"bank": o_midi_bank, "preset": o_midi_patch, "name": ""}
 					amped_device.bypass = False
 
+			# placements notes
 			for notespl_obj in track_obj.placements.pl_notes:
 				time_obj = notespl_obj.time
 				amped_offset = 0
@@ -354,6 +366,7 @@ class output_amped(plugins.base):
 
 						amped_region.midi_notes.append(notedata)
 
+			# placements audio
 			for audiopl_obj in track_obj.placements.pl_audio:
 				time_obj = audiopl_obj.time
 				amped_offset = 0
@@ -371,6 +384,7 @@ class output_amped(plugins.base):
 				amped_region.clips = [amped_audclip]
 				amped_region.mute = int(audiopl_obj.muted)
 
+			# placements audio nested
 			for nestedaudiopl_obj in track_obj.placements.pl_audio_nested:
 				if len(nestedaudiopl_obj.events):
 					time_obj = nestedaudiopl_obj.time
@@ -394,6 +408,7 @@ class output_amped(plugins.base):
 		amped_obj.metronome = {"active": False, "level": 1}
 		amped_obj.playheadPosition = 0
 
+		# ---------- output ----------
 		zip_amped.writestr('amped-studio-project.json', json.dumps(amped_obj.write()))
 		zip_amped.writestr('filenames.json', json.dumps(amped_filenames))
 		zip_amped.close()

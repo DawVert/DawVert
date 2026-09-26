@@ -46,41 +46,25 @@ class output_bandlab(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import bandlab as proj_bandlab
 
-		cvpj_tracks = convproj_obj.tracks
-		cvpj_automation = convproj_obj.automation
-		
 		logger_output = logging.getLogger('output')
 
-		convproj_obj.change_timings(1.0)
-		
-		project_obj = proj_bandlab.bandlab_project()
-
+		# ---------- setup ----------
 		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.xml')
-
 		globalstore.idvals.load('bandlab_midi_map', './data_main/idvals/bandlab_map_midi.csv')
 		idvals_bandlab_inst = globalstore.idvals.get('bandlab_midi_map')
 
-		#auxchannel_obj = proj_bandlab.bandlab_auxChannel()
-		#auxchannel_obj.id = 'aux1'
-		#project_obj.auxChannels.append(auxchannel_obj)
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
+		
+		# ---------- project ----------
+		creatorId = str(uuid.uuid4())
 
+		project_obj = proj_bandlab.bandlab_project()
 		project_obj.genres = [{"id": "other", "name": "Other"}]
 		project_obj.id = str(uuid.uuid4())
-
-		bpm = convproj_obj.params.get('bpm', 120).value
-
-		project_obj.volume = convproj_obj.track_master.params.get('vol', 1).value
-
-		tempomul = 120/bpm
-
-		project_obj.metronome['bpm'] = int(bpm)
-		project_obj.metronome['signature'] = {"notesCount": 4, "noteValue": 4}
-
 		project_obj.parentId = str(uuid.uuid4())
-
-		self.samplerKits = proj_bandlab.bandlab_samplerKits()
-
-		creatorId = str(uuid.uuid4())
+		project_obj.samplerKits = proj_bandlab.bandlab_samplerKits()
 		project_obj.creator['id'] = creatorId
 		project_obj.song = {
 			"author": {
@@ -119,13 +103,23 @@ class output_bandlab(plugins.base):
 			"stamp": None
 		}
 
+		# ---------- aux ----------
+		#auxchannel_obj = proj_bandlab.bandlab_auxChannel()
+		#auxchannel_obj.id = 'aux1'
+		#project_obj.auxChannels.append(auxchannel_obj)
+
+		# ---------- transport and bpm ----------
+		convproj_obj.change_timings(1.0)
+		bpm = convproj_obj.params.get('bpm', 120).value
+		tempomul = 120/bpm
+		project_obj.metronome['bpm'] = int(bpm)
+		project_obj.metronome['signature'] = {"notesCount": 4, "noteValue": 4}
+		project_obj.volume = convproj_obj.track_master.params.get('vol', 1).value
+
+		# ---------- sampleref and notelist ----------
 		sampleref_assoc = {}
 		sampleref_ext = {}
-
-		notelist_assoc = {}
-
 		used_samples = []
-
 		for sampleref_id, sampleref_obj in convproj_obj.sampleref__iter():
 			uuiddata = str( data_values.bytes__to_uuid( sampleref_id.encode() ) )
 			sampleref_assoc[sampleref_id] = uuiddata
@@ -139,24 +133,30 @@ class output_bandlab(plugins.base):
 
 			project_obj.samples.append(bl_sample)
 
+		# ---------- tracks ----------
+		notelist_assoc = {}
+
 		tracknum = 0
 		for trackid, track_obj in cvpj_tracks.iter():
-
 			if track_obj.type in ['instrument', 'midi', 'audio']:
 				blx_track = proj_bandlab.bandlab_track() 
-				blx_track.automation = proj_bandlab.bandlab_track_automation()
-				blx_track.automation.id = str(uuid.uuid4())
 				blx_track.id = str(uuid.uuid4())
+				blx_track.order = tracknum
+				blx_track.preset = "custom"
+				project_obj.tracks.append(blx_track)
+
+				# ---------- send ----------
 				#auxsend_obj = proj_bandlab.bandlab_auxSend()
 				#auxsend_obj.id = 'aux1'
 				#blx_track.auxSends.append(auxsend_obj)
 
+				# ---------- automation ----------
+				blx_track.automation = proj_bandlab.bandlab_track_automation()
+				blx_track.automation.id = str(uuid.uuid4())
 				do_automation(cvpj_automation, ['track', trackid, 'pan'], blx_track.automation.pan, tempomul)
 				do_automation(cvpj_automation, ['track', trackid, 'vol'], blx_track.automation.volume, tempomul)
 
-				blx_track.order = tracknum
-				blx_track.preset = "custom"
-
+				# ---------- visual ----------
 				blx_track.name = track_obj.visual.name
 				if track_obj.visual.color:
 					blx_track.color = to_color(track_obj.visual.color)
@@ -165,11 +165,13 @@ class output_bandlab(plugins.base):
 					blx_track.color = '#EEEEEE'
 					blx_track.colorName = 'Custom'
 
+				# ---------- params ----------
 				blx_track.isMuted = not track_obj.params.get('enabled', True).value
 				blx_track.isSolo = track_obj.params.get('solo', False).value
 				blx_track.volume = track_obj.params.get('vol', 1).value
 				blx_track.pan = track_obj.params.get('pan', 0).value
 
+				# ---------- audio track ----------
 				if track_obj.type == 'audio':
 					blx_track.type = 'voice'
 					blx_track.effectsData = {"displayName": None, "link": None, "originalPresetId": None}
@@ -203,6 +205,7 @@ class output_bandlab(plugins.base):
 							blx_region.sampleId = sampleref_assoc[sp_obj.sampleref]
 							blx_track.regions.append(blx_region)
 
+				# ---------- instrument/midi track ----------
 				if track_obj.type in ['instrument', 'midi']:
 					blx_track.type = 'piano'
 					blx_track.soundbank = 'studio-grand-v2-v4'
@@ -264,9 +267,8 @@ class output_bandlab(plugins.base):
 						blx_region.file = uuiddata+'.mid'
 						blx_track.regions.append(blx_region)
 
+				# ---------- plugins ----------
 				make_plugins_fx(convproj_obj, blx_track.autoPitch, blx_track.effects, track_obj.plugslots.slots_audio, tempomul)
-
-				project_obj.tracks.append(blx_track)
 
 			tracknum += 1
 

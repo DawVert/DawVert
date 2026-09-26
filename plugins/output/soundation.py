@@ -111,59 +111,61 @@ class output_soundation(plugins.base):
 		global cvpj_automation
 		global audio_id
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
+		
+		# ---------- setup ----------
 		audio_id = {}
 		convproj_obj = i_convproj_obj
 
-		cvpj_tracks = convproj_obj.tracks
-		cvpj_automation = convproj_obj.automation
-		
 		globalstore.datapack.load('soundation', './data/datapack/app/soundation.xml')
 		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.xml')
 
 		globalstore.idvals.load('gm_inst', './data_main/idvals/soundation_gm_inst.csv')
 		idvals_inst_gm2 = globalstore.idvals.get('gm_inst')
 
+		# ---------- project ----------
 		zip_bio = io.BytesIO()
 		zip_sngz = zipfile.ZipFile(zip_bio, mode='w', compresslevel=None)
-
 		soundation_obj = proj_soundation.soundation_project(None)
+		soundation_obj.version = 2.3
+		soundation_obj.studio = "3.10.7"
 
+		# ---------- bpm ----------
 		bpm = int(convproj_obj.params.get('bpm', 120).value)
 		bpm, notelen = xtramath.get_lower_tempo(bpm, 1, 240)
 
 		soundation_obj.bpm = int(bpm)
 		timing = 22050*(120/soundation_obj.bpm)
-
 		convproj_obj.change_timings(int(timing*notelen))
+		bpmdiv = 120/bpm
 
-		soundation_obj.version = 2.3
-		soundation_obj.studio = "3.10.7"
+		# ---------- timesig ----------
 		beatNumerator, beatDenominator = convproj_obj.timesig
 		soundation_obj.timeSignature = str(beatNumerator)+'/'+str(beatDenominator)
 
-		soundation_obj.looping = convproj_obj.transport.loop_active
-		soundation_obj.loopStart = convproj_obj.transport.loop_start
-		soundation_obj.loopEnd = convproj_obj.transport.loop_end
+		# ---------- timesig ----------
+		soundation_obj.looping = cvpj_transport.loop_active
+		soundation_obj.loopStart = int(cvpj_transport.loop_start)
+		soundation_obj.loopEnd = int(cvpj_transport.loop_end)
 
-		bpmdiv = 120/bpm
-
+		# ---------- master track ----------
 		soundation_channel = proj_soundation.soundation_channel(None)
-		soundation_channel.userSetName = convproj_obj.track_master.visual.name if convproj_obj.track_master.visual.name else "Master Channel"
-		soundation_channel.volume = convproj_obj.track_master.params.get('vol', 1).value
+		soundation_channel.userSetName = cvpj_master.visual.name if cvpj_master.visual.name else "Master Channel"
+		soundation_channel.volume = cvpj_master.params.get('vol', 1).value
 		soundation_channel.name = "Master Channel"
 		soundation_channel.type = "master"
 		soundation_channel.volumeAutomation = autopoints_get(['master','vol'], 0, 1)
 		soundation_channel.panAutomation = autopoints_get(['master','pan'], -.5, 2)
 
-		add_fx(convproj_obj, soundation_channel, convproj_obj.track_master.plugslots.slots_audio)
+		add_fx(convproj_obj, soundation_channel, cvpj_master.plugslots.slots_audio)
 		soundation_obj.channels.append(soundation_channel)
 
-		#auto_volpan(convproj_obj, sng_master, ['master'])
-		ts_numerator, ts_denominator = convproj_obj.timesig
-		soundation_obj.timeSignature = str(ts_numerator)+'/'+str(ts_denominator)
-
+		# ---------- tracks ----------
 		sng_channels = []
-
 		for trackid, track_obj in cvpj_tracks.iter():
 			soundation_channel = proj_soundation.soundation_channel(None)
 
@@ -499,12 +501,8 @@ class output_soundation(plugins.base):
 
 			sng_channels.append(soundation_channel)
 
-		soundation_obj.looping = convproj_obj.transport.loop_active
-		soundation_obj.loopStart = int(convproj_obj.transport.loop_start)
-		soundation_obj.loopEnd = int(convproj_obj.transport.loop_end)
-
+		# ---------- track sends ----------
 		iseffectexists = 'fx' in [cvpj_tracks.data[x].type for x in cvpj_tracks.order]
-
 		if iseffectexists:
 			for trackid, sends_obj in convproj_obj.trackroute.items():
 				tracksendnum = cvpj_tracks.order.index(trackid)
@@ -543,8 +541,8 @@ class output_soundation(plugins.base):
 
 		for x in sng_channels: soundation_obj.channels.append(x)
 
+		# ---------- output ----------
 		jsonwrite = soundation_obj.write()
-
 		if dawvert_intent.output_mode == 'file':
 			zip_sngz.writestr('song.sng', json.dumps(jsonwrite))
 			zip_sngz.close()

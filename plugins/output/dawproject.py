@@ -774,11 +774,16 @@ class output_dawproject(plugins.base):
 		global dawproject_zip
 		global bpm
 
+		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		master_returns = convproj_obj.track_master.returns
 		
+		# ---------- setup ----------
+		groups_data = {}
 		convproj_obj.change_timings(1.0)
 
+		# ---------- project ----------
 		project_obj = proj_dawproject.dawproject_song()
 		project_obj.application.name = 'DawVert'
 		arrangement_obj = project_obj.arrangement
@@ -786,21 +791,13 @@ class output_dawproject(plugins.base):
 		zip_bio = io.BytesIO()
 		dawproject_zip = zipfile.ZipFile(zip_bio, mode='w', compresslevel=None)
 
+		# ---------- bpm ----------
 		dp_tempo = project_obj.transport.Tempo
 		dp_tempo.used = True
 		bpm = dp_tempo.value = convproj_obj.params.get('bpm', 120).value
 		dp_tempo.id = 'main__bpm'
 
-		dp_timesig = project_obj.transport.TimeSignature
-		dp_timesig.used = True
-		dp_timesig.numerator = convproj_obj.timesig[0]
-		dp_timesig.denominator = convproj_obj.timesig[1]
-		dp_timesig.id = 'main__timesig'
-
-		master_returns = convproj_obj.track_master.returns
-
-		groups_data = {}
-
+		# ---------- groups ----------
 		for groupid, insidegroup in cvpj_groups.iter_inside():
 			grp_lane_obj = make_lane('group__'+groupid)
 			group_obj = cvpj_groups.get(groupid)
@@ -812,6 +809,7 @@ class output_dawproject(plugins.base):
 			else:
 				project_obj.tracks.append(dp_group)
 
+		# ---------- tracks ----------
 		for trackid, track_obj in cvpj_tracks.iter():
 
 			if track_obj.type in ['instrument', 'audio', 'hybrid']:
@@ -836,6 +834,7 @@ class output_dawproject(plugins.base):
 
 				make_sends(master_returns, track_obj.sends.data, dp_track, convproj_obj, lane_obj)
 
+		# ---------- returns ----------
 		for returnid, return_obj in master_returns.items():
 			dp_track = maketrack_return(convproj_obj, return_obj, returnid)
 			for ireturnid, x in master_returns.items():
@@ -846,6 +845,7 @@ class output_dawproject(plugins.base):
 					dp_track.channel.sends.append(dp_send)
 			project_obj.tracks.append(dp_track)
 
+		# ---------- arrangement ----------
 		project_obj.arrangement.id = 'main__arr'
 		arr_lanes = project_obj.arrangement.lanes
 		arr_lanes.timeUnit = 'beats'
@@ -854,6 +854,7 @@ class output_dawproject(plugins.base):
 		dp_track = maketrack_master(convproj_obj, convproj_obj.track_master, project_obj.arrangement)
 		project_obj.tracks.append(dp_track)
 
+		# ---------- timemarkers ----------
 		if convproj_obj.timemarkers:
 			project_obj.arrangement.markers = proj_dawproject.dawproject_markers()
 			markers = project_obj.arrangement.markers.markers
@@ -864,8 +865,14 @@ class output_dawproject(plugins.base):
 				marker.time = timemarker_obj.time.get_pos()
 				markers.append(marker)
 
-		if bool(convproj_obj.timesig_auto):
+		# ---------- time signature ----------
+		dp_timesig = project_obj.transport.TimeSignature
+		dp_timesig.used = True
+		dp_timesig.numerator = convproj_obj.timesig[0]
+		dp_timesig.denominator = convproj_obj.timesig[1]
+		dp_timesig.id = 'main__timesig'
 
+		if bool(convproj_obj.timesig_auto):
 			dp_timesig = project_obj.arrangement.timesignatureautomation = points.dawproject_points_timesig()
 			dp_timesig.id = 'main__timesig'
 
@@ -885,6 +892,7 @@ class output_dawproject(plugins.base):
 				dp_timesig.points.append(point_obj)
 				firstpoint = False
 
+		# ---------- metadata ----------
 		dp_obj = project_obj.metadata
 		meta_obj = convproj_obj.metadata
 
@@ -899,6 +907,7 @@ class output_dawproject(plugins.base):
 		if meta_obj.copyright: dp_obj['Copyright'] = meta_obj.copyright
 		if meta_obj.comment_text: dp_obj['Comment'] = meta_obj.comment_text
 
+		# ---------- output ----------
 		dawproject_zip.writestr('project.xml', project_obj.save_to_text())
 		dawproject_zip.writestr('metadata.xml', project_obj.save_metadata())
 		dawproject_zip.close()

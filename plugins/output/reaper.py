@@ -759,31 +759,37 @@ class output_reaper(plugins.base):
 		from objects.file_proj._rpp import fxchain as rpp_fxchain
 		from objects.file_proj._rpp import source as rpp_source
 
-		cvpj_tracks = convproj_obj.tracks
-		cvpj_groups = convproj_obj.groups
-		cvpj_automation = convproj_obj.automation
-		
 		global reaper_tempo
 		global datadef_obj
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		cvpj_groups = convproj_obj.groups
+		cvpj_automation = convproj_obj.automation
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
+		
+		# ---------- setup ----------
 		globalstore.datadef.load('reaper', './data_main/datadef/reaper.ddef')
 		datadef_obj = globalstore.datadef.get('reaper')
 
 		convproj_obj.change_timings(4.0)
 
-		reaper_numerator, reaper_denominator = convproj_obj.timesig
-		reaper_tempo = convproj_obj.params.get('bpm', 120).value
+		groupassoc = {}
+		groupcounter = 2
 
+		# ---------- project ----------
 		project_obj = proj_reaper.rpp_song()
 
+		# ---------- bpm and timesig ----------
+		reaper_numerator, reaper_denominator = convproj_obj.timesig
+		reaper_tempo = convproj_obj.params.get('bpm', 120).value
 		rpp_project = project_obj.project
 		rpp_project.tempo['tempo'] = reaper_tempo
 		rpp_project.tempo['num'] = convproj_obj.timesig[0]
 		rpp_project.tempo['denom'] = convproj_obj.timesig[1]
 
-		groupassoc = {}
-		groupcounter = 2
-
+		# ---------- metadata ----------
 		if convproj_obj.metadata.name:
 			rpp_project.title.set(convproj_obj.metadata.name)
 		if convproj_obj.metadata.author:
@@ -793,7 +799,7 @@ class output_reaper(plugins.base):
 		if convproj_obj.metadata.show == 1:
 			rpp_project.notes_vals.read([3,3])
 
-		#tempo env
+		# ---------- tempo env ----------
 		tempoenvex = rpp_project.tempoenvex
 
 		if_found, autodata = cvpj_automation.get(['main', 'bpm'], 'float')
@@ -806,14 +812,13 @@ class output_reaper(plugins.base):
 					tempoenvex.points.append(tempopoint)
 					nextinstant = x.instant_mode
 
-		#tempo env end
+		# ---------- transport ----------
+		rpp_project.loop.set(int(cvpj_transport.loop_active))
+		rpp_project.selection['start'] = cvpj_transport.loop_start
+		rpp_project.selection['end'] = cvpj_transport.loop_end
+		rpp_project.cursor.set(cvpj_transport.current_pos)
 
-
-		rpp_project.loop.set(int(convproj_obj.transport.loop_active))
-		rpp_project.selection['start'] = convproj_obj.transport.loop_start
-		rpp_project.selection['end'] = convproj_obj.transport.loop_end
-		rpp_project.cursor.set(convproj_obj.transport.current_pos)
-
+		# ---------- timemarkers ----------
 		for num, timemarker_obj in enumerate(convproj_obj.timemarkers):
 			name = timemarker_obj.visual.name if timemarker_obj.visual.name else ''
 			color = cvpj_color_to_reaper_color(timemarker_obj.visual.color) if timemarker_obj.visual.color else 0
@@ -824,17 +829,19 @@ class output_reaper(plugins.base):
 				outmarker = [num+1, timemarker_obj.position+timemarker_obj.duration, '', 1]
 				rpp_project.markers.append(outmarker)
 
-		track_obj = convproj_obj.track_master
-		rpp_project.master_volume['vol'] = track_obj.params.get('vol', 1.0).value
-		rpp_project.master_volume['pan'] = track_obj.params.get('pan', 0).value
-		pan_mode = track_obj.datavals.get('pan_mode', '')
+		# ---------- master track ----------
+		cvpj_master_params = cvpj_master.params
+		rpp_project.master_volume['vol'] = cvpj_master_params.get('vol', 1.0).value
+		rpp_project.master_volume['pan'] = cvpj_master_params.get('pan', 0).value
+		pan_mode = cvpj_master.datavals.get('pan_mode', '')
 		if pan_mode == 'mono': rpp_project.master_panmode.set(3)
 		if pan_mode == 'stereo': rpp_project.master_panmode.set(5)
 		if pan_mode == 'split': 
 			rpp_project.master_panmode.set(6)
-			rpp_project.master_volume['left'] = track_obj.params.get('splitpan_left', -1).value
-			rpp_project.master_volume['right'] = track_obj.params.get('splitpan_right', 1).value
+			rpp_project.master_volume['left'] = cvpj_master_params.get('splitpan_left', -1).value
+			rpp_project.master_volume['right'] = cvpj_master_params.get('splitpan_right', 1).value
 
+		# ---------- fxtype: route ----------
 		if convproj_obj.fxtype == 'route':
 			track_uuids = ['{'+str(uuid.uuid4())+'}' for _ in cvpj_tracks.iter()]
 
@@ -864,6 +871,7 @@ class output_reaper(plugins.base):
 									aux_env = rpp_track.add_aux_env('pan', tracksendnum)
 									add_auto_all(rpp_project, convproj_obj, aux_env, ['send', send_obj.sendautoid, 'pan'], 'float', False)
 		
+		# ---------- fxtype: groupreturn ----------
 		if convproj_obj.fxtype in ['groupreturn', 'none']:
 			master_returns = convproj_obj.track_master.returns
 
@@ -982,5 +990,6 @@ class output_reaper(plugins.base):
 				#	auxrecv_obj['vol'] = 1
 				tracknum += 1
 
+		# ---------- output ----------
 		if dawvert_intent.output_mode == 'file':
 			project_obj.save_to_file(dawvert_intent.output_file)

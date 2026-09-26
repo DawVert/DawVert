@@ -38,18 +38,30 @@ class output_bandlab(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import qtractor as proj_qtractor
 
+		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		
+		# ---------- setup ----------
 		convproj_obj.change_timings(1.0)
+		ppq = 960
 		
+		# ---------- project ----------
 		project_obj = proj_qtractor.qtractor_project()
 
+		# ---------- params ----------
 		bpm = int(convproj_obj.params.get('bpm', 120).value)
 		project_obj.properties.tempo = bpm
 		project_obj.properties.sample_rate = convproj_obj.freq
 
-		ppq = 960
+		# ---------- master track ----------
+		track_master = convproj_obj.track_master
+		audio_engine = proj_qtractor.qtractor_audio_engine()
+		audio_bus = audio_engine.audio_bus
+		audio_bus.output_gain = track_master.params.get('vol', 1.0).value
+		audio_bus.output_panning = track_master.params.get('pan', 0).value
+		project_obj.devices.append(audio_engine)
 
+		# ---------- sampleref ----------
 		sampleref_filename = {}
 		sampleref_filepath = {}
 
@@ -61,6 +73,7 @@ class output_bandlab(plugins.base):
 			sampleref_filepath[sampleref_id] = filepath
 			project_obj.files.audio_list[uuiddata] = filepath
 
+		# ---------- output ----------
 		if dawvert_intent.output_mode == 'file':
 			folder = dawvert_intent.output_folder
 			namet = dawvert_intent.output_visname
@@ -78,15 +91,7 @@ class output_bandlab(plugins.base):
 				except:
 					pass
 
-		track_master = convproj_obj.track_master
-
-		audio_engine = proj_qtractor.qtractor_audio_engine()
-		audio_bus = audio_engine.audio_bus
-		audio_bus.output_gain = track_master.params.get('vol', 1.0).value
-		audio_bus.output_panning = track_master.params.get('pan', 0).value
-
-		project_obj.devices.append(audio_engine)
-
+		# ---------- tracks ----------
 		for trackid, track_obj in cvpj_tracks.iter():
 
 			tracknotes_midinames = []
@@ -183,6 +188,7 @@ class output_bandlab(plugins.base):
 
 				project_obj.tracks.append(qt_track)
 
+		# ---------- output ----------
 		if dawvert_intent.output_mode == 'file':
 			namet = dawvert_intent.output_visname
 			outfile = os.path.join(dawvert_intent.output_folder, namet, os.path.basename(dawvert_intent.output_file))

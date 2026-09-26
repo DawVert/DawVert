@@ -50,17 +50,28 @@ class output_greysound(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import greysound as proj_greysound
 
+		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
 		
-		convproj_obj.change_timings(960)
-		
+		# ---------- project ----------
 		session_obj = proj_greysound.greysound_session()
+
+		# ---------- setup ----------
+		convproj_obj.change_timings(960)
+
+		folder = dawvert_intent.output_folder
+		namet = dawvert_intent.output_visname
+		audiofilepath = os.path.join(folder, namet, 'audio-files')
+		os.makedirs(audiofilepath, exist_ok=True)
+		
+		# ---------- params ----------
 		bpm = session_obj.tempo = int(convproj_obj.params.get('bpm', 120).value)
 
+		# ---------- metadata ----------
 		session_obj.metadata['name'] = convproj_obj.metadata.name if convproj_obj.metadata.name else 'untitled'
 
-		# master
+		# ---------- master ----------
 		track_obj = convproj_obj.track_master
 		greysound_track = proj_greysound.greysound_track()
 		greysound_track.id = 5000000000
@@ -70,15 +81,10 @@ class output_greysound(plugins.base):
 		do_track_params(greysound_track, track_obj)
 		session_obj.tracks.append(greysound_track)
 
+		# ---------- tracks ----------
 		clipsdata = {}
 		sampleref_assoc = {}
 
-		folder = dawvert_intent.output_folder
-		namet = dawvert_intent.output_visname
-		audiofilepath = os.path.join(folder, namet, 'audio-files')
-		os.makedirs(audiofilepath, exist_ok=True)
-
-		# tracks
 		tracknum = 0
 		pointnum = 1000
 		for trackid, track_obj in cvpj_tracks.iter():
@@ -204,6 +210,7 @@ class output_greysound(plugins.base):
 
 			tracknum += 1
 
+		# ---------- timemarkers ----------
 		for num, timemarker_obj in enumerate(convproj_obj.timemarkers):
 			greysound_marker = proj_greysound.greysound_marker()
 			greysound_marker.id = 'converted_marker_%i' % (num)
@@ -211,6 +218,7 @@ class output_greysound(plugins.base):
 			greysound_marker.position = {"ticks": timemarker_obj.time.get_pos()}
 			session_obj.markers.append(greysound_marker)
 
+		# ---------- output ----------
 		if dawvert_intent.output_mode == 'file':
 			folder = dawvert_intent.output_folder
 			namet = dawvert_intent.output_visname

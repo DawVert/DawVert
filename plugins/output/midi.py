@@ -31,18 +31,20 @@ class output_midi(plugins.base):
 	def parse(self, convproj_obj, dawvert_intent):
 		import mido
 
+		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
 		
 		metamsg = mido.MetaMessage
 		rmsg = mido.Message
 
+		# ---------- project ----------
 		midiobj = mido.MidiFile()
 		midiobj.ticks_per_beat = convproj_obj.time_ppq
 
+		# ---------- auto track ----------
 		autotrack = mido.MidiTrack()
 		midi_numerator, midi_denominator = convproj_obj.timesig
-
 
 		headcmd = []
 		if 'bpm' in convproj_obj.params.list():
@@ -71,10 +73,12 @@ class output_midi(plugins.base):
 				autotrack.append(rmsg('control_change', channel=0, control=117, value=0, time=posdif))
 			prevpos = hcmd[0]
 
+		# ---------- auto track ----------
 		if len(autotrack):
 			autotrack.insert(0, metamsg('track_name', name='Auto Track', time=0))
 			midiobj.tracks.append(autotrack)
 
+		# ---------- tracks ----------
 		for trackid, track_obj in cvpj_tracks.iter():
 			miditrack = mido.MidiTrack()
 			midi_trackname = track_obj.visual.name if track_obj.visual.name else ''
@@ -145,5 +149,6 @@ class output_midi(plugins.base):
 
 			midiobj.tracks.append(miditrack)
 
+		# ---------- output ----------
 		if dawvert_intent.output_mode == 'file':
 			midiobj.save(dawvert_intent.output_file)
