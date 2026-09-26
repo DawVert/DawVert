@@ -58,34 +58,46 @@ class input_musicphrase(plugins.base):
 		track_pl = []
 		for n, mpxl_track in enumerate(project_obj.tracks):
 			track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
+
+			# visual
 			track_obj.visual.name = mpxl_track.name
 			track_obj.visual.color.set_int(list(mpxl_track.color[0:3]))
+
+			# params
 			track_obj.params.add('enabled', not mpxl_track.mute, 'bool')
 			track_obj.params.add('solo', mpxl_track.solo, 'bool')
+
+			# armed
 			track_obj.armed.on = bool(mpxl_track.record)
 			track_obj.armed.in_keys = bool(mpxl_track.record)
 
+			# midi
 			track_obj.midi.out_enabled = True
 			track_obj.midi.out_chanport.chan = mpxl_track.channel
 			track_obj.midi.out_chanport.port = 0
+			if mpxl_track.program != -1: track_obj.midi.out_inst.patch = mpxl_track.program
 
-			if mpxl_track.program != -1:
-				track_obj.midi.out_inst.patch = mpxl_track.program
-
+			# clips
 			for clip in mpxl_track.clips:
 				placement_obj = track_obj.placements.add_midi()
-				placement_obj.visual.name = clip.name
-				placement_obj.visual.color.set_int(list(clip.color[0:3]))
 				placement_obj.time.set_posdur(clip.start, clip.size)
 
 				channel = mpxl_track.channel
 
+				# midievents
 				events_obj = placement_obj.midievents
 				events_obj.has_duration = True
 				events_obj.ppq = 96
+
+				# visual
+				placement_obj.visual.name = clip.name
+				placement_obj.visual.color.set_int(list(clip.color[0:3]))
+
+				# notes
 				for note in clip.notes:
 					events_obj.add_note_dur_off_vel(note.pos, channel, note.note, note.vel, max(0, note.end-note.pos), note.vel_off)
 
+				# ctrls
 				for ctrl in clip.ctrls:
 					event_type = ctrl.type
 					if event_type == 10: events_obj.add_note_pressure(ctrl.pos, channel, ctrl.data1, ctrl.data2)

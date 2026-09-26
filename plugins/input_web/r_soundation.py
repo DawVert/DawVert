@@ -179,29 +179,37 @@ class input_soundation(plugins.base):
 				for soundation_region in soundation_channel.regions:
 					if sound_chan_type == 'instrument': placement_obj = track_obj.placements.add_notes()
 					if sound_chan_type == 'audio': placement_obj = track_obj.placements.add_audio()
+
+					# time
 					clip_length = round(soundation_region.length/timing, 3)*timing
 					clip_contentPosition = soundation_region.contentPosition
 					clip_loopcount = round(soundation_region.loopcount, 3)
 					time_obj = placement_obj.time
 					time_obj.set_posdur(soundation_region.position, clip_length*clip_loopcount)
 					time_obj.set_loop_data(-clip_contentPosition, -clip_contentPosition, clip_length-clip_contentPosition)
+
+					# fx
 					placement_obj.muted = soundation_region.muted
 
+					# visual
 					if soundation_region.name:
 						placement_obj.visual.name = soundation_region.name
 
+					# instrument
 					if sound_chan_type == 'instrument':
 						cvpj_notelist = placement_obj.notelist
 						for sndstat_note in soundation_region.notes: 
 							cvpj_notelist.add_r(sndstat_note['position'], sndstat_note['length'], sndstat_note['note']-60, sndstat_note['velocity'], None)
 						placement_obj.antiminus()
 
+					# audio
 					if sound_chan_type == 'audio':
 						sp_obj = placement_obj.sample
 						sp_obj.sampleref, sampleref_obj = create_sampleref(soundation_region.file, convproj_obj, samplefolder, zip_data)
 						sp_obj.reverse = soundation_region.reversed
 						pitch = (soundation_region.pitchShiftSemitones+soundation_region.pitchShiftCents)/100
 
+						# stretch
 						stretch_obj = sp_obj.stretch
 						stretch_obj.preserve_pitch = not (soundation_region.stretchMode != 3)
 						if sp_obj.pitch: stretch_obj.preserve_pitch = True

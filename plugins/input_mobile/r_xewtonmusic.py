@@ -67,18 +67,20 @@ class input_xewton(plugins.base):
 			idval = 'track'+str(tracknim)
 			track_obj = cvpj_tracks.add(idval, 'instrument', 0, False)
 
+			# params
 			track_obj.params.add('vol', xe_tr.volume, 'float')
 			track_obj.params.add('pan', xe_tr.pan, 'float')
 
+			# visual
 			visual_obj = track_obj.visual
 			visual_obj.from_datapack('xewton', 'inst', str(xe_tr.instnum), True)
-
 			if xe_tr.color is not None: 
 				cr = xe_tr.color[2]
 				cg = xe_tr.color[1]
 				cb = xe_tr.color[0]
 				visual_obj.color.set_int([cr, cg, cb])
 
+			# instrument
 			if INST_ENABLED:
 				if xe_tr.instnum not in instplugs:
 					instplug = 'inst'+str(xe_tr.instnum)
@@ -88,6 +90,7 @@ class input_xewton(plugins.base):
 					instplugs[xe_tr.instnum][1].append(track_obj)
 				track_obj.plugslots.set_synth(instplug)
 
+			# notelist
 			cvpj_notelist = track_obj.placements.notelist
 			tracknotes = xe_tr.notes.notes
 

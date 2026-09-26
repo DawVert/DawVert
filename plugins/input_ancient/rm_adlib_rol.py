@@ -81,6 +81,7 @@ class input_adlib_rol(plugins.base):
 			cvpj_trackid = 'track'+str(tracknum+1)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 0, False)
 
+			# name
 			if (rol_track.voice.name!='Voix  %i'%tracknum) or keep_def_name:
 				track_obj.visual.name = rol_track.voice.name
 			elif not project_obj.isMelodic:
@@ -91,19 +92,18 @@ class input_adlib_rol(plugins.base):
 				elif tracknum==8: track_obj.visual.name = 'Top Cymbal'
 				elif tracknum==9: track_obj.visual.name = 'Hi-Hat'
 
+			# notelist
 			cvpj_notelist = track_obj.placements.notelist
-			
 			curtrackpos = 0
 			for note, pos in rol_track.voice.events:
 				if note >= 12: cvpj_notelist.add_m(None, curtrackpos, pos, note-48-12, 1, None)
 				curtrackpos += pos
-
 			upper_timbre = [[i, p.upper()] for i, p in rol_track.timbre.events.copy()]
 			cvpj_notelist.add_instpos(upper_timbre)
-
 			for x in upper_timbre:
 				if x[1] not in used_voices: used_voices.append(x[1])
 
+			# automation
 			for pos, val in rol_track.volume.events: cvpj_automation.add_autotick(['track', cvpj_trackid, 'vol'], 'float', pos, val)
 			for pos, val in rol_track.pitch.events: cvpj_automation.add_autotick(['track', cvpj_trackid, 'pitch'], 'float', pos, val)
 

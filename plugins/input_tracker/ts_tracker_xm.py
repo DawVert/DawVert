@@ -157,16 +157,19 @@ class input_xm(plugins.base):
 				inst_used = True
 				trsamp = xm_inst.samp_head[0]
 				inst_obj.params.add('vol', 0.3*(trsamp.vol), 'float')
-				filename = samplefolder+str(xm_cursamplenum)+'.wav'
 
+				# sampleref
+				filename = samplefolder+str(xm_cursamplenum)+'.wav'
 				sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
 				sampleref_obj.set_channels(1 if not trsamp.stereo else 2)
 				sampleref_obj.set_dur_samples(trsamp.get_len())
 				sampleref_obj.set_fileformat('wav')
 
+				# plugin
 				plugin_obj, synthid, sp_obj = convproj_obj.plugin__addspec__sampler__genid__s_obj(sampleref_obj, filename)
-
 				inst_obj.plugslots.set_synth(synthid)
+
+				# sample region
 				sp_obj.loop_active, sp_obj.loop_mode, sp_obj.loop_start, sp_obj.loop_end = trsamp.get_loop()
 				if not sp_obj.loop_active: sp_obj.loop_end = trsamp.length
 				sp_obj.end = trsamp.length
@@ -177,15 +180,16 @@ class input_xm(plugins.base):
 				plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'sampler', 'multi')
 				inst_obj.plugslots.set_synth(synthid)
 				for instnum, r_start, e_end in sampleregions:
-					filename = samplefolder + str(xm_cursamplenum+instnum) + '.wav'
-
 					trsamp = xm_inst.samp_head[instnum]
 
+					# sampleref
+					filename = samplefolder + str(xm_cursamplenum+instnum) + '.wav'
 					sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
 					sampleref_obj.set_channels(1 if not trsamp.stereo else 2)
 					sampleref_obj.set_dur_samples(trsamp.get_len())
 					sampleref_obj.set_fileformat('wav')
 
+					# sample region
 					sp_obj = plugin_obj.sampleregion_add(r_start, e_end, 0, None)
 					sp_obj.loop_active, sp_obj.loop_mode, sp_obj.loop_start, sp_obj.loop_end = trsamp.get_loop()
 					if not sp_obj.loop_active: sp_obj.loop_end = trsamp.length
@@ -194,6 +198,7 @@ class input_xm(plugins.base):
 					sp_obj.point_value_type = "samples"
 
 			if xm_inst.num_samples != 0:
+				# lfo
 				vibrato_rate, vibrato_depth, vibrato_type, vibrato_sweep = xm_inst.vibrato_lfo()
 				if vibrato_rate != 0:
 					lfo_obj = plugin_obj.lfo_add('pitch')
@@ -201,10 +206,8 @@ class input_xm(plugins.base):
 					lfo_obj.prop.shape = vibrato_type
 					lfo_obj.time.set_hz(vibrato_rate/5)
 					lfo_obj.amount = vibrato_depth
-
 				env_to_cvpj(xm_inst.env_vol, plugin_obj, False, xm_inst.fadeout)
 				env_to_cvpj(xm_inst.env_pan, plugin_obj, True, xm_inst.fadeout)
-
 				plugin_obj.env_asdr_from_points('vol')
 
 			xm_cursamplenum += xm_inst.num_samples

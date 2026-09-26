@@ -52,6 +52,7 @@ class input_fl_mobile(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_transport = convproj_obj.transport
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -71,9 +72,9 @@ class input_fl_mobile(plugins.base):
 
 		if project_obj.space_start or project_obj.space_end:
 			if project_obj.space_end != project_obj.space_start:
-				convproj_obj.transport.loop_active = True
-				convproj_obj.transport.loop_start = project_obj.space_start
-				convproj_obj.transport.loop_end = project_obj.space_end
+				cvpj_transport.loop_active = True
+				cvpj_transport.loop_start = project_obj.space_start
+				cvpj_transport.loop_end = project_obj.space_end
 
 		# ---------- metadata ----------
 		convproj_obj.metadata.name = project_obj.meta_title

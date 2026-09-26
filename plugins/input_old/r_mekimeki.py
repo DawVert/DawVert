@@ -83,14 +83,17 @@ class input_cvpj_f(plugins.base):
 		mmc_tracks = mmc_main["Tracks"]
 		for tracknum, mmc_track in enumerate(mmc_tracks):
 			cvpj_instid = 'CH'+str(tracknum)
-
 			track_obj = cvpj_tracks.add(cvpj_instid, 'instrument', 0, False)
 
+			# visual
 			track_obj.visual.name = cvpj_instid
 			track_obj.visual.color.set_float(maincolor)
+
+			# params
 			track_obj.params.add('enabled', bool(int(not getvalue(mmc_track, 'Mute', 0))), 'bool')
 			track_obj.params.add('solo', bool(int(getvalue(mmc_track, 'Solo', 0))), 'bool')
 
+			# notelist
 			cvpj_notelist = track_obj.placements.notelist
 
 			for mmc_note in mmc_track["Notes"]:

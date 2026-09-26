@@ -49,6 +49,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 				constantsdata = devicedata.data['constants'] if 'constants' in devicedata.data else {}
 				matrix = devicedata.data['matrix'] if 'matrix' in devicedata.data else {}
 
+				# wavetable
 				if devicedata.sourceId == 'df142a04-31c6-4495-a8a4-c49f8429d557':
 					plugin_obj = convproj_obj.plugin__add(deviceid, 'native', 'wavtool', 'wavetable')
 					instrument_dev = deviceid
@@ -477,49 +478,69 @@ class input_wavtool(plugins.base):
 			logger_input.info(''+wavtool_track.type+' Track: '+wavtool_track.name)
 			if wavtool_track.type == 'MIDI':
 				track_obj = cvpj_tracks.add(trackid, 'instrument', 1, False)
+
+				# visual
 				track_obj.visual.name = wavtool_track.name
 				track_obj.visual.color.set_hex(wavtool_track.color)
+
+				# params
 				track_obj.params.add('vol', wavtool_track.gain, 'float')
 				track_obj.params.add('pan', wavtool_track.balance, 'float')
 				track_obj.params.add('enabled', int(not wavtool_track.mute), 'bool')
+
+				# clip
 				for wavtool_clip in wavtool_track.clips:
 					placement_obj = track_obj.placements.add_notes()
+
+					# visual
 					placement_obj.visual.color.set_hex(wavtool_clip.color)
 					placement_obj.visual.name = wavtool_clip.name
+
+					# time
 					time_obj = placement_obj.time
 					time_obj.set_startend(wavtool_clip.timelineStart, wavtool_clip.timelineEnd)
 					time_obj.set_loop_data(wavtool_clip.readStart, wavtool_clip.loopStart, wavtool_clip.loopEnd)
+
+					# notelist
 					cvpj_notelist = placement_obj.notelist
 					for note in wavtool_clip.notes:
 						cvpj_notelist.add_r(note['start'], note['end']-note['start'], note['pitch']-60, note['velocity'], None)
+
+				# devices
 				add_devices(convproj_obj, track_obj, trackid, wavtool_obj.devices)
 
 			if wavtool_track.type == 'Audio':
 				track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
+
+				# visual
 				track_obj.visual.name = wavtool_track.name
 				track_obj.visual.color.set_hex(wavtool_track.color)
+
+				# params
 				track_obj.params.add('vol', wavtool_track.gain, 'float')
 				track_obj.params.add('pan', wavtool_track.balance, 'float')
 				track_obj.params.add('enabled', int(not wavtool_track.mute), 'bool')
+
+				# clip
 				for wavtool_clip in wavtool_track.clips:
 					placement_obj = track_obj.placements.add_audio()
+
+					# visual
 					placement_obj.visual.color.set_hex(wavtool_clip.color)
 					placement_obj.visual.name = wavtool_clip.name
-					time_obj = placement_obj.time
-					time_obj.set_startend(wavtool_clip.timelineStart, wavtool_clip.timelineEnd)
 
+					# sampleref
+					audioBufferId = wavtool_clip.audioBufferId
 					sp_obj = placement_obj.sample
+					sp_obj.sampleref = audioBufferId
+					audio_filename = extract_audio(audioBufferId)
+					sampleref_obj = convproj_obj.sampleref__add(audioBufferId, audio_filename, None)
 
-					audio_filename = extract_audio(wavtool_clip.audioBufferId)
-					sampleref_obj = convproj_obj.sampleref__add(wavtool_clip.audioBufferId, audio_filename, None)
-					sp_obj.sampleref = wavtool_clip.audioBufferId
-
-					loopon = True
-					if not wavtool_clip.loopEnabled: loopon = wavtool_clip.loopEnabled
-
+					# fade
 					placement_obj.fade_in.set_dur(wavtool_clip.fadeIn, 'beats')
 					placement_obj.fade_out.set_dur(wavtool_clip.fadeOut, 'beats')
 
+					# stretch
 					wt_clip_transpose = wavtool_clip.transpose
 					if wavtool_clip.warp:
 						wt_warp_enabled = wavtool_clip.warp['enabled'] if 'enabled' in wavtool_clip.warp else False
@@ -553,7 +574,6 @@ class input_wavtool(plugins.base):
 											(float(anchor)), 
 											(wt_warp_anchors[anchor]['destination']/2)/sourcebpmmod
 											)
-
 					else:
 						if wt_warp_algorithm=='Pro':
 							s_timing_obj.set__orgtempo(wt_warp_sourceBPM/2)
@@ -561,11 +581,20 @@ class input_wavtool(plugins.base):
 							s_timing_obj.set__speed(xtramath.pitch_to_speed(wavtool_clip.transpose))
 							stretch_obj.preserve_pitch = False
 
+					# fx
 					sp_obj.vol = wavtool_clip.gain
+
+					# time
+					time_obj = placement_obj.time
+					time_obj.set_startend(wavtool_clip.timelineStart, wavtool_clip.timelineEnd)
+
+					loopon = True
+					if not wavtool_clip.loopEnabled: loopon = wavtool_clip.loopEnabled
 
 					if loopon:
 						time_obj.set_loop_data(wavtool_clip.readStart, wavtool_clip.loopStart, wavtool_clip.loopEnd)
 					else:
 						time_obj.set_offset(wavtool_clip.readStart)
 
+				# devices
 				add_devices(convproj_obj, track_obj, trackid, wavtool_obj.devices)

@@ -37,16 +37,16 @@ class input_v2m(plugins.base):
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(project_obj.timediv)
 
+		traits_obj = convproj_obj.traits
+		traits_obj.fxrack_params = ['vol','pan','pitch']
+		traits_obj.auto_types = ['nopl_ticks']
+		traits_obj.track_nopl = True
+
 		# ---------- transport ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cs'
 		convproj_obj.do_actions.append('do_addloop')
 		convproj_obj.do_actions.append('do_singlenotelistcut')
-
-		traits_obj = convproj_obj.traits
-		traits_obj.fxrack_params = ['vol','pan','pitch']
-		traits_obj.auto_types = ['nopl_ticks']
-		traits_obj.track_nopl = True
 
 		# ---------- control track ----------
 		track_obj = cvpj_tracks.add('control', 'midi', 1, False)
@@ -61,13 +61,17 @@ class input_v2m(plugins.base):
 		# ---------- tracks ----------
 		for n, track in enumerate(project_obj.tracks):
 			track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
+			events_obj = track_obj.placements.midievents
+
+			# visual
 			track_obj.visual.name = 'Track #'+str(n)
+
+			# midi
 			track_obj.midi.out_enabled = True
 			track_obj.midi.out_chanport.chan = n
 			track_obj.midi.out_chanport.port = 0
 
-			events_obj = track_obj.placements.midievents
-
+			# program
 			cur_val = 0
 			cur_pos = 0
 			for pgmc in track.pc:
@@ -75,6 +79,7 @@ class input_v2m(plugins.base):
 				cur_val += int(pgmc['p'])
 				events_obj.add_program(cur_pos, n, cur_val&127)
 
+			# notes
 			cur_note = 0
 			cur_pos = 0
 			for note in track.notes:

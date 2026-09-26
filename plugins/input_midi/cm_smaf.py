@@ -171,12 +171,14 @@ class input_mmf(plugins.base):
 					sampleref_obj.set_fileformat('wav')
 					audio_obj.to_sampleref_obj(sampleref_obj)
 
+		# MA-3 Voice
 		custinst_obj = convproj_obj.main__add_midi_custom_inst()
 		custinst_obj.bank = 124
 		custinst_obj.visual.name = 'MA-3 Voice $patch$'
 		custinst_obj.visual.color.set_int([0,170,255])
 		custinst_obj.pluginid = 'voice_$patch$'
 
+		# MA-3 Stream
 		custinst_obj = convproj_obj.main__add_midi_custom_inst()
 		custinst_obj.bank = 125
 		custinst_obj.visual.name = 'MA-3 Drum/Stream $patch$'

@@ -140,6 +140,7 @@ class input_deflemask(plugins.base):
 						inst_obj.plugslots.set_synth(synthid)
 
 					if dmf_inst.mode == 0:
+						# plugin
 						plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
 						plugin_obj.role = 'synth'
 						inst_obj.plugslots.set_synth(synthid)
@@ -153,6 +154,7 @@ class input_deflemask(plugins.base):
 						if insttype == 'noise':
 							osc_data.prop.shape = 'random'
 	
+						# env volume
 						volenv = dmf_inst.env_volume.values
 						if len(volenv) == 1: 
 							inst_obj.params.add('vol', volenv[0]/15, 'float')
@@ -165,17 +167,20 @@ class input_deflemask(plugins.base):
 					samplenum = instnum-10000
 					sampleid, sample_obj = sampleparts[samplenum]
 
+					# visual
+					inst_obj.visual.name = sample_obj.name if sampleid else ''
+					inst_obj.visual.color.set_float([.9,.9,.9])
+					inst_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+
 					if sampleid:
-						sample_pitch = xtramath.speed_to_pitch(proj_deflemask.samplePitches[sample_obj.pitch])
-						inst_obj.visual.name = sample_obj.name
-						inst_obj.visual.color.set_float([.9,.9,.9])
-						inst_obj.visual.color.fx_allowed = ['saturate', 'brighter']
 						inst_obj.is_drum = True
-						inst_obj.datavals.add('middlenote', -int(sample_pitch))
 						inst_obj.params.add('vol', (sample_obj.amp)/70, 'float')
 
-						#inst_obj.params.add('pitch', pcms_c[3]/100, 'float')
+						# pitch
+						sample_pitch = xtramath.speed_to_pitch(proj_deflemask.samplePitches[sample_obj.pitch])
+						inst_obj.datavals.add('middlenote', -int(sample_pitch))
 
+						# plugin
 						plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'sampler', 'single')
 						plugin_obj.role = 'synth'
 						inst_obj.plugslots.set_synth(synthid)
@@ -184,7 +189,3 @@ class input_deflemask(plugins.base):
 						samplepart_obj.visual.name = sample_obj.name
 						plugin_obj.datavals.add('point_value_type', "samples")
 
-					else:
-						inst_obj.visual.name = ''
-						inst_obj.visual.color.set_float([.9,.9,.9])
-						inst_obj.visual.color.fx_allowed = ['saturate', 'brighter']

@@ -28,6 +28,15 @@ class input_orgyana(plugins.base):
 
 	def get_configdef(self, configdef):
 		configdef.add_bool('use_groups', True, 'Enable Groups')
+		cfgpart = configdef.add_float('panlvl', 1.0, 'Pan Amount')
+		cfgpart.set_range(-1, 1)
+		configdef.set_group('pan_auto', 'Pan Auto')
+		cfgpart = configdef.add_enum('pan_auto', 'track', 'Auto Type')
+		cfgpart.add_choice('none', 'None')
+		cfgpart.add_choice('track', 'Track')
+		cfgpart.add_choice('note', 'Notes')
+		cfgpart = configdef.add_float('pan_smooth', 0.75, 'Smooth')
+		cfgpart.set_range(0, 1)
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_uncommon import orgyana as proj_orgyana
@@ -53,10 +62,13 @@ class input_orgyana(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
-		cvpj_automation = cvpj_automation
+		cvpj_automation = convproj_obj.automation
 
 		# ---------- convproj params ----------
 		use_groups = dawvert_intent.input_get_param('use_groups', True)
+		pan_auto = dawvert_intent.input_get_param('pan_auto', 'none')
+		panlvl = dawvert_intent.input_get_param('panlvl', 1)
+		pan_smooth = dawvert_intent.input_get_param('pan_smooth', 0.25)
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -83,13 +95,17 @@ class input_orgyana(plugins.base):
 			if len(orgtrack_obj.notes) != 0:
 				idval = 'org_'+str(tracknum)
 				track_obj = cvpj_tracks.add(idval, 'instrument', 0, False)
-				if tracknum > 7: 
+				if tracknum > 7: # drums
 					drum_tracks.append(track_obj)
-					track_obj.visual.from_datapack('orgyana', 'drums', str(orgtrack_obj.instrument), False)
 					track_obj.is_drum = True
-					if orgsamp_obj.loaded:
-						drum_filename = os.path.join(dawvert_intent.path_samples['extracted']+'orgmaker_drum_'+str(orgtrack_obj.instrument)+'.wav')
 
+					# visual
+					track_obj.visual.from_datapack('orgyana', 'drums', str(orgtrack_obj.instrument), False)
+
+					# plugin
+					if orgsamp_obj.loaded:
+						# drum sample
+						drum_filename = os.path.join(dawvert_intent.path_samples['extracted']+'orgmaker_drum_'+str(orgtrack_obj.instrument)+'.wav')
 						if orgtrack_obj.instrument not in orgdrum_sob:
 							audio_obj = audio_data.audio_obj()
 							audio_obj.set_codec('int8')
@@ -104,8 +120,11 @@ class input_orgyana(plugins.base):
 						plugin_obj, pluginid, sp_obj = convproj_obj.plugin__addspec__sampler__genid__s_obj(orgdrum_sob[orgtrack_obj.instrument], drum_filename)
 						sp_obj.trigger = 'oneshot'
 						track_obj.plugslots.set_synth(pluginid)
-				else: 
+				else: # melody
+					# visual
 					track_obj.visual.name = "Melody "+str(tracknum+1)
+
+					# plugin
 					if orgsamp_obj.loaded:
 						plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
 						track_obj.plugslots.set_synth(pluginid)
@@ -133,6 +152,8 @@ class input_orgyana(plugins.base):
 				last_pan_pos = 0
 				last_pan_val = 0
 
+				if pan_auto=='track': pan_auto_obj = cvpj_automation.create(['track', idval, 'pan'], 'float', False).make_nopl_points()
+
 				for pos, orgnote in posnotes.items():
 					note, dur, vol, pan = orgnote
 					pan = (pan-6)/6
@@ -145,20 +166,26 @@ class input_orgyana(plugins.base):
 					if endnote != None: isinsidenote = False if endnote-pos == notedur else True
 					else: isinsidenote = False
 					if not isinsidenote: 
-						cvpj_notelist.add_r(pos, dur, note-24 if tracknum > 7 else note-36, vol/254, None)
-						notepos = pos
-						if pan or last_pan_val:
-							cvpj_automation.add_autopoint(pan_autoid, 'float', pos, pan, 'instant')
-						last_pan_pos = pos
-						last_pan_val = pan
+						extradata = None
+						if pan_auto=='note': extradata = {'pan': pan}
+						cvpj_notelist.add_r(pos, dur, note-24 if tracknum > 7 else note-36, vol/254, extradata)
+						if pan_auto=='track':
+							if pan or last_pan_val:
+								pan_auto_obj.points__add_point(pos, pan*panlvl, 'instant')
+						elif pan_auto=='note':
+							notepos = pos
 					else:
 						if pan!=last_pan_val:
 							if last_pan_pos>1:
-								insidepos = pos-notepos
-								cvpj_automation.add_autopoint(pan_autoid, 'float', pos-0.25, last_pan_val, 'normal')
-								cvpj_automation.add_autopoint(pan_autoid, 'float', pos+0.25, pan, 'normal')
-						last_pan_pos = pos
-						last_pan_val = pan
+								if pan_auto=='track':
+									pan_auto_obj.points__add_point(pos-pan_smooth, last_pan_val*panlvl, 'normal')
+									pan_auto_obj.points__add_point(pos+pan_smooth, pan*panlvl, 'normal')
+								elif pan_auto=='note':
+									insidepos = pos-notepos
+									cvpj_notelist.last_add_auto('pan', insidepos-pan_smooth, last_pan_val*panlvl)
+									cvpj_notelist.last_add_auto('pan', insidepos+pan_smooth, pan*panlvl)
+					last_pan_pos = pos
+					last_pan_val = pan
 
 		# ---------- grouping ----------
 		if use_groups:

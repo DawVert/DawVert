@@ -70,34 +70,47 @@ class input_fl_mobile_old(plugins.base):
 		# ---------- insts ----------
 		for num, binst in enumerate(project_obj.insts):
 			samplenum = int(binst.sample_num)-1
-			samp = project_obj.samples[samplenum]
 			instid = str(num+1)
+
 			inst_obj = cvpj_insts.add(instid)
+
+			# params
 			inst_obj.datavals.add('middlenote', binst.basenote)
 			inst_obj.params.add('vol', binst.vol/64, 'float')
 			inst_obj.params.add('pan', -(binst.pan-32)/32, 'float')
 			inst_obj.params.add('pitch', binst.pitch/128, 'float')
+
+			# visual
 			visual_obj = inst_obj.visual
 			visual_obj.color.set_int(binst.color.tolist())
 			visual_obj.name = binst.name
+
+			# plugin
 			plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'single')
 			plugin_obj.role = 'synth'
+			inst_obj.plugslots.set_synth(pluginid)
+
+			# sample
+			samp = project_obj.samples[samplenum]
 			sp_obj = plugin_obj.samplepart_add('sample')
 			sp_obj.from_sampleref(convproj_obj, str(samplenum))
 			if samp.loop_2:
 				sp_obj.loop_start = int(samp.loop_1)
 				sp_obj.loop_end = int(samp.loop_1)+int(samp.loop_2)
 				sp_obj.loop_active = True
-			inst_obj.plugslots.set_synth(pluginid)
 
 		# ---------- patterns ----------
 		patsize = {}
 		for num, bpattern in enumerate(project_obj.patterns):
 			if len(bpattern.events):
 				nle_obj = convproj_obj.notelistindex__add(str(num+1))
+				
+				# visual
 				visual_obj = nle_obj.visual
 				visual_obj.name = bpattern.name
 				visual_obj.color.set_int(bpattern.color.tolist())
+
+				# notelist
 				cvpj_notelist = nle_obj.notelist
 				for event in bpattern.events:
 					cvpj_notelist.add_m(str(event[3]), event[0], event[1]-event[0], int(event[2])-60, event[4]/127 if event[4]<128 else 1, None)

@@ -136,48 +136,57 @@ class input_audiosanua(plugins.base):
 		for as_channum, as_chan in project_obj.channels.items():
 			cvpj_trackid = 'audiosanua'+str(as_channum)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
+
+			# visual
 			track_obj.visual.name = as_chan.name
 			track_obj.visual.color.set_int(colordata.getcolornum(as_channum))
 			track_obj.visual.color.fx_allowed = ['saturate']
+
+			# params
 			track_obj.params.add('vol', as_chan.volume/100, 'float')
 			track_obj.params.add('pan', as_chan.pan/100, 'float')
 			track_obj.params.add('enabled', not as_chan.mute, 'bool')
 			track_obj.params.add('solo', as_chan.solo, 'bool')
-			track_obj.sends.add('audiosauna_send_tape_delay', None, as_chan.delay/100)
-			track_obj.sends.add('audiosauna_send_reverb', None, as_chan.reverb/100)
 
+			# sends
+			if as_chan.delay: track_obj.sends.add('audiosauna_send_tape_delay', None, as_chan.delay/100)
+			if as_chan.reverb: track_obj.sends.add('audiosauna_send_reverb', None, as_chan.reverb/100)
+
+			# patterns
 			for as_pattern in as_chan.patterns:
-				if as_pattern.patternId in as_chan.track.notes:
-					pat_notes = as_chan.track.notes[as_pattern.patternId]
-				else:
-					pat_notes = []
-
+				# notelist
 				placement_obj = track_obj.placements.add_notes()
-				time_obj = placement_obj.time
-				time_obj.set_startend(max(as_pattern.startTick, 0), as_pattern.endTick)
-				time_obj.set_loop_data(0, 0, as_pattern.patternLength)
 				placement_obj.visual.color.set_int(colordata.getcolornum(as_pattern.patternColor))
 				placement_obj.visual.color.fx_allowed = ['saturate']
 				if as_pattern.name: placement_obj.visual.name = as_pattern.name
 
-				cvpj_notelist = placement_obj.notelist
-				
-				for t_note in pat_notes: 
-					n_pos = max(0,t_note.startTick-as_pattern.startTick)
-					n_dur = t_note.endTick-t_note.startTick
-					n_key = t_note.pitch-60
-					n_volume = t_note.noteVolume/100
-					n_extra = {'cutoff': 1-(t_note.noteCutoff/100)}
-					cvpj_notelist.add_r(n_pos, n_dur, n_key, n_volume, n_extra)
+				# time
+				time_obj = placement_obj.time
+				time_obj.set_startend(max(as_pattern.startTick, 0), as_pattern.endTick)
+				time_obj.set_loop_data(0, 0, as_pattern.patternLength)
+
+				# notelist
+				if as_pattern.patternId in as_chan.track.notes:
+					pat_notes = as_chan.track.notes[as_pattern.patternId]
+					cvpj_notelist = placement_obj.notelist
+					for t_note in pat_notes: 
+						n_pos = max(0,t_note.startTick-as_pattern.startTick)
+						n_dur = t_note.endTick-t_note.startTick
+						n_key = t_note.pitch-60
+						n_volume = t_note.noteVolume/100
+						n_extra = {'cutoff': 1-(t_note.noteCutoff/100)}
+						cvpj_notelist.add_r(n_pos, n_dur, n_key, n_volume, n_extra)
 
 			if as_chan.device != None:
 				as_device = as_chan.device
 
+				# window
 				windata_obj = convproj_obj.viswindow__add(['plugin',cvpj_trackid])
 				windata_obj.pos_x = as_device.xpos
 				windata_obj.pos_y = as_device.ypos
 				windata_obj.open = as_device.visible
 
+				# plugin
 				if as_device.deviceType in [0, 1, 3, 4]:
 					plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'audiosauna', audiosanua_device_id[as_device.deviceType])
 					plugin_obj.role = 'synth'
@@ -316,6 +325,7 @@ class input_audiosanua(plugins.base):
 		
 				plugin_obj.datavals.add('middlenote', int(getvalue(as_device.params, 'masterTranspose'))*-1)
 
+				# filter
 				audiosauna_filtertype = int(getvalue(as_device.params, 'filterType'))
 				if audiosauna_filtertype == 0: filter_type = ['low_pass', None]
 				if audiosauna_filtertype == 1: filter_type = ['high_pass', None]
@@ -330,6 +340,7 @@ class input_audiosanua(plugins.base):
 
 				setasdr(plugin_obj, 'cutoff', as_device.params, False, 'filterAttack', 'filterDecay', 'filterRelease', 'filterSustain')
 
+				# lfo
 				audiosauna_lfoActive = getvalue(as_device.params, 'lfoActive')
 				audiosauna_lfoToggled = getvalue(as_device.params, 'lfoToggled') == 'true'
 				audiosauna_lfoTime = float(getvalue(as_device.params, 'lfoTime'))
@@ -338,20 +349,20 @@ class input_audiosanua(plugins.base):
 				audiosauna_lfoDelay = float(getvalue(as_device.params, 'lfoDelay'))
 				audiosauna_lfoWaveForm = int(getvalue(as_device.params, 'lfoWaveForm'))
 
-				p_lfo_amount = ((audiosauna_lfoPitch/100)*12)*audiosauna_lfoToggled
-				c_lfo_amount = ((audiosauna_lfoFilter/100)*-7200)*audiosauna_lfoToggled
 				g_lfo_attack = audiosauna_lfoDelay
 				g_lfo_shape = ['triangle', 'square', 'random'][audiosauna_lfoWaveForm]
 				g_lfo_speed = audiosauna_lfoTime
 
+				# lfo: pitch
 				lfo_obj = plugin_obj.lfo_add('pitch')
 				lfo_obj.attack = g_lfo_attack
 				lfo_obj.prop.shape = g_lfo_shape
 				lfo_obj.time.set_seconds(g_lfo_speed)
-				lfo_obj.amount = p_lfo_amount
+				lfo_obj.amount = ((audiosauna_lfoPitch/100)*12)*audiosauna_lfoToggled
 
+				# lfo: cutoff
 				lfo_obj = plugin_obj.lfo_add('cutoff')
 				lfo_obj.attack = g_lfo_attack
 				lfo_obj.prop.shape = g_lfo_shape
 				lfo_obj.time.set_seconds(g_lfo_speed)
-				lfo_obj.amount = c_lfo_amount
+				lfo_obj.amount = ((audiosauna_lfoFilter/100)*-7200)*audiosauna_lfoToggled

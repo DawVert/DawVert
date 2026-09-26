@@ -139,8 +139,9 @@ class input_nanostudio_v1(plugins.base):
 				lane_pl = track_obj.add_lane(str(repeatnum[tracknum]))
 				if clips is not None:
 					for clip in clips:
-						clipsize, events = project_obj.patterns[clip['event_assoc']]
 						placement_obj = lane_pl.placements.add_notes()
+						
+						# visual
 						if clip['event_assoc']<100: 
 							placement_obj.visual.name = 'Pattern #'+str(clip['event_assoc'])
 							colorfloat = colordata.getcolornum(clip['event_assoc']-1)
@@ -148,12 +149,14 @@ class input_nanostudio_v1(plugins.base):
 						else:
 							placement_obj.visual.color.set_float([0.25, 0.59, 0.73])
 
+						# time
+						clipsize, events = project_obj.patterns[clip['event_assoc']]
 						time_obj = placement_obj.time
 						time_obj.set_posdur(int(clip['position'])*256, int(clip['duration'])*256)
 						if clip['duration']>clipsize: time_obj.set_loop_data(0, 0, int(clipsize)*256)
 
+						# notelist
 						cvpj_notelist = placement_obj.notelist
-				
 						for event in events:
 							if event['type'] == 0:
 								cvpj_notelist.add_r(

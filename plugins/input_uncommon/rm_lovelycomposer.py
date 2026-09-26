@@ -157,6 +157,9 @@ class input_lc(plugins.base):
 		in_dict['plugin_included'] = ['universal:synth-osc']
 		in_dict['projtype'] = 'rm'
 
+	def get_configdef(self, configdef):
+		configdef.add_bool('repeat_chords', False, 'Repeating Chords')
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_uncommon import lovelycomposer as proj_lovelycomposer
 
@@ -180,6 +183,9 @@ class input_lc(plugins.base):
 		traits_obj = convproj_obj.traits
 		traits_obj.auto_types = ['pl_points']
 
+		# ---------- convproj params ----------
+		repeat_chords = dawvert_intent.input_get_param('repeat_chords', False)
+
 		# ---------- tempoblocks ----------
 		voi_notes, voi_chord = project_obj.get_channel(0)
 		tempoblocks = regions.posdurblocks(len(voi_notes), 32, decode_tempo(project_obj.speed))
@@ -199,18 +205,21 @@ class input_lc(plugins.base):
 		# ---------- tracks ----------
 		for tracknum in range(5):
 			cvpj_instid = str(tracknum+1)
-			color = colordata.getcolornum(tracknum)
+			track_obj = cvpj_tracks.add(cvpj_instid, 'instruments', 1, False)
 
+			# params
 			vol = xtramath.from_db(project_obj.ui_mixer_expression_list[tracknum]/2)
 			pan = [0,-1,1][project_obj.mixer_output_channel_list[tracknum]]
-
-			track_obj = cvpj_tracks.add(cvpj_instid, 'instruments', 1, False)
 			track_obj.params.add('vol', vol, 'float')
 			track_obj.params.add('pan', pan, 'float')
 			track_obj.params.add('enabled', not project_obj.mixer_channel_switch_list[tracknum], 'bool')
 
+			# visual
+			color = colordata.getcolornum(tracknum)
 			track_obj.visual.name = "Part "+cvpj_instid if tracknum != 4 else "Chord"
 			track_obj.visual.color.set_int(color)
+
+			# notes
 			voi_notes, voi_chord = project_obj.get_channel(tracknum)
 
 			used_insts = []
@@ -289,9 +298,15 @@ class input_lc(plugins.base):
 						cvpj_notelist = placement_obj.notelist
 						for nnn in t_chordlist:
 							if nnn[2] and nnn[1]:
-								maxvol = max(nnn[4])
-								cvpj_notelist.add_m_multi('chord', nnn[0], nnn[1], [x+nnn[3] for x in nnn[2]], maxvol, {})
-
+								chordkeys = [x+nnn[3] for x in nnn[2]]
+								if not repeat_chords:
+									maxvol = max(nnn[4])
+									cvpj_notelist.add_m_multi('chord', nnn[0], nnn[1], chordkeys, maxvol, {})
+								else:
+									maxvol = max(nnn[4])
+									for n in range(nnn[1]):
+										vol = nnn[4][n]
+										cvpj_notelist.add_m_multi('chord', nnn[0]+n, 1, chordkeys, vol, {})
 			if tracknum != 4:
 				for used_instnum in used_insts:
 					instdata = lc_instlist[used_instnum]

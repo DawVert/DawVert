@@ -415,24 +415,30 @@ class input_amped(plugins.base):
 		# ---------- tracks ----------
 		for amped_track in amped_obj.tracks:
 			amped_tr_id = str(amped_track.id)
-			amped_armed = amped_track.armed if amped_track.armed else None
 
 			track_obj = cvpj_tracks.add(amped_tr_id, 'hybrid', 1, False)
+
+			# visual
 			track_obj.visual.name = amped_track.name
 			track_obj.visual.color.set_float(AMPED_COLORS[amped_track.color])
 			track_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+
+			# params
 			track_obj.params.add('vol', amped_track.volume, 'float')
 			track_obj.params.add('pan', amped_track.pan, 'float')
 			track_obj.params.add('enabled', bool(not amped_track.mute), 'bool')
 			track_obj.params.add('solo', bool(amped_track.solo), 'bool')
 			track_obj.datavals.add('pan_mode', 'stereo')
 
+			# armed
+			amped_armed = amped_track.armed if amped_track.armed else None
 			if amped_track.armed:
 				amped_armed = amped_track.armed
 				track_obj.armed.in_audio = amped_armed['mic'] if 'mic' in amped_armed else False
 				track_obj.armed.in_keys = amped_armed['keys'] if 'keys' in amped_armed else False
 				track_obj.armed.on = track_obj.armed.in_audio or track_obj.armed.in_keys
 
+			# automation
 			amped_autodata = {}
 			for amped_automation in amped_track.automations:
 				autoname = amped_automation.param
@@ -450,20 +456,29 @@ class input_amped(plugins.base):
 					if deviceid not in amped_autodata: amped_autodata[deviceid] = {}
 					amped_autodata[deviceid][autoname] = ampedauto_to_cvpjauto_specs(amped_automation.points, amped_automation.spec)
 
+			# devices
 			encode_devices(convproj_obj, amped_track.devices, track_obj, amped_autodata)
 
+			# regions
 			for amped_region in amped_track.regions:
 				amped_reg_color = AMPED_COLORS[amped_region.color]
 
 				if amped_region.midi_notes: 
 					placement_obj = track_obj.placements.add_notes()
+					# time
 					time_obj = placement_obj.time
 					time_obj.set_posdur(amped_region.position, amped_region.length)
 					time_obj.set_offset(amped_region.offset)
+
+					# visual
 					placement_obj.visual.name = amped_region.name
 					placement_obj.visual.color.set_float(amped_reg_color)
 					placement_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+
+					# fx
 					placement_obj.muted = bool(amped_region.mute)
+
+					# notelist
 					cvpj_notelist = placement_obj.notelist
 					for amped_note in amped_region.midi_notes:
 						if amped_note['position'] >= 0:
@@ -473,28 +488,37 @@ class input_amped(plugins.base):
 
 				if amped_region.clips != []: 
 					placement_obj = track_obj.placements.add_nested_audio()
+					# time
 					time_obj = placement_obj.time
 					time_obj.set_posdur(amped_region.position, amped_region.length+amped_region.offset)
 					time_obj.set_offset(amped_region.offset)
+
+					# visual
 					placement_obj.visual.name = amped_region.name
 					placement_obj.visual.color.set_float(amped_reg_color)
 					placement_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+
+					# fx
 					placement_obj.muted = bool(amped_region.mute)
 
+					# clips
 					for amped_clip in amped_region.clips:
 						npa_obj = placement_obj.add()
+						
+						# time
 						time_obj = npa_obj.time
 						time_obj.set_posdur(amped_clip.position, amped_clip.length)
 						time_obj.set_offset(amped_clip.offset)
+
+						# sample
 						sample_obj = npa_obj.sample
 						sample_obj.vol = amped_clip.gain
 						sample_obj.pitch = amped_clip.pitchShift
 						sample_obj.reverse = amped_clip.reversed
 						sample_obj.sampleref = str(amped_clip.contentGuid.id)
 
+						# stretch
 						stretch_obj = sample_obj.stretch
-
 						stretch_obj.timing.set__real_rate(amped_obj.tempo, amped_clip.stretch)
-						
 						stretch_obj.preserve_pitch = True
-						stretch_algo = stretch_obj.algorithm
+						#stretch_algo = stretch_obj.algorithm

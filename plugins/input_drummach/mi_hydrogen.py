@@ -140,21 +140,26 @@ class input_hydrogen(plugins.base):
 		external_dats = {}
 		for instrument in project_obj.instrumentList:
 			inst_obj = cvpj_insts.add(str(instrument.id))
-			inst_obj.visual.name = instrument.name
-			drumkit = instrument.drumkit
+			inst_obj.is_drum = True
 
+			# visual
+			inst_obj.visual.name = instrument.name
+
+			# drumkit
+			drumkit = instrument.drumkit
 			if drumkit not in external_dats:
 				zipfilepath = os.path.join(dawvert_intent.path_external_data, 'hydrogen', drumkit+'.zip')
 				external_dat = external_dats[drumkit] = external_data_zip()
 				external_dat.load_data(zipfilepath)
 
+			# params
 			opan, ovol = xtramath.sep_pan_to_vol(instrument.pan_L, instrument.pan_R)
 			inst_obj.params.add('pan', opan, 'float')
 			inst_obj.params.add('vol', instrument.volume*instrument.gain*ovol, 'float')
 			inst_obj.params.add('enabled', not bool(instrument.isMuted), 'float')
 			inst_obj.params.add('solo', bool(instrument.isSoloed), 'float')
-			inst_obj.is_drum = True
 
+			# sampler
 			plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'sampler', 'multi')
 			plugin_obj.role = 'synth'
 			inst_obj.plugslots.set_synth(synthid)
@@ -162,6 +167,7 @@ class input_hydrogen(plugins.base):
 			inst_obj.datavals.add('middlenote', -int(instrument.pitchOffset))
 			inst_obj.datavals.add('random_pitch', instrument.randomPitchFactor)
 
+			# filter
 			if instrument.filterActive:
 				filter_id = str(instrument.id)+'_filter'
 				filtplug_obj = convproj_obj.plugin__add(filter_id, 'universal', 'filter', None)
@@ -172,6 +178,7 @@ class input_hydrogen(plugins.base):
 				filtplug_obj.role = 'effect'
 				inst_obj.plugslots.slots_audio.append(filter_id)
 
+			# layers
 			for layer in instrument.instrumentComponent.layers:
 				filename = layer.filename
 				sampleid = drumkit+'__'+filename
@@ -198,10 +205,14 @@ class input_hydrogen(plugins.base):
 		# ---------- patterns ----------
 		for n, pattern in enumerate(project_obj.patternList):
 			nle_obj = convproj_obj.notelistindex__add(pattern.name)
+			nle_obj.timesig_auto.add_point(0, [4, pattern.denominator])
+			
+			# visual
 			nle_obj.visual.name = pattern.name
 			nle_obj.visual.comment = pattern.info
 			nle_obj.visual.color.set_int(color_pattern.getcolornum(n))
-			nle_obj.timesig_auto.add_point(0, [4, pattern.denominator])
+
+			# notelist
 			cvpj_notelist = nle_obj.notelist
 			for note in pattern.noteList:
 				extra = {}

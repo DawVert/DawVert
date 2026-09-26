@@ -55,12 +55,13 @@ class input_fl_mobile_old(plugins.base):
 			idval = 'track'+str(xe_tr.numid)
 			track_obj = cvpj_tracks.add(idval, 'instrument', 0, False)
 
+			# params
 			track_obj.params.add('vol', xe_tr.vol, 'float')
 			track_obj.params.add('pan', xe_tr.pan, 'float')
 
+			# notelist
 			cvpj_notelist = track_obj.placements.notelist
 			tracknotes = xe_tr.notes
-
 			for n in tracknotes:
 				cvpj_notelist.add_r(int(n.pos), int(n.dur), n.key-60, n.vol/127, None)
 

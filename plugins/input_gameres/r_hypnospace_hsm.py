@@ -66,16 +66,20 @@ class input_hypnospace_hsm(plugins.base):
 		for num, sample in enumerate(project_obj.samples):
 			instid = 'inst_'+str(num)
 			inst_obj = cvpj_insts.add(instid)
+
+			# visual
 			inst_obj.visual.name = sample.path.split('\\')[-1] if sample.path else 'Unused #%s' % str(num+1)
 			inst_obj.visual.color.set_int(colordata.getcolornum(num))
 			inst_obj.visual.color.fx_allowed = ['saturate']
+
+			# sample
 			if sample.path:
 				sampleref_obj = convproj_obj.sampleref__add__prefix(sample.path, 'hypnospace_hsm', sample.path+'.ogg')
 				sampleref_obj.fileref.resolve_prefix()
 				plugin_obj, samplepart_obj = convproj_obj.plugin__addspec__sampler__s_obj(instid, sampleref_obj, sample.path)
 				inst_obj.plugslots.set_synth(instid)
 
-			#a_predelay, a_attack, a_hold, a_decay, a_sustain, a_release, a_amount
+			# adsr: a_predelay, a_attack, a_hold, a_decay, a_sustain, a_release, a_amount
 			plugin_obj.env_asdr_add('vol', 0, 0, 0, sample.decay/4, 1, 0, 1)
 
 		# ---------- patterns ----------

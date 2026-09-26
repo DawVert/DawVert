@@ -60,10 +60,13 @@ class input_midsequer(plugins.base):
 			trackevents = track.evts
 			if (trackinfo.volume!=100) or (trackinfo.inst_pc!=0) or len(trackevents) or unused_tracks:
 				track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
+				
+				# midi
 				track_obj.midi.out_enabled = True
 				track_obj.midi.out_chanport.chan = n
 				track_obj.midi.out_chanport.port = 0
 
+				# midievents
 				events_obj = track_obj.placements.midievents
 				events_obj.add_program(0, n,trackinfo.inst_pc)
 				events_obj.add_control(0, n, 7, trackinfo.volume)

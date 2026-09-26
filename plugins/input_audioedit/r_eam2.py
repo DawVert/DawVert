@@ -103,21 +103,30 @@ class input_eam2(plugins.base):
 							if p.BeatN>=0: auto_obj.add_autopoint(p.BeatN, p.Value/0.71, None)
 
 				for event in track.EventsList:
-					startsample_sec = (event.StartSampleMS)/1000
-					endsample_sec = (event.EndSampleMS)/1000
-					pos_sec = event.BeatPos
-					filepath = event.FilePath
-
 					placement_obj = track_obj.placements.add_audio()
-					placement_obj.fade_in.set_dur(event.FadeIN_LengthBeats, 'seconds')
-					placement_obj.fade_out.set_dur(event.FadeOUT_LengthBeats, 'seconds')
+					
+					# fx
 					placement_obj.muted = event.Muted
 					placement_obj.sample.vol = xtramath.from_db(event.Gain)
+
+					# visual
 					if event.Title: placement_obj.visual.name = event.Title
+
+					# fade
+					placement_obj.fade_in.set_dur(event.FadeIN_LengthBeats, 'seconds')
+					placement_obj.fade_out.set_dur(event.FadeOUT_LengthBeats, 'seconds')
+
+					# time
+					pos_sec = event.BeatPos
+					startsample_sec = (event.StartSampleMS)/1000
+					endsample_sec = (event.EndSampleMS)/1000
 
 					time_obj = placement_obj.time
 					time_obj.set_posdur_real(pos_sec, endsample_sec-startsample_sec)
 					time_obj.set_offset_real(startsample_sec)
+
+					# sample
+					filepath = event.FilePath
 
 					sp_obj = placement_obj.sample
 					sampleref_obj = convproj_obj.sampleref__add(filepath, filepath, None)

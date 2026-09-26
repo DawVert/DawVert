@@ -170,6 +170,7 @@ class input_fruitytracks(plugins.base):
 				placement_obj.muted = bool(ftr_clip.muted)
 				time_obj = placement_obj.time
 
+				# sampleref
 				sampleref_obj = convproj_obj.sampleref__add(ftr_clip.file, ftr_clip.file, 'win')
 				sampleref_obj.search_local(dawvert_intent.input_folder)
 
@@ -190,8 +191,10 @@ class input_fruitytracks(plugins.base):
 					stretch_obj.timing.set__beats(ftr_clip.stretch/4)
 				time_obj.set_posdur(plpos, pldur)
 
+				# auto
 				envpoints = ftr_clip.vol_env
 
+				# auto: vol
 				addauto_obj = addauto_data()
 				addauto_obj.autoloc = ['track', trackid, 'vol']
 				addauto_obj.mpetype = 'vol'
@@ -213,6 +216,7 @@ class input_fruitytracks(plugins.base):
 				else:
 					make_auto(convproj_obj, addauto_obj)
 					
+				# auto: pan
 				addauto_obj.autoloc = ['track', trackid, 'pan']
 				addauto_obj.mpetype = 'pan'
 				addauto_obj.startval = (ftr_clip.pan_start-64)/64

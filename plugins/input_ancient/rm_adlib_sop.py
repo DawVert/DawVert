@@ -26,7 +26,7 @@ class input_sop(plugins.base):
 
 	def get_configdef(self, configdef):
 		cfgpart = configdef.add_float('panlvl', 1.0, 'Pan Amount')
-		cfgpart.set_range(0.0, 1.0)
+		cfgpart.set_range(-1, 1)
 		configdef.set_group('visual', 'Visual')
 		cfgpart = configdef.add_bool('endtxt_on', True, 'Add OP Type to Track name')
 

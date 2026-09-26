@@ -102,17 +102,22 @@ class input_coolbeat(plugins.base):
 			tracktype = track.type
 			if tracktype in [0, 1, 3]:
 				track_obj = cvpj_tracks.add(trackid, 'instrument', 1, False)
+
+				# visual
 				track_obj.visual.name = track.label
+
+				# params
 				track_obj.params.add('vol', track.volume, 'float')
 				track_obj.params.add('pan', calc_pan(track.pan), 'float')
 				track_obj.params.add('enabled', not track.muteState, 'bool')
 				track_obj.params.add('solo', track.solo, 'bool')
-
-				if tracktype == 0:
+				
+				# plugins
+				if tracktype == 0: # SF2
 					if track.fileName:
 						track_obj.visual_inst.name = track.fileName
-
-				if tracktype == 1:
+				
+				elif tracktype == 1: # drums
 					plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'drums')
 					plugin_obj.role = 'synth'
 					for cn, channel in enumerate(track.channels):
@@ -130,7 +135,7 @@ class input_coolbeat(plugins.base):
 						
 					track_obj.plugslots.set_synth(pluginid)
 
-				if tracktype == 3:
+				elif tracktype == 3: # soundfont2
 					plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'soundfont2', None)
 					plugin_obj.role = 'synth'
 					track_obj.plugslots.set_synth(pluginid)
@@ -140,6 +145,7 @@ class input_coolbeat(plugins.base):
 					if track.fileName:
 						track_obj.visual_inst.name = track.fileName
 
+				# sections
 				for section in track.sections:
 					placement_obj = track_obj.placements.add_notes()
 					time_obj = placement_obj.time
@@ -156,11 +162,17 @@ class input_coolbeat(plugins.base):
 
 			if tracktype == 2:
 				track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
+
+				# visual
 				track_obj.visual.name = track.label
+
+				# params
 				track_obj.params.add('vol', track.volume, 'float')
 				track_obj.params.add('pan', calc_pan(track.pan), 'float')
 				track_obj.params.add('enabled', not track.muteState, 'bool')
 				track_obj.params.add('solo', track.solo, 'bool')
+				
+				# sections
 				sampleid = do_sample(convproj_obj, track.soundPack, track.fileName, dawvert_intent)
 				for section in track.sections:
 					placement_obj = track_obj.placements.add_audio()

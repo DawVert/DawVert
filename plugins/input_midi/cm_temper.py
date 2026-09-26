@@ -63,14 +63,17 @@ class input_cvpj_f(plugins.base):
 		for tracknum, tmp_track in enumerate(project_obj.track):
 			cvpj_trackid = 'track_'+str(tracknum)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'midi', 1, False)
+
+			# params
 			track_obj.params.add('enabled', tmp_track.mode!=1, 'bool')
 			track_obj.params.add('solo', tmp_track.mode!=2, 'bool')
 
+			# visual
 			if tmp_track.customname: track_obj.visual.name = tmp_track.customname
 			else: track_obj.visual.name = tmp_track.name
-
 			track_obj.visual.color.set_float([0.66, 0.66, 0.73])
 
+			# keynames
 			if tmp_track.keynames:
 				track_obj.visual_keynotes.name = tmp_track.keynames.name
 				for keymap in tmp_track.keynames.maps:
@@ -78,6 +81,7 @@ class input_cvpj_f(plugins.base):
 					visual_obj = track_obj.visual_keynotes.add_key(note)
 					visual_obj.name = keymap.name
 
+			# phrases
 			if tmp_track.phrases:
 				channel = tmp_track.channel
 
@@ -116,8 +120,6 @@ class input_cvpj_f(plugins.base):
 				track_obj = cvpj_tracks.add(str(tracknum), 'audio', 1, False)
 				track_obj.params.add('enabled', tmp_track.mode!=1, 'bool')
 				track_obj.params.add('solo', tmp_track.mode!=2, 'bool')
-				if tmp_track.customname: track_obj.visual.name = tmp_track.customname
-				else: track_obj.visual.name = tmp_track.name
 				track_obj.visual.color.set_float([0.66, 0.73, 0.66])
 				curpos = 0
 				for audio in tmp_track.audios:

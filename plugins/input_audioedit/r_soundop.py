@@ -136,25 +136,16 @@ class input_soundop(plugins.base):
 				track_obj = convproj_obj.track_master
 
 			if track_obj is not None:
-				#print(track_obj)
+				# visual
 				if track.Title is not None: track_obj.visual.name = track.Title
-				if track.Solo is not None: track_obj.params.add('solo', track.Solo, 'bool')
+				if track.Hue is not None: 
+					track_obj.visual.color.set_hsv(track.Hue/360, 0.8, 1)
+					track_obj.visual.color.fx_allowed = ['saturate', 'brighter']
 				if track.Height is not None and track.HeightOrg is not None: 
 					if track.HeightOrg and track.Height:
 						track_obj.visual_ui.height = track.Height/track.HeightOrg
 
-				if track.Hue is not None: 
-					track_obj.visual.color.set_hsv(track.Hue/360, 0.8, 1)
-					track_obj.visual.color.fx_allowed = ['saturate', 'brighter']
-
-				for x in track.EffectData.Effects:
-					StateParams = x.StateParams
-					StateChunk = x.StateChunk
-					Envelops = x.Envelops
-					TypeID = x.TypeID
-					pluginid = do_fx(convproj_obj, x)
-					if pluginid: track_obj.plugslots.slots_audio.append(pluginid)
-
+				# params
 				for x in track.EffectData.FixedEffects:
 					StateParams = x.StateParams
 					Envelops = x.Envelops
@@ -179,7 +170,18 @@ class input_soundop(plugins.base):
 					if x.Name == 'Mute':
 						if StateParams: track_obj.params.add('enabled', not int(StateParams[0]), 'bool')
 
+				if track.Solo is not None: track_obj.params.add('solo', track.Solo, 'bool')
+				
+				# effects
+				for x in track.EffectData.Effects:
+					StateParams = x.StateParams
+					StateChunk = x.StateChunk
+					Envelops = x.Envelops
+					TypeID = x.TypeID
+					pluginid = do_fx(convproj_obj, x)
+					if pluginid: track_obj.plugslots.slots_audio.append(pluginid)
 
+				# data_clips
 				for clip in track.data_clips:
 					sampleref_obj = sampleref_ids[clip.FileID]
 					hz = sampleref_obj.get_hz()
@@ -187,21 +189,27 @@ class input_soundop(plugins.base):
 
 					placement_obj = track_obj.placements.add_audio()
 
+					# time
 					time_obj = placement_obj.time
 					time_obj.set_posdur_real(clip.TrackPos/samplerate, clip.Length/samplerate)
 					time_obj.set_offset_real(clip.FilePos/hz)
 
+					# sample
 					sp_obj = placement_obj.sample
 					sp_obj.sampleref = str(clip.FileID)
-					sp_obj.vol = clip.Gain/0.6527777777777778
 
+					# visual
 					placement_obj.visual.name = clip.Title
-					placement_obj.muted = clip.Mute
-
 					if clip.Hue is not None and clip.UseHue: 
 						placement_obj.visual.color.set_hsv(clip.Hue/360, 0.8, 1)
 						placement_obj.visual.color.fx_allowed = ['saturate', 'brighter']
 
+					# fx
+					sp_obj.vol = clip.Gain/0.6527777777777778
+					placement_obj.muted = clip.Mute
+					if 'Pitch' in StretchData: sp_obj.pitch = StretchData['Pitch']
+
+					# fade
 					if 'Length' in clip.FadeIn: placement_obj.fade_in.set_dur(clip.FadeIn['Length']/hz, 'seconds')
 					if 'Length' in clip.FadeOut: placement_obj.fade_out.set_dur(clip.FadeOut['Length']/hz, 'seconds')
 					if 'Type' in clip.FadeIn: 
@@ -209,6 +217,7 @@ class input_soundop(plugins.base):
 					if 'Type' in clip.FadeOut: 
 						if clip.FadeOut['Type']==0: placement_obj.fade_out.shapetype = 'scurve'
 
+					# stretch
 					StretchData = clip.StretchData
 
 					actuallen = dur_samples
@@ -222,5 +231,4 @@ class input_soundop(plugins.base):
 					#	time_obj.set_offset_real((clip.FilePos/hz)/stretchsize)
 					#else:
 					#	time_obj.set_offset_real(clip.FilePos/hz)
-					if 'Pitch' in StretchData: sp_obj.pitch = StretchData['Pitch']
 					if clip.Loop: time_obj.set_loop_data(clip.FilePos*2, 0, actuallen*2)

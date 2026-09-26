@@ -83,6 +83,9 @@ class input_ceol(plugins.base):
 		in_dict['plugin_included'] = ['simple:chorus','simple:reverb','simple:distortion','simple:bassboost','universal:compressor','universal:filter','chip:fm:opm','universal:filter','universal:midi']
 		in_dict['projtype'] = 'mi'
 
+	def get_configdef(self, configdef):
+		configdef.add_bool('no_swing', False, 'Disable Swing')
+
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_uncommon import boscaceoil as proj_boscaceoil
 		from objects.inst_params import fm_opm
@@ -101,6 +104,9 @@ class input_ceol(plugins.base):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = cvpj_automation
 		
+		# ---------- convproj params ----------
+		no_swing = dawvert_intent.input_get_param('no_swing', False)
+
 		# ---------- convproj init ----------
 		convproj_obj.type = 'mi'
 		convproj_obj.set_timings(4)
@@ -130,19 +136,20 @@ class input_ceol(plugins.base):
 		for instnum, ceol_inst_obj in enumerate(project_obj.instruments):
 			cvpj_instid = 'ceol_'+str(instnum).zfill(2)
 			inst_obj = cvpj_insts.add(cvpj_instid)
-			inst_obj.visual.color.set_int(color_main.getcolornum(ceol_inst_obj.palette))
-			inst_obj.visual.color.fx_allowed = ['saturate', 'brighter']
 			inst_obj.params.add('vol', ceol_inst_obj.volume/256, 'float')
 
+			# visual
+			inst_obj.visual.color.set_int(color_main.getcolornum(ceol_inst_obj.palette))
+			inst_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+
+			# instrument
 			if ceol_inst_obj.inst <= 127:
 				inst_obj.midi.out_inst.patch = ceol_inst_obj.inst
 				inst_obj.to_midi(convproj_obj, cvpj_instid, True)
-
 			elif ceol_inst_obj.inst == 365: 
 				inst_obj.visual.name = 'MIDI Drums'
 				inst_obj.midi.out_inst.drum = True
 				inst_obj.to_midi(convproj_obj, cvpj_instid, True)
-
 			else: 
 				strinst = str(ceol_inst_obj.inst)
 				inst_obj.from_datapack("boscaceoil", 'inst', strinst, False)
@@ -155,12 +162,14 @@ class input_ceol(plugins.base):
 						plugin_obj, synthid = opm_obj.to_cvpj_genid(convproj_obj)
 						inst_obj.plugslots.set_synth(synthid)
 
+			# key offset
 			inst_objs[ceol_inst_obj.inst] = inst_obj
 			if ceol_inst_obj.inst == 363: t_key_offset.append(60)
 			elif ceol_inst_obj.inst == 364: t_key_offset.append(48)
 			elif ceol_inst_obj.inst == 365: t_key_offset.append(24)
 			else: t_key_offset.append(0)
 
+			# cutoff
 			if ceol_inst_obj.cutoff < 110:
 				inst_filters[instnum] = add_filter(convproj_obj, instnum, ceol_inst_obj.cutoff, ceol_inst_obj.resonance)
 				inst_obj.plugslots.slots_audio.append(inst_filters[instnum])
@@ -179,13 +188,22 @@ class input_ceol(plugins.base):
 			cvpj_patcolor = color_main.getcolornum(ceol_pat_obj.palette)
 
 			nle_obj = convproj_obj.notelistindex__add(cvpj_pat_id)
+
+			# visual
 			nle_obj.visual.name = str(patnum+1)
 			nle_obj.visual.color.set_int(cvpj_patcolor)
 			nle_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+
+			# notelist
 			cvpj_notelist = nle_obj.notelist
 			for ceol_note_obj in ceol_pat_obj.notes: 
-				oswing = (project_obj.swing/10) if not (ceol_note_obj.pos%2) else 0
-				cvpj_notelist.add_m(patinstid, ceol_note_obj.pos+oswing, ceol_note_obj.len, (ceol_note_obj.key-60)+t_key_offset[ceol_pat_obj.inst], notevols[ceol_note_obj.pos] if ceol_note_obj.pos in notevols else 1, None)
+				oswing = 0
+				if (not ceol_note_obj.pos%2) and (not no_swing): oswing = project_obj.swing/10
+				notevol = notevols[ceol_note_obj.pos] if ceol_note_obj.pos in notevols else 1
+				notekey = (ceol_note_obj.key-60)+t_key_offset[ceol_pat_obj.inst]
+				cvpj_notelist.add_m(patinstid, ceol_note_obj.pos+oswing, ceol_note_obj.len, notekey, notevol, None)
+
+			# scale
 			if ceol_pat_obj.scale:
 				scale_name, scale_keys = proj_boscaceoil.scale_data[ceol_pat_obj.scale-1]
 				out_keys = []
@@ -218,9 +236,9 @@ class input_ceol(plugins.base):
 					time_obj = cvpj_placement.time
 					time_obj.set_block_posdur(plpos, project_obj.pattern_length)
 
+					# recordfilter
 					ceol_pat_obj = project_obj.patterns[plpatnum]
 					recordfilter = ceol_pat_obj.recordfilter
-
 					if recordfilter is not None:
 						after_filter[plnum][0] = plpos
 						after_filter[plnum][1] = ceol_pat_obj.inst

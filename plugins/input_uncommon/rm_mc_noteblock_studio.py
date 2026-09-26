@@ -94,12 +94,16 @@ class input_gt_mnbs(plugins.base):
 		for nbs_layer, layer_obj in enumerate(project_obj.layers):
 			cvpj_trackid = str(nbs_layer+1)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 1, False)
+
+			# visual
 			track_obj.visual.name = layer_obj.name if layer_obj.name else 'Layer #'+cvpj_trackid
+
+			# params
 			track_obj.params.add('vol', layer_obj.vol/100, 'float')
 			track_obj.params.add('pan', (layer_obj.stereo/100)-1, 'float')
 
+			# notelist
 			cvpj_notelist = track_obj.placements.notelist
-
 			for note_obj in layer_obj.notes: 
 				if note_obj.inst not in used_inst:
 					if note_obj.inst<16:
@@ -116,6 +120,7 @@ class input_gt_mnbs(plugins.base):
 			if dpobj:
 				inst_obj.visual.from_datapack_obj(dpobj, True)
 
+				# plugin
 				plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'single')
 				plugin_obj.role = 'synth'
 				plugin_obj.midi_incompat_synth_on = True

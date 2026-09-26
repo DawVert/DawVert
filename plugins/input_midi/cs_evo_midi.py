@@ -66,11 +66,12 @@ class input_cvpj_f(plugins.base):
 		for evo_clip in project_obj.clips:
 			track_obj = track_pl[evo_clip.tracknum]
 			placement_obj = track_obj.placements.add_midi()
-			placement_obj.visual.name = evo_clip.name
 			placement_obj.time.set_startend(evo_clip.position, evo_clip.duration)
 
-			#print(evo_clip.tracknum, evo_clip.name)
+			# visual
+			placement_obj.visual.name = evo_clip.name
 
+			# midievents
 			events_obj = placement_obj.midievents
 			events_obj.has_duration = True
 			events_obj.ppq = 192
@@ -88,6 +89,7 @@ class input_cvpj_f(plugins.base):
 					p_lo, p_hi = event.data
 					events_obj.add_pitch_hi_lo(event.pos, channel, p_hi, p_lo)
 
+			# arranger
 			if arranger_valid>-1:
 				if evo_clip.tracknum==arranger_valid:
 					if not True in [x.type==15 for x in events]:

@@ -130,22 +130,26 @@ class cvpj_s_automation:
 			self.nopl_ticks = autoticks.cvpj_autoticks(self.time_ppq, self.valtype)
 			self.nopl_ticks.is_seconds = self.is_seconds
 			self.u_nopl_ticks = True
+		return self.nopl_ticks
 
 	def make_nopl_points(self):
 		if not self.u_nopl_points: 
 			self.nopl_points = autopoints.cvpj_autopoints(self.time_ppq, self.valtype)
 			self.nopl_points.is_seconds = self.is_seconds
 			self.u_nopl_points = True
+		return self.nopl_points
 
 	def make_pl_ticks(self):
 		if not self.u_pl_ticks: 
 			self.pl_ticks = placements_autoticks.cvpj_placements_autoticks(self.time_ppq, self.valtype)
 			self.u_pl_ticks = True
+		return self.pl_ticks
 
 	def make_pl_points(self):
 		if not self.u_pl_points: 
 			self.pl_points = placements_autopoints.cvpj_placements_autopoints(self.time_ppq, self.valtype)
 			self.u_pl_points = True
+		return self.pl_points
 
 	def calc(self, mathtype, val1, val2, val3, val4):
 		if self.u_nopl_points: self.nopl_points.calc(mathtype, val1, val2, val3, val4)
