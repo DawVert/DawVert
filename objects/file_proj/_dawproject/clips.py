@@ -60,7 +60,7 @@ class dawproject_warps:
 		if 'id' in xml_data.attrib: self.id = xml_data.attrib['id']
 		for x_part in xml_data:
 			if x_part.tag == 'Warp': 
-				self.points.append(dawproject_warppoint(warppoint_obj))
+				self.points.append(dawproject_warppoint(x_part))
 			if x_part.tag == 'Audio': 
 				self.audio = dawproject_audio(x_part)
 

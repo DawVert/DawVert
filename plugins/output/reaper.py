@@ -742,7 +742,7 @@ class output_reaper(plugins.base):
 		in_dict['fxtype'] = ['route', 'groupreturn']
 		in_dict['time_seconds'] = True
 		in_dict['track_hybrid'] = True
-		in_dict['notes_midi'] = True
+		in_dict['notes_midi'] = 'multi'
 		in_dict['auto_types'] = ['nopl_points']
 		#in_dict['auto_types'] = ['nopl_points', 'pl_points']
 		in_dict['audio_stretch'] = ['rate', 'warp']

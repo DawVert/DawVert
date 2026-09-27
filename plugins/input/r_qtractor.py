@@ -79,7 +79,7 @@ class input_midi(plugins.base):
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']
 		traits_obj.auto_types = ['nopl_ticks']
-		traits_obj.notes_midi = True
+		traits_obj.notes_midi = 'multi'
 		traits_obj.set_time_seconds(True)
 
 		# ---------- transport ----------

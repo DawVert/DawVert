@@ -52,15 +52,99 @@ typelist = {}
 typelist['r'] = 'Regular'
 typelist['ri'] = 'RegularIndexed'
 typelist['rm'] = 'RegularMultiple'
-typelist['rs'] = 'RegularScened'
 typelist['m'] = 'Multiple'
 typelist['mi'] = 'MultipleIndexed'
-typelist['ms'] = 'MultipleScened'
-typelist['ts'] = 'TrackerSingle'
 typelist['cm'] = 'ClassicalMultiple'
 typelist['cs'] = 'ClassicalSingle'
 
+typelist['ts'] = 'TrackerSingle'
+typelist['ms'] = 'MultipleScened'
+typelist['rs'] = 'RegularScened'
+
+conv_act    = {}
+conv_act_r  = conv_act['r'] = {}
+conv_act_ri = conv_act['ri'] = {}
+conv_act_rm = conv_act['rm'] = {}
+conv_act_rs = conv_act['rs'] = {}
+conv_act_m  = conv_act['m'] = {}
+conv_act_mi = conv_act['mi'] = {}
+conv_act_ms = conv_act['ms'] = {}
+conv_act_cm = conv_act['cm'] = {}
+conv_act_cs = conv_act['cs'] = {}
+conv_act_ts = conv_act['ts'] = {}
+
+conv_act_r['m'] =   ['r2m']
+conv_act_r['mi'] =  ['r2m','compat','m2mi']
+conv_act_r['cm'] =  ['r2cm','cs2cm']
+conv_act_r['cs'] =  ['r2cm']
+
+conv_act_ri['r'] =  ['ri2r']
+conv_act_ri['mi'] = ['ri2mi']
+conv_act_ri['cm'] = ['ri2r','compat','r2cm']
+conv_act_ri['cs'] = ['ri2r','compat','r2cm']
+
+conv_act_rm['r'] =  ['rm2r','compat']
+conv_act_rm['m'] =  ['rm2m']
+conv_act_rm['mi'] = ['rm2m','compat','m2mi']
+conv_act_rm['cm'] = ['rm2r','compat','r2cm']
+conv_act_rm['cs'] = ['rm2r','compat','r2cm']
+
+conv_act_rs['r'] =  ['rs2r']
+conv_act_rs['mi'] = ['rs2r','compat','r2m','compat','m2mi']
+conv_act_rs['cm'] = ['rs2r','compat','r2cm']
+conv_act_rs['cs'] = ['rs2r','compat','r2cm']
+
+conv_act_m['r'] =   ['m2r']
+conv_act_m['mi'] =  ['m2mi']
+conv_act_m['cm'] =  ['m2r','compat','r2cm']
+conv_act_m['cs'] =  ['m2r','compat','r2cm']
+
+conv_act_mi['r'] =  ['mi2m','compact','m2r','compact']
+conv_act_mi['m'] =  ['mi2m']
+conv_act_mi['cm'] = ['mi2m','compact','m2r','compact','r2cm']
+conv_act_mi['cs'] = ['mi2m','compact','m2r','compact','r2cm']
+
+conv_act_ms['r'] =  ['ms2rm','compat','rm2r']
+conv_act_ms['rm'] = ['ms2rm'] # unused
+conv_act_ms['m'] =  ['ms2rm','compat','rm2m'] # unused
+conv_act_ms['mi'] = ['ms2rm','compat','rm2m','m2mi']
+conv_act_ms['cm'] = ['ms2rm','compat','rm2r','compat','r2cm']
+conv_act_ms['cs'] = ['ms2rm','compat','rm2r','compat','r2cm']
+
+conv_act_cm['r'] =  ['cm2rm','compat','rm2r']
+conv_act_cm['rm'] = ['cm2rm'] # unused
+conv_act_cm['m'] =  ['cm2rm','compat','rm2m']
+conv_act_cm['mi'] = ['cm2rm','compat','rm2m','compat','m2mi']
+
+conv_act_cs['r'] =  ['cs2cm','cm2rm','compat','rm2r']
+conv_act_cs['rm'] = ['cs2cm','cm2rm'] # unused
+conv_act_cs['m'] =  ['cs2cm','cm2rm','rm2m']
+conv_act_cs['mi'] = ['cs2cm','cm2rm','rm2m','compat','m2mi']
+conv_act_cs['cm'] = ['cs2cm']
+
+conv_act_ts['r'] =  ['ts2m','m2r']
+conv_act_ts['m'] =  ['ts2m']
+conv_act_ts['mi'] = ['ts2m','m2mi']
+conv_act_ts['cm'] = ['ts2m','m2r','compat','r2cm']
+conv_act_ts['cs'] = ['ts2m','m2r','compat','r2cm']
+
 logger_project = logging.getLogger('project')
+
+conv_act_class = {}
+conv_act_class['r2m'] = convert_r2m.convert
+conv_act_class['ri2mi'] = convert_ri2mi.convert
+conv_act_class['ri2r'] = convert_ri2r.convert
+conv_act_class['rm2r'] = convert_rm2r.convert
+conv_act_class['m2r'] = convert_m2r.convert
+conv_act_class['m2mi'] = convert_m2mi.convert
+conv_act_class['mi2m'] = convert_mi2m.convert
+conv_act_class['rm2m'] = convert_rm2m.convert
+conv_act_class['ts2m'] = convert_ts2m.convert
+conv_act_class['ms2rm'] = convert_ms2rm.convert
+conv_act_class['rs2r'] = convert_rs2r.convert
+conv_act_class['cm2rm'] = convert_cm2rm.convert
+conv_act_class['cs2cm'] = convert_cs2cm.convert
+conv_act_class['r2cm'] = convert_r2cm.convert
 
 def autopath_encode(autol):
 	return ';'.join(autol)
@@ -279,138 +363,20 @@ class cvpj_project:
 
 		compactclass.makecompat(self, self.type, in_dawinfo, out_dawinfo, out_type, dawvert_intent)
 
-		if self.type == 'ri' and out_type == 'mi': convert_ri2mi.convert(self)
-		elif self.type == 'ri' and out_type == 'r': convert_ri2r.convert(self)
-		elif self.type == 'ri' and out_type in ['r', 'cs', 'cm']: 
-			convert_ri2r.convert(self)
-			if out_type == 'cs':
-				compactclass.makecompat(self, 'r', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-				convert_r2cm.convert(self)
-			if out_type == 'cm':
-				compactclass.makecompat(self, 'r', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-				convert_r2cm.convert(self)
-
-		elif self.type == 'ts' and out_type == 'm':
-			convert_ts2m.convert(self)
-		elif self.type in ['m', 'ts'] and out_type == 'mi':
-			if self.type == 'ts': convert_ts2m.convert(self)
-			convert_m2mi.convert(self)
-		elif self.type in ['m', 'ts'] and out_type in ['r', 'cs', 'cm']: 
-			if self.type == 'ts': convert_ts2m.convert(self)
-			convert_m2r.convert(self)
-			if out_type == 'cs':
-				compactclass.makecompat(self, 'r', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-				convert_r2cm.convert(self)
-			if out_type == 'cm':
-				compactclass.makecompat(self, 'r', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-				convert_r2cm.convert(self)
-
-		elif self.type == 'r' and out_type == 'm': convert_r2m.convert(self)
-		elif self.type == 'r' and out_type == 'mi': 
-			convert_r2m.convert(self)
-			compactclass.makecompat(self, 'm', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_m2mi.convert(self)
-		elif self.type == 'r' and out_type in ['cs', 'cm']: 
-			convert_r2cm.convert(self)
-			if out_type == 'cm': convert_cs2cm.convert(self)
-
-		elif self.type == 'mi' and out_type == 'm': convert_mi2m.convert(self, dawvert_intent)
-		elif self.type == 'mi' and out_type in ['r', 'cs', 'cm']: 
-			convert_mi2m.convert(self, dawvert_intent)
-			compactclass.makecompat(self, 'm', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_m2r.convert(self)
-			compactclass.makecompat(self, 'r', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			if out_type == 'cs':
-				convert_r2cm.convert(self)
-			if out_type == 'cm':
-				convert_r2cm.convert(self)
-	
-		elif self.type == 'rm' and out_type in ['r', 'cs', 'cm']: 
-			convert_rm2r.convert(self)
-			compactclass.makecompat(self, 'r', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			if out_type == 'cs':
-				convert_r2cm.convert(self)
-			if out_type == 'cm':
-				convert_r2cm.convert(self)
-		elif self.type == 'rm' and out_type == 'm': convert_rm2m.convert(self, True)
-		elif self.type == 'rm' and out_type == 'mi': 
-			convert_rm2m.convert(self, True)
-			compactclass.makecompat(self, 'm', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_m2mi.convert(self)
-
-		elif self.type == 'rs' and out_type == 'mi': 
-			convert_rs2r.convert(self)
-			compactclass.makecompat(self, 'r', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_r2m.convert(self)
-			compactclass.makecompat(self, 'm', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_m2mi.convert(self)
-
-		elif self.type == 'rs' and out_type == 'r': 
-			convert_rs2r.convert(self)
-
-		elif self.type == 'rs' and out_type in ['cs', 'cm']: 
-			convert_rs2r.convert(self)
-			compactclass.makecompat(self, 'r', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_r2cm.convert(self)
-			if out_type == 'cm': convert_cs2cm.convert(self)
-
-		elif self.type == 'ms' and out_type == 'mi': 
-			convert_ms2rm.convert(self, out_dawinfo)
-			compactclass.makecompat(self, 'rm', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_rm2m.convert(self, True)
-			convert_m2mi.convert(self)
-
-		elif self.type == 'ms' and out_type in ['r', 'cs', 'cm']: 
-			convert_ms2rm.convert(self, out_dawinfo)
-			compactclass.makecompat(self, 'r', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_rm2r.convert(self)
-			if out_type == 'cs':
-				compactclass.makecompat(self, 'r', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-				convert_r2cm.convert(self)
-			if out_type == 'cm':
-				compactclass.makecompat(self, 'r', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-				convert_r2cm.convert(self)
-
-
-		elif self.type == 'cm' and out_type == 'r':
-			convert_cm2rm.convert(self)
-			compactclass.makecompat(self, 'rm', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_rm2r.convert(self)
-
-		elif self.type == 'cm' and out_type == 'm':
-			convert_cm2rm.convert(self)
-			compactclass.makecompat(self, 'rm', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_rm2m.convert(self, True)
-
-		elif self.type == 'cm' and out_type == 'mi': 
-			convert_cm2rm.convert(self)
-			compactclass.makecompat(self, 'rm', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_rm2m.convert(self, True)
-			compactclass.makecompat(self, 'm', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_m2mi.convert(self)
-
-		elif self.type == 'cs' and out_type == 'cm':
-			convert_cs2cm.convert(self)
-
-		elif self.type == 'cs' and out_type == 'r':
-			convert_cs2cm.convert(self)
-			convert_cm2rm.convert(self)
-			compactclass.makecompat(self, 'rm', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_rm2r.convert(self)
-
-		elif self.type == 'cs' and out_type == 'm':
-			convert_cs2cm.convert(self)
-			convert_cm2rm.convert(self)
-			compactclass.makecompat(self, 'rm', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_rm2m.convert(self, True)
-
-		elif self.type == 'cs' and out_type == 'mi': 
-			convert_cs2cm.convert(self)
-			convert_cm2rm.convert(self)
-			compactclass.makecompat(self, 'rm', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_rm2m.convert(self, True)
-			compactclass.makecompat(self, 'm', in_dawinfo, out_dawinfo, out_type, dawvert_intent)
-			convert_m2mi.convert(self)
+		if self.type != out_type:
+			notfound = False
+			if self.type in conv_act:
+				if out_type in conv_act[self.type]:
+					convertcmds = conv_act[self.type][out_type]
+					for cmd in convertcmds:
+						#print(cmd)
+						if cmd in conv_act_class: conv_act_class[cmd](self)
+						elif cmd=='compat':
+							compactclass.makecompat(self, self.type, in_dawinfo, out_dawinfo, out_type, dawvert_intent)
+				else: notfound = True
+			else: notfound = True
+			if notfound:
+				logger_project.error(typelist[self.type]+' to '+typelist[out_type]+' is not supported.')
 
 		elif self.type == out_type: 
 			pass

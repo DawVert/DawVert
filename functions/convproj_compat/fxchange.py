@@ -56,6 +56,403 @@ def track2fxrack(convproj_obj, data_obj, fxnum, defualtname, starttext, doboth, 
 
 DEBUGTXT = False
 
+# ================================ MULTIPLE ================================
+
+def multiple__groupreturn_to_rack(convproj_obj, dawvert_intent):
+	logger_compat.info('fxchange: multiple - groupreturn/none to rack')
+	fxrack_obj = convproj_obj.fxrack
+	track_master = convproj_obj.track_master
+	cvpj_insts = convproj_obj.instruments
+	cvpj_automation = convproj_obj.automation
+	logger_compat.info('fxchange: Master to FX 0')
+	fxchannel_obj = fxrack_obj.add(0)
+	fxchannel_obj.visual = copy.deepcopy(track_master.visual)
+	fxchannel_obj.params = copy.deepcopy(track_master.params)
+	fxchannel_obj.plugslots.audiofx_move_from(track_master.plugslots)
+	cvpj_automation.move(['master','vol'], ['fxmixer','0','vol'])
+	cvpj_automation.move(['master','pan'], ['fxmixer','0','pan'])
+	fxchannel_obj.latency_offset = track_master.latency_offset
+	for count, iterval in enumerate(cvpj_insts.iter()):
+		fxnum = count+1
+		inst_id, inst_obj = iterval
+		fxchannel_obj = fxrack_obj.add(fxnum)
+		fxchannel_obj.visual = copy.deepcopy(inst_obj.visual)
+		fxchannel_obj.params = copy.deepcopy(inst_obj.params)
+		fxchannel_obj.plugslots.audiofx_move_from(inst_obj.plugslots)
+		inst_obj.fxrack_channel = fxnum
+		fxchannel_obj.visual = inst_obj.visual.copy()
+		cvpj_automation.move(['track',inst_id,'vol'], ['fxmixer',str(fxnum),'vol'])
+		inst_obj.params.move(fxchannel_obj.params, 'vol')
+		logger_compat.info('fxchange: Instrument to FX '+str(fxnum)+(' ('+fxchannel_obj.visual.name+')' if fxchannel_obj.visual.name else ''))
+		
+# ================================ REGULAR ================================
+
+def regular__to_none(convproj_obj, dawvert_intent):
+	logger_compat.info('fxchange: regular - to none')
+	cvpj_tracks = convproj_obj.tracks
+	fxrack_obj = convproj_obj.fxrack
+	cvpj_groups = convproj_obj.groups
+	
+	fxrack_obj.clear()
+	cvpj_groups.clear()
+	convproj_obj.fx__route__clear()
+	convproj_obj.fx__return__clear()
+	for trackid, track_obj in cvpj_tracks.iter():
+		track_obj.fxrack_channel = 0
+		track_obj.group = None
+
+def regular__none_to_rack(convproj_obj, dawvert_intent):
+	logger_compat.info('fxchange: regular - none to rack')
+	cvpj_tracks = convproj_obj.tracks
+	track_master = convproj_obj.track_master
+	tracknum = 1
+	track2fxrack(convproj_obj, track_master, 0, 'Master', '', True, ['master'])
+	for trackid, track_obj in cvpj_tracks.iter():
+		fxchannel_obj = track2fxrack(convproj_obj, track_obj, tracknum, '', '', True, ['track',trackid])
+		track_obj.fxrack_channel = tracknum
+		track_obj.placements.add_fxrack_channel(tracknum)
+		tracknum += 1
+	convproj_obj.fxtype = 'rack'
+
+def regular__groupreturn_to_rack(convproj_obj, dawvert_intent):
+	logger_compat.info('fxchange: regular - groupreturn to rack')
+
+	track_master = convproj_obj.track_master
+	cvpj_tracks = convproj_obj.tracks
+
+	t2m = trackfx_to_numdata.to_numdata()
+	output_ids = t2m.trackfx_to_numdata(convproj_obj, 1)
+	dict_returns = {}
+	for returnid, return_obj in track_master.returns.items(): dict_returns[returnid] = return_obj
+
+	track2fxrack(convproj_obj, track_master, 0, 'Master', '', True, ['master'])
+
+	for output_id in output_ids:
+		
+		if output_id[1] == 'return':
+			fxchannel_obj = track2fxrack(convproj_obj, dict_returns[output_id[2]], output_id[0]+1, 'Return', '[R] ', True, ['return',output_id[2]])
+			fxchannel_obj.visual_ui.other['docked'] = 1
+
+		if output_id[1] == 'group':
+			fxchannel_obj = track2fxrack(convproj_obj, convproj_obj.groups[output_id[2]], output_id[0]+1, 'Group', '[G] ', True, ['group',output_id[2]])
+			fxchannel_obj.visual_ui.other['docked'] = -1
+
+		if output_id[1] == 'track':
+			fxnum = output_id[0]+1
+			track_obj = cvpj_tracks.data[output_id[2]]
+			fxchannel_obj = track2fxrack(convproj_obj, track_obj, fxnum, '', '', True, ['track',output_id[2]])
+			track_obj.fxrack_channel = output_id[0]+1
+			track_obj.placements.add_fxrack_channel(fxnum)
+			for _, scene_obj in track_obj.scenes.items():
+				for _, lane_obj in scene_obj.items():
+					lane_obj.add_fxrack_channel(fxnum)
+			if track_obj.group: fxchannel_obj.sends.to_master_active = False
+
+		fxchannel_obj.sends.add(output_id[3][0]+1, output_id[3][2], output_id[3][1])
+
+		for senddata in output_id[4]:
+			fxchannel_obj.sends.add(senddata[0]+1, senddata[2], senddata[1])
+			#fxchannel_obj.sends[5].to_master_active = False
+
+	convproj_obj.fxtype = 'rack'
+
+def regular__groupreturn_to_route(convproj_obj, dawvert_intent):
+	logger_compat.info('fxchange: regular - groupreturn to route')
+	track_master = convproj_obj.track_master
+
+	cvpj_tracks = convproj_obj.tracks
+	cvpj_groups = convproj_obj.groups
+	cvpj_automation = convproj_obj.automation
+	
+	convproj_obj.fx__route__clear()
+	strgrptrk = cvpj_groups.iter_stream_inside()
+
+	newtrackids = [t+'_'+i for t, i, g in strgrptrk]
+
+	old_track_data = cvpj_tracks.data
+
+	cvpj_tracks.data = {}
+	cvpj_tracks.order = []
+
+	num = 0
+	for t, i, g in strgrptrk:
+		oi = newtrackids[num]
+
+		if g:
+			trackr = convproj_obj.fx__route__add(oi)
+			trackr.add('GROUP_'+g, None, 1)
+			trackr.to_master_active = False
+
+		if t == 'GROUP':
+			group_obj = cvpj_groups.get(i)
+			track_obj = cvpj_tracks.add(oi, 'fx', 1, 0)
+			track_obj.visual = group_obj.visual.copy()
+			track_obj.params = group_obj.params
+			track_obj.datavals = group_obj.datavals
+			track_obj.plugslots.slots_audio = group_obj.plugslots.slots_audio.copy()
+			cvpj_automation.move(['group',i,'vol'], ['track',oi,'vol'])
+			cvpj_automation.move(['group',i,'pan'], ['track',oi,'pan'])
+			if track_obj.visual.name: track_obj.visual.name = '[Group] '+track_obj.visual.name
+			else: track_obj.visual.name = '[Group]'
+
+			trackr = convproj_obj.fx__route__add(oi)
+			for i, x in group_obj.sends.iter():
+				send_obj = trackr.add('RETURN_'+i, None, x.params.get('amount', 0).value)
+				send_obj.sendautoid = x.sendautoid
+
+		if t == 'TRACK':
+			track_obj = old_track_data[i]
+			senddat = track_obj.sends.data
+
+			trackr = convproj_obj.fx__route__add(oi)
+			for i, x in track_obj.sends.iter():
+				send_obj = trackr.add('RETURN_'+i, None, x.params.get('amount', 0).value)
+				send_obj.sendautoid = x.sendautoid
+
+			cvpj_tracks.data[oi] = track_obj
+			cvpj_tracks.order.append(oi)
+
+			cvpj_automation.move(['track',i,'vol'], ['track',oi,'vol'])
+			cvpj_automation.move(['track',i,'pan'], ['track',oi,'pan'])
+		num += 1
+
+	for returnid, return_obj in track_master.returns.items(): 
+		oi = 'RETURN_'+returnid
+		track_obj = cvpj_tracks.add(oi, 'fx', 1, 0)
+		track_obj.visual = return_obj.visual.copy()
+		track_obj.plugslots.slots_audio = return_obj.plugslots.slots_audio.copy()
+		if track_obj.visual.name: track_obj.visual.name = '[Return] '+track_obj.visual.name
+		else: track_obj.visual.name = '[Return]'
+
+		trackr = convproj_obj.fx__route__add(oi)
+		for i, x in return_obj.sends.iter():
+			if 'RETURN_'+i != oi:
+				send_obj = trackr.add('RETURN_'+i, None, x.params.get('amount', 0).value)
+				send_obj.sendautoid = x.sendautoid
+
+	cvpj_groups.clear()
+	convproj_obj.fxtype = 'route'
+
+def regular__rack_to_groupreturn(convproj_obj, dawvert_intent):
+	logger_compat.info('fxchange: regular - rack to groupreturn')
+	move_fx0_to_mastertrack(convproj_obj)
+
+	fxrack_obj = convproj_obj.fxrack
+	cvpj_tracks = convproj_obj.tracks
+	cvpj_groups = convproj_obj.groups
+	cvpj_automation = convproj_obj.automation
+
+	fx_trackids = {}
+	for trackid, track_obj in cvpj_tracks.iter():
+		if track_obj.fxrack_channel > 0:
+			if track_obj.fxrack_channel not in fx_trackids: fx_trackids[track_obj.fxrack_channel] = []
+			fx_trackids[track_obj.fxrack_channel].append(trackid)
+			track_obj.group = 'fxrack_'+str(track_obj.fxrack_channel)
+			track_obj.fxrack_channel = -1
+
+	routedatas = {}
+	for fx_from, d in fxrack_obj.items():
+		s = d.sends
+		if not s.to_master_active:
+			if len(s.data) == 1:
+				fx_to = list(s.data)[0]
+				if fx_to in fxrack_obj:
+					targ_data = fxrack_obj[fx_to].sends.to_master_active
+					if targ_data:
+						routedatas[fx_from] = fx_to
+
+	for x, y in routedatas.items():
+		if y not in fx_trackids: fx_trackids[y] = []
+		if x not in fx_trackids: fx_trackids[x] = []
+
+	for fx_num in fx_trackids:
+
+		if fx_num in fxrack_obj:
+			fxchannel_obj = fxrack_obj[fx_num]
+			fxchannel_obj.sends = {}
+			groupid = 'fxrack_'+str(fx_num)
+			group_obj = cvpj_groups.add(groupid)
+
+			if fx_num in routedatas:
+				group_obj.group = 'fxrack_'+str(routedatas[fx_num])
+
+			cvpjtrackdata = cvpj_tracks.data
+			colors = []
+			for x in fx_trackids[fx_num]:
+				track_obj = cvpjtrackdata[x]
+				if track_obj.is_laned:
+					for _, x in track_obj.lanes.items():
+						if x.visual.color:
+							colors.append(x.visual.color)
+				if not colors:
+					if track_obj.visual.color: colors.append(track_obj.visual.color)
+
+			allcolor = colors[0] if (all(x == colors[0] for x in colors) and colors) else None
+
+			cvpj_automation.move(['fxmixer',str(fx_num),'pan'], ['group',groupid,'pan'])
+			cvpj_automation.move(['fxmixer',str(fx_num),'vol'], ['group',groupid,'vol'])
+			fxchannel_obj.params.move(group_obj.params, 'vol')
+			fxchannel_obj.params.move(group_obj.params, 'pan')
+			group_obj.plugslots.audiofx_move_from(fxchannel_obj.plugslots)
+			group_obj.latency_offset = fxchannel_obj.latency_offset
+			fxtracks = fx_trackids[fx_num]
+			if fxchannel_obj.visual.name: group_obj.visual.name = fxchannel_obj.visual.name
+			elif len(fxtracks) == 1: 
+				track_obj = cvpj_tracks.data[fxtracks[0]]
+				if track_obj.visual.name: group_obj.visual.name = track_obj.visual.name+' [FX '+str(fx_num)+']'
+				else: group_obj.visual.name = 'FX '+str(fx_num)
+			else: 
+				allnames = [(cvpj_tracks.data[x].visual.name.split(' #')[0] if cvpj_tracks.data[x].visual.name else '') for x in fxtracks]
+				if all(x == allnames[0] for x in allnames) and allnames: 
+					group_obj.visual.name = allnames[0]+' [FX '+str(fx_num)+']' if allnames[0] else 'FX '+str(fx_num)
+				else: group_obj.visual.name = 'FX '+str(fx_num)
+			group_obj.visual.color = fxchannel_obj.visual.color
+			if allcolor: group_obj.visual.color.merge(allcolor)
+
+			for x in fxtracks:
+				track_obj = cvpjtrackdata[x]
+				track_obj.visual.color.merge(group_obj.visual.color)
+
+		logger_compat.info('fxchange: FX to Tracks '+ ', '.join(fx_trackids[fx_num]))
+	fxrack_obj.clear()
+	convproj_obj.fxtype = 'groupreturn'
+
+def regular__rack_to_route(convproj_obj, dawvert_intent):
+	logger_compat.info('fxchange: regular - rack to route')
+
+	fxrack_obj = convproj_obj.fxrack
+	cvpj_tracks = convproj_obj.tracks
+	cvpj_automation = convproj_obj.automation
+
+	fxrack_obj.remove_unused()
+
+	for trackid in cvpj_tracks.order: convproj_obj.fx__route__add(trackid)
+
+	move_fx0_to_mastertrack(convproj_obj)
+
+	used_fxchans = []
+
+	fx_trackids = {}
+	nofx_trackids = []
+
+	for trackid, track_obj in cvpj_tracks.iter():
+		if track_obj.fxrack_channel > 0:
+			if track_obj.fxrack_channel not in used_fxchans: used_fxchans.append(track_obj.fxrack_channel)
+			if track_obj.fxrack_channel not in fx_trackids: fx_trackids[track_obj.fxrack_channel] = []
+			fx_trackids[track_obj.fxrack_channel].append(trackid)
+			convproj_obj.trackroute[trackid].add('fxrack_'+str(track_obj.fxrack_channel), None, 1)
+			convproj_obj.trackroute[trackid].to_master_active = False
+		else:
+			nofx_trackids.append(trackid)
+
+		track_obj.fxrack_channel = -1
+
+	for fxnum, fxdata in fxrack_obj.items():
+		if fxnum > 0:
+			is_fx_used = False
+			if fxdata.visual.name != None: is_fx_used = True
+			if fxdata.visual.color != None: is_fx_used = True
+			if fxdata.plugslots.slots_audio != []: is_fx_used = True
+			if is_fx_used and (fxnum not in used_fxchans): used_fxchans.append(fxnum)
+
+			for target in fxdata.sends.data:
+				if target not in used_fxchans and target>0: 
+					used_fxchans.append(target)
+			#track_obj.fxrack_channel = -1
+
+	used_fxchans = sorted(used_fxchans)
+
+	for n, fxnum in enumerate(used_fxchans):
+		fx_obj = fxrack_obj[fxnum]
+		track_id = 'fxrack_'+str(fxnum)
+		convproj_obj.fx__route__add(track_id)
+		track_obj = cvpj_tracks.add(track_id, 'fx', 1, 0)
+
+		cvpj_automation.move(['fxmixer',str(fxnum),'vol'], ['track',track_id,'vol'])
+		cvpj_automation.move(['fxmixer',str(fxnum),'pan'], ['track',track_id,'pan'])
+		fx_obj.params.move(track_obj.params, 'vol')
+		fx_obj.params.move(track_obj.params, 'pan')
+		track_obj.visual = fx_obj.visual
+		track_obj.visual.name = '[FX '+str(fxnum)+'] '+(track_obj.visual.name if track_obj.visual.name else '')
+		track_obj.plugslots.audiofx_move_from(fx_obj.plugslots)
+
+		convproj_obj.trackroute['fxrack_'+str(fxnum)].to_master_active = fx_obj.sends.to_master_active
+
+		for n, d in fx_obj.sends.data.items(): convproj_obj.trackroute['fxrack_'+str(fxnum)].data['fxrack_'+str(n)] = d
+
+	cvpj_tracks.order = []
+	for fxnum, ids in fx_trackids.items():
+		cvpj_tracks.order.append('fxrack_'+str(fxnum))
+		for sid in ids: cvpj_tracks.order.append(sid)
+		used_fxchans.remove(fxnum)
+
+	for sid in nofx_trackids: cvpj_tracks.order.append(sid)
+
+	for fxnum in used_fxchans: cvpj_tracks.order.append('fxrack_'+str(fxnum))
+	convproj_obj.fxtype = 'route'
+
+def regular__route_to_rack(convproj_obj, dawvert_intent):
+	logger_compat.info('fxchange: regular - route to rack')
+
+	fxrack_obj = convproj_obj.fxrack
+	cvpj_tracks = convproj_obj.tracks
+	cvpj_automation = convproj_obj.automation
+
+	tracknums = {}
+
+	if not convproj_obj.trackroute:
+		for t in cvpj_tracks.order:
+			convproj_obj.fx__route__add(t)
+
+	for num, trackid in enumerate(cvpj_tracks.order): 
+		track_obj = cvpj_tracks.data[trackid]
+		tracknums[trackid] = num+1
+
+	for trackid, track_obj in cvpj_tracks.iter():
+		fxnum = tracknums[trackid]
+		#convproj_obj, data_obj, fxnum, defualtname, starttext, doboth, autoloc
+		fxchannel_obj = track2fxrack(convproj_obj, track_obj, fxnum, '', '', False, ['track',trackid])
+		track_obj.fxrack_channel = fxnum
+
+		oldmasteractive = convproj_obj.trackroute[trackid].to_master_active
+		oldroute = convproj_obj.trackroute[trackid].data
+		convproj_obj.trackroute[trackid].data = {}
+		for t, r in oldroute.items(): fxchannel_obj.sends.data[tracknums[t]] = r
+		fxchannel_obj.sends.to_master_active = oldmasteractive
+		track_obj.placements.add_fxrack_channel(fxnum)
+
+	convproj_obj.fxtype = 'rack'
+
+def regular__route_to_groupreturn(convproj_obj, dawvert_intent):
+	logger_compat.info('fxchange: regular - route to groupreturn')
+	cvpj_tracks = convproj_obj.tracks
+	cvpj_groups = convproj_obj.groups
+
+	if not convproj_obj.trackroute:
+		for t in cvpj_tracks.order:
+			convproj_obj.fx__route__add(t)
+
+	fx_trackids = {}
+	for trackid, track_obj in cvpj_tracks.iter():
+		s = convproj_obj.trackroute[trackid]
+		if not s.to_master_active and s.data:
+			firstsend = list(s.data)[0]
+			if firstsend not in fx_trackids: fx_trackids[firstsend] = []
+			fx_trackids[firstsend].append(trackid)
+			track_obj.group = 'group_'+firstsend
+
+	for trackid, track_obj in fx_trackids.items():
+		track_obj = cvpj_tracks.data[trackid]
+		group_obj = cvpj_groups.add('group_'+trackid)
+		group_obj.visual = track_obj.visual.copy()
+		group_obj.plugslots.slots_audio = track_obj.plugslots.slots_audio
+		group_obj.plugslots.slots_mixer = track_obj.plugslots.slots_mixer
+		group_obj.plugslots.slots_audio_enabled = track_obj.plugslots.slots_audio_enabled
+
+	convproj_obj.fxtype = 'groupreturn'
+
+# ================================ MAIN ================================
+
 def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 	in_fxtype = convproj_obj.fxtype
 	out_fxtype = out_dawinfo.fxtype
@@ -87,367 +484,47 @@ def process(convproj_obj, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
 
 	if ('none' in out_fxtype) or (not out_fxtype):
 		if DEBUGTXT: print('FX CHANGE PROCESS 1')
-		fxrack_obj.clear()
-		cvpj_groups.clear()
-		convproj_obj.fx__route__clear()
-		convproj_obj.fx__return__clear()
-		for trackid, track_obj in cvpj_tracks.iter():
-			track_obj.fxrack_channel = 0
-			track_obj.group = None
+		regular__to_none(convproj_obj, dawvert_intent)
+		return True
 
-	elif in_fxtype in ['groupreturn', 'none'] and 'rack' in out_fxtype and convproj_obj.type in ['m', 'mi']:
+	elif (convproj_obj.type in ['m', 'mi']) and (in_fxtype in ['groupreturn', 'none']) and ('rack' in out_fxtype):
 		if DEBUGTXT: print('FX CHANGE PROCESS 2')
-		logger_compat.info('fxchange: Master to FX 0')
-		fxchannel_obj = fxrack_obj.add(0)
-		fxchannel_obj.visual = copy.deepcopy(track_master.visual)
-		fxchannel_obj.params = copy.deepcopy(track_master.params)
-		fxchannel_obj.plugslots.audiofx_move_from(track_master.plugslots)
-		cvpj_automation.move(['master','vol'], ['fxmixer','0','vol'])
-		cvpj_automation.move(['master','pan'], ['fxmixer','0','pan'])
-		fxchannel_obj.latency_offset = track_master.latency_offset
-		for count, iterval in enumerate(cvpj_insts.iter()):
-			fxnum = count+1
-			inst_id, inst_obj = iterval
-			fxchannel_obj = fxrack_obj.add(fxnum)
-			fxchannel_obj.visual = copy.deepcopy(inst_obj.visual)
-			fxchannel_obj.params = copy.deepcopy(inst_obj.params)
-			fxchannel_obj.plugslots.audiofx_move_from(inst_obj.plugslots)
-			inst_obj.fxrack_channel = fxnum
-			fxchannel_obj.visual = inst_obj.visual.copy()
-			cvpj_automation.move(['track',inst_id,'vol'], ['fxmixer',str(fxnum),'vol'])
-			inst_obj.params.move(fxchannel_obj.params, 'vol')
-			logger_compat.info('fxchange: Instrument to FX '+str(fxnum)+(' ('+fxchannel_obj.visual.name+')' if fxchannel_obj.visual.name else ''))
+		multiple__groupreturn_to_rack(convproj_obj, dawvert_intent)
 		return True
 
-	elif in_fxtype == 'none' and 'rack' in out_fxtype and convproj_obj.type in ['r', 'ri', 'rm', 'ms', 'rs']:
+	elif (convproj_obj.type in ['r', 'ri', 'rm', 'ms', 'rs']) and (in_fxtype == 'none') and ('rack' in out_fxtype):
 		if DEBUGTXT: print('FX CHANGE PROCESS 3')
-		tracknum = 1
-		
-		track2fxrack(convproj_obj, track_master, 0, 'Master', '', True, ['master'])
-
-		for trackid, track_obj in cvpj_tracks.iter():
-			fxchannel_obj = track2fxrack(convproj_obj, track_obj, tracknum, '', '', True, ['track',trackid])
-			track_obj.fxrack_channel = tracknum
-			track_obj.placements.add_fxrack_channel(tracknum)
-			tracknum += 1
-		convproj_obj.fxtype = 'rack'
+		regular__none_to_rack(convproj_obj, dawvert_intent)
 		return True
 
-	elif in_fxtype == 'groupreturn' and 'rack' in out_fxtype and convproj_obj.type in ['r', 'ri', 'rm', 'ms', 'rs']:
+	elif (convproj_obj.type in ['r', 'ri', 'rm', 'ms', 'rs']) and (in_fxtype == 'groupreturn') and ('rack' in out_fxtype):
 		if DEBUGTXT: print('FX CHANGE PROCESS 4')
-		t2m = trackfx_to_numdata.to_numdata()
-		output_ids = t2m.trackfx_to_numdata(convproj_obj, 1)
-		dict_returns = {}
-		for returnid, return_obj in track_master.returns.items(): dict_returns[returnid] = return_obj
-
-		track2fxrack(convproj_obj, track_master, 0, 'Master', '', True, ['master'])
-
-		for output_id in output_ids:
-			
-			if output_id[1] == 'return':
-				fxchannel_obj = track2fxrack(convproj_obj, dict_returns[output_id[2]], output_id[0]+1, 'Return', '[R] ', True, ['return',output_id[2]])
-				fxchannel_obj.visual_ui.other['docked'] = 1
-
-			if output_id[1] == 'group':
-				fxchannel_obj = track2fxrack(convproj_obj, convproj_obj.groups[output_id[2]], output_id[0]+1, 'Group', '[G] ', True, ['group',output_id[2]])
-				fxchannel_obj.visual_ui.other['docked'] = -1
-
-			if output_id[1] == 'track':
-				fxnum = output_id[0]+1
-				track_obj = cvpj_tracks.data[output_id[2]]
-				fxchannel_obj = track2fxrack(convproj_obj, track_obj, fxnum, '', '', True, ['track',output_id[2]])
-				track_obj.fxrack_channel = output_id[0]+1
-				track_obj.placements.add_fxrack_channel(fxnum)
-				for _, scene_obj in track_obj.scenes.items():
-					for _, lane_obj in scene_obj.items():
-						lane_obj.add_fxrack_channel(fxnum)
-				if track_obj.group: fxchannel_obj.sends.to_master_active = False
-
-			fxchannel_obj.sends.add(output_id[3][0]+1, output_id[3][2], output_id[3][1])
-
-			for senddata in output_id[4]:
-				fxchannel_obj.sends.add(senddata[0]+1, senddata[2], senddata[1])
-				#fxchannel_obj.sends[5].to_master_active = False
-
-		convproj_obj.fxtype = 'rack'
+		regular__groupreturn_to_rack(convproj_obj, dawvert_intent)
 		return True
 
-	elif in_fxtype == 'rack' and 'groupreturn' in out_fxtype and convproj_obj.type in ['r', 'ri']:
+	elif (convproj_obj.type in ['r', 'ri']) and (in_fxtype == 'rack') and ('groupreturn' in out_fxtype):
 		if DEBUGTXT: print('FX CHANGE PROCESS 5')
-		move_fx0_to_mastertrack(convproj_obj)
-
-		fx_trackids = {}
-		for trackid, track_obj in cvpj_tracks.iter():
-			if track_obj.fxrack_channel > 0:
-				if track_obj.fxrack_channel not in fx_trackids: fx_trackids[track_obj.fxrack_channel] = []
-				fx_trackids[track_obj.fxrack_channel].append(trackid)
-				track_obj.group = 'fxrack_'+str(track_obj.fxrack_channel)
-				track_obj.fxrack_channel = -1
-
-		routedatas = {}
-		for fx_from, d in fxrack_obj.items():
-			s = d.sends
-			if not s.to_master_active:
-				if len(s.data) == 1:
-					fx_to = list(s.data)[0]
-					if fx_to in fxrack_obj:
-						targ_data = fxrack_obj[fx_to].sends.to_master_active
-						if targ_data:
-							routedatas[fx_from] = fx_to
-
-		for x, y in routedatas.items():
-			if y not in fx_trackids: fx_trackids[y] = []
-			if x not in fx_trackids: fx_trackids[x] = []
-
-		for fx_num in fx_trackids:
-
-			if fx_num in fxrack_obj:
-				fxchannel_obj = fxrack_obj[fx_num]
-				fxchannel_obj.sends = {}
-				groupid = 'fxrack_'+str(fx_num)
-				group_obj = cvpj_groups.add(groupid)
-
-				if fx_num in routedatas:
-					group_obj.group = 'fxrack_'+str(routedatas[fx_num])
-
-				cvpjtrackdata = cvpj_tracks.data
-				colors = []
-				for x in fx_trackids[fx_num]:
-					track_obj = cvpjtrackdata[x]
-					if track_obj.is_laned:
-						for _, x in track_obj.lanes.items():
-							if x.visual.color:
-								colors.append(x.visual.color)
-					if not colors:
-						if track_obj.visual.color: colors.append(track_obj.visual.color)
-
-				allcolor = colors[0] if (all(x == colors[0] for x in colors) and colors) else None
-
-				cvpj_automation.move(['fxmixer',str(fx_num),'pan'], ['group',groupid,'pan'])
-				cvpj_automation.move(['fxmixer',str(fx_num),'vol'], ['group',groupid,'vol'])
-				fxchannel_obj.params.move(group_obj.params, 'vol')
-				fxchannel_obj.params.move(group_obj.params, 'pan')
-				group_obj.plugslots.audiofx_move_from(fxchannel_obj.plugslots)
-				group_obj.latency_offset = fxchannel_obj.latency_offset
-				fxtracks = fx_trackids[fx_num]
-				if fxchannel_obj.visual.name: group_obj.visual.name = fxchannel_obj.visual.name
-				elif len(fxtracks) == 1: 
-					track_obj = cvpj_tracks.data[fxtracks[0]]
-					if track_obj.visual.name: group_obj.visual.name = track_obj.visual.name+' [FX '+str(fx_num)+']'
-					else: group_obj.visual.name = 'FX '+str(fx_num)
-				else: 
-					allnames = [(cvpj_tracks.data[x].visual.name.split(' #')[0] if cvpj_tracks.data[x].visual.name else '') for x in fxtracks]
-					if all(x == allnames[0] for x in allnames) and allnames: 
-						group_obj.visual.name = allnames[0]+' [FX '+str(fx_num)+']' if allnames[0] else 'FX '+str(fx_num)
-					else: group_obj.visual.name = 'FX '+str(fx_num)
-				group_obj.visual.color = fxchannel_obj.visual.color
-				if allcolor: group_obj.visual.color.merge(allcolor)
-
-				for x in fxtracks:
-					track_obj = cvpjtrackdata[x]
-					track_obj.visual.color.merge(group_obj.visual.color)
-
-			logger_compat.info('fxchange: FX to Tracks '+ ', '.join(fx_trackids[fx_num]))
-		fxrack_obj.clear()
-		convproj_obj.fxtype = 'groupreturn'
+		regular__rack_to_groupreturn(convproj_obj, dawvert_intent)
 		return True
 
-	elif in_fxtype == 'rack' and 'route' in out_fxtype and convproj_obj.type in ['r', 'ri']:
+	elif (convproj_obj.type in ['r', 'ri']) and (in_fxtype == 'rack') and ('route' in out_fxtype):
 		if DEBUGTXT: print('FX CHANGE PROCESS 6')
-		fxrack_obj.remove_unused()
-
-		for trackid in cvpj_tracks.order: convproj_obj.fx__route__add(trackid)
-
-		move_fx0_to_mastertrack(convproj_obj)
-
-		used_fxchans = []
-
-		fx_trackids = {}
-		nofx_trackids = []
-
-		for trackid, track_obj in cvpj_tracks.iter():
-			if track_obj.fxrack_channel > 0:
-				if track_obj.fxrack_channel not in used_fxchans: used_fxchans.append(track_obj.fxrack_channel)
-				if track_obj.fxrack_channel not in fx_trackids: fx_trackids[track_obj.fxrack_channel] = []
-				fx_trackids[track_obj.fxrack_channel].append(trackid)
-				convproj_obj.trackroute[trackid].add('fxrack_'+str(track_obj.fxrack_channel), None, 1)
-				convproj_obj.trackroute[trackid].to_master_active = False
-			else:
-				nofx_trackids.append(trackid)
-
-			track_obj.fxrack_channel = -1
-
-		for fxnum, fxdata in fxrack_obj.items():
-			if fxnum > 0:
-				is_fx_used = False
-				if fxdata.visual.name != None: is_fx_used = True
-				if fxdata.visual.color != None: is_fx_used = True
-				if fxdata.plugslots.slots_audio != []: is_fx_used = True
-				if is_fx_used and (fxnum not in used_fxchans): used_fxchans.append(fxnum)
-
-				for target in fxdata.sends.data:
-					if target not in used_fxchans and target>0: 
-						used_fxchans.append(target)
-				#track_obj.fxrack_channel = -1
-
-		used_fxchans = sorted(used_fxchans)
-
-		for n, fxnum in enumerate(used_fxchans):
-			fx_obj = fxrack_obj[fxnum]
-			track_id = 'fxrack_'+str(fxnum)
-			convproj_obj.fx__route__add(track_id)
-			track_obj = cvpj_tracks.add(track_id, 'fx', 1, 0)
-
-			cvpj_automation.move(['fxmixer',str(fxnum),'vol'], ['track',track_id,'vol'])
-			cvpj_automation.move(['fxmixer',str(fxnum),'pan'], ['track',track_id,'pan'])
-			fx_obj.params.move(track_obj.params, 'vol')
-			fx_obj.params.move(track_obj.params, 'pan')
-			track_obj.visual = fx_obj.visual
-			track_obj.visual.name = '[FX '+str(fxnum)+'] '+(track_obj.visual.name if track_obj.visual.name else '')
-			track_obj.plugslots.audiofx_move_from(fx_obj.plugslots)
-
-			convproj_obj.trackroute['fxrack_'+str(fxnum)].to_master_active = fx_obj.sends.to_master_active
-
-			for n, d in fx_obj.sends.data.items(): convproj_obj.trackroute['fxrack_'+str(fxnum)].data['fxrack_'+str(n)] = d
-
-		cvpj_tracks.order = []
-		for fxnum, ids in fx_trackids.items():
-			cvpj_tracks.order.append('fxrack_'+str(fxnum))
-			for sid in ids: cvpj_tracks.order.append(sid)
-			used_fxchans.remove(fxnum)
-
-		for sid in nofx_trackids: cvpj_tracks.order.append(sid)
-
-		for fxnum in used_fxchans: cvpj_tracks.order.append('fxrack_'+str(fxnum))
-		convproj_obj.fxtype = 'route'
+		regular__rack_to_route(convproj_obj, dawvert_intent)
 		return True
 
-	elif in_fxtype == 'route' and ('groupreturn' in out_fxtype or 'route' in out_fxtype) and convproj_obj.type in ['r', 'ri']:
+	elif (convproj_obj.type in ['r', 'ri']) and (in_fxtype == 'route') and ('rack' in out_fxtype):
 		if DEBUGTXT: print('FX CHANGE PROCESS 7')
-
-		if not convproj_obj.trackroute:
-			for t in cvpj_tracks.order:
-				convproj_obj.fx__route__add(t)
-
-		fx_trackids = {}
-		for trackid, track_obj in cvpj_tracks.iter():
-			s = convproj_obj.trackroute[trackid]
-			if not s.to_master_active and s.data:
-				firstsend = list(s.data)[0]
-				if firstsend not in fx_trackids: fx_trackids[firstsend] = []
-				fx_trackids[firstsend].append(trackid)
-				track_obj.group = 'group_'+firstsend
-
-		for trackid, track_obj in fx_trackids.items():
-			track_obj = cvpj_tracks.data[trackid]
-			group_obj = cvpj_groups.add('group_'+trackid)
-			group_obj.visual = track_obj.visual.copy()
-			group_obj.plugslots.slots_audio = track_obj.plugslots.slots_audio
-			group_obj.plugslots.slots_mixer = track_obj.plugslots.slots_mixer
-			group_obj.plugslots.slots_audio_enabled = track_obj.plugslots.slots_audio_enabled
-
-		convproj_obj.fxtype = 'groupreturn'
+		regular__route_to_rack(convproj_obj, dawvert_intent)
 		return True
 
-	elif in_fxtype == 'route' and 'rack' in out_fxtype and convproj_obj.type in ['r', 'ri']:
+	elif (convproj_obj.type in ['r', 'ri', 'rs']) and (in_fxtype == 'groupreturn') and ('route' in out_fxtype):
 		if DEBUGTXT: print('FX CHANGE PROCESS 8')
-		tracknums = {}
-
-		if not convproj_obj.trackroute:
-			for t in cvpj_tracks.order:
-				convproj_obj.fx__route__add(t)
-
-		for num, trackid in enumerate(cvpj_tracks.order): 
-			track_obj = cvpj_tracks.data[trackid]
-			tracknums[trackid] = num+1
-
-		for trackid, track_obj in cvpj_tracks.iter():
-			fxnum = tracknums[trackid]
-			#convproj_obj, data_obj, fxnum, defualtname, starttext, doboth, autoloc
-			fxchannel_obj = track2fxrack(convproj_obj, track_obj, fxnum, '', '', False, ['track',trackid])
-			track_obj.fxrack_channel = fxnum
-
-			oldmasteractive = convproj_obj.trackroute[trackid].to_master_active
-			oldroute = convproj_obj.trackroute[trackid].data
-			convproj_obj.trackroute[trackid].data = {}
-			for t, r in oldroute.items(): fxchannel_obj.sends.data[tracknums[t]] = r
-			fxchannel_obj.sends.to_master_active = oldmasteractive
-			track_obj.placements.add_fxrack_channel(fxnum)
-
-		convproj_obj.fxtype = 'rack'
-		return True
-
-	elif in_fxtype == 'groupreturn' and 'route' in out_fxtype and convproj_obj.type in ['r', 'ri', 'rs']:
-		if DEBUGTXT: print('FX CHANGE PROCESS 9')
-
-		convproj_obj.fx__route__clear()
-		strgrptrk = cvpj_groups.iter_stream_inside()
-
-		newtrackids = [t+'_'+i for t, i, g in strgrptrk]
-
-		old_track_data = cvpj_tracks.data
-
-		cvpj_tracks.data = {}
-		cvpj_tracks.order = []
-
-		num = 0
-		for t, i, g in strgrptrk:
-			oi = newtrackids[num]
-
-			if g:
-				trackr = convproj_obj.fx__route__add(oi)
-				trackr.add('GROUP_'+g, None, 1)
-				trackr.to_master_active = False
-
-			if t == 'GROUP':
-				group_obj = cvpj_groups.get(i)
-				track_obj = cvpj_tracks.add(oi, 'fx', 1, 0)
-				track_obj.visual = group_obj.visual.copy()
-				track_obj.params = group_obj.params
-				track_obj.datavals = group_obj.datavals
-				track_obj.plugslots.slots_audio = group_obj.plugslots.slots_audio.copy()
-				cvpj_automation.move(['group',i,'vol'], ['track',oi,'vol'])
-				cvpj_automation.move(['group',i,'pan'], ['track',oi,'pan'])
-				if track_obj.visual.name: track_obj.visual.name = '[Group] '+track_obj.visual.name
-				else: track_obj.visual.name = '[Group]'
-
-				trackr = convproj_obj.fx__route__add(oi)
-				for i, x in group_obj.sends.iter():
-					send_obj = trackr.add('RETURN_'+i, None, x.params.get('amount', 0).value)
-					send_obj.sendautoid = x.sendautoid
-
-			if t == 'TRACK':
-				track_obj = old_track_data[i]
-				senddat = track_obj.sends.data
-
-				trackr = convproj_obj.fx__route__add(oi)
-				for i, x in track_obj.sends.iter():
-					send_obj = trackr.add('RETURN_'+i, None, x.params.get('amount', 0).value)
-					send_obj.sendautoid = x.sendautoid
-
-				cvpj_tracks.data[oi] = track_obj
-				cvpj_tracks.order.append(oi)
-
-				cvpj_automation.move(['track',i,'vol'], ['track',oi,'vol'])
-				cvpj_automation.move(['track',i,'pan'], ['track',oi,'pan'])
-			num += 1
-
-		for returnid, return_obj in track_master.returns.items(): 
-			oi = 'RETURN_'+returnid
-			track_obj = cvpj_tracks.add(oi, 'fx', 1, 0)
-			track_obj.visual = return_obj.visual.copy()
-			track_obj.plugslots.slots_audio = return_obj.plugslots.slots_audio.copy()
-			if track_obj.visual.name: track_obj.visual.name = '[Return] '+track_obj.visual.name
-			else: track_obj.visual.name = '[Return]'
-
-			trackr = convproj_obj.fx__route__add(oi)
-			for i, x in return_obj.sends.iter():
-				if 'RETURN_'+i != oi:
-					send_obj = trackr.add('RETURN_'+i, None, x.params.get('amount', 0).value)
-					send_obj.sendautoid = x.sendautoid
-
-		cvpj_groups.clear()
-		convproj_obj.fxtype = 'route'
+		regular__groupreturn_to_route(convproj_obj, dawvert_intent)
 		return True
 		
+	elif (convproj_obj.type in ['r', 'ri']) and (in_fxtype == 'route') and ('groupreturn' in out_fxtype):
+		if DEBUGTXT: print('FX CHANGE PROCESS 9')
+		regular__route_to_groupreturn(convproj_obj, dawvert_intent)
+		return True
+
 	else: return False

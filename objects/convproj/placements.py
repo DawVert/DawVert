@@ -105,8 +105,15 @@ class cvpj_placements:
 			if visualfill: placement_obj.visual = visualfill
 
 	def get_dur(self):
+		outval = 0
+		outval = max(outval, self.pl_notes.get_dur())
+		outval = max(outval, self.pl_audio.get_dur())
+		outval = max(outval, self.pl_notes_indexed.get_dur())
+		outval = max(outval, self.pl_audio_indexed.get_dur())
+		outval = max(outval, self.notelist.get_dur())
+		outval = max(outval, self.midievents.get_dur())
 		#print(self.pl_notes.get_dur(),self.pl_audio.get_dur(),self.notelist.get_dur())
-		return max(self.pl_notes.get_dur(),self.pl_audio.get_dur(),self.pl_notes_indexed.get_dur(),self.pl_audio_indexed.get_dur(),self.notelist.get_dur())
+		return outval
 
 	def get_start(self):
 		outcount = min(self.pl_notes.get_start(),self.pl_audio.get_start())

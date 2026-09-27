@@ -6,8 +6,10 @@ import logging
 
 logger_project = logging.getLogger('project')
 
-def convert(convproj_obj, change_instnames):
+def convert(convproj_obj):
 	logger_project.info('ProjType Convert: RegularMultiple > Multiple')
+
+	change_instnames = True
 
 	fxrack_obj = convproj_obj.fxrack
 	cvpj_tracks = convproj_obj.tracks

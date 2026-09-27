@@ -280,7 +280,7 @@ class output_cvpj(plugins.base):
 		in_dict['audio_stretch'] = ['rate']
 		in_dict['auto_types'] = ['nopl_points']
 		in_dict['projtype'] = 'r'
-		in_dict['notes_midi'] = True
+		in_dict['notes_midi'] = 'single'
 		in_dict['time_seconds_auto'] = True
 	
 	def get_configdef(self, configdef):

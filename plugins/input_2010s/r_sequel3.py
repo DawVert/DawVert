@@ -222,7 +222,7 @@ class input_sequel3(plugins.base):
 		traits_obj.audio_stretch = ['warp', 'rate']
 		traits_obj.audio_filetypes = ['wav']
 		traits_obj.auto_types = ['nopl_points']
-		traits_obj.notes_midi = True
+		traits_obj.notes_midi = 'single'
 		traits_obj.placement_cut = True
 		traits_obj.track_arranger = True
 		traits_obj.notepl_pitch = True

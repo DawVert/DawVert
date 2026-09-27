@@ -61,6 +61,11 @@ state_dtype = np.dtype([
 	('off_vel', np.uint8),
 	])
 
+all_dur_dtype = np.dtype([
+	('pos', np.uint64),
+	('dur', np.uint64),
+	])
+
 class midievents:
 	def __init__(self):
 		self.data = dynbytearr.dynbytearr(in_dtype)
@@ -166,6 +171,10 @@ class midievents:
 		copyright_same = self.copyright == nlo.copyright
 		return nl_same and sysex_same and texts_same and markers_same and lyrics_same and seq_spec_same and seq_spec_same and seq_spec_same and ppq_same and track_name_same and copyright_same
 
+	def clear(self):
+		self.data.clear()
+		self.cursor = self.data.create_cursor()
+
 	def change_ppq(self, inppq):
 		ppqcalc = self.ppq/inppq
 		self.data.data['pos'] = self.data.data['pos']/ppqcalc
@@ -211,11 +220,18 @@ class midievents:
 				self.add_note_off_vel(n['pos']+n['uhival'], n['chan'], n['value'], n['off_vel'])
 			self.has_duration = False
 
-	def detect_duration(self):
-		used_data = self.data.get_used()
-		durc = np.count_nonzero(used_data['type']==EVENTID__NOTE_DUR)
-		durn = np.count_nonzero(used_data['type']==EVENTID__NOTE_ON)
-		print(durc, durn)
+	def usedoverflow(self, start, end):
+		notedata = self.data.data
+		poses = notedata['pos']
+		usedd = notedata['used']
+		usedposes = np.logical_and(start<=poses, poses<end)
+		usedvals = np.where(np.logical_and(usedposes, usedd==1))
+		filternl = notedata[usedvals]
+		if len(filternl): 
+			dures = filternl['uhival']*(filternl['type']==EVENTID__NOTE_DUR)
+			return True, max(np.max(filternl['pos']+dures)-end, 0) 
+		else: 
+			return False, 0
 
 	def add_note_off(self, curpos, channel, key):
 		self.cursor.add()

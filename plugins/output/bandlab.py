@@ -40,7 +40,7 @@ class output_bandlab(plugins.base):
 		in_dict['fxtype'] = 'groupreturn'
 		in_dict['file_ext'] = 'blx'
 		in_dict['placement_cut'] = True
-		in_dict['notes_midi'] = True
+		in_dict['notes_midi'] = 'multi'
 		in_dict['plugin_included'] = ['native:bandlab']
 
 	def parse(self, convproj_obj, dawvert_intent):

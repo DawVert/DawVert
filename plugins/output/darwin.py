@@ -55,7 +55,7 @@ class output_darwin(plugins.base):
 				visual_obj = track_obj.visual
 				visual_inst_obj = track_obj.visual_inst
 
-				if visual_obj.color: darwin_track.color = to_color(outcolor)
+				if visual_obj.color: darwin_track.color = to_color(visual_obj)
 				elif visual_inst_obj.color: darwin_track.color = to_color(visual_inst_obj)
 				if visual_obj.name: darwin_track.name = visual_obj.name
 

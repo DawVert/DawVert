@@ -327,7 +327,7 @@ class output_bandlab(plugins.base):
 		in_dict['audio_filetypes'] = ['wav']
 		in_dict['audio_stretch'] = ['rate']
 		in_dict['auto_types'] = ['nopl_points']
-		in_dict['notes_midi'] = True
+		in_dict['notes_midi'] = 'multi'
 		in_dict['placement_cut'] = True
 		in_dict['placement_loop'] = []
 		in_dict['time_seconds'] = False

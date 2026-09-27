@@ -236,7 +236,7 @@ class input_acid_3(plugins.base):
 		traits_obj.placement_loop = ['loop', 'loop_off']
 		traits_obj.audio_stretch = ['rate']
 		traits_obj.auto_types = ['pl_points','nopl_ticks']
-		traits_obj.notes_midi = True
+		traits_obj.notes_midi = 'multi'
 		traits_obj.time_seconds_auto = True
 
 		# ---------- tempo/keys ----------

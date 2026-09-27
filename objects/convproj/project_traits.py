@@ -10,7 +10,7 @@ class cvpj_project_traits:
 		self.fxchain_mixer = False
 		self.fxrack = False
 		self.fxrack_params = ['vol','enabled']
-		self.notes_midi = False
+		self.notes_midi = None
 		self.placement_cut = False
 		self.placement_loop = []
 		self.plugin_ext = []

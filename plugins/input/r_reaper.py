@@ -204,7 +204,7 @@ class input_reaper(plugins.base):
 		traits_obj.audio_filetypes = ['wav','flac','ogg','mp3']
 		traits_obj.audio_stretch = ['rate', 'warp']
 		traits_obj.auto_types = ['nopl_points', 'pl_points']
-		traits_obj.notes_midi = True
+		traits_obj.notes_midi = 'multi'
 		traits_obj.placement_cut = True
 		traits_obj.placement_loop = ['loop', 'loop_off', 'loop_adv']
 		traits_obj.plugin_ext = ['vst2', 'vst3', 'clap']
@@ -378,6 +378,8 @@ class input_reaper(plugins.base):
 						except:
 							pass
 
+						plugin_obj = None
+
 						if rpp_extplug.vst3_uuid == None:
 							fourid = rpp_extplug.vst_fourid
 
@@ -433,9 +435,10 @@ class input_reaper(plugins.base):
 							for parmenv in rpp_plugin.parmenv:
 								if parmenv.is_param: do_auto(pooledenvs, convproj_obj, parmenv, ['plugin', pluginid, 'ext_param_'+str(parmenv.param_id)], False, 'float', False)
 
-						plugin_obj.audioports.in_ports = aud_in_chan
-						plugin_obj.audioports.out_ports = aud_out_chan
-						plugin_obj.current_program = programnum
+						if plugin_obj:
+							plugin_obj.audioports.in_ports = aud_in_chan
+							plugin_obj.audioports.out_ports = aud_out_chan
+							plugin_obj.current_program = programnum
 
 					if rpp_plugin.type == 'CLAP':
 						plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'clap', None)

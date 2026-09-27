@@ -34,6 +34,7 @@ class output_bandlab(plugins.base):
 		in_dict['fxtype'] = 'groupreturn'
 		in_dict['projtype'] = 'r'
 		in_dict['time_seconds'] = True
+		in_dict['notes_midi'] = 'single'
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj import qtractor as proj_qtractor

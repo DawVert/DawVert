@@ -54,7 +54,7 @@ class input_bandlab(plugins.base):
 		traits_obj.audio_filetypes = ['wav', 'mp3', 'flac', 'm4a']
 		traits_obj.audio_stretch = ['rate']
 		traits_obj.auto_types = ['nopl_points']
-		traits_obj.notes_midi = True
+		traits_obj.notes_midi = 'single'
 		traits_obj.placement_cut = True
 		traits_obj.placement_loop = ['loop', 'loop_eq', 'loop_off', 'loop_adv', 'loop_adv_off']
 		traits_obj.time_seconds = False

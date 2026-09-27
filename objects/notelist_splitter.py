@@ -177,6 +177,70 @@ useactive_premake = dynbytearr.dynbytearr_premake([
 		('done', np.uint8),
 	])
 
+class cvpj_midievents_splitter:
+	def __init__(self, timesigblocks_obj, ppq):
+		self.data = []
+		self.ppq = ppq
+		self.timesigblocks_obj = timesigblocks_obj
+
+	def add_plme(self, i_pl):
+		self.data.append(i_pl)
+
+	def process(self):
+		useddata = self.timesigblocks_obj.splitdata.get_used()
+		blocksdata = np.zeros((len(self.data), len(useddata)), dtype=dtype_blocks)
+		blocksdata['start'] = useddata['start']
+		blocksdata['end'] = useddata['end']
+		blocksdata['dur'] = useddata['dur']
+
+		for plnum, pldata in enumerate(self.data):
+			for blocknum, blockdata in enumerate(useddata):
+				splitd = blocksdata[plnum][blocknum]
+				midievents = pldata.midievents
+				midievents.add_note_durs()
+				splitd['used'], splitd['overflow'] = midievents.usedoverflow(blockdata['start'], blockdata['end'])
+
+		for blockdata in blocksdata:
+			remainval = 0
+			for splitd in blockdata:
+				splitd['remaining'] = remainval
+				if remainval: splitd['used'] = 1
+				remainval = max(remainval-splitd['dur'], 0)
+				remainval += splitd['overflow']
+				splitd['nosplit'] = 1+(remainval!=0) if splitd['used'] else 0
+
+		for plnum, pldata in enumerate(self.data):
+			activedata = useactive_premake.create()
+			cur_activedata = activedata.create_cursor()
+
+			cur_activedata.add()
+
+			blockdata = blocksdata[plnum]
+
+			for x in blockdata:
+				nosplit = x['nosplit']
+				if cur_activedata['done']: cur_activedata.add()
+				if nosplit != 0:
+					if not cur_activedata['active']:
+						cur_activedata['start'] = x['start']
+						cur_activedata['active'] = 1
+					cur_activedata['end'] = x['end']
+					if nosplit == 1:
+						cur_activedata['done'] = 1
+						cur_activedata['active'] = 0
+				else:
+					if cur_activedata['active']:
+						cur_activedata['done'] = 1
+
+			for x in activedata.get_used():
+				if x['done']:
+					placement_obj = pldata.add_midi()
+					#placement_obj.notelist = pldata.notelist.new_nl_start_end(x['start'], x['end'])
+					time_obj = placement_obj.time
+					time_obj.set_startend(int(x['start']), int(x['end']))
+
+			pldata.midievents.clear()
+
 class cvpj_notelist_splitter:
 	def __init__(self, timesigblocks_obj, ppq):
 		self.data = []

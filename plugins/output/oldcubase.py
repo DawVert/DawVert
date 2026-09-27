@@ -55,7 +55,7 @@ class output_oldcubase(plugins.base):
 		in_dict['file_ext'] = 'steinberg-project'
 		in_dict['audio_filetypes'] = ['wav']
 		in_dict['auto_types'] = ['nopl_points']
-		in_dict['notes_midi'] = True
+		in_dict['notes_midi'] = 'single'
 		in_dict['placement_cut'] = True
 		in_dict['track_arranger'] = True
 		in_dict['fxtype'] = 'groupreturn'

@@ -30,7 +30,7 @@ class info_daw:
 		self.auto_types = []
 		self.fxchain_mixer = False
 		self.fxtype = 'none'
-		self.notes_midi = False
+		self.notes_midi = None
 		self.projtype = '?'
 		self.notepl_pitch = False
 

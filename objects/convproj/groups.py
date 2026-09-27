@@ -47,6 +47,9 @@ class cvpj_groups:
 		self.data = {}
 		self.convproj_obj = convproj_obj
 
+	def __iter__(self):
+		return self.data.__iter__()
+
 	def __getitem__(self, k):
 		return self.data.__getitem__(k)
 

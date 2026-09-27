@@ -34,6 +34,9 @@ class cvpj_fxrack:
 	def __bool__(self):
 		return self.channels.__bool__()
 
+	def __delitem__(self, i):
+		return self.channels.__delitem__(i)
+
 	def items(self):
 		return self.channels.items()
 
