@@ -79,8 +79,10 @@ def convert(convproj_obj, dawvert_intent):
 		for x in range(len(outpoints)-1):
 			timemarker_obj = convproj_obj.arranger.add()
 			timemarker_obj.type = 'region'
-			timemarker_obj.position = int(outpoints[x])
-			timemarker_obj.duration = int(outpoints[x+1])-timemarker_obj.position
+			outpos = int(outpoints[x])
+			outdur = int(outpoints[x+1])-outpos
+			time_obj = timemarker_obj.time
+			time_obj.set_posdur(outpos, outdur)
 			timemarker_obj.visual.name = str(x)
 			#print(timemarker_obj.position, timemarker_obj.duration)
 

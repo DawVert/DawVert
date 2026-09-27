@@ -38,7 +38,7 @@ def process_r(convproj_obj, out_dawinfo):
 				cvpj_tracks.data[trackid] = track_obj
 				if trackroute_sendobj != None: convproj_obj.trackroute[trackid] = trackroute_sendobj
 			else:
-				insidegroup = len(track_obj.lanes)>1 and out_fxtype == 'groupreturn'
+				insidegroup = (len(track_obj.lanes)>1) and ('groupreturn' in out_fxtype)
 
 				if insidegroup:
 					group_obj = cvpj_groups.add(trackid)
@@ -64,7 +64,8 @@ def process_r(convproj_obj, out_dawinfo):
 					sep_track_obj.placements = lane_obj.placements
 					cvpj_tracks.order.append(cvpj_trackid)
 					cvpj_tracks.data[cvpj_trackid] = sep_track_obj
-					if insidegroup: sep_track_obj.group = trackid
+					if insidegroup: 
+						sep_track_obj.group = trackid
 
 					if trackroute_sendobj != None: 
 						routechanges[trackid].append(cvpj_trackid)

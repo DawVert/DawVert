@@ -185,6 +185,9 @@ configdef_soundfont.add_file_open("mariopaint", '', "Mario Paint")
 configdef_conversion = miniconfmenu_store()
 configdef_conversion.add_int('songnum', 0, 'Song Number')
 configdef_conversion.add_bool('output_unused_nle', False, 'MI2M: Output Unused Patterns')
+cfgpart = configdef_conversion.add_enum('cm2rm_split', 'none', 'CM2RM: Split By')
+cfgpart.add_choice('none','None')
+cfgpart.add_choice('inst' 'Instruments')
 configdef_conversion.set_group('splitter', 'Notelist Splitter')
 cfgpart = configdef_conversion.add_enum('splitter_mode', 0, 'Mode')
 cfgpart.add_choice('timesig', 'TimeSig-Based')
@@ -224,6 +227,8 @@ class ConversionWorker(QtCore.QObject):
 
 			dawvert_intent.flags_compat = []
 			if 'output_unused_nle' in dawvert_config.conversion: dawvert_intent.flags_compat.append('mi2m-output-unused-nle')
+			if 'cm2rm_split' in dawvert_config.conversion: 
+				dawvert_intent.convert_params['cm2rm_split'] = dawvert_config.conversion['cm2rm_split']
 			dawvert_intent.splitter_mode = dawvert_config.conversion['splitter_mode']
 			dawvert_intent.splitter_detect_start = dawvert_config.conversion['splitter_detect_start']
 

@@ -232,14 +232,22 @@ class cvpj_midievents_splitter:
 					if cur_activedata['active']:
 						cur_activedata['done'] = 1
 
-			for x in activedata.get_used():
-				if x['done']:
-					placement_obj = pldata.add_midi()
-					#placement_obj.notelist = pldata.notelist.new_nl_start_end(x['start'], x['end'])
-					time_obj = placement_obj.time
-					time_obj.set_startend(int(x['start']), int(x['end']))
+			nopl_midievents = pldata.midievents
+			if isinstance(self.ppq, int):
+				flomul = 1
 
-			pldata.midievents.clear()
+				for x in activedata.get_used():
+					if x['done']:
+						range_start = int(x['start']*flomul)
+						range_end = int(x['end']*flomul)
+						outevents = nopl_midievents.new_ev_start_end(range_start, range_end)
+
+						placement_obj = pldata.add_midi()
+						placement_obj.midievents = outevents
+						time_obj = placement_obj.time
+						time_obj.set_startend(int(x['start']), int(x['end']))
+
+			nopl_midievents.clear()
 
 class cvpj_notelist_splitter:
 	def __init__(self, timesigblocks_obj, ppq):

@@ -31,7 +31,6 @@ parser.add_argument("-ops", default='main')
 parser.add_argument("--soundfont", default=None)
 parser.add_argument("--songnum", default=1)
 parser.add_argument("--extrafile", default=None)
-parser.add_argument("--mi2m--output-unused-nle", action='store_true')
 parser.add_argument("--nonfree-plugins", action='store_true')
 parser.add_argument("--shareware-plugins", action='store_true')
 parser.add_argument("--old-plugins", action='store_true')
@@ -43,6 +42,8 @@ parser.add_argument("-pq", action='store_true')
 parser.add_argument("--list", action='store_true')
 parser.add_argument("--debug_multioutplugs", action='store_true')
 parser.add_argument("--debug_dataview_in", action='store_true')
+parser.add_argument("--mi2m--output-unused-nle", action='store_true')
+parser.add_argument("--cm2rm--split", default='none')
 args = parser.parse_args()
 
 dawvert_core = core.core()
@@ -99,6 +100,7 @@ if args.soundfont != None: dawvert_intent.path_soundfonts['global'] = args.sound
 if args.songnum != None: dawvert_intent.songnum = int(args.songnum)-1
 if args.extrafile != None: dawvert_intent.input_params['extra_file'] = args.extrafile
 if args.mi2m__output_unused_nle == True: dawvert_intent.flags_compat.append('mi2m-output-unused-nle')
+if args.cm2rm__split != None: dawvert_intent.convert_params['cm2rm_split'] = args.cm2rm__split
 if args.splitter_mode != None: dawvert_intent.splitter_mode = args.splitter_mode
 else: dawvert_intent.splitter_mode = "timesig_num"
 if args.splitter_detect_start != None: dawvert_intent.splitter_detect_start = bool(int(args.splitter_detect_start))

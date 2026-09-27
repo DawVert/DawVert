@@ -210,3 +210,9 @@ class dynbytearr:
 
 	def count_part(self, name, val):
 		return np.count_nonzero(self.data[name]==val)
+
+	def set_copied_multi(self, indata):
+		datasize = len(indata)
+		self.alloc(datasize)
+		self.num_parts = datasize
+		self.data[0:datasize] = indata

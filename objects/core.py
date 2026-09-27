@@ -127,6 +127,7 @@ class dawvert_intent:
 		self.input_mode = 'file'
 		self.input_visname = ''
 		self.input_params = {}
+		self.input_dawinfo = None
 		
 		self.output_file = ''
 		self.output_folder = ''
@@ -134,6 +135,9 @@ class dawvert_intent:
 		self.output_params = {}
 		self.output_visname = ''
 		self.output_samples = ''
+		self.output_dawinfo = None
+
+		self.convert_params = {}
 
 		self.curdir = None
 
@@ -169,6 +173,9 @@ class dawvert_intent:
 
 	def output_get_param(self, name, fallback):
 		return self.output_params[name] if name in self.output_params else fallback
+
+	def convert_get_param(self, name, fallback):
+		return self.convert_params[name] if name in self.convert_params else fallback
 
 	def copy(self):
 		return copy.deepcopy(self)
@@ -456,6 +463,7 @@ class core:
 		selected_plugin = self.currentplug_input.selected_plugin
 		plug_obj = selected_plugin.plug_obj
 		configdef = selected_plugin.configdef
+		dawvert_intent.input_dawinfo = selected_plugin.prop_obj
 		if configdef:
 			cfgdefdict = configdef.parts
 			for k, v in cfgdefdict.items():
@@ -475,6 +483,7 @@ class core:
 		out_type = self.currentplug_output.selected_plugin.plug_obj.gettype()
 		in_dawinfo = self.currentplug_input.selected_plugin.prop_obj
 		out_dawinfo = self.currentplug_output.selected_plugin.prop_obj
+		dawvert_intent.output_dawinfo = out_dawinfo
 
 		globalstore.os_info_target.bits = out_dawinfo.plugin_ext_arch
 

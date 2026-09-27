@@ -35,8 +35,7 @@ class autostream:
 		self.pl_pos += self.cur_pos
 		self.cur_pos = 0
 
-	def to_cvpj(self, convproj_obj, autoloc):
-		cvpj_automation = convproj_obj.automation
+	def to_cvpj(self, cvpj_automation, autoloc):
 		auto_all_obj = cvpj_automation.create(autoloc, 'float', True)
 		auto_all_obj.simul = True
 

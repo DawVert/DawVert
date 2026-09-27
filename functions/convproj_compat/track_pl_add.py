@@ -12,6 +12,7 @@ def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_int
 			timesigblocks_obj = notelist_splitter.timesigblocks()
 			timesigblocks_obj.create_points_cut(convproj_obj, dawvert_intent)
 
+			#if False:
 			if 'do_singlenotelistcut' in convproj_obj.do_actions:
 				npsplit = notelist_splitter.cvpj_midievents_splitter(timesigblocks_obj, convproj_obj.time_ppq)
 				mplacements = [track_obj.placements for cvpj_trackid, track_obj in cvpj_tracks.iter()]
@@ -19,6 +20,14 @@ def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_int
 					npsplit.add_plme(track_obj.placements)
 				npsplit.process()
 				return True
+			else:
+				for cvpj_trackid, track_obj in cvpj_tracks.iter(): 
+					midievents = track_obj.placements.midievents
+					if len(midievents):
+						placement_obj = track_obj.placements.add_midi()
+						placement_obj.midievents = midievents.__copy__()
+						placement_obj.time.set_dur(int(midievents.get_dur_all()))
+						midievents.clear()
 
 		if convproj_obj.type in (['r'] if 'r' in out_type else ['r', 'rm']): 
 			timesigblocks_obj = notelist_splitter.timesigblocks()

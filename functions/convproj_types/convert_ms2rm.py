@@ -7,8 +7,8 @@ import logging
 logger_project = logging.getLogger('project')
 
 def convert(convproj_obj, dawvert_intent):
-	out_dawinfo = convproj_obj.currentplug_output.selected_plugin.prop_obj
-
+	out_dawinfo = dawvert_intent.output_dawinfo
+	
 	logger_project.info('ProjType Convert: MultipleScened > RegularMultiple')
 
 	cvpj_tracks = convproj_obj.tracks

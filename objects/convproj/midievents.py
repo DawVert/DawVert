@@ -5,6 +5,7 @@ from objects.data_bytes import dynbytearr
 import numpy as np
 import io
 import struct
+import copy
 
 in_dtype = np.dtype([
 	('used', np.uint8),
@@ -170,6 +171,22 @@ class midievents:
 		track_name_same = self.track_name == nlo.track_name
 		copyright_same = self.copyright == nlo.copyright
 		return nl_same and sysex_same and texts_same and markers_same and lyrics_same and seq_spec_same and seq_spec_same and seq_spec_same and ppq_same and track_name_same and copyright_same
+
+	def __copy__(self):
+		new_obj = midievents()
+		new_obj.data = copy.deepcopy(self.data)
+		new_obj.cursor = new_obj.data.create_cursor()
+		new_obj.ppq = self.ppq = 96
+		new_obj.track_name = self.track_name
+		new_obj.copyright = self.copyright
+		new_obj.port = self.port
+		new_obj.sysex = self.sysex.copy()
+		new_obj.texts = self.texts.copy()
+		new_obj.markers = self.markers.copy()
+		new_obj.lyrics = self.lyrics.copy()
+		new_obj.seq_spec = self.seq_spec.copy()
+		new_obj.has_duration = self.has_duration
+		return new_obj
 
 	def clear(self):
 		self.data.clear()
@@ -476,6 +493,12 @@ class midievents:
 
 		return max(maxn, maxc)
 
+	def get_dur_all(self):
+		used_data = self.data.get_used()
+		outpos = used_data['pos']
+		maxn = max(outpos) if len(outpos) else 0
+		return maxn
+
 	def get_start(self):
 		used_data = self.data.get_used()
 		tab = used_data['pos']
@@ -584,3 +607,47 @@ class midievents:
 	def mod_transpose(self, pitch):
 		wherevals = np.nonzero(self.data.data['uflags']&FLAGS__NOTE)
 		self.data.data['value'][wherevals] += pitch if pitch>=0 else 256+pitch
+
+	def new_ev_start_end(self, startat, endat):
+		#print(len(self.data),'new_nl_start_end', startat, endat)
+		used = [n for n, x in enumerate(self.data.data['pos']) if endat>x>=startat]
+
+		new_env = midievents()
+		new_env.ppq = self.ppq
+		new_env.track_name = self.track_name
+		new_env.copyright = self.copyright
+		new_env.port = self.port
+		new_env.sysex = self.sysex.copy()
+		new_env.texts = self.texts.copy()
+		new_env.markers = self.markers.copy()
+		new_env.lyrics = self.lyrics.copy()
+		new_env.seq_spec = self.seq_spec.copy()
+		new_env.has_duration = self.has_duration
+
+		new_data = new_env.data
+		new_data.set_copied_multi(self.data.data[used].copy())
+		new_data.data['pos'] -= int(startat)
+
+		return new_env
+
+	def get_spec_chan(self, channum):
+		used_data = self.data.get_used()
+		used_chan_flag = (used_data['uflags']&FLAGS__CHAN).astype(np.bool_)
+		used_chan_num = (used_data['chan']==channum).astype(np.bool_)
+		wherevals = np.logical_and(used_chan_flag, used_chan_num)
+		usedvals = used_data[np.where(wherevals)]
+		return usedvals
+
+	def get_spec_nochan(self):
+		used_data = self.data.get_used()
+		used_chan_flag = (1-(used_data['uflags']&FLAGS__CHAN)).astype(np.bool_)
+		usedvals = used_data[np.where(used_chan_flag)]
+		return usedvals
+
+	def split_midi_chans(self):
+		outdict = {}
+		nochan = self.get_spec_nochan()
+		if len(nochan): outdict[None] = nochan
+		channums = self.get_channums()
+		for channum in channums: outdict[int(channum)] = self.get_spec_chan(channum)
+		return outdict

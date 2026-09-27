@@ -46,7 +46,7 @@ class seqspec_obj:
 				return True
 
 		ebrw_readstr = easybinrw.binread()
-		ebrw_readstr.load_raw(sysexdata)
+		ebrw_readstr.load_data(sysexdata)
 		
 		self.vendor.read(ebrw_readstr)
 		if self.vendor == '#53':
