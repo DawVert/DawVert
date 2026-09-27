@@ -15,7 +15,7 @@ def get_unused_chan():
 	if channelcount == 16: channelcount = 0
 	return channelcount
 
-def convert(convproj_obj):
+def convert(convproj_obj, dawvert_intent):
 	logger_project.info('ProjType Convert: Regular > ClassicalSingle')
 
 	cvpj_tracks = convproj_obj.tracks

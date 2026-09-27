@@ -370,7 +370,7 @@ class cvpj_project:
 					convertcmds = conv_act[self.type][out_type]
 					for cmd in convertcmds:
 						#print(cmd)
-						if cmd in conv_act_class: conv_act_class[cmd](self)
+						if cmd in conv_act_class: conv_act_class[cmd](self, dawvert_intent)
 						elif cmd=='compat':
 							compactclass.makecompat(self, self.type, in_dawinfo, out_dawinfo, out_type, dawvert_intent)
 				else: notfound = True

@@ -7,7 +7,7 @@ import logging
 
 logger_project = logging.getLogger('project')
 
-def convert(convproj_obj):
+def convert(convproj_obj, dawvert_intent):
 	logger_project.info('ProjType Convert: Regular > Multiple')
 
 	cvpj_tracks = convproj_obj.tracks

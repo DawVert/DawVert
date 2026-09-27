@@ -8,7 +8,7 @@ from objects import regions
 
 logger_project = logging.getLogger('project')
 
-def convert(convproj_obj):
+def convert(convproj_obj, dawvert_intent):
 	logger_project.info('ProjType Convert: TrackerSingle > Multiple')
 	assert convproj_obj.tracker_single is not None
 	tracker_obj = convproj_obj.tracker_single

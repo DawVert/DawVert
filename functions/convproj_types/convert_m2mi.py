@@ -7,7 +7,7 @@ logger_project = logging.getLogger('project')
 
 VISUAL_COLOR = True
 
-def convert(convproj_obj):
+def convert(convproj_obj, dawvert_intent):
 	logger_project.info('ProjType Convert: Multiple > MultipleIndexed')
 
 	existingpatterns = []

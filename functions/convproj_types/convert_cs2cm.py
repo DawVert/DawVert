@@ -8,5 +8,5 @@ import struct
 
 logger_project = logging.getLogger('project')
 
-def convert(convproj_obj):
+def convert(convproj_obj, dawvert_intent):
 	convproj_obj.type = 'cs'

@@ -8,7 +8,7 @@ import struct
 
 logger_project = logging.getLogger('project')
 
-def convert(convproj_obj):
+def convert(convproj_obj, dawvert_intent):
 	import objects.midi_modernize.midi_modernize as midi_modernize
 	from objects.convproj import midievents
 

@@ -9,7 +9,7 @@ import logging
 
 logger_project = logging.getLogger('project')
 
-def convert(convproj_obj):
+def convert(convproj_obj, dawvert_intent):
 	logger_project.info('ProjType Convert: RegularMultiple > Regular')
 
 	fxrack_obj = convproj_obj.fxrack

@@ -310,6 +310,7 @@ class fs_patterncustomsettings:
 		self.NoteLength = 4
 		self.Groove = []
 		self.GroovePaddingMode = 'Middle'
+		if block_obj is not None: self.read(block_obj)
 
 	def get_bpm(self):
 		return get_bpm(self.Groove, self.BeatLength)
@@ -382,6 +383,7 @@ class fs_song:
 		self.GroovePaddingMode = ''
 		self.Channels = []
 		self.PatternCustomSettings = []
+		if block_obj is not None: self.read(block_obj)
 
 	def get_bpm(self):
 		return get_bpm(self.Groove, self.BeatLength)

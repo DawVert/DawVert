@@ -9,7 +9,7 @@ import copy
 
 logger_project = logging.getLogger('project')
 
-def convert(convproj_obj):
+def convert(convproj_obj, dawvert_intent):
 	logger_project.info('ProjType Convert: Multiple > Regular')
 
 	uses_placements, is_indexed = True, False

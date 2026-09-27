@@ -12,7 +12,7 @@ def index_nliid(singletrack_pl, trackid):
 	for placement in singletrack_pl:
 		placement['fromindex'] = trackid+'_'+placement['fromindex']
 
-def convert(convproj_obj):
+def convert(convproj_obj, dawvert_intent):
 	logger_project.info('ProjType Convert: RegularIndexed > MultipleIndexed')
 
 	cvpj_tracks = convproj_obj.tracks
