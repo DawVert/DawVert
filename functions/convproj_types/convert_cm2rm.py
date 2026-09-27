@@ -23,6 +23,7 @@ def convert(convproj_obj, dawvert_intent):
 
 def convert_midi_events(convproj_obj, dawvert_intent, startpos, midievents_obj):
 	cvpj_timemarkers = convproj_obj.timemarkers
+	cvpj_automation = convproj_obj.automation
 	for x in midievents_obj:
 		curpos = int(x['pos'])+startpos
 		if x['type'] == midievents.EVENTID__TIMESIG:
@@ -34,6 +35,9 @@ def convert_midi_events(convproj_obj, dawvert_intent, startpos, midievents_obj):
 			timemarker_obj.time.set_pos(curpos)
 			if marker_data: timemarker_obj.visual.name = marker_data
 			x['used'] = 0
+		elif x['type'] == midievents.EVENTID__TEMPO:
+			bpm = struct.unpack('f', struct.pack('I', x['uhival']))[0]
+			cvpj_automation.add_autotick(['main', 'bpm'], 'float', curpos, bpm)
 		#print(startpos, midievents)
 
 def convert_midi(convproj_obj, dawvert_intent):
