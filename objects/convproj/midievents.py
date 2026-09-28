@@ -524,17 +524,17 @@ class midievents:
 	def getvalue(self):
 		return self.data.get_used().tobytes()
 
-	def merge(self, other_event, pos, dur, offset):
-		useddata = other_event.data.get_used()
+	def merge(self, other_events, out_pos, in_dur, in_pos):
+		useddata = other_events.data.get_used()
 
-		if other_event.has_duration:
-			self.has_duration = other_event.has_duration
+		if other_events.has_duration:
+			self.has_duration = other_events.has_duration
 
-		o = np.logical_and((dur+offset)>useddata['pos'], useddata['pos']>=offset)
+		o = np.logical_and((in_dur+in_pos)>useddata['pos'], useddata['pos']>=in_pos)
 		trimmed_events = useddata[o]
 
 		for t in trimmed_events:
-			t['pos'] += pos
+			t['pos'] += out_pos
 			if t['type'] not in [EVENTID__SYSEX, EVENTID__TEXT, EVENTID__MARKER, EVENTID__LYRIC, EVENTID__SEQSPEC]:
 				self.cursor.add_copied(t)
 

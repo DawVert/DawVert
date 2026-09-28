@@ -814,6 +814,16 @@ class cvpj_notelist:
 					note['dur'] += min(calc, 0)
 				lastnote = note
 
+
+	def to_midievents(self, midievents_obj, channel):
+		midievents_obj.add_note_durs()
+		for t_pos, t_dur, t_keys, t_vol, t_inst, t_extra, t_autopack in self.iter():
+			for t_key in t_keys:
+				outnote = t_key+60
+				if 127>outnote>=0:
+					midievents_obj.add_note_dur(t_pos, channel, outnote, min(int(t_vol*127), 127), t_dur)
+
+
 	#def multikey_comb(self):
 	#	prev_note = None
 	#	for n, x in enumerate(self.data):

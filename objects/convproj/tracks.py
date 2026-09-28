@@ -705,3 +705,9 @@ class cvpj_project_tracks:
 			oldnum = len(track_obj.lanes)
 			track_obj.lanefit()
 			logger_project.info('LaneFit: '+ trackid+': '+str(oldnum)+' > '+str(len(track_obj.lanes)))
+
+	def get_midi_max_ppq(self):
+		max_ppq = 0
+		for trackid, track_obj in self.data.items():
+			max_ppq = max(max_ppq, track_obj.placements.get_midi_max_ppq())
+		return max_ppq

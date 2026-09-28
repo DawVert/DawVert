@@ -88,8 +88,8 @@ class song_compat:
 
 		self.process_part('midi_notes', midi_notes,				convproj_obj, cvpj_type, traits_obj.notes_midi, out_dawinfo.notes_midi, out_type, dawvert_intent)
 
-		if self.currenttime == False:
-			self.process_part('track_pl_del', track_pl_del,			   convproj_obj, cvpj_type, traits_obj.track_nopl, out_dawinfo.track_nopl, out_type, dawvert_intent)
+		#if self.currenttime == False:
+		self.process_part('track_pl_del', track_pl_del,			   convproj_obj, cvpj_type, traits_obj.track_nopl, out_dawinfo.track_nopl, out_type, dawvert_intent)
 
 		if cvpj_type in ['r']:
 			self.process_part('time_seconds', time_seconds,			   convproj_obj, cvpj_type, traits_obj, out_dawinfo, out_type, dawvert_intent)

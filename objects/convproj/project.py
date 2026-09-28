@@ -31,20 +31,21 @@ from objects.convproj import placements_marker
 from objects.convproj import fx_rack
 from objects.convproj import groups
 
+from functions.convproj_types import convert_cm2rm
+from functions.convproj_types import convert_cs2cm
+from functions.convproj_types import convert_m2mi
+from functions.convproj_types import convert_m2r
+from functions.convproj_types import convert_mi2m
+from functions.convproj_types import convert_ms2rm
+from functions.convproj_types import convert_r2cs
+from functions.convproj_types import convert_r2cm
 from functions.convproj_types import convert_r2m
 from functions.convproj_types import convert_ri2mi
 from functions.convproj_types import convert_ri2r
-from functions.convproj_types import convert_rm2r
-from functions.convproj_types import convert_m2r
-from functions.convproj_types import convert_m2mi
-from functions.convproj_types import convert_mi2m
 from functions.convproj_types import convert_rm2m
-from functions.convproj_types import convert_ts2m
-from functions.convproj_types import convert_ms2rm
+from functions.convproj_types import convert_rm2r
 from functions.convproj_types import convert_rs2r
-from functions.convproj_types import convert_cm2rm
-from functions.convproj_types import convert_cs2cm
-from functions.convproj_types import convert_r2cm
+from functions.convproj_types import convert_ts2m
 
 from objects import tempocalc
 
@@ -75,8 +76,8 @@ conv_act_ts = conv_act['ts'] = {}
 
 conv_act_r['m'] =   ['r2m']
 conv_act_r['mi'] =  ['r2m','compat','m2mi']
-conv_act_r['cm'] =  ['r2cm','cs2cm']
-conv_act_r['cs'] =  ['r2cm']
+conv_act_r['cm'] =  ['r2cm']
+conv_act_r['cs'] =  ['r2cs']
 
 conv_act_ri['r'] =  ['ri2r']
 conv_act_ri['mi'] = ['ri2mi']
@@ -144,6 +145,7 @@ conv_act_class['ms2rm'] = convert_ms2rm.convert
 conv_act_class['rs2r'] = convert_rs2r.convert
 conv_act_class['cm2rm'] = convert_cm2rm.convert
 conv_act_class['cs2cm'] = convert_cs2cm.convert
+conv_act_class['r2cs'] = convert_r2cs.convert
 conv_act_class['r2cm'] = convert_r2cm.convert
 
 def autopath_encode(autol):

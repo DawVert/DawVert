@@ -378,6 +378,14 @@ class cvpj_placements:
 
 		self.pl_audio_nested = placements_audio.cvpj_placements_nested_audio(self.time_ppq)
 
+	def get_midi_max_ppq(self):
+		max_ppq = 0
+		if self.midievents: max_ppq = max(max_ppq, self.midievents.ppq)
+		if self.notelist: max_ppq = max(max_ppq, 960)
+		for x in self.pl_midi: max_ppq = max(max_ppq, x.midievents.ppq)
+		for x in self.pl_notes: max_ppq = max(max_ppq, 960)
+		return max_ppq
+
 	def debugtxt(self, starttxt):
 		outtxt = starttxt+' | '
 		if self.notelist.count(): outtxt += 'Npl Notes: %i |' % self.notelist.count()
