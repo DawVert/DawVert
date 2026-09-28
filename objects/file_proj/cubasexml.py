@@ -2209,7 +2209,7 @@ class sequel_project:
 		self.obj_guistate = None
 
 	def load_from_file(self, filename):
-		#global globalstate.globalids
+		global globalids
 		#global globalstate.debug_alld
 		#global globalstate.debug_allp
 
@@ -2220,7 +2220,7 @@ class sequel_project:
 		x_root = tree.getroot()
 		#globalstate.debug_alld = {}
 		#globalstate.debug_allp = {}
-		#globalstate.globalids = {}
+		globalids = globalstate.globalids = {}
 		self.def_root_objects = {}
 		for x in x_root:
 			if x.tag == 'rootObjects':

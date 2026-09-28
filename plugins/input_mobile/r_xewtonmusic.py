@@ -102,10 +102,9 @@ class input_xewton(plugins.base):
 					pp = noteauto[0][0]
 					for p, v in noteauto:
 						val = ((v-8192)/8192)*24
-						if (p-pp)>5:
-							cvpj_notelist.last_add_auto_instant('pitch', p, val)
-						else:
-							cvpj_notelist.last_add_auto('pitch', p, val)
+						if (p-pp)>5: cvpj_notelist.last_add_auto_instant('pitch', p, val)
+						else: cvpj_notelist.last_add_auto('pitch', p, val)
+						cvpj_notelist.last_add_auto_instant('midi_pitch', p, v-8192)
 						pp = p
 						if n.dur<p: break
 

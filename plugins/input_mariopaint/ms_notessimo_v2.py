@@ -64,7 +64,6 @@ class input_notessimo_v2(plugins.base):
 		except: pass
 
 		# ---------- tracks ----------
-		cvpj_tracks = []
 		for layernum in range(9):
 			track_obj = cvpj_tracks.add(str(layernum+1), 'instruments', 1, False) 
 			track_obj.visual.name = 'Layer #'+str(layernum+1)

@@ -193,7 +193,9 @@ class input_sequel3(plugins.base):
 		in_dict['projtype'] = 'r'
 
 	def parse(self, convproj_obj, dawvert_intent):
-		from objects.file_proj_past import cubasexml as proj_sequel
+		from objects.file_proj import cubasexml as proj_sequel
+		from objects.file_proj._cubasexml import class_audio
+		from objects.file_proj._cubasexml import class_midi
 		from objects import audio_data
 
 		samplefolder = dawvert_intent.path_samples['extracted']
@@ -315,16 +317,16 @@ class input_sequel3(plugins.base):
 
 						for event in mmidipart.events:
 							startpos = max(0, event.start)+delaystart
-							if isinstance(event, proj_sequel.class_MMidiNote):
+							if isinstance(event, class_midi.class_MMidiNote):
 								events_obj.add_note_dur_off_vel(startpos, 0, event.data1, event.data2, event.length, event.data3)
-							elif isinstance(event, proj_sequel.class_MMidiController):
+							elif isinstance(event, class_midi.class_MMidiController):
 								events_obj.add_control(startpos, 0, event.data1, event.data2)
-							elif isinstance(event, proj_sequel.class_MMidiPitchBend):
+							elif isinstance(event, class_midi.class_MMidiPitchBend):
 								events_obj.add_pitch_hi_lo(startpos, 0, event.data2, event.data1)
-							elif isinstance(event, proj_sequel.class_MMidiAfterTouch):
+							elif isinstance(event, class_midi.class_MMidiAfterTouch):
 								events_obj.add_chan_pressure(startpos, 0, event.data1)
 
-			if isinstance(track, proj_sequel.class_MAudioTrackEvent):
+			if isinstance(track, class_audio.class_MAudioTrackEvent):
 				track_node = track.node
 				track_device = track.track_device
 
@@ -415,7 +417,7 @@ class input_sequel3(plugins.base):
 							if 'StretchPreset' in paudioclip.additional_attributes:
 								StretchPreset = paudioclip.additional_attributes['StretchPreset']
 								stretch_algo = stretch_obj.algorithm
-								if isinstance(StretchPreset, proj_sequel.class_ElastiquePreset):
+								if isinstance(StretchPreset, class_audio.class_ElastiquePreset):
 									stretch_algo.type = 'elastique_v3'
 									stretch_algo.preserve_formants = int(bool(StretchPreset.formantpreservation))
 									stretch_obj.preserve_pitch = not StretchPreset.tapestylemode

@@ -6,11 +6,11 @@ import logging
 import numpy as np
 import struct
 from objects.convproj import midievents
+import objects.midi_modernize.midi_modernize as midi_modernize
 
 logger_project = logging.getLogger('project')
 
 def convert(convproj_obj, dawvert_intent):
-	import objects.midi_modernize.midi_modernize as midi_modernize
 
 	cm2rm_split = dawvert_intent.convert_get_param('cm2rm_split', 'none')
 

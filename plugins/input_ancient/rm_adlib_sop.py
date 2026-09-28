@@ -28,7 +28,8 @@ class input_sop(plugins.base):
 		cfgpart = configdef.add_float('panlvl', 1.0, 'Pan Amount')
 		cfgpart.set_range(-1, 1)
 		configdef.set_group('visual', 'Visual')
-		cfgpart = configdef.add_bool('endtxt_on', True, 'Add OP Type to Track name')
+		configdef.add_bool('endtxt_on', True, 'Add OP Type to Track name')
+		configdef.add_bool('enable_color', False, 'Enable Color')
 
 	def parse(self, convproj_obj, dawvert_intent):
 		from objects.file_proj_adlib import sop as proj_adlib_sop
@@ -40,6 +41,7 @@ class input_sop(plugins.base):
 		# ---------- convproj params ----------
 		endtxt_on = dawvert_intent.input_get_param('endtxt_on', True)
 		panlvl = dawvert_intent.input_get_param('panlvl', 1.0)
+		enable_color = dawvert_intent.input_get_param('enable_color', False)
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
@@ -75,7 +77,7 @@ class input_sop(plugins.base):
 				inst_obj.plugslots.set_synth(cvpj_instname)
 				outname = opli.name_long if opli.name_long else opli.name
 				if outname: inst_obj.visual.name = outname
-				inst_obj.visual.color.set_float(maincolor)
+				if enable_color: inst_obj.visual.color.set_float(maincolor)
 				inst_obj.is_drum = opli.perc_type!=0
 				opli.to_cvpj(convproj_obj, cvpj_instname)
 			else:
@@ -92,7 +94,7 @@ class input_sop(plugins.base):
 			cvpj_trackid = str(tracknum)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 0, False)
 			track_obj.visual.name = '#'+str(cvpj_trackid)
-			track_obj.visual.color.set_float(maincolor)
+			if enable_color: track_obj.visual.color.set_float(maincolor)
 
 			if endtxt_on:
 				trackname_endtext = endtxt[soptrack.chanmode]

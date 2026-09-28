@@ -102,7 +102,7 @@ class input_ceol(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
-		cvpj_automation = cvpj_automation
+		cvpj_automation = convproj_obj.automation
 		
 		# ---------- convproj params ----------
 		no_swing = dawvert_intent.input_get_param('no_swing', False)

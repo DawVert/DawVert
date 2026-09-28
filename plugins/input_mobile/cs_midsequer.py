@@ -68,6 +68,7 @@ class input_midsequer(plugins.base):
 
 				# midievents
 				events_obj = track_obj.placements.midievents
+				events_obj.ppq = 24
 				events_obj.add_program(0, n,trackinfo.inst_pc)
 				events_obj.add_control(0, n, 7, trackinfo.volume)
 				events_obj.has_duration = True

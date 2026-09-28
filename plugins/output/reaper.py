@@ -121,7 +121,7 @@ def add_auto(rpp_env, autopoints_obj):
 	for x in autopoints_obj:
 		rpp_env.points.append([x.pos, x.value])
 
-def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj):
+def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj, cvpj_automation):
 	plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
 
 	if plugin_found:
@@ -424,8 +424,10 @@ def do_track_params(rpp_project, convproj_obj, rpp_track_obj, params_obj, datava
 def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid): 
 	from objects.file_proj._rpp import fxchain as rpp_fxchain
 	from objects.file_proj._rpp import source as rpp_source
-	rpp_track_obj = rpp_project.add_track()
 
+	cvpj_automation = convproj_obj.automation
+
+	rpp_track_obj = rpp_project.add_track()
 	rpp_track_obj.trackid.set(track_uuid)
 	if track_obj.visual.name: rpp_track_obj.name.set(track_obj.visual.name)
 	if track_obj.visual.color: 
@@ -708,10 +710,10 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 			rpp_source_obj.file.set(filename)
 
 	for fxid in track_obj.plugslots.slots_synths:
-		add_plugin(rpp_project, rpp_track_obj.fxchain, fxid, convproj_obj, track_obj)
+		add_plugin(rpp_project, rpp_track_obj.fxchain, fxid, convproj_obj, track_obj, cvpj_automation)
 
 	for fxid in track_obj.plugslots.slots_audio:
-		add_plugin(rpp_project, rpp_track_obj.fxchain, fxid, convproj_obj, track_obj)
+		add_plugin(rpp_project, rpp_track_obj.fxchain, fxid, convproj_obj, track_obj, cvpj_automation)
 
 	if track_obj.visual_keynotes:
 		rpp_track_obj.midinotenames = []
@@ -826,7 +828,9 @@ class output_reaper(plugins.base):
 			outmarker = [num+1, pos, name, int(timemarker_obj.type == 'region'), color, 1, 'R', '{'+str(uuid.uuid4()).upper()+'}', 0]
 			rpp_project.markers.append(outmarker)
 			if timemarker_obj.type == 'region':
-				outmarker = [num+1, timemarker_obj.position+timemarker_obj.duration, '', 1]
+				pos = timemarker_obj.time.get_pos()
+				dur = timemarker_obj.time.get_dur()
+				outmarker = [num+1, pos+dur, '', 1]
 				rpp_project.markers.append(outmarker)
 
 		# ---------- master track ----------
@@ -945,7 +949,7 @@ class output_reaper(plugins.base):
 					do_track_params(rpp_project, convproj_obj, rpp_track_obj, return_obj.params, return_obj.datavals, ['return', returnid])
 
 					for fxid in return_obj.plugslots.slots_audio:
-						add_plugin(rpp_project, rpp_track_obj.fxchain, fxid, convproj_obj, track_obj)
+						add_plugin(rpp_project, rpp_track_obj.fxchain, fxid, convproj_obj, track_obj, cvpj_automation)
 
 					return_nums[returnid] = tracknum
 					return_data[returnid] = rpp_track_obj
