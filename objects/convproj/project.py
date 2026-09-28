@@ -129,6 +129,9 @@ conv_act_ts['mi'] = ['ts2m','m2mi']
 conv_act_ts['cm'] = ['ts2m','m2r','compat','r2cm']
 conv_act_ts['cs'] = ['ts2m','m2r','compat','r2cm']
 
+#midi_conv_act = conv_act.copy()
+#midi_conv_act
+
 logger_project = logging.getLogger('project')
 
 conv_act_class = {}

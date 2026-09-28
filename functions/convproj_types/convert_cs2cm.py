@@ -9,4 +9,7 @@ import struct
 logger_project = logging.getLogger('project')
 
 def convert(convproj_obj, dawvert_intent):
+
+	logger_project.info('ProjType Convert: ClassicalSingle > RegularMultiple')
+
 	convproj_obj.type = 'cs'

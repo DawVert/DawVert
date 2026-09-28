@@ -63,7 +63,7 @@ class input_cvpj_f(plugins.base):
 
 		if project_obj.version == 2:
 			convproj_obj.fxtype = 'rack'
-			convproj_obj.type = 'cm'
+			convproj_obj.type = 'cs'
 
 			traits_obj.track_nopl = True
 			convproj_obj.do_actions.append('do_addloop')
@@ -142,7 +142,7 @@ class input_cvpj_f(plugins.base):
 
 		if project_obj.version == 3:
 			convproj_obj.fxtype = 'rack'
-			convproj_obj.type = 'cm'
+			convproj_obj.type = 'cs'
 
 			convproj_obj.do_actions.append('do_addloop')
 

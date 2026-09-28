@@ -60,8 +60,9 @@ class input_v2m(plugins.base):
 
 		# ---------- tracks ----------
 		for n, track in enumerate(project_obj.tracks):
-			track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
+			track_obj = cvpj_tracks.add(str(n), 'midi_single', 1, False)
 			events_obj = track_obj.placements.midievents
+			events_obj.ppq = project_obj.timediv
 
 			# visual
 			track_obj.visual.name = 'Track #'+str(n)

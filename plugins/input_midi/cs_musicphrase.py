@@ -57,7 +57,7 @@ class input_musicphrase(plugins.base):
 		# ---------- tracks ----------
 		track_pl = []
 		for n, mpxl_track in enumerate(project_obj.tracks):
-			track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
+			track_obj = cvpj_tracks.add(str(n), 'midi_single', 1, False)
 
 			# visual
 			track_obj.visual.name = mpxl_track.name

@@ -433,6 +433,9 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 	if track_obj.visual.color: 
 		rpp_track_obj.peakcol.set(cvpj_color_to_reaper_color(track_obj.visual.color))
 
+	midichan = track_obj.midi.out_chanport.chan
+	if midichan>-1: rpp_track_obj.midiout.set(midichan)
+
 	do_track_params(rpp_project, convproj_obj, rpp_track_obj, track_obj.params, track_obj.datavals, startauto)
 
 	for pluginid in track_obj.plugslots.slots_mixer:

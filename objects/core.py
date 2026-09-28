@@ -476,6 +476,11 @@ class core:
 			logger_core.error(self.currentplug_input.selected_shortname+' is not usable: '+selected_plugin.usable_meg)
 			exit()
 
+		traits_obj = self.convproj_obj.traits
+		in_type = self.convproj_obj.type
+		if in_type=='cs': traits_obj.notes_midi = 'single'
+		if in_type=='cm': traits_obj.notes_midi = 'multi'
+
 	def convert_type_output(self, dawvert_intent): 
 		global in_dawinfo
 		global out_dawinfo

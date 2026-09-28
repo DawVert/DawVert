@@ -79,21 +79,11 @@ def maketrack_synth(project_obj, convproj_obj, track_obj, portnum):
 	tracknum += 1
 	synthidnum += 1
 
-def maketrack_midi(project_obj, placements_obj, trackname, portnum, track_obj):
+def maketrack_midi_placements(project_obj, muse_track, placements_obj, midiDivision):
 	from objects.file_proj import muse as proj_muse
-	global tracknum
-	global synthidnum
-	logger_output.info('MusE:  Midi Track '+str(tracknum)+(': '+trackname if trackname else ''))
 
-	muse_track = project_obj.add_track('miditrack')
-	muse_track.name = trackname
-	if track_obj.visual.color: muse_track.color = '#'+track_obj.visual.color.get_hex()
-	muse_track.height = 70
-	muse_track.device = portnum
-	muse_track.transposition = -track_obj.datavals.get('middlenote', 0)
-
-	track_obj.placements.pl_midi.sort()
-	for midipl_obj in track_obj.placements.pl_midi:
+	placements_obj.pl_midi.sort()
+	for midipl_obj in placements_obj.pl_midi:
 		time_obj = midipl_obj.time
 
 		muse_part = proj_muse.muse_midi_part()
@@ -106,7 +96,7 @@ def maketrack_midi(project_obj, placements_obj, trackname, portnum, track_obj):
 		offset = time_obj.get_offset()
 
 		midievents_obj = midipl_obj.midievents
-		midievents_obj.change_ppq(480)
+		midievents_obj.change_ppq(midiDivision)
 		midievents_obj.sort()
 		midievents_obj.add_note_durs()
 		midievents_obj.sort()
@@ -152,6 +142,23 @@ def maketrack_midi(project_obj, placements_obj, trackname, portnum, track_obj):
 				muse_part.events.append(muse_event)
 
 		muse_track.note_parts.append(muse_part)
+
+def maketrack_midi(project_obj, placements_obj, trackname, portnum, track_obj, midiDivision):
+	from objects.file_proj import muse as proj_muse
+	global tracknum
+	global synthidnum
+	logger_output.info('MusE:  Midi Track '+str(tracknum)+(': '+trackname if trackname else ''))
+
+	muse_track = project_obj.add_track('miditrack')
+	muse_track.name = trackname
+	if track_obj.visual.color: muse_track.color = '#'+track_obj.visual.color.get_hex()
+	muse_track.height = 70
+	if portnum is not None: muse_track.device = portnum
+	muse_track.transposition = -track_obj.datavals.get('middlenote', 0)
+	midichan = track_obj.midi.out_chanport.chan
+	if midichan>-1: muse_track.channel = midichan
+
+	maketrack_midi_placements(project_obj, muse_track, track_obj.placements, midiDivision)
 
 	tracknum += 1
 
@@ -321,13 +328,16 @@ class output_cvpj(plugins.base):
 		# ---------- tracks ----------
 		for trackid, track_obj in cvpj_tracks.iter():
 
+			if track_obj.type == 'midi_single':
+				maketrack_midi(project_obj, track_obj.placements, track_obj.visual.name, synthidnum, track_obj, midiDivision)
+
 			if track_obj.type == 'instrument':
 				if track_obj.is_laned:
 					for laneid, lane_obj in track_obj.lanes.items():
 						lanename = lane_obj.visual.name if lane_obj.visual.name else laneid
-						maketrack_midi(project_obj, lane_obj.placements, lanename, synthidnum, track_obj)
+						maketrack_midi(project_obj, lane_obj.placements, lanename, synthidnum, track_obj, midiDivision)
 				else:
-					maketrack_midi(project_obj, track_obj.placements, track_obj.visual.name, synthidnum, track_obj)
+					maketrack_midi(project_obj, track_obj.placements, track_obj.visual.name, synthidnum, track_obj, midiDivision)
 
 				maketrack_synth(project_obj, convproj_obj, track_obj, synthidnum)
 

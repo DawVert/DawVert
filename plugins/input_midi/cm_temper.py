@@ -63,10 +63,14 @@ class input_cvpj_f(plugins.base):
 		for tracknum, tmp_track in enumerate(project_obj.track):
 			cvpj_trackid = 'track_'+str(tracknum)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'midi', 1, False)
+			channel = tmp_track.channel
 
 			# params
 			track_obj.params.add('enabled', tmp_track.mode!=1, 'bool')
-			track_obj.params.add('solo', tmp_track.mode!=2, 'bool')
+			#track_obj.params.add('solo', tmp_track.mode!=2, 'bool')
+
+			track_obj.midi.out_enabled = True
+			track_obj.midi.out_chanport.chan = channel
 
 			# visual
 			if tmp_track.customname: track_obj.visual.name = tmp_track.customname
@@ -83,8 +87,6 @@ class input_cvpj_f(plugins.base):
 
 			# phrases
 			if tmp_track.phrases:
-				channel = tmp_track.channel
-
 				curpos = 0
 				for phrase in tmp_track.phrases:
 					curpos += phrase.td
@@ -100,6 +102,7 @@ class input_cvpj_f(plugins.base):
 
 					midievents_obj = placement_obj.midievents
 					midievents_obj.has_duration = True
+					midievents_obj.ppq = 6716
 
 					ncurpos = 0
 					for event in phrase.events:
@@ -119,7 +122,7 @@ class input_cvpj_f(plugins.base):
 			elif tmp_track.audios:
 				track_obj = cvpj_tracks.add(str(tracknum), 'audio', 1, False)
 				track_obj.params.add('enabled', tmp_track.mode!=1, 'bool')
-				track_obj.params.add('solo', tmp_track.mode!=2, 'bool')
+				#track_obj.params.add('solo', tmp_track.mode!=2, 'bool')
 				track_obj.visual.color.set_float([0.66, 0.73, 0.66])
 				curpos = 0
 				for audio in tmp_track.audios:

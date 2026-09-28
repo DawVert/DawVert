@@ -71,16 +71,19 @@ class output_oldcubase(plugins.base):
 		global to_norm_string
 		global add_list
 		from objects import counter
-		from objects.file_proj_past import sequel as proj_sequel
+		from objects.file_proj import cubasexml as proj_sequel
+		from objects.file_proj._cubasexml import class_audio
+		from objects.file_proj._cubasexml import class_midi
+		from objects.file_proj._cubasexml import func
 		to_wide_string = proj_sequel.to_wide_string
 		to_norm_string = proj_sequel.to_norm_string
 		add_list = proj_sequel.add_list
 		add_list_genid = proj_sequel.add_list_genid
-		sequel_list_int = proj_sequel.sequel_list_int
-		sequel_list_float = proj_sequel.sequel_list_float
-		sequel_list_string = proj_sequel.sequel_list_string
-		sequel_list_dict = proj_sequel.sequel_list_dict
-		sequel_list_obj = proj_sequel.sequel_list_obj
+		cubasexml_list_int = proj_sequel.cubasexml_list_int
+		cubasexml_list_float = proj_sequel.cubasexml_list_float
+		cubasexml_list_string = proj_sequel.cubasexml_list_string
+		cubasexml_list_dict = proj_sequel.cubasexml_list_dict
+		cubasexml_list_obj = proj_sequel.cubasexml_list_obj
 
 		DEBUG_DISABLE_INST_TRACK = dawvert_intent.output_get_param('disable_inst', False)
 		DEBUG_DISABLE_AUDIO_TRACK = dawvert_intent.output_get_param('disable_audio', False)
@@ -151,7 +154,7 @@ class output_oldcubase(plugins.base):
 		MTimeSignatureEvent.numerator, MTimeSignatureEvent.denominator = convproj_obj.timesig
 
 		mainatt = seq_Devices.data
-		storeddevices = mainatt['StoredDevices'] = sequel_list_string([])
+		storeddevices = mainatt['StoredDevices'] = cubasexml_list_string([])
 		storeddevices.append(to_norm_string(""))
 
 		mainatt['Mixer'] = {}
@@ -161,13 +164,13 @@ class output_oldcubase(plugins.base):
 		transport['RecordMode'] = 1
 		transport['CycleRecordMode'] = 0
 		vst_mixer = mainatt['VST Mixer'] = {}
-		input_channels = vst_mixer['Input Channels'] = sequel_list_dict()
+		input_channels = vst_mixer['Input Channels'] = cubasexml_list_dict()
 
 		guidata = seq_GuiState.data
 		guidata['PlayOrderSettings'] = {}
-		guidata['PlayOrderSettings']['PadLabel'] = sequel_list_string([to_norm_string('-') for x in range(16)])
-		guidata['PlayOrderSettings']['PadAssignment'] = sequel_list_int([27 for x in range(16)])
-		guidata['PlayOrderSettings']['PlayOrderActivate'] = sequel_list_float([0])
+		guidata['PlayOrderSettings']['PadLabel'] = cubasexml_list_string([to_norm_string('-') for x in range(16)])
+		guidata['PlayOrderSettings']['PadAssignment'] = cubasexml_list_int([27 for x in range(16)])
+		guidata['PlayOrderSettings']['PlayOrderActivate'] = cubasexml_list_float([0])
 		guidata['Transpose Track Visible'] = 0
 		guidata['Playorder Track Visible'] = 0
 
@@ -178,7 +181,7 @@ class output_oldcubase(plugins.base):
 		deviceattributes['InputGain'] = {'Value': 16383.5}
 		deviceattributes['InputPhase'] = 0
 		deviceattributes['Volume'] = {'Value': float(25856), 'AnchorValue': 0.0}
-		deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
+		deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': cubasexml_list_dict([])}
 		make_blank_slots(3, deviceattributes['InsertFolder']['Slot'])
 		deviceattributes['EQPosition'] = 0
 		deviceattributes['hasEQ'] = 0
@@ -189,9 +192,9 @@ class output_oldcubase(plugins.base):
 		pandata['Plugin UID'] = {'GUID': to_wide_string('44E1149EDB3E4387BDD827FEA3A39EE7')}
 		pandata['Plugin Name'] = to_wide_string('Panner')
 		pandata['Audio Input Count'] = 1
-		pandata['Audio Input Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+		pandata['Audio Input Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 		pandata['Audio Output Count'] = 1
-		pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+		pandata['Audio Output Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 		pandata['Event Input Count'] = 0
 		pandata['Event Output Count'] = 0
 		ebrw_writestr = easybinrw.binwrite()
@@ -209,22 +212,22 @@ class output_oldcubase(plugins.base):
 		deviceattributes['VUSelect'] = 1
 		deviceattributes['VURange'] = 0
 		deviceattributes['Monitor'] = {'Value': 0, 'Min': 0, 'Max': 2}
-		deviceattributes['OwnInputBus'] = {'Name': to_wide_string('Stereo In'), 'Bus UID': 1000001, 'Bus Type': 10, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
-		incon = deviceattributes['OwnInputBus']['Connections'] = sequel_list_string()
+		deviceattributes['OwnInputBus'] = {'Name': to_wide_string('Stereo In'), 'Bus UID': 1000001, 'Bus Type': 10, 'Input Arrangement': {'Type': cubasexml_list_int([1, 2])}, 'Output Arrangement': {'Type': cubasexml_list_int([1, 2])}}
+		incon = deviceattributes['OwnInputBus']['Connections'] = cubasexml_list_string()
 		incon.append(to_norm_string('I|DawVert Input|In 1'))
 		incon.append(to_norm_string('I|DawVert Input|In 2'))
 		deviceattributes['InputBusValue'] = {'Value': 0}
 		deviceattributes['OutputBusValue'] = {'Value': 0}
-		deviceattributes['OutputBus'] = {'Name': to_wide_string('Stereo In'), 'Bus UID': 2000002, 'Bus Type': 12, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
+		deviceattributes['OutputBus'] = {'Name': to_wide_string('Stereo In'), 'Bus UID': 2000002, 'Bus Type': 12, 'Input Arrangement': {'Type': cubasexml_list_int([1, 2])}, 'Output Arrangement': {'Type': cubasexml_list_int([1, 2])}}
 		deviceattributes["FreezePosition"] = 2
 		deviceattributes["Listen Mode"] = 0
 		deviceattributes["LinkedPanner"] = 0
 		deviceattributes["IDString"] = to_norm_string('InputChannel')
 		input_channels.append(deviceattributes)
 
-		childinbus = deviceattributes['OutputBus']['Child Bus'] = sequel_list_dict()
-		childinbus.append( {'Name': to_wide_string('Left'), 'Bus UID': 3, 'Bus Type': 12, 'Input Arrangement': {'Type': sequel_list_int([1])}, 'Output Arrangement': {'Type': sequel_list_int([1])}} )
-		childinbus.append( {'Name': to_wide_string('Right'), 'Bus UID': 4, 'Bus Type': 12, 'Input Arrangement': {'Type': sequel_list_int([2])}, 'Output Arrangement': {'Type': sequel_list_int([2])}} )
+		childinbus = deviceattributes['OutputBus']['Child Bus'] = cubasexml_list_dict()
+		childinbus.append( {'Name': to_wide_string('Left'), 'Bus UID': 3, 'Bus Type': 12, 'Input Arrangement': {'Type': cubasexml_list_int([1])}, 'Output Arrangement': {'Type': cubasexml_list_int([1])}} )
+		childinbus.append( {'Name': to_wide_string('Right'), 'Bus UID': 4, 'Bus Type': 12, 'Input Arrangement': {'Type': cubasexml_list_int([2])}, 'Output Arrangement': {'Type': cubasexml_list_int([2])}} )
 
 		deviceattributes = {}
 		deviceattributes['Name'] = {'String': to_wide_string('In 1')}
@@ -232,7 +235,7 @@ class output_oldcubase(plugins.base):
 		deviceattributes['InputGain'] = {'Value': 16383.5}
 		deviceattributes['InputPhase'] = 0
 		deviceattributes['Volume'] = {'Value': float(25856), 'AnchorValue': 0.0}
-		deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
+		deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': cubasexml_list_dict([])}
 		make_blank_slots(3, deviceattributes['InsertFolder']['Slot'])
 		deviceattributes['EQPosition'] = 0
 		deviceattributes['hasEQ'] = 0
@@ -243,9 +246,9 @@ class output_oldcubase(plugins.base):
 		pandata['Plugin UID'] = {'GUID': to_wide_string('44E1149EDB3E4387BDD827FEA3A39EE7')}
 		pandata['Plugin Name'] = to_wide_string('Panner')
 		pandata['Audio Input Count'] = 1
-		pandata['Audio Input Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([0])}])
+		pandata['Audio Input Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([0])}])
 		pandata['Audio Output Count'] = 1
-		pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([0])}])
+		pandata['Audio Output Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([0])}])
 		pandata['Event Input Count'] = 0
 		pandata['Event Output Count'] = 0
 		ebrw_writestr = easybinrw.binwrite()
@@ -263,12 +266,12 @@ class output_oldcubase(plugins.base):
 		deviceattributes['VUSelect'] = 1
 		deviceattributes['VURange'] = 0
 		deviceattributes['Monitor'] = {'Value': 0, 'Min': 0, 'Max': 2}
-		deviceattributes['OwnInputBus'] = {'Name': to_wide_string('In 1'), 'Bus UID': 1000010, 'Bus Type': 10, 'Input Arrangement': {'Type': sequel_list_int([0])}, 'Output Arrangement': {'Type': sequel_list_int([0])}}
-		incon = deviceattributes['OwnInputBus']['Connections'] = sequel_list_string()
+		deviceattributes['OwnInputBus'] = {'Name': to_wide_string('In 1'), 'Bus UID': 1000010, 'Bus Type': 10, 'Input Arrangement': {'Type': cubasexml_list_int([0])}, 'Output Arrangement': {'Type': cubasexml_list_int([0])}}
+		incon = deviceattributes['OwnInputBus']['Connections'] = cubasexml_list_string()
 		incon.append(to_norm_string('I|DawVert Input|In 1'))
 		deviceattributes['InputBusValue'] = {'Value': 0}
 		deviceattributes['OutputBusValue'] = {'Value': 0}
-		deviceattributes['OutputBus'] = {'Name': to_wide_string('In 1'), 'Bus UID': 2000011, 'Bus Type': 12, 'Input Arrangement': {'Type': sequel_list_int([0])}, 'Output Arrangement': {'Type': sequel_list_int([0])}}
+		deviceattributes['OutputBus'] = {'Name': to_wide_string('In 1'), 'Bus UID': 2000011, 'Bus Type': 12, 'Input Arrangement': {'Type': cubasexml_list_int([0])}, 'Output Arrangement': {'Type': cubasexml_list_int([0])}}
 		input_channels.append(deviceattributes)
 		deviceattributes["FreezePosition"] = 2
 		deviceattributes["Listen Mode"] = 0
@@ -281,7 +284,7 @@ class output_oldcubase(plugins.base):
 		deviceattributes['InputGain'] = {'Value': 16383.5}
 		deviceattributes['InputPhase'] = 0
 		deviceattributes['Volume'] = {'Value': float(25856), 'AnchorValue': 0.0}
-		deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
+		deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': cubasexml_list_dict([])}
 		make_blank_slots(3, deviceattributes['InsertFolder']['Slot'])
 		deviceattributes['EQPosition'] = 0
 		deviceattributes['hasEQ'] = 0
@@ -292,9 +295,9 @@ class output_oldcubase(plugins.base):
 		pandata['Plugin UID'] = {'GUID': to_wide_string('44E1149EDB3E4387BDD827FEA3A39EE7')}
 		pandata['Plugin Name'] = to_wide_string('Panner')
 		pandata['Audio Input Count'] = 1
-		pandata['Audio Input Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([0])}])
+		pandata['Audio Input Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([0])}])
 		pandata['Audio Output Count'] = 1
-		pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([0])}])
+		pandata['Audio Output Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([0])}])
 		pandata['Event Input Count'] = 0
 		pandata['Event Output Count'] = 0
 		ebrw_writestr = easybinrw.binwrite()
@@ -312,12 +315,12 @@ class output_oldcubase(plugins.base):
 		deviceattributes['VUSelect'] = 1
 		deviceattributes['VURange'] = 0
 		deviceattributes['Monitor'] = {'Value': 0, 'Min': 0, 'Max': 2}
-		deviceattributes['OwnInputBus'] = {'Name': to_wide_string('In 2'), 'Bus UID': 1000012, 'Bus Type': 10, 'Input Arrangement': {'Type': sequel_list_int([0])}, 'Output Arrangement': {'Type': sequel_list_int([0])}}
-		incon = deviceattributes['OwnInputBus']['Connections'] = sequel_list_string()
+		deviceattributes['OwnInputBus'] = {'Name': to_wide_string('In 2'), 'Bus UID': 1000012, 'Bus Type': 10, 'Input Arrangement': {'Type': cubasexml_list_int([0])}, 'Output Arrangement': {'Type': cubasexml_list_int([0])}}
+		incon = deviceattributes['OwnInputBus']['Connections'] = cubasexml_list_string()
 		incon.append(to_norm_string('I|DawVert Input|In 2'))
 		deviceattributes['InputBusValue'] = {'Value': 0}
 		deviceattributes['OutputBusValue'] = {'Value': 0}
-		deviceattributes['OutputBus'] = {'Name': to_wide_string('In 2'), 'Bus UID': 2000013, 'Bus Type': 12, 'Input Arrangement': {'Type': sequel_list_int([0])}, 'Output Arrangement': {'Type': sequel_list_int([0])}}
+		deviceattributes['OutputBus'] = {'Name': to_wide_string('In 2'), 'Bus UID': 2000013, 'Bus Type': 12, 'Input Arrangement': {'Type': cubasexml_list_int([0])}, 'Output Arrangement': {'Type': cubasexml_list_int([0])}}
 		input_channels.append(deviceattributes)
 		deviceattributes["FreezePosition"] = 2
 		deviceattributes["Listen Mode"] = 0
@@ -327,7 +330,7 @@ class output_oldcubase(plugins.base):
 		vst_mixer['Default Input'] = 0
 
 		# ================================================== OUTPUT ==================================================
-		output_channels = vst_mixer['Output Channels'] = sequel_list_dict()
+		output_channels = vst_mixer['Output Channels'] = cubasexml_list_dict()
 		deviceattributes = {}
 		deviceattributes['Name'] = {'String': to_wide_string('Master')}
 		deviceattributes['Type'] = 8
@@ -335,7 +338,7 @@ class output_oldcubase(plugins.base):
 		deviceattributes['InputPhase'] = 0
 		deviceattributes['Volume'] = {'Value': float(25856), 'AnchorValue': 0.0}
 		deviceattributes['hasAudioInserts'] = 1
-		deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
+		deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': cubasexml_list_dict([])}
 		make_blank_slots(1, deviceattributes['InsertFolder']['Slot'])
 		pandata = {}
 		pandata['Default SurroundPan UID'] = {'GUID': to_wide_string('56535453506132737572726F756E6470')}
@@ -343,9 +346,9 @@ class output_oldcubase(plugins.base):
 		pandata['Plugin UID'] = {'GUID': to_wide_string('44E1149EDB3E4387BDD827FEA3A39EE7')}
 		pandata['Plugin Name'] = to_wide_string('Panner')
 		pandata['Audio Input Count'] = 1
-		pandata['Audio Input Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+		pandata['Audio Input Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 		pandata['Audio Output Count'] = 1
-		pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+		pandata['Audio Output Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 		pandata['Event Input Count'] = 0
 		pandata['Event Output Count'] = 0
 		ebrw_writestr = easybinrw.binwrite()
@@ -363,11 +366,11 @@ class output_oldcubase(plugins.base):
 		deviceattributes['VUSelect'] = 1
 		deviceattributes['VURange'] = 0
 		deviceattributes['Monitor'] = {'Value': 0, 'Min': 0, 'Max': 2}
-		deviceattributes['OwnInputBus'] = {'Name': to_wide_string('Master'), 'Bus UID': 5, 'Bus Type': 18, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
+		deviceattributes['OwnInputBus'] = {'Name': to_wide_string('Master'), 'Bus UID': 5, 'Bus Type': 18, 'Input Arrangement': {'Type': cubasexml_list_int([1, 2])}, 'Output Arrangement': {'Type': cubasexml_list_int([1, 2])}}
 		deviceattributes['InputBusValue'] = {'Value': 0}
 		deviceattributes['OutputBusValue'] = {'Value': 0}
-		deviceattributes['OutputBus'] = {'Name': to_wide_string('Master'), 'Bus UID': 6, 'Bus Type': 11, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
-		incon = deviceattributes['OutputBus']['Connections'] = sequel_list_string()
+		deviceattributes['OutputBus'] = {'Name': to_wide_string('Master'), 'Bus UID': 6, 'Bus Type': 11, 'Input Arrangement': {'Type': cubasexml_list_int([1, 2])}, 'Output Arrangement': {'Type': cubasexml_list_int([1, 2])}}
+		incon = deviceattributes['OutputBus']['Connections'] = cubasexml_list_string()
 		incon.append(to_norm_string('O|DawVert Output|Out 1'))
 		incon.append(to_norm_string('O|DawVert Output|Out 2'))
 		deviceattributes["FreezePosition"] = 4
@@ -379,15 +382,15 @@ class output_oldcubase(plugins.base):
 		deviceattributes["clickPan"] = {'Value': 16383.5}
 		output_channels.append(deviceattributes)
 
-		childinbus = deviceattributes['OwnInputBus']['Child Bus'] = sequel_list_dict()
-		childinbus.append( {'Name': to_wide_string('Left'), 'Bus UID': 7, 'Bus Type': 18, 'Input Arrangement': {'Type': sequel_list_int([1])}, 'Output Arrangement': {'Type': sequel_list_int([1])}} )
-		childinbus.append( {'Name': to_wide_string('Right'), 'Bus UID': 8, 'Bus Type': 18, 'Input Arrangement': {'Type': sequel_list_int([2])}, 'Output Arrangement': {'Type': sequel_list_int([2])}} )
+		childinbus = deviceattributes['OwnInputBus']['Child Bus'] = cubasexml_list_dict()
+		childinbus.append( {'Name': to_wide_string('Left'), 'Bus UID': 7, 'Bus Type': 18, 'Input Arrangement': {'Type': cubasexml_list_int([1])}, 'Output Arrangement': {'Type': cubasexml_list_int([1])}} )
+		childinbus.append( {'Name': to_wide_string('Right'), 'Bus UID': 8, 'Bus Type': 18, 'Input Arrangement': {'Type': cubasexml_list_int([2])}, 'Output Arrangement': {'Type': cubasexml_list_int([2])}} )
 
 		vst_mixer["Default Output"] = 0
-		vst_mixer['Synth Rack'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
+		vst_mixer['Synth Rack'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': cubasexml_list_dict([])}
 		make_blank_slots(64, vst_mixer['Synth Rack']['Slot'])
 		vst_mixer["MutePreSendInMute"] = 1
-		portdescriptors = mainatt["PortDescriptors"] = sequel_list_dict([])
+		portdescriptors = mainatt["PortDescriptors"] = cubasexml_list_dict([])
 		portdescriptors.append({'ID': to_norm_string("I|DawVert Input|In 1"), 'Type': to_norm_string("audio"), 'Subtype': to_norm_string("system"), 'Role': to_norm_string("mono")})
 		portdescriptors.append({'ID': to_norm_string("I|DawVert Input|In 2"), 'Type': to_norm_string("audio"), 'Subtype': to_norm_string("system"), 'Role': to_norm_string("mono")})
 		portdescriptors.append({'ID': to_norm_string("O|DawVert Output|Out 1"), 'Type': to_norm_string("audio"), 'Subtype': to_norm_string("system"), 'Role': to_norm_string("left")})
@@ -450,13 +453,13 @@ class output_oldcubase(plugins.base):
 		root_miSe['insertVelocity'] = 100
 		insertVelocities = root_miSe['insertVelocities'] = proj_sequel.class_PInsVeloPreset()
 		insertVelocities.idnum = counter_id.get()
-		insertVelocities.velocities = sequel_list_int([100,90,70,50,120])
+		insertVelocities.velocities = cubasexml_list_int([100,90,70,50,120])
 		root_miSe['editFeedback'] = 1
 		root_miSe['eventColorMode'] = 0
 		TControllerLaneDef = proj_sequel.class_TControllerLaneDef()
 		TControllerLaneDef.idnum = counter_id.get()
 		controllerLaneSetup = root_miSe['controllerLaneSetup'] = {}
-		controllerLaneSetup['LaneInfo'] = sequel_list_obj([TControllerLaneDef])
+		controllerLaneSetup['LaneInfo'] = cubasexml_list_obj([TControllerLaneDef])
 		root_miSe['autoQuantize'] = 0
 
 		total_colors = []
@@ -533,7 +536,7 @@ class output_oldcubase(plugins.base):
 			deviceattributes['InputPhase'] = 0
 			deviceattributes['Volume'] = {'Value': float(calc_volume(return_obj.params.get('vol', 1).value)), 'AnchorValue': 0.0}
 			deviceattributes['hasAudioInserts'] = 1
-			deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
+			deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': cubasexml_list_dict([])}
 			make_blank_slots(3, deviceattributes['InsertFolder']['Slot'])
 			deviceattributes['EQPosition'] = 0
 			deviceattributes['hasEQ'] = 0
@@ -545,9 +548,9 @@ class output_oldcubase(plugins.base):
 			pandata['Plugin UID'] = {'GUID': to_wide_string('44E1149EDB3E4387BDD827FEA3A39EE7')}
 			pandata['Plugin Name'] = to_wide_string('Panner')
 			pandata['Audio Input Count'] = 1
-			pandata['Audio Input Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+			pandata['Audio Input Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 			pandata['Audio Output Count'] = 1
-			pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+			pandata['Audio Output Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 			pandata['Event Input Count'] = 0
 			pandata['Event Output Count'] = 0
 			ebrw_writestr = easybinrw.binwrite()
@@ -567,7 +570,7 @@ class output_oldcubase(plugins.base):
 			deviceattributes['Monitor'] = {'Value': 0, 'Min': 0, 'Max': 2}
 			returnnum = returnnum_id.get()
 			returnids[returnid] = returnnum
-			deviceattributes['OwnInputBus'] = {'Name': to_wide_string('FxBus'), 'Bus UID': returnnum, 'Bus Type': 17, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
+			deviceattributes['OwnInputBus'] = {'Name': to_wide_string('FxBus'), 'Bus UID': returnnum, 'Bus Type': 17, 'Input Arrangement': {'Type': cubasexml_list_int([1, 2])}, 'Output Arrangement': {'Type': cubasexml_list_int([1, 2])}}
 			deviceattributes['InputBusValue'] = {'Value': 0}
 			deviceattributes['OutputBusValue'] = {'Value': 5}
 			deviceattributes['FreezePosition'] = 2
@@ -617,7 +620,7 @@ class output_oldcubase(plugins.base):
 					midipart.offset = time_obj.get_offset()
 					midipart.transpose = int(midipl_obj.pitch)
 
-					seq_MMidiPart = proj_sequel.class_MMidiPart()
+					seq_MMidiPart = class_midi.class_MMidiPart()
 					midipart.node_idnum = seq_MMidiPart.idnum = counter_id.get()
 					project_obj.objects[seq_MMidiPart.idnum] = seq_MMidiPart
 					seq_MMidiPart.domain.set_sync(id_trk_bpm, id_trk_meas)
@@ -669,20 +672,20 @@ class output_oldcubase(plugins.base):
 				deviceattributes['InputPhase'] = 0
 				deviceattributes['Volume'] = {'Value': float(calc_volume(track_obj.params.get('vol', 1).value)), 'AnchorValue': 0.0}
 				deviceattributes['hasAudioInserts'] = 1
-				deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
+				deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': cubasexml_list_dict([])}
 				deviceattributes['EQPosition'] = 0
 				deviceattributes['hasEQ'] = 0
 				deviceattributes['EQ'] = {}
-				deviceattributes['SendFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
+				deviceattributes['SendFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': cubasexml_list_dict([])}
 				pandata = {}
 				pandata['Default SurroundPan UID'] = {'GUID': to_wide_string('56535453506132737572726F756E6470')}
 				pandata['PannerType'] = {'Value': 2, 'Min': 0, 'Max': 11}
 				pandata['Plugin UID'] = {'GUID': to_wide_string('44E1149EDB3E4387BDD827FEA3A39EE7')}
 				pandata['Plugin Name'] = to_wide_string('Panner')
 				pandata['Audio Input Count'] = 1
-				pandata['Audio Input Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+				pandata['Audio Input Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 				pandata['Audio Output Count'] = 1
-				pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+				pandata['Audio Output Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 				pandata['Event Input Count'] = 0
 				pandata['Event Output Count'] = 0
 				ebrw_writestr = easybinrw.binwrite()
@@ -700,7 +703,7 @@ class output_oldcubase(plugins.base):
 				deviceattributes['VUSelect'] = 1
 				deviceattributes['VURange'] = 0
 				deviceattributes['Monitor'] = {'Value': 0, 'Min': 0, 'Max': 2}
-				deviceattributes['OwnInputBus'] = {'Name': to_wide_string('SynthChannel'), 'Bus UID': inbusnum_id.get(), 'Bus Type': 15, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
+				deviceattributes['OwnInputBus'] = {'Name': to_wide_string('SynthChannel'), 'Bus UID': inbusnum_id.get(), 'Bus Type': 15, 'Input Arrangement': {'Type': cubasexml_list_int([1, 2])}, 'Output Arrangement': {'Type': cubasexml_list_int([1, 2])}}
 				deviceattributes['InputBusValue'] = {'Value': 0}
 				deviceattributes['OutputBusValue'] = {'Value': 5}
 				deviceattributes['FreezePosition'] = 2
@@ -715,13 +718,13 @@ class output_oldcubase(plugins.base):
 				deviceatt_midichan["IDString"] = to_norm_string("MidiChannel")
 				deviceatt_midichan["NodeFlags"] = 8
 				deviceatt_midichan["NumberClassIDs"] = 2
-				deviceatt_midichan["ClassIDs"] = sequel_list_string([to_norm_string('AB9705CD467B4D7A946C8860C504F492'), to_norm_string('CA1729D088FC4857937F78CC37D45B48')])
+				deviceatt_midichan["ClassIDs"] = cubasexml_list_string([to_norm_string('AB9705CD467B4D7A946C8860C504F492'), to_norm_string('CA1729D088FC4857937F78CC37D45B48')])
 
 				# ---------------------------------- MIDI Inserts ----------------------------------
 				deviceatt_midiinsert = deviceatt_midichan['MidiInsertFolder'] = {}
 				deviceatt_midiinsert['hasMidiInserts'] = 1
 				deviceatt_midiinsert['Bypass Inserts'] = 0
-				deviceatt_l_midiinserts = deviceatt_midiinsert['Midi Inserts'] = sequel_list_obj()
+				deviceatt_l_midiinserts = deviceatt_midiinsert['Midi Inserts'] = cubasexml_list_obj()
 
 				# ---------------------------------- TrackParaEffect ----------------------------------
 				trackparam = proj_sequel.class_TrackParaEffect()
@@ -810,7 +813,7 @@ class output_oldcubase(plugins.base):
 				midieffectslot.outputs.setvals([pduplicator])
 				project_obj.objects[midieffectslot.idnum] = midieffectslot
 
-				deviceatt_midisends = deviceatt_midichan['Midi Sends'] = sequel_list_obj()
+				deviceatt_midisends = deviceatt_midichan['Midi Sends'] = cubasexml_list_obj()
 				for x in range(4):
 					midieffectslot = proj_sequel.class_PMidiEffectBase()
 					midieffectslot.idnum = counter_id.get()
@@ -825,7 +828,7 @@ class output_oldcubase(plugins.base):
 					midieffectslot.outputs.setvals([pextendedduplicator])
 					deviceatt_midisends.append(midieffectslot)
 
-				deviceatt_midichan["Midi Send Channel"] = sequel_list_int([0,0,0,0])
+				deviceatt_midichan["Midi Send Channel"] = cubasexml_list_int([0,0,0,0])
 				deviceatt_midichan["Device"] = to_wide_string("")
 				deviceatt_midichan["Port"] = to_wide_string("")
 				deviceatt_midichan["inputTransformerSource"] = {'Value': 0, 'Min': 0, 'Max': 2}
@@ -860,9 +863,9 @@ class output_oldcubase(plugins.base):
 					pandata['Plugin UID'] = {'GUID': to_wide_string('44E1149EDB3E4387BDD827FEA3A39EE7')}
 					pandata['Plugin Name'] = to_wide_string('Panner')
 					pandata['Audio Input Count'] = 1
-					pandata['Audio Input Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+					pandata['Audio Input Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 					pandata['Audio Output Count'] = 1
-					pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+					pandata['Audio Output Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 					pandata['Event Input Count'] = 0
 					pandata['Event Output Count'] = 0
 					ebrw_writestr = easybinrw.binwrite()
@@ -902,21 +905,21 @@ class output_oldcubase(plugins.base):
 				deviceattributes['InputPhase'] = 0
 				deviceattributes['Volume'] = {'Value': float(calc_volume(track_obj.params.get('vol', 1).value)), 'AnchorValue': 0.0}
 				deviceattributes['hasAudioInserts'] = 1
-				deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
+				deviceattributes['InsertFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': cubasexml_list_dict([])}
 				make_blank_slots(3, deviceattributes['InsertFolder']['Slot'])
 				deviceattributes['EQPosition'] = 0
 				deviceattributes['hasEQ'] = 0
 				deviceattributes['EQ'] = {}
-				deviceattributes['SendFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': sequel_list_dict([])}
+				deviceattributes['SendFolder'] = {'Bypass': 0, 'SeparationPosition': 0, 'Slot': cubasexml_list_dict([])}
 				pandata = {}
 				pandata['Default SurroundPan UID'] = {'GUID': to_wide_string('56535453506132737572726F756E6470')}
 				pandata['PannerType'] = {'Value': 4, 'Min': 0, 'Max': 11}
 				pandata['Plugin UID'] = {'GUID': to_wide_string('44E1149EDB3E4387BDD827FEA3A39EE7')}
 				pandata['Plugin Name'] = to_wide_string('Panner')
 				pandata['Audio Input Count'] = 1
-				pandata['Audio Input Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+				pandata['Audio Input Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 				pandata['Audio Output Count'] = 1
-				pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+				pandata['Audio Output Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 				pandata['Event Input Count'] = 0
 				pandata['Event Output Count'] = 0
 				ebrw_writestr = easybinrw.binwrite()
@@ -934,7 +937,7 @@ class output_oldcubase(plugins.base):
 				deviceattributes['VUSelect'] = 1
 				deviceattributes['VURange'] = 0
 				deviceattributes['Monitor'] = {'Value': 0, 'Min': 0, 'Max': 2}
-				deviceattributes['OwnInputBus'] = {'Name': to_norm_string('Audio'), 'Bus UID': inbusnum_id.get(), 'Bus Type': 13, 'Input Arrangement': {'Type': sequel_list_int([1, 2])}, 'Output Arrangement': {'Type': sequel_list_int([1, 2])}}
+				deviceattributes['OwnInputBus'] = {'Name': to_norm_string('Audio'), 'Bus UID': inbusnum_id.get(), 'Bus Type': 13, 'Input Arrangement': {'Type': cubasexml_list_int([1, 2])}, 'Output Arrangement': {'Type': cubasexml_list_int([1, 2])}}
 				deviceattributes['InputBusValue'] = {'Value': 0}
 				deviceattributes['OutputBusValue'] = {'Value': 5}
 				deviceattributes['FreezePosition'] = 2
@@ -1061,7 +1064,7 @@ class output_oldcubase(plugins.base):
 							audiofile.dataoffset = 44
 							if samp_channels is not None:
 								if samp_channels>1:
-									audiofile.speakerarr = {'Type': sequel_list_int([x+1 for x in range(samp_channels)])}
+									audiofile.speakerarr = {'Type': cubasexml_list_int([x+1 for x in range(samp_channels)])}
 	
 							segment = {}
 							segment["Stream"] = proj_sequel.obj_pointer()
@@ -1081,9 +1084,9 @@ class output_oldcubase(plugins.base):
 					pandata['Plugin UID'] = {'GUID': to_wide_string('44E1149EDB3E4387BDD827FEA3A39EE7')}
 					pandata['Plugin Name'] = to_wide_string('Panner')
 					pandata['Audio Input Count'] = 1
-					pandata['Audio Input Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+					pandata['Audio Input Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 					pandata['Audio Output Count'] = 1
-					pandata['Audio Output Arrangement'] = sequel_list_dict([{'Type': sequel_list_int([1, 2])}])
+					pandata['Audio Output Arrangement'] = cubasexml_list_dict([{'Type': cubasexml_list_int([1, 2])}])
 					pandata['Event Input Count'] = 0
 					pandata['Event Output Count'] = 0
 					ebrw_writestr = easybinrw.binwrite()

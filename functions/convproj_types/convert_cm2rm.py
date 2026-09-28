@@ -72,7 +72,7 @@ def convert_non_midi(convproj_obj, dawvert_intent):
 
 	for n, trackid, track_obj in cvpj_tracks.iter_num():
 
-		if track_obj.type in ['midi', 'hybrid']:
+		if track_obj.type in ['midi', 'midi_single', 'hybrid']:
 			logger_project.info('cm2rm: Track '+trackid)
 			modernize_obj.init_patchchan(track_obj.midi)
 

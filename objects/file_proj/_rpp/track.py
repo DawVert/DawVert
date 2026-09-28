@@ -34,7 +34,7 @@ class rpp_track:
 		self.fx = rvs(1.0, float, True)
 		self.trackid = rvs("", str, True)
 		self.perf = rvs(0.0, float, True)
-		self.midiout  = rvs(1.0, float, True)
+		self.midiout  = rvs(0.0, float, True)
 		self.items = []
 		self.fxchain = None
 		self.auxrecv = []

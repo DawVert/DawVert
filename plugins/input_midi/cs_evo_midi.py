@@ -50,7 +50,7 @@ class input_cvpj_f(plugins.base):
 
 		track_pl = []
 		for n, evo_track in enumerate(project_obj.tracks):
-			track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
+			track_obj = cvpj_tracks.add(str(n), 'midi_single', 1, False)
 			track_obj.visual.name = evo_track.name
 			if evo_track.channel != -1:
 				track_obj.midi.out_enabled = True

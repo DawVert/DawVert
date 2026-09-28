@@ -56,7 +56,7 @@ class input_domino(plugins.base):
 		# ---------- tracks ----------
 		for n, track in enumerate(project_obj.tracks):
 			channel = track.channel
-			track_obj = cvpj_tracks.add(str(n), 'midi', 1, False)
+			track_obj = cvpj_tracks.add(str(n), 'midi_single', 1, False)
 			track_obj.visual.name = track.name
 			if track.color != 255:
 				track_obj.visual.color.set_int(colordata.getcolornum(track.color))
@@ -67,24 +67,12 @@ class input_domino(plugins.base):
 			events_obj = track_obj.placements.midievents
 			events_obj.has_duration = True
 			events_obj.data.alloc_size = 256
-
-			for x in track.notes:
-				events_obj.add_note_dur(x.pos, channel, x.key, x.vel, x.dur)
-
-			for x in track.timesigs:
-				events_obj.add_timesig(x.pos, x.num, x.nenom)
-
-			for x in track.programchanges:
-				events_obj.add_program(x.pos, channel, x.patch-1)
-
-			for x in track.sysex:
-				events_obj.add_sysex(x.pos, x.sysex)
-
-			for x in track.texts:
-				events_obj.add_text(x.pos, x.text)
-
-			for x in track.lyrics:
-				events_obj.add_lyric(x.pos, x.text)
-
-			for x in track.tempos:
-				events_obj.add_tempo(x.pos, x.val)
+			events_obj.ppq = project_obj.ppq
+			
+			for x in track.notes: events_obj.add_note_dur(x.pos, channel, x.key, x.vel, x.dur)
+			for x in track.timesigs: events_obj.add_timesig(x.pos, x.num, x.nenom)
+			for x in track.programchanges: events_obj.add_program(x.pos, channel, x.patch-1)
+			for x in track.sysex: events_obj.add_sysex(x.pos, x.sysex)
+			for x in track.texts: events_obj.add_text(x.pos, x.text)
+			for x in track.lyrics: events_obj.add_lyric(x.pos, x.text)
+			for x in track.tempos: events_obj.add_tempo(x.pos, x.val)

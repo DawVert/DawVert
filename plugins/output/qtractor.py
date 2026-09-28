@@ -187,6 +187,38 @@ class output_bandlab(plugins.base):
 
 						qt_track.clips.append(qt_clip)
 
+					for midipl_obj in track_obj.placements.pl_midi:
+						time_obj = midipl_obj.time
+						
+						position, duration = time_obj.get_posdur_real()
+						
+						qt_clip = proj_qtractor.qtractor_clip()
+						qt_clip.properties.start = calcsec(position, ppq)
+						qt_clip.properties.length = calcsec(duration, ppq)
+						qt_clip.properties.name = midipl_obj.visual.name
+						qt_clip.properties.mute = int(midipl_obj.muted)
+						qt_clip.midiclip = proj_qtractor.qtractor_clip_midiclip()
+
+						midievents = midipl_obj.midievents
+						if midievents not in tracknotes_midinames:
+							tracknotes_midinames.append(midievents)
+							filename = 'track_%s_clip_%i' % (trackid, len(tracknotes_midinames)-1)
+							project_obj.files.midi_list[filename] = '/'.join(['.', 'Assets', 'MIDI', filename+'.mid'])
+							if dawvert_intent.output_mode == 'file':
+								midievents.midi_to(os.path.join(folder, namet, 'Assets', 'MIDI', filename+'.mid'))
+
+						notelist_id = 'track_%s_clip_%i' % (trackid, tracknotes_midinames.index(midievents))
+
+						filepath = '/'.join(['.', 'Assets', 'MIDI', filename+'.mid'])
+						qt_clip.midiclip.filename = filepath
+
+						name = midipl_obj.visual.name if midipl_obj.visual.name else ''
+						qt_clip.properties.name = name
+						qt_clip.name = name
+
+						qt_track.clips.append(qt_clip)
+
+
 				project_obj.tracks.append(qt_track)
 
 		# ---------- output ----------

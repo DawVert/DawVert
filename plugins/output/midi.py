@@ -102,6 +102,12 @@ class output_midi(plugins.base):
 				anvilcolor = [blue_p2,green_p2+blue_p1,red_p2+green_p1,red_p1]
 				miditrack.append(metamsg('sequencer_specific', data=(5, 15, 52, anvilcolor[0], anvilcolor[1], anvilcolor[2], anvilcolor[3], 0))) #from Anvil Studio
 
+			if track_obj.midi.out_enabled:
+				patch = track_obj.midi.out_inst.patch
+				midichan = track_obj.midi.out_chanport.chan
+				if midichan>-1:
+					miditrack.append(rmsg('program_change', channel=midichan, program=patch, time=0))
+
 			midievents_obj = track_obj.placements.midievents
 			midievents_obj.sort()
 			midievents_obj.del_note_durs()

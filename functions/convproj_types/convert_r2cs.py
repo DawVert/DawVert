@@ -23,10 +23,9 @@ def convert(convproj_obj, dawvert_intent):
 	convproj_obj.change_timings(960)
 
 	for trackid, track_obj in cvpj_tracks.iter():
-
 		if track_obj.type == 'instrument':
-			midievents_obj = track_obj.placements.midievents
-
+			trackpl = track_obj.placements
+			midievents_obj = trackpl.midievents
 			midievents_obj.has_duration = True
 
 			if track_obj.midi.out_enabled:
@@ -34,11 +33,7 @@ def convert(convproj_obj, dawvert_intent):
 			else:
 				channel = get_unused_chan()
 
-			for t_pos, t_dur, t_keys, t_vol, t_inst, t_extra, t_autopack in track_obj.placements.notelist.iter():
-				for t_key in t_keys:
-					outnote = t_key+60
-					if 127>outnote>=0:
-						midievents_obj.add_note_dur(t_pos, channel, outnote, min(int(t_vol*127), 127), t_dur)
-			track_obj.type = 'midi'
+			trackpl.notelist.to_midievents(midievents_obj, channel)
+			track_obj.type = 'midi_single'
 
 	convproj_obj.type = 'cm'
