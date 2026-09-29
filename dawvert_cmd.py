@@ -102,7 +102,7 @@ if args.extrafile != None: dawvert_intent.input_params['extra_file'] = args.extr
 if args.mi2m__output_unused_nle == True: dawvert_intent.flags_compat.append('mi2m-output-unused-nle')
 if args.cm2rm__split != None: dawvert_intent.convert_params['cm2rm_split'] = args.cm2rm__split
 if args.splitter_mode != None: dawvert_intent.splitter_mode = args.splitter_mode
-else: dawvert_intent.splitter_mode = "timesig_num"
+else: dawvert_intent.splitter_mode = "num"
 if args.splitter_detect_start != None: dawvert_intent.splitter_detect_start = bool(int(args.splitter_detect_start))
 
 plug_conv.load_plugins()

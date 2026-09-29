@@ -189,7 +189,7 @@ cfgpart = configdef_conversion.add_enum('cm2rm_split', 'none', 'CM2RM: Split By'
 cfgpart.add_choice('none','None')
 cfgpart.add_choice('inst','Instruments')
 configdef_conversion.set_group('splitter', 'Notelist Splitter')
-cfgpart = configdef_conversion.add_enum('splitter_mode', 'none', 'Mode')
+cfgpart = configdef_conversion.add_enum('splitter_mode', 'num', 'Mode')
 cfgpart.add_choice('none', 'No Splitting')
 cfgpart.add_choice('timesig', 'TimeSig')
 cfgpart.add_choice('num', 'Numerator')

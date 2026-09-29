@@ -32,7 +32,6 @@ def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_int
 		splitter_start = dawvert_intent.splitter_detect_start if dawvert_intent else 0
 
 		if convproj_obj.type in ['cm', 'cs']: 
-
 			if ('do_singlenotelistcut' in convproj_obj.do_actions) or splitter_mode=='none':
 				timesigblocks_obj = notelist_splitter.timesigblocks()
 				npsplit = notelist_splitter.cvpj_midievents_splitter(timesigblocks_obj, convproj_obj.time_ppq)
@@ -49,7 +48,6 @@ def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_int
 				return True
 
 		if convproj_obj.type in (['r'] if 'r' in out_type else ['r', 'rm']): 
-
 			if ('do_singlenotelistcut' in convproj_obj.do_actions) or splitter_mode=='none':
 				timesigblocks_obj = notelist_splitter.timesigblocks()
 				npsplit = notelist_splitter.cvpj_notelist_splitter(timesigblocks_obj, convproj_obj.time_ppq)
