@@ -4,21 +4,39 @@
 from objects.convproj import placements
 from objects import notelist_splitter
 
+def process_pl(timesigblocks_obj, convproj_obj, npsplit, splitter_mode, splitter_start):
+	cvpj_tracks = convproj_obj.tracks
+
+	match splitter_mode:
+		case 'num': timesigblocks_obj.create_points_cut(convproj_obj, 'timesig_num', splitter_start)
+		case 'num2': timesigblocks_obj.create_points_cut(convproj_obj, 'timesig_num_x2', splitter_start)
+		case 'timesig': timesigblocks_obj.create_points_cut(convproj_obj, 'timesig', splitter_start)
+
+		case 'blocks_num': timesigblocks_obj.create_points_cut(convproj_obj, 'timesig_num', splitter_start)
+		case 'blocks_num2': timesigblocks_obj.create_points_cut(convproj_obj, 'timesig_num_x2', splitter_start)
+		case 'blocks_timesig': timesigblocks_obj.create_points_cut(convproj_obj, 'timesig', splitter_start)
+
+	for cvpj_trackid, track_obj in cvpj_tracks.iter(): npsplit.add_pldata(track_obj.placements)
+	npsplit.process(splitter_mode)
+
+	if splitter_mode in ['blocks_num','blocks_num2','blocks_timesig']: npsplit.to_blocks()
+
+	npsplit.process_post(splitter_mode)
+
 def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_intent):
 	cvpj_tracks = convproj_obj.tracks
 
 	if in__track_nopl == True and out__track_nopl == False:
-		if convproj_obj.type in ['cm', 'cs']: 
-			timesigblocks_obj = notelist_splitter.timesigblocks()
-			timesigblocks_obj.create_points_cut(convproj_obj, dawvert_intent)
 
-			#if False:
-			if 'do_singlenotelistcut' in convproj_obj.do_actions:
+		splitter_mode = dawvert_intent.splitter_mode if dawvert_intent else 'timesig'
+		splitter_start = dawvert_intent.splitter_detect_start if dawvert_intent else 0
+
+		if convproj_obj.type in ['cm', 'cs']: 
+
+			if ('do_singlenotelistcut' in convproj_obj.do_actions) or splitter_mode=='none':
+				timesigblocks_obj = notelist_splitter.timesigblocks()
 				npsplit = notelist_splitter.cvpj_midievents_splitter(timesigblocks_obj, convproj_obj.time_ppq)
-				mplacements = [track_obj.placements for cvpj_trackid, track_obj in cvpj_tracks.iter()]
-				for cvpj_trackid, track_obj in cvpj_tracks.iter():
-					npsplit.add_plme(track_obj.placements)
-				npsplit.process()
+				process_pl(timesigblocks_obj, convproj_obj, npsplit, splitter_mode, splitter_start)
 				return True
 			else:
 				for cvpj_trackid, track_obj in cvpj_tracks.iter(): 
@@ -28,17 +46,14 @@ def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_int
 						placement_obj.midievents = midievents.__copy__()
 						placement_obj.time.set_dur(int(midievents.get_dur_all()))
 						midievents.clear()
+				return True
 
 		if convproj_obj.type in (['r'] if 'r' in out_type else ['r', 'rm']): 
-			timesigblocks_obj = notelist_splitter.timesigblocks()
-			timesigblocks_obj.create_points_cut(convproj_obj, dawvert_intent)
 
-			if 'do_singlenotelistcut' in convproj_obj.do_actions:
+			if ('do_singlenotelistcut' in convproj_obj.do_actions) or splitter_mode=='none':
+				timesigblocks_obj = notelist_splitter.timesigblocks()
 				npsplit = notelist_splitter.cvpj_notelist_splitter(timesigblocks_obj, convproj_obj.time_ppq)
-				mplacements = [track_obj.placements for cvpj_trackid, track_obj in cvpj_tracks.iter()]
-				for cvpj_trackid, track_obj in cvpj_tracks.iter():
-					npsplit.add_plnl(track_obj.placements)
-				npsplit.process()
+				process_pl(timesigblocks_obj, convproj_obj, npsplit, splitter_mode, splitter_start)
 				convproj_obj.calc_pl_tempo()
 				return True
 			else:

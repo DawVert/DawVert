@@ -44,117 +44,71 @@ def remove_pos_clones(splitdata):
 class timesigblocks:
 	def __init__(self):
 		self.splitdata = timesig_premake.create()
+		self.cur_splitdata = self.splitdata.create_cursor()
 
-	def create_points_cut(self, convproj_obj, dawvert_intent):
-		cur_splitdata = self.splitdata.create_cursor()
+	def add_split_type(self, pos, num, dem, itype):
+		self.cur_splitdata.add()
+		self.cur_splitdata['type'] = itype
+		self.cur_splitdata['start'] = pos
+		self.cur_splitdata['numerator'] = num
+		self.cur_splitdata['denominator'] = dem
 
-		mode = dawvert_intent.splitter_mode if dawvert_intent else 0
-		detect_start = dawvert_intent.splitter_detect_start
+	def add_split(self, pos, num, dem):
+		self.cur_splitdata.add()
+		self.cur_splitdata['start'] = pos
+		self.cur_splitdata['numerator'] = num
+		self.cur_splitdata['denominator'] = dem
 
+	def create_points_cut(self, convproj_obj, splitter_mode, splitter_start):
 		ppq = convproj_obj.time_ppq
 
 		timesig_num, timesig_dem = convproj_obj.timesig
-		cur_splitdata.add()
-		cur_splitdata['type'] = BLOCKID__ZERO
-		cur_splitdata['start'] = 0
-		cur_splitdata['numerator'] = timesig_num
-		cur_splitdata['denominator'] = timesig_dem
-
-		timesig_num, timesig_dem = convproj_obj.timesig
-		cur_splitdata.add()
-		cur_splitdata['type'] = BLOCKID__END
-		cur_splitdata['start'] = convproj_obj.get_dur()
-		cur_splitdata['numerator'] = timesig_num
-		cur_splitdata['denominator'] = timesig_dem
-
-		timesig_num, timesig_dem = convproj_obj.timesig
-		cur_splitdata.add()
-		cur_splitdata['type'] = BLOCKID__END
-		cur_splitdata['start'] = convproj_obj.get_dur()+ppq
-		cur_splitdata['numerator'] = timesig_num
-		cur_splitdata['denominator'] = timesig_dem
+		enddur = convproj_obj.get_dur()
+		self.add_split_type(0, timesig_num, timesig_dem, BLOCKID__ZERO)
+		self.add_split_type(enddur, timesig_num, timesig_dem, BLOCKID__END)
+		self.add_split_type(enddur+ppq, timesig_num, timesig_dem, BLOCKID__END)
 
 		for pos, timesig in convproj_obj.timesig_auto:
-			cur_splitdata.add()
-			cur_splitdata['type'] = BLOCKID__TIMESIG
-			cur_splitdata['start'] = pos
-			cur_splitdata['numerator'] = timesig[0]
-			cur_splitdata['denominator'] = timesig[1]
+			self.add_split_type(pos, timesig[0], timesig[1], BLOCKID__TIMESIG)
 		
 		remove_pos_clones(self.splitdata)
 		add_dur_end(self.splitdata)
 
-		if mode == 'timesig_num':
+		startpos = 0
+		if splitter_start:
+			if convproj_obj.transport.loop_start:
+				startpos = convproj_obj.transport.loop_start
+			if not startpos:
+				startpos = convproj_obj.transport.start_pos
+
+			useddata = self.splitdata.get_used()
+			poslist = useddata['start']
+			if max(poslist)>startpos and startpos not in poslist:
+				timesigid = np.searchsorted(poslist, startpos)
+				betweenval = useddata[timesigid]
+				self.add_split(startpos, betweenval['numerator'], betweenval['denominator'])
+
+		if splitter_mode == 'timesig_num':
 			for u in self.splitdata.get_used():
 				psize = ppq*float(u['numerator'])
 				for val in xtramath.gen_float_range(float(u['start']), float(u['end']), psize):
-					cur_splitdata.add()
-					cur_splitdata['start'] = val
-					cur_splitdata['numerator'] = u['numerator']
-					cur_splitdata['denominator'] = u['denominator']
+					self.add_split(val, u['numerator'], u['denominator'])
 
-		if mode == 'timesig_num_x2':
-			if detect_start:
-				startpos = 0
-				if convproj_obj.transport.loop_start:
-					startpos = convproj_obj.transport.loop_start
-				if not startpos:
-					startpos = convproj_obj.transport.start_pos
-
-				useddata = self.splitdata.get_used()
-				poslist = useddata['start']
-				if max(poslist)>startpos and startpos not in poslist:
-					timesigid = np.searchsorted(poslist, startpos)
-					betweenval = useddata[timesigid]
-
-					cur_splitdata.add()
-					cur_splitdata['start'] = startpos
-					cur_splitdata['numerator'] = betweenval['numerator']
-					cur_splitdata['denominator'] = betweenval['denominator']
-
+		if splitter_mode == 'timesig_num_x2':
 			remove_pos_clones(self.splitdata)
 			add_dur_end(self.splitdata)
-
 			for u in self.splitdata.get_used():
 				psize = ppq*int(u['numerator'])*2
 				for val in xtramath.gen_float_range(int(u['start']), int(u['end']), psize):
-					cur_splitdata.add()
-					cur_splitdata['start'] = val
-					cur_splitdata['numerator'] = u['numerator']
-					cur_splitdata['denominator'] = u['denominator']
+					self.add_split(val, u['numerator'], u['denominator'])
 
-		if mode == 'timesig':
-			if detect_start:
-				startpos = 0
-				if convproj_obj.transport.loop_start:
-					startpos = convproj_obj.transport.loop_start
-				if not startpos:
-					startpos = convproj_obj.transport.start_pos
-
-				useddata = self.splitdata.get_used()
-				poslist = useddata['start']
-
-				if max(poslist)>startpos and startpos not in poslist:
-					timesigid = np.searchsorted(poslist, startpos)
-					betweenval = useddata[timesigid]
-
-					convproj_obj.timesig_auto.add_point(startpos, [betweenval['numerator'], betweenval['denominator']])
-				
-					cur_splitdata.add()
-					cur_splitdata['start'] = startpos
-					cur_splitdata['numerator'] = betweenval['numerator']
-					cur_splitdata['denominator'] = betweenval['denominator']
-
+		if splitter_mode == 'timesig':
 			remove_pos_clones(self.splitdata)
 			add_dur_end(self.splitdata)
-
 			for u in self.splitdata.get_used():
 				psize = ppq*int(u['numerator'])*int(u['denominator'])
 				for val in xtramath.gen_float_range(int(u['start']), int(u['end']), psize):
-					cur_splitdata.add()
-					cur_splitdata['start'] = val
-					cur_splitdata['numerator'] = u['numerator']
-					cur_splitdata['denominator'] = u['denominator']
+					self.add_split(val, u['numerator'], u['denominator'])
 
 		remove_pos_clones(self.splitdata)
 		add_dur_end(self.splitdata)
@@ -177,65 +131,72 @@ useactive_premake = dynbytearr.dynbytearr_premake([
 		('done', np.uint8),
 	])
 
+def blocksdata_proc(blocksdata):
+	for blockdata in blocksdata:
+		remainval = 0
+		for splitd in blockdata:
+			splitd['remaining'] = remainval
+			if remainval: splitd['used'] = 1
+			remainval = max(remainval-splitd['dur'], 0)
+			remainval += splitd['overflow']
+			splitd['nosplit'] = 1+(remainval!=0) if splitd['used'] else 0
+
+def blocksdata_pl_proc(blockdata):
+	activedata = useactive_premake.create()
+	cur_activedata = activedata.create_cursor()
+	cur_activedata.add()
+	for x in blockdata:
+		nosplit = x['nosplit']
+		if cur_activedata['done']: cur_activedata.add()
+		if nosplit != 0:
+			if not cur_activedata['active']:
+				cur_activedata['start'] = x['start']
+				cur_activedata['active'] = 1
+			cur_activedata['end'] = x['end']
+			if nosplit == 1:
+				cur_activedata['done'] = 1
+				cur_activedata['active'] = 0
+		else:
+			if cur_activedata['active']:
+				cur_activedata['done'] = 1
+	return activedata
+
+def create_blocksdata(timesigblocks_obj, data):
+	useddata = timesigblocks_obj.splitdata.get_used()
+	blocksdata = np.zeros((len(data), len(useddata)), dtype=dtype_blocks)
+	blocksdata['start'] = useddata['start']
+	blocksdata['end'] = useddata['end']
+	blocksdata['dur'] = useddata['dur']
+	return useddata, blocksdata
+
 class cvpj_midievents_splitter:
 	def __init__(self, timesigblocks_obj, ppq):
 		self.data = []
 		self.ppq = ppq
 		self.timesigblocks_obj = timesigblocks_obj
 
-	def add_plme(self, i_pl):
+	def add_pldata(self, i_pl):
 		self.data.append(i_pl)
 
-	def process(self):
-		useddata = self.timesigblocks_obj.splitdata.get_used()
-		blocksdata = np.zeros((len(self.data), len(useddata)), dtype=dtype_blocks)
-		blocksdata['start'] = useddata['start']
-		blocksdata['end'] = useddata['end']
-		blocksdata['dur'] = useddata['dur']
+	def process(self, splitter_mode):
+		self.useddata, self.blocksdata = create_blocksdata(self.timesigblocks_obj, self.data)
 
 		for plnum, pldata in enumerate(self.data):
-			for blocknum, blockdata in enumerate(useddata):
-				splitd = blocksdata[plnum][blocknum]
+			for blocknum, blockdata in enumerate(self.useddata):
+				splitd = self.blocksdata[plnum][blocknum]
 				midievents = pldata.midievents
 				midievents.add_note_durs()
 				splitd['used'], splitd['overflow'] = midievents.usedoverflow(blockdata['start'], blockdata['end'])
 
-		for blockdata in blocksdata:
-			remainval = 0
-			for splitd in blockdata:
-				splitd['remaining'] = remainval
-				if remainval: splitd['used'] = 1
-				remainval = max(remainval-splitd['dur'], 0)
-				remainval += splitd['overflow']
-				splitd['nosplit'] = 1+(remainval!=0) if splitd['used'] else 0
+	def process_post(self, splitter_mode):
+		blocksdata_proc(self.blocksdata)
 
 		for plnum, pldata in enumerate(self.data):
-			activedata = useactive_premake.create()
-			cur_activedata = activedata.create_cursor()
-
-			cur_activedata.add()
-
-			blockdata = blocksdata[plnum]
-
-			for x in blockdata:
-				nosplit = x['nosplit']
-				if cur_activedata['done']: cur_activedata.add()
-				if nosplit != 0:
-					if not cur_activedata['active']:
-						cur_activedata['start'] = x['start']
-						cur_activedata['active'] = 1
-					cur_activedata['end'] = x['end']
-					if nosplit == 1:
-						cur_activedata['done'] = 1
-						cur_activedata['active'] = 0
-				else:
-					if cur_activedata['active']:
-						cur_activedata['done'] = 1
+			activedata = blocksdata_pl_proc(self.blocksdata[plnum])
 
 			nopl_midievents = pldata.midievents
 			if isinstance(self.ppq, int):
 				flomul = 1
-
 				for x in activedata.get_used():
 					if x['done']:
 						range_start = int(x['start']*flomul)
@@ -246,7 +207,6 @@ class cvpj_midievents_splitter:
 						placement_obj.midievents = outevents
 						time_obj = placement_obj.time
 						time_obj.set_startend(int(x['start']), int(x['end']))
-
 			nopl_midievents.clear()
 
 class cvpj_notelist_splitter:
@@ -255,54 +215,31 @@ class cvpj_notelist_splitter:
 		self.ppq = ppq
 		self.timesigblocks_obj = timesigblocks_obj
 
-	def add_plnl(self, i_pl):
+	def add_pldata(self, i_pl):
 		self.data.append(i_pl)
 
-	def process(self):
-		useddata = self.timesigblocks_obj.splitdata.get_used()
-		blocksdata = np.zeros((len(self.data), len(useddata)), dtype=dtype_blocks)
-		blocksdata['start'] = useddata['start']
-		blocksdata['end'] = useddata['end']
-		blocksdata['dur'] = useddata['dur']
+	def process(self, splitter_mode):
+		self.useddata, self.blocksdata = create_blocksdata(self.timesigblocks_obj, self.data)
 
 		for plnum, pldata in enumerate(self.data):
-			for blocknum, blockdata in enumerate(useddata):
-				splitd = blocksdata[plnum][blocknum]
+			for blocknum, blockdata in enumerate(self.useddata):
+				splitd = self.blocksdata[plnum][blocknum]
 				notelist = pldata.notelist
 				splitd['used'], splitd['overflow'] = notelist.usedoverflow(blockdata['start'], blockdata['end'])
 
-		for blockdata in blocksdata:
-			remainval = 0
-			for splitd in blockdata:
-				splitd['remaining'] = remainval
-				if remainval: splitd['used'] = 1
-				remainval = max(remainval-splitd['dur'], 0)
-				remainval += splitd['overflow']
-				splitd['nosplit'] = 1+(remainval!=0) if splitd['used'] else 0
+	def to_blocks(self):
+		for trackpl in self.blocksdata:
+			for plnum in range(len(trackpl)-1):
+				splitd = trackpl[plnum]
+				splitd_n = trackpl[plnum+1]
+				if splitd['used'] and splitd_n['used']:
+					if not splitd['overflow']: splitd['overflow'] += self.ppq
+
+	def process_post(self, splitter_mode):
+		blocksdata_proc(self.blocksdata)
 
 		for plnum, pldata in enumerate(self.data):
-			activedata = useactive_premake.create()
-			cur_activedata = activedata.create_cursor()
-
-			cur_activedata.add()
-
-			blockdata = blocksdata[plnum]
-
-			for x in blockdata:
-				nosplit = x['nosplit']
-				if cur_activedata['done']: cur_activedata.add()
-				if nosplit != 0:
-					if not cur_activedata['active']:
-						cur_activedata['start'] = x['start']
-						cur_activedata['active'] = 1
-					cur_activedata['end'] = x['end']
-					if nosplit == 1:
-						cur_activedata['done'] = 1
-						cur_activedata['active'] = 0
-				else:
-					if cur_activedata['active']:
-						cur_activedata['done'] = 1
-
+			activedata = blocksdata_pl_proc(self.blocksdata[plnum])
 			for x in activedata.get_used():
 				if x['done']:
 					placement_obj = pldata.add_notes()

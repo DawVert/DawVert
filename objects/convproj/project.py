@@ -100,10 +100,10 @@ conv_act_m['mi'] =  ['m2mi']
 conv_act_m['cm'] =  ['m2r','compat','r2cm']
 conv_act_m['cs'] =  ['m2r','compat','r2cm']
 
-conv_act_mi['r'] =  ['mi2m','compact','m2r','compact']
+conv_act_mi['r'] =  ['mi2m','compat','m2r','compat']
 conv_act_mi['m'] =  ['mi2m']
-conv_act_mi['cm'] = ['mi2m','compact','m2r','compact','r2cm']
-conv_act_mi['cs'] = ['mi2m','compact','m2r','compact','r2cm']
+conv_act_mi['cm'] = ['mi2m','compat','m2r','compat','r2cm']
+conv_act_mi['cs'] = ['mi2m','compat','m2r','compat','r2cm']
 
 conv_act_ms['r'] =  ['ms2rm','compat','rm2r']
 conv_act_ms['rm'] = ['ms2rm'] # unused

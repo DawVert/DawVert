@@ -151,7 +151,7 @@ class dawvert_intent:
 		self.path_soundfonts = {}
 		self.path_external_data = ''
 
-		self.splitter_mode = 0
+		self.splitter_mode = 'timesig'
 		self.splitter_detect_start = 0
 
 		self.flags_compat = []
