@@ -42,6 +42,10 @@ def fixval(p_type, p_value):
 class cvpj_datavals:
 	__slots__ = ['data']
 	def __init__(self): self.data = {}
+	def __getitem__(self, k): return self.data.__getitem__(k)
+	def __setitem__(self, k, v): return self.data.__setitem__(k, v)
+	def __contains__(self, k): return self.data.__contains__(k)
+	def __len__(self, k): return self.data.__len__(k)
 	def add(self, i_name, i_value): self.data[i_name] = i_value
 	def add_if_missing(self, i_name, i_value): 
 		if i_name not in self.data: self.data[i_name] = i_value
@@ -114,6 +118,14 @@ class cvpj_param:
 		self.enum_parts = []
 		self.enum_end_point = 'start'
 
+	def __int__(self): return int(self.value)
+
+	def __float__(self): return float(self.value)
+
+	def __bool__(self): return bool(self.value)
+
+	def __str__(self): return str(self.value)
+
 	def add_range(self, minv, maxv):
 		self.min = minv
 		self.max = maxv
@@ -145,24 +157,17 @@ class cvpj_param:
 		self.min, self.max = i_min, i_max
 		self.range_defined = True
 
-	def __int__(self): return int(self.value)
-
-	def __float__(self): return float(self.value)
-
-	def __bool__(self): return bool(self.value)
-
-	def __str__(self): return str(self.value)
-
 class cvpj_paramset:
 	__slots__ = ['paramset']
-	def __init__(self):
-		self.paramset = {}
+	def __init__(self): self.paramset = {}
 
-	def __bool__(self):
-		return bool(self.paramset)
+	def __bool__(self): return bool(self.paramset)
 
-	def __contains__(self, x):
-		return self.list().__contains__(x)
+	def __getitem__(self, k): return self.paramset.__getitem__(k)
+
+	def __contains__(self, k): return self.paramset.__contains__(k)
+
+	def __len__(self, k): return self.paramset.__len__(k)
 
 	def move(self, dest_paramset, p_id):
 		if p_id in self.paramset: 

@@ -18,6 +18,19 @@ import struct
 import logging
 from objects.convproj import midievents
 
+event_note_dur = midievents.EVENTID__NOTE_DUR
+event_note_on = midievents.EVENTID__NOTE_ON
+event_note_off = midievents.EVENTID__NOTE_OFF
+event_control = midievents.EVENTID__CONTROL
+event_pitch = midievents.EVENTID__PITCH
+event_program = midievents.EVENTID__PROGRAM
+event_sysex = midievents.EVENTID__SYSEX
+event_tempo = midievents.EVENTID__TEMPO
+event_timesig = midievents.EVENTID__TIMESIG
+event_text = midievents.EVENTID__TEXT
+event_marker = midievents.EVENTID__MARKER
+event_seqspec = midievents.EVENTID__SEQSPEC
+
 logger_compat = logging.getLogger('compat')
 
 class midi_modernize:
@@ -49,16 +62,18 @@ class midi_modernize:
 
 		self.sc55_display = []
 
+	# ====================================== Memory ======================================
+
 	def memory__add_count(self, midievents_obj):
 		midievents_obj.sort()
 		midievents_obj.clean()
 		self.num_ports = max(midievents_obj.port+1, self.num_ports)
 
-		self.total_notes += midievents_obj.count_part('type', midievents.EVENTID__NOTE_ON)
-		self.total_control += midievents_obj.count_part('type', midievents.EVENTID__CONTROL)
-		self.total_pitch += midievents_obj.count_part('type', midievents.EVENTID__PITCH)
-		self.total_tempo += midievents_obj.count_part('type', midievents.EVENTID__TEMPO)
-		self.total_timesig += midievents_obj.count_part('type', midievents.EVENTID__TIMESIG)
+		self.total_notes += midievents_obj.count_part('type', event_note_on)
+		self.total_control += midievents_obj.count_part('type', event_control)
+		self.total_pitch += midievents_obj.count_part('type', event_pitch)
+		self.total_tempo += midievents_obj.count_part('type', event_tempo)
+		self.total_timesig += midievents_obj.count_part('type', event_timesig)
 
 	def memory__set_chanport(self):
 		self.notes_data = midinotes.notes_data(self.num_ports, self.num_channels)
@@ -79,9 +94,14 @@ class midi_modernize:
 		self.timesig_data.alloc(self.total_timesig)
 		self.start_pos = None
 
+	def memory__sort(self):
+		self.notes_data.sort()
+		self.ctrl_data.sort()
+		self.tempo_data.sort()
+		self.timesig_data.sort()
 
 
-
+	# ====================================== Tracks ======================================
 
 	def from_cvpj__add_tracks(self, convproj_obj):
 		cvpj_tracks = convproj_obj.tracks
@@ -90,97 +110,6 @@ class midi_modernize:
 		self.num_tracks = len(self.cvpj_tracks)
 		self.num_miditracks = len(self.cvpj_tracks_midi)
 		self.visstore_data.setlen_track(len(self.cvpj_tracks))
-
-
-
-
-	def add_track_visual(self, tracknum, visual_obj):
-		if visual_obj.name: self.visstore_data.vis_track_set_name(tracknum, visual_obj.name)
-		if visual_obj.color: self.visstore_data.vis_track_set_color_force(tracknum, visual_obj.color.get_int())
-	
-	def visual_chan(self, tracknum, portnum, usedchans):
-		if len(usedchans)==1:
-			self.visstore_data.set_track_chan(tracknum, portnum, usedchans[0])
-
-	def init_patchchan(self, track_midi):
-		if track_midi.out_enabled:
-			out_chanport = track_midi.out_chanport
-			self.instchange_data.add_program(0, gfunc.calc_channum(out_chanport.chan, out_chanport.port, self.num_channels), track_midi.out_inst.patch)
-
-	def do_notes(self, convproj_obj, midievents_obj, inpos, dur, offset, in_section, portnum, tracknum):
-		cvpj_timemarkers = convproj_obj.timemarkers
-
-		for x in midievents_obj:
-			pos = (int(x['pos'])-offset)+inpos
-			condpos = (dur+inpos)>(pos)>=0 if dur>=0 else True
-
-			if condpos:
-				if x['type'] == midievents.EVENTID__NOTE_DUR:
-					cur_notes = self.notes_data.add_note_dur(tracknum, pos, x['chan'], portnum, x['value'], x['value2'], x['uhival'], x['off_vel'])
-					cur_notes['section'] = in_section
-
-				elif x['type'] == midievents.EVENTID__NOTE_ON:
-					cur_notes = self.notes_data.add_note_on(tracknum, pos, x['chan'], portnum, x['value'], x['value2'])
-					cur_notes['section'] = in_section
-
-				elif x['type'] == midievents.EVENTID__NOTE_OFF:
-					self.notes_data.add_note_off(x['chan'], portnum, x['value'], pos, x['off_vel'])
-	
-				elif x['type'] == midievents.EVENTID__CONTROL:
-					chanport = gfunc.calc_channum(x['chan'], portnum, self.num_channels)
-					if x['value'] == 0:
-						self.instchange_data.add_bank(pos, chanport, x['uhival'])
-					elif x['value'] == 32:
-						self.instchange_data.add_hibank(pos, chanport, x['uhival'])
-					else:
-						self.ctrl_data.add_point(pos, chanport, x['value'], x['uhival'])
-	
-				elif x['type'] == midievents.EVENTID__PITCH:
-					self.pitch_data.add(pos, gfunc.calc_channum(x['chan'], portnum, self.num_channels), x['shival'])
-	
-				elif x['type'] == midievents.EVENTID__PROGRAM:
-					self.instchange_data.add_program(pos, gfunc.calc_channum(x['chan'], portnum, self.num_channels), x['value'])
-	
-				elif x['type'] == midievents.EVENTID__SYSEX:
-					self.sysex_data.add(pos, midievents_obj.sysex[x['uhival']])
-	
-				elif x['type'] == midievents.EVENTID__TEMPO:
-					self.tempo_data.add(pos, struct.unpack('f', struct.pack('I', x['uhival']))[0])
-	
-				elif x['type'] == midievents.EVENTID__TIMESIG:
-					self.timesig_data.add(pos, x['value'], x['value2'])
-	
-				elif x['type'] == midievents.EVENTID__TEXT:
-					marker_data = midievents_obj.texts[x['uhival']]
-					if marker_data == 'loopStart':
-						convproj_obj.transport.loop_active = True
-						convproj_obj.transport.loop_start = pos
-	
-					if marker_data == 'loopEnd':
-						convproj_obj.transport.loop_end = pos
-	
-					if marker_data == 'Start':
-						convproj_obj.transport.start_pos = pos
-	
-				elif x['type'] == midievents.EVENTID__MARKER:
-					marker_data = midievents_obj.markers[x['uhival']]
-					timemarker_obj = cvpj_timemarkers.add()
-					timemarker_obj.time.set_pos(pos)
-					if marker_data: timemarker_obj.visual.name = marker_data
-
-				elif x['type'] == midievents.EVENTID__SEQSPEC:
-					seqspecbytes = midievents_obj.seq_spec[x['uhival']]
-
-					seqspec_obj = sysex_decode.seqspec_obj()
-					seqspec_obj.detect(seqspecbytes)
-					if seqspec_obj.sequencer == 'signal_midi' and seqspec_obj.param == 'color':
-						self.visstore_data.vis_track_set_color_force(tracknum, seqspec_obj.value)
-					if seqspec_obj.sequencer == 'anvil_studio' and seqspec_obj.param == 'color':
-						self.visstore_data.vis_track_set_color_force(tracknum, seqspec_obj.value)
-					if seqspec_obj.sequencer == 'studio_one' and seqspec_obj.param == 'color':
-						self.visstore_data.vis_track_set_color_force(tracknum, seqspec_obj.value)
-	
-		self.start_pos = self.notes_data.get_global_startpos()
 
 	def add_track_data(self, convproj_obj, tracknum, trackid, track_obj):
 		logger_compat.info('midi_modernize: Track '+trackid)
@@ -199,6 +128,104 @@ class midi_modernize:
 			durpos = pl_midi.time.get_dur()
 			offset = pl_midi.time.get_offset()
 			self.do_notes(convproj_obj, pl_midi.midievents, startpos, durpos, offset, pn+1, portnum, tracknum)
+
+	def calc_channum(self, channum, portnum):
+		return gfunc.calc_channum(channum, portnum, self.num_channels)
+
+	# ====================================== Notes ======================================
+
+	def from_evt__note_dur(self, x, tracknum, portnum, pos, section=0):
+		cur_notes = self.notes_data.add_note_dur(tracknum, pos, x['chan'], portnum, x['value'], x['value2'], x['uhival'], x['off_vel'])
+		cur_notes['section'] = section
+
+	def from_evt__note_on(self, x, tracknum, portnum, pos, section=0):
+		cur_notes = self.notes_data.add_note_on(tracknum, pos, x['chan'], portnum, x['value'], x['value2'])
+		cur_notes['section'] = section
+
+	def from_evt__note_off(self, x, portnum, pos):
+		self.notes_data.add_note_off(x['chan'], portnum, x['value'], pos, x['off_vel'])
+	
+	def from_evt__control(self, x, portnum, pos):
+		chanport = self.calc_channum(x['chan'], portnum)
+		if x['value'] == 0:
+			self.instchange_data.add_bank(pos, chanport, x['uhival'])
+		elif x['value'] == 32:
+			self.instchange_data.add_hibank(pos, chanport, x['uhival'])
+		else:
+			self.ctrl_data.add_point(pos, chanport, x['value'], x['uhival'])
+	
+	def from_evt__pitch(self, x, portnum, pos):
+		chanport = self.calc_channum(x['chan'], portnum)
+		self.pitch_data.add(pos, chanport, x['shival'])
+
+	def from_evt__program(self, x, portnum, pos):
+		chanport = self.calc_channum(x['chan'], portnum)
+		self.instchange_data.add_program(pos, chanport, x['value'])
+
+	def from_evt__sysex(self, x, pos):
+		self.sysex_data.add(pos, midievents_obj.sysex[x['uhival']])
+
+	def from_evt__tempo(self, x, pos):
+		self.tempo_data.add(pos, struct.unpack('f', struct.pack('I', x['uhival']))[0])
+
+	def from_evt__timesig(self, x, pos):
+		self.timesig_data.add(pos, x['value'], x['value2'])
+
+	def from_evt__text(self, marker_data, pos):
+		if marker_data == 'loopStart':
+			convproj_obj.transport.loop_active = True
+			convproj_obj.transport.loop_start = pos
+		if marker_data == 'loopEnd':
+			convproj_obj.transport.loop_end = pos
+		if marker_data == 'Start':
+			convproj_obj.transport.start_pos = pos
+
+	def from_evt__marker(self, convproj_obj, marker_data, pos):
+		cvpj_timemarkers = convproj_obj.timemarkers
+		timemarker_obj = cvpj_timemarkers.add()
+		timemarker_obj.time.set_pos(pos)
+		if marker_data: timemarker_obj.visual.name = marker_data
+
+	def from_evt__seqspec(self, seqspecbytes, pos):
+		seqspec_obj = sysex_decode.seqspec_obj()
+		seqspec_obj.detect(seqspecbytes)
+		if seqspec_obj.sequencer == 'signal_midi' and seqspec_obj.param == 'color':
+			self.visstore_data.vis_track_set_color_force(tracknum, seqspec_obj.value)
+		if seqspec_obj.sequencer == 'anvil_studio' and seqspec_obj.param == 'color':
+			self.visstore_data.vis_track_set_color_force(tracknum, seqspec_obj.value)
+		if seqspec_obj.sequencer == 'studio_one' and seqspec_obj.param == 'color':
+			self.visstore_data.vis_track_set_color_force(tracknum, seqspec_obj.value)
+
+	def do_notes(self, convproj_obj, midievents_obj, inpos, dur, offset, in_section, portnum, tracknum):
+		cvpj_timemarkers = convproj_obj.timemarkers
+
+		for x in midievents_obj:
+			pos = (int(x['pos'])-offset)+inpos
+			condpos = (dur+inpos)>(pos)>=0 if dur>=0 else True
+
+			if condpos:
+				if x['type'] == event_note_dur: self.from_evt__note_dur(x, tracknum, portnum, pos, in_section)
+				elif x['type'] == event_note_on: self.from_evt__note_on(x, tracknum, portnum, pos, in_section)
+				elif x['type'] == event_note_off: self.from_evt__note_off(x, portnum, pos)
+				elif x['type'] == event_control: self.from_evt__control(x, portnum, pos)
+				elif x['type'] == event_pitch: self.from_evt__pitch(x, portnum, pos)
+				elif x['type'] == event_program: self.from_evt__program(x, portnum, pos)
+				elif x['type'] == event_sysex: self.from_evt__sysex(x, pos)
+				elif x['type'] == event_tempo: self.from_evt__tempo(x, pos)
+				elif x['type'] == event_timesig: self.from_evt__timesig(x, pos)
+				elif x['type'] == event_text: 
+					marker_data = midievents_obj.texts[x['uhival']]
+					self.from_evt__text(marker_data, pos)
+				elif x['type'] == event_marker: 
+					marker_data = midievents_obj.markers[x['uhival']]
+					self.from_evt__marker(convproj_obj, marker_data, pos)
+				elif x['type'] == event_seqspec:
+					seqspecbytes = midievents_obj.seq_spec[x['uhival']]
+					self.from_evt__seqspec(seqspecbytes, pos)
+	
+		self.start_pos = self.notes_data.get_global_startpos()
+
+	# ====================================== Instruments ======================================
 
 	def instchange_from_sysex(self):
 		logger_compat.info('midi_modernize: SysEX')
@@ -231,11 +258,10 @@ class midi_modernize:
 			#					scdisplay[part2num][startd:startd+5] = [bool((1 << i) & part2) for i in range(4, -1, -1)]
 			#		sc55_display[p] = scdisplay
 
-	def sort(self):
-		self.notes_data.sort()
-		self.ctrl_data.sort()
-		self.tempo_data.sort()
-		self.timesig_data.sort()
+	def init_patchchan(self, track_midi):
+		if track_midi.out_enabled:
+			out_chanport = track_midi.out_chanport
+			self.instchange_data.add_program(0, gfunc.calc_channum(out_chanport.chan, out_chanport.port, self.num_channels), track_midi.out_inst.patch)
 
 	def do_instruments(self):
 		logger_compat.info('midi_modernize: Instruments')
@@ -244,6 +270,8 @@ class midi_modernize:
 		self.notes_data.proc_instchan()
 		self.notes_data.add_instchange(self.instchange_data)
 		self.notes_data.get_note_starts()
+
+	# ====================================== To ConvProj ======================================
 
 	def do_tempo(self, convproj_obj):
 		logger_compat.info('midi_modernize: Tempo')
@@ -274,6 +302,16 @@ class midi_modernize:
 						None)
 					cvpj_notelist.last_add_vol_off(float(n['vol_off'])/127)
 
+	# ====================================== Visual ======================================
+
+	def add_track_visual(self, tracknum, visual_obj):
+		if visual_obj.name: self.visstore_data.vis_track_set_name(tracknum, visual_obj.name)
+		if visual_obj.color: self.visstore_data.vis_track_set_color_force(tracknum, visual_obj.color.get_int())
+	
+	def visual_chan(self, tracknum, portnum, usedchans):
+		if len(usedchans)==1:
+			self.visstore_data.set_track_chan(tracknum, portnum, usedchans[0])
+
 	def instrument_visual(self, convproj_obj):
 		self.used_inst = self.notes_data.get_used_inst()
 		self.visstore_data.set_used_inst(self.used_inst)
@@ -290,7 +328,8 @@ class midi_modernize:
 			self.visstore_data.proc__fx_to_track()
 			self.visstore_data.proc__inst_to_track()
 	
-	# Regular
+	# ====================================== Regular ======================================
+
 	def r__output_tracks(self, convproj_obj):
 		logger_compat.info('midi_modernize: Tracks')
 		cvpj_tracks = convproj_obj.tracks
@@ -345,7 +384,7 @@ class midi_modernize:
 
 		self.groupreturnsmaker.generate(convproj_obj, self.used_inst)
 
-	# RegularMultiple
+	# ====================================== RegularMultiple ======================================
 
 	def fxrack__do_fx_ctrls(self, convproj_obj):
 		convproj_obj.fxtype = 'rack'
@@ -439,5 +478,5 @@ class midi_modernize:
 					self.midinotes_to_cvpjnotes(tracknotes, cvpj_notelist, 0)
 
 					track_obj.type = 'instruments'
-					midievents = midievents_obj.data
-					midievents.clear()
+					mmidievents = midievents_obj.data
+					mmidievents.clear()

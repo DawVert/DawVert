@@ -75,7 +75,7 @@ def convert_non_midi(convproj_obj, dawvert_intent):
 			modernize_obj.add_track_data(convproj_obj, tracknum, trackid, track_obj)
 
 	modernize_obj.instchange_from_sysex()
-	modernize_obj.sort()
+	modernize_obj.memory__sort()
 	modernize_obj.do_instruments()
 	modernize_obj.do_tempo(convproj_obj)
 	modernize_obj.do_timesig(convproj_obj)
