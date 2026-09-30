@@ -65,3 +65,4 @@ def convert(convproj_obj, dawvert_intent):
 	convproj_obj.sample_index = {}
 
 	convproj_obj.type = 'm'
+	return 1

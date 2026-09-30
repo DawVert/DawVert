@@ -40,3 +40,4 @@ def convert(convproj_obj, dawvert_intent):
 				track_obj.type = 'midi'
 
 	convproj_obj.type = 'cm'
+	return 1

@@ -94,4 +94,4 @@ def convert(convproj_obj, dawvert_intent):
 	#		timemarker_obj.visual.name = str(p)
 	#	c += x
 
-	return True
+	return 1

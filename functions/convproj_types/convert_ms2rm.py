@@ -66,3 +66,4 @@ def convert(convproj_obj, dawvert_intent):
 	convproj_obj.calc_pl_tempo()
 	#exit()
 	convproj_obj.type = 'rm'
+	return 1

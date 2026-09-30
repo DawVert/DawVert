@@ -67,3 +67,4 @@ def convert(convproj_obj, dawvert_intent):
 	cvpj_tracks.data = {}
 	cvpj_tracks.order = []
 	convproj_obj.type = 'mi'
+	return 1

@@ -19,3 +19,4 @@ def convert(convproj_obj, dawvert_intent):
                 lane_obj.placements.unindex_notes(track_obj.notelist_index)
                 
     convproj_obj.type = 'r'
+    return 1

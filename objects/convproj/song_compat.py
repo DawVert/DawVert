@@ -93,3 +93,80 @@ class song_compat:
 
 		if cvpj_type in ['r']:
 			self.process_part('time_seconds', time_seconds,			   convproj_obj, cvpj_type, traits_obj, out_dawinfo, out_type, dawvert_intent)
+
+from functions.convproj_types import convert_cs2r
+from functions.convproj_types import convert_cm2rm
+from functions.convproj_types import convert_cm2cs
+from functions.convproj_types import convert_cs2cm
+from functions.convproj_types import convert_m2mi
+from functions.convproj_types import convert_m2r
+from functions.convproj_types import convert_mi2m
+from functions.convproj_types import convert_ms2rm
+from functions.convproj_types import convert_r2cs
+from functions.convproj_types import convert_r2cm
+from functions.convproj_types import convert_r2m
+from functions.convproj_types import convert_ri2mi
+from functions.convproj_types import convert_ri2r
+from functions.convproj_types import convert_rm2m
+from functions.convproj_types import convert_rm2r
+from functions.convproj_types import convert_rs2r
+from functions.convproj_types import convert_ts2m
+
+conv_act_class = {}
+conv_act_class['cm2rm'] = convert_cm2rm.convert
+conv_act_class['cs2cm'] = convert_cs2cm.convert
+conv_act_class['cm2cs'] = convert_cm2cs.convert
+conv_act_class['cs2r'] = convert_cs2r.convert
+
+conv_act_class['m2mi'] = convert_m2mi.convert
+conv_act_class['m2r'] = convert_m2r.convert
+conv_act_class['mi2m'] = convert_mi2m.convert
+
+conv_act_class['ms2rm'] = convert_ms2rm.convert
+
+conv_act_class['r2cm'] = convert_r2cm.convert
+conv_act_class['r2cs'] = convert_r2cs.convert
+conv_act_class['r2m'] = convert_r2m.convert
+
+conv_act_class['ri2mi'] = convert_ri2mi.convert
+conv_act_class['ri2r'] = convert_ri2r.convert
+
+conv_act_class['rm2m'] = convert_rm2m.convert
+conv_act_class['rm2r'] = convert_rm2r.convert
+conv_act_class['rs2r'] = convert_rs2r.convert
+
+conv_act_class['ts2m'] = convert_ts2m.convert
+conv_act_class['cm2cs'] = convert_cm2cs.convert
+
+class compat_actions:
+	def __init__(self):
+		self.compactclass = song_compat()
+		self.convproj_obj = None
+		self.in_dawinfo = None
+		self.out_dawinfo = None
+		self.out_type = None
+		self.dawvert_intent = None
+		self.vars = {}
+
+	def makecompat(self):
+		convproj_obj = self.convproj_obj
+		self.compactclass.makecompat(convproj_obj, convproj_obj.type, self.in_dawinfo, self.out_dawinfo, self.out_type, self.dawvert_intent)
+
+	def do_cmd(self, cmd):
+		if cmd in conv_act_class: conv_act_class[cmd](self.convproj_obj, self.dawvert_intent)
+		elif cmd=='compat': self.makecompat()
+
+	def get_trait_out(self, name):
+		if name=='notes_midi': return self.out_dawinfo.notes_midi
+
+	def do_cmd_order(self, cmds):
+		traits_obj = self.convproj_obj.traits
+		for cmd in cmds:
+			if isinstance(cmd, list): 
+				subcmdtype = cmd[0]
+				if subcmdtype=='eq_trait_out': 
+					name = cmd[1]
+					inval = cmd[2]
+					inval = [inval] if not isinstance(inval, list) else inval
+					if self.get_trait_out(name) in inval: self.do_cmd_order(cmd[3])
+			else: self.do_cmd(cmd)

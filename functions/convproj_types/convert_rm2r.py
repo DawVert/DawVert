@@ -112,3 +112,5 @@ def convert(convproj_obj, dawvert_intent):
 
 	cvpj_insts.clear()
 	convproj_obj.type = 'r'
+
+	return 1

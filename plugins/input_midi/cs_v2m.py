@@ -43,7 +43,6 @@ class input_v2m(plugins.base):
 		traits_obj.track_nopl = True
 
 		# ---------- transport ----------
-		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cs'
 		convproj_obj.do_actions.append('do_addloop')
 		convproj_obj.do_actions.append('do_singlenotelistcut')

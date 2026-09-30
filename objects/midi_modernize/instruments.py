@@ -89,6 +89,22 @@ def get_inst_id(indata):
 	instnames = ['track','chanport','drum','bank_hi','bank','patch','device']
 	return '_'.join([str(x) for x in indata[instnames]])
 
+def cvpj_create_track(convproj_obj, inst):
+	cvpj_tracks = convproj_obj.tracks
+
+	cvpj_trackid = get_inst_id(inst)
+	track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
+	track_obj.midi.out_enabled = True
+
+	out_inst = track_obj.midi.out_inst
+	out_inst.bank_hi = int(inst['bank_hi'])
+	out_inst.bank = int(inst['bank'])
+	out_inst.patch = int(inst['patch'])
+	out_inst.drum = bool(inst['drum'])
+	out_inst.device = devices_types.get_devname(int(inst['device']))
+	track_obj.to_midi(convproj_obj, cvpj_trackid, True)
+	return cvpj_trackid, track_obj
+
 def cvpj_create_instrument(convproj_obj, inst):
 	cvpj_insts = convproj_obj.instruments
 

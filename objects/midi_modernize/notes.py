@@ -150,6 +150,14 @@ class notes_data:
 		notesdata = self.all_notes.get_used()
 		return notesdata[np.logical_and(notesdata['track']==n, notesdata['section']==s)]
 
+	def filter_instexact(self, n):
+		notesdata = self.all_notes.data
+		return notesdata[np.where(notesdata['inst']==n)]
+
+	def filter_instexact_section(self, n, s):
+		notesdata = self.all_notes.data
+		return notesdata[np.logical_and(notesdata['inst']==n, notesdata['section']==s)]
+
 	def get_global_startpos(self):
 		gstartpos = self.startpos[self.startpos!=-1]
 		if len(gstartpos): return np.min(gstartpos)

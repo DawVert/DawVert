@@ -60,3 +60,4 @@ def convert(convproj_obj, dawvert_intent):
 					sle_data.visual.color = playlist_obj.visual.color.copy()
 
 	convproj_obj.type = 'mi'
+	return 1

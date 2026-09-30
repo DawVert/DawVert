@@ -64,7 +64,6 @@ class input_midi(plugins.base):
 		in_dict['projtype'] = 'cm'
 
 	def parse(self, convproj_obj, dawvert_intent):
-		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cm'
 
 		traits_obj = convproj_obj.traits

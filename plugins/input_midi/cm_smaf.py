@@ -46,7 +46,6 @@ class input_mmf(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		
 		# ---------- convproj init ----------
-		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cm'
 
 		traits_obj = convproj_obj.traits

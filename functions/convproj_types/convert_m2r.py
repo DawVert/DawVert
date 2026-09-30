@@ -92,3 +92,4 @@ def convert(convproj_obj, dawvert_intent):
 
 	convproj_obj.playlist = {}
 	convproj_obj.type = 'r'
+	return 1

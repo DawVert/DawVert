@@ -208,6 +208,7 @@ class cvpj_midievents_splitter:
 						time_obj = placement_obj.time
 						time_obj.set_startend(int(x['start']), int(x['end']))
 			nopl_midievents.clear()
+			pldata.uses_placements = 1
 
 class cvpj_notelist_splitter:
 	def __init__(self, timesigblocks_obj, ppq):
@@ -247,3 +248,4 @@ class cvpj_notelist_splitter:
 					time_obj = placement_obj.time
 					time_obj.set_startend(int(x['start']), int(x['end']))
 			pldata.notelist.clear()
+			pldata.uses_placements = 1

@@ -38,7 +38,6 @@ class input_domino(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		
 		# ---------- convproj init ----------
-		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cs'
 		convproj_obj.set_timings(project_obj.ppq)
 		convproj_obj.do_actions.append('do_addloop')

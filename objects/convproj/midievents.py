@@ -172,11 +172,26 @@ class midievents:
 		copyright_same = self.copyright == nlo.copyright
 		return nl_same and sysex_same and texts_same and markers_same and lyrics_same and seq_spec_same and seq_spec_same and seq_spec_same and ppq_same and track_name_same and copyright_same
 
+	def copy_custom_notes(self, notesdata):
+		new_obj = midievents()
+		new_obj.data = dynbytearr.dynbytearr(in_dtype)
+		new_obj.data.set_copied_multi(notesdata)
+		new_obj.cursor = new_obj.data.create_cursor()
+		new_obj.ppq = self.ppq
+		new_obj.port = self.port
+		new_obj.sysex = self.sysex.copy()
+		new_obj.texts = self.texts.copy()
+		new_obj.markers = self.markers.copy()
+		new_obj.lyrics = self.lyrics.copy()
+		new_obj.seq_spec = self.seq_spec.copy()
+		new_obj.has_duration = self.has_duration
+		return new_obj
+
 	def __copy__(self):
 		new_obj = midievents()
 		new_obj.data = copy.deepcopy(self.data)
 		new_obj.cursor = new_obj.data.create_cursor()
-		new_obj.ppq = self.ppq = 96
+		new_obj.ppq = self.ppq
 		new_obj.track_name = self.track_name
 		new_obj.copyright = self.copyright
 		new_obj.port = self.port
@@ -647,7 +662,7 @@ class midievents:
 	def split_midi_chans(self):
 		outdict = {}
 		nochan = self.get_spec_nochan()
-		if len(nochan): outdict[None] = nochan
+		if len(nochan): outdict[-1] = nochan
 		channums = self.get_channums()
 		for channum in channums: outdict[int(channum)] = self.get_spec_chan(channum)
 		return outdict

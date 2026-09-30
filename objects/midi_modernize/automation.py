@@ -43,7 +43,7 @@ class autoloc_store:
 				ccdata['autoloc'][:,3] = range(128)
 				aloc[p,c] = ccdata
 
-	def add_fxchan(self, p, curd_port, c, curd_channel):
+	def setup_fxchan(self, p, curd_port, c, curd_channel):
 		import objects.midi_modernize.ctrls as ctrls
 		idstor = curd_channel['idstor']
 		if idstor['used']:

@@ -31,22 +31,6 @@ from objects.convproj import placements_marker
 from objects.convproj import fx_rack
 from objects.convproj import groups
 
-from functions.convproj_types import convert_cm2rm
-from functions.convproj_types import convert_cs2cm
-from functions.convproj_types import convert_m2mi
-from functions.convproj_types import convert_m2r
-from functions.convproj_types import convert_mi2m
-from functions.convproj_types import convert_ms2rm
-from functions.convproj_types import convert_r2cs
-from functions.convproj_types import convert_r2cm
-from functions.convproj_types import convert_r2m
-from functions.convproj_types import convert_ri2mi
-from functions.convproj_types import convert_ri2r
-from functions.convproj_types import convert_rm2m
-from functions.convproj_types import convert_rm2r
-from functions.convproj_types import convert_rs2r
-from functions.convproj_types import convert_ts2m
-
 from objects import tempocalc
 
 typelist = {}
@@ -112,12 +96,12 @@ conv_act_ms['mi'] = ['ms2rm','compat','rm2m','m2mi']
 conv_act_ms['cm'] = ['ms2rm','compat','rm2r','compat','r2cm']
 conv_act_ms['cs'] = ['ms2rm','compat','rm2r','compat','r2cm']
 
-conv_act_cm['r'] =  ['cm2rm','compat','rm2r']
+conv_act_cm['r'] =  ['cm2cs','compat','cs2r']
 conv_act_cm['rm'] = ['cm2rm'] # unused
 conv_act_cm['m'] =  ['cm2rm','compat','rm2m']
 conv_act_cm['mi'] = ['cm2rm','compat','rm2m','compat','m2mi']
 
-conv_act_cs['r'] =  ['cs2cm','cm2rm','compat','rm2r']
+conv_act_cs['r'] =  ['cs2r']
 conv_act_cs['rm'] = ['cs2cm','cm2rm'] # unused
 conv_act_cs['m'] =  ['cs2cm','cm2rm','rm2m']
 conv_act_cs['mi'] = ['cs2cm','cm2rm','rm2m','compat','m2mi']
@@ -129,27 +113,7 @@ conv_act_ts['mi'] = ['ts2m','m2mi']
 conv_act_ts['cm'] = ['ts2m','m2r','compat','r2cm']
 conv_act_ts['cs'] = ['ts2m','m2r','compat','r2cm']
 
-#midi_conv_act = conv_act.copy()
-#midi_conv_act
-
 logger_project = logging.getLogger('project')
-
-conv_act_class = {}
-conv_act_class['r2m'] = convert_r2m.convert
-conv_act_class['ri2mi'] = convert_ri2mi.convert
-conv_act_class['ri2r'] = convert_ri2r.convert
-conv_act_class['rm2r'] = convert_rm2r.convert
-conv_act_class['m2r'] = convert_m2r.convert
-conv_act_class['m2mi'] = convert_m2mi.convert
-conv_act_class['mi2m'] = convert_mi2m.convert
-conv_act_class['rm2m'] = convert_rm2m.convert
-conv_act_class['ts2m'] = convert_ts2m.convert
-conv_act_class['ms2rm'] = convert_ms2rm.convert
-conv_act_class['rs2r'] = convert_rs2r.convert
-conv_act_class['cm2rm'] = convert_cm2rm.convert
-conv_act_class['cs2cm'] = convert_cs2cm.convert
-conv_act_class['r2cs'] = convert_r2cs.convert
-conv_act_class['r2cm'] = convert_r2cm.convert
 
 def autopath_encode(autol):
 	return ';'.join(autol)
@@ -360,37 +324,34 @@ class cvpj_project:
 		return self.tracker_single
 
 	def main__change_type(self, in_dawinfo, out_dawinfo, out_type, dawvert_intent):
-		compactclass = song_compat.song_compat()
+		actions_obj = song_compat.compat_actions()
+		actions_obj.convproj_obj = self
+		actions_obj.in_dawinfo = in_dawinfo
+		actions_obj.out_dawinfo = out_dawinfo
+		actions_obj.out_type = out_type
+		actions_obj.dawvert_intent = dawvert_intent
 
 		traits_obj = self.traits
 		if self.type in ['m', 'mi', 'rm', 'ms', 'ts', 'cs', 'cm', 'rs']:
 			traits_obj.track_lanes = True
 
-		compactclass.makecompat(self, self.type, in_dawinfo, out_dawinfo, out_type, dawvert_intent)
+		actions_obj.makecompat()
 
 		if self.type != out_type:
 			notfound = False
 			if self.type in conv_act:
-				if out_type in conv_act[self.type]:
-					convertcmds = conv_act[self.type][out_type]
-					for cmd in convertcmds:
-						#print(cmd)
-						if cmd in conv_act_class: conv_act_class[cmd](self, dawvert_intent)
-						elif cmd=='compat':
-							compactclass.makecompat(self, self.type, in_dawinfo, out_dawinfo, out_type, dawvert_intent)
+				if out_type in conv_act[self.type]: actions_obj.do_cmd_order(conv_act[self.type][out_type])
 				else: notfound = True
 			else: notfound = True
-			if notfound:
-				logger_project.error(typelist[self.type]+' to '+typelist[out_type]+' is not supported.')
+			if notfound: logger_project.error(typelist[self.type]+' to '+typelist[out_type]+' is not supported.')
 
-		elif self.type == out_type: 
-			pass
+		elif self.type == out_type: pass
 		
 		else:
 			logger_project.error(typelist[self.type]+' to '+typelist[out_type]+' is not supported.')
 			exit()
 
-		compactclass.makecompat(self, out_type, in_dawinfo, out_dawinfo, out_type, dawvert_intent)
+		actions_obj.makecompat()
 
 	def main__add_midi_custom_inst(self):
 		cust_inst = cvpj_project_midi_custom_instrument()

@@ -27,7 +27,9 @@ def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_int
 						trackpl.midievents.merge(pl_midievents, pl_pos, pl_dur, 0)
 
 			for cvpj_trackid, track_obj in cvpj_tracks.iter():
+				track_obj.uses_placements = 0
 				trackpl = track_obj.placements
+				trackpl.uses_placements = 0
 				for x in trackpl.pl_notes:
 					trackpl.notelist.merge(x.notelist, x.time.get_pos())
 				trackpl.pl_notes.clear()
@@ -36,19 +38,16 @@ def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_int
 
 		elif convproj_obj.type in ['cs', 'cm']: 
 			for cvpj_trackid, track_obj in cvpj_tracks.iter():
+				track_obj.uses_placements = 0
 				trackpl = track_obj.placements
+				trackpl.uses_placements = 0
 				trackpl.midievents.change_ppq(convproj_obj.time_ppq)
-
 				for midipl_obj in trackpl.pl_midi:
-
 					scale = convproj_obj.time_ppq/midipl_obj.midievents.ppq
-
 					pos = int(midipl_obj.time.get_pos())
 					dur = int(midipl_obj.time.get_dur())
-
 					trackpl.midievents.merge(midipl_obj.midievents, pos, dur, 0)
 					midipl_obj.midievents.change_ppq(convproj_obj.time_ppq)
-
 				trackpl.pl_notes.clear()
 				trackpl.pl_midi.clear()
 

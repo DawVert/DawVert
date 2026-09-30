@@ -16,7 +16,9 @@ def process_pl(timesigblocks_obj, convproj_obj, npsplit, splitter_mode, splitter
 		case 'blocks_num2': timesigblocks_obj.create_points_cut(convproj_obj, 'timesig_num_x2', splitter_start)
 		case 'blocks_timesig': timesigblocks_obj.create_points_cut(convproj_obj, 'timesig', splitter_start)
 
-	for cvpj_trackid, track_obj in cvpj_tracks.iter(): npsplit.add_pldata(track_obj.placements)
+	for cvpj_trackid, track_obj in cvpj_tracks.iter(): 
+		track_obj.uses_placements = 1
+		npsplit.add_pldata(track_obj.placements)
 	npsplit.process(splitter_mode)
 
 	if splitter_mode in ['blocks_num','blocks_num2','blocks_timesig']: npsplit.to_blocks()
@@ -39,6 +41,9 @@ def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_int
 				return True
 			else:
 				for cvpj_trackid, track_obj in cvpj_tracks.iter(): 
+					track_obj.uses_placements = 1
+					trackpl = track_obj.placements
+					trackpl.uses_placements = 1
 					midievents = track_obj.placements.midievents
 					if len(midievents):
 						placement_obj = track_obj.placements.add_midi()
@@ -56,11 +61,14 @@ def process(convproj_obj, in__track_nopl, out__track_nopl, out_type, dawvert_int
 				return True
 			else:
 				for cvpj_trackid, track_obj in cvpj_tracks.iter(): 
-					if track_obj.placements.notelist.count():
-						placement_obj = track_obj.placements.add_notes()
-						placement_obj.notelist = track_obj.placements.notelist.__copy__()
-						placement_obj.time.set_dur(int(track_obj.placements.notelist.get_dur()))
-						track_obj.placements.notelist.clear()
+					track_obj.uses_placements = 1
+					trackpl = track_obj.placements
+					if trackpl.notelist.count():
+						placement_obj = trackpl.add_notes()
+						placement_obj.notelist = trackpl.notelist.__copy__()
+						placement_obj.time.set_dur(int(trackpl.notelist.get_dur()))
+						trackpl.notelist.clear()
+					trackpl.uses_placements = 1
 				convproj_obj.calc_pl_tempo()
 				return True
 		else: 

@@ -32,7 +32,6 @@ class input_musicphrase(plugins.base):
 		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(96)
-		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cs'
 
 		traits_obj = convproj_obj.traits

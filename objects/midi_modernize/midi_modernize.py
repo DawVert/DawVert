@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import objects.midi_modernize.fxchans as fxchans
+import objects.midi_modernize.fxgroupreturns as fxgroupreturns
 import objects.midi_modernize.instruments as instruments
 import objects.midi_modernize.notes as midinotes
 import objects.midi_modernize.pitch as pitch
@@ -14,7 +15,10 @@ import objects.midi_modernize.gfunc as gfunc
 import objects.midi_modernize.sysex_decode as sysex_decode
 import numpy as np
 import struct
+import logging
 from objects.convproj import midievents
+
+logger_compat = logging.getLogger('compat')
 
 class midi_modernize:
 	def __init__(self, num_channels):
@@ -39,6 +43,7 @@ class midi_modernize:
 		self.visstore_data = visstore.visstore_data(1, self.num_channels)
 		self.autoloc_store = automation.autoloc_store(1, self.num_channels)
 		self.fxmaker = fxchans.fxchans_maker(1, self.num_channels)
+		self.groupreturnsmaker = fxgroupreturns.fxgroupreturns_maker(1, self.num_channels)
 		self.cvpj_tracks = []
 		self.cvpj_tracks_midi = []
 
@@ -63,6 +68,7 @@ class midi_modernize:
 		self.visstore_data = visstore.visstore_data(self.num_ports, self.num_channels)
 		self.autoloc_store = automation.autoloc_store(self.num_ports, self.num_channels)
 		self.fxmaker = fxchans.fxchans_maker(self.num_ports, self.num_channels)
+		self.groupreturnsmaker = fxgroupreturns.fxgroupreturns_maker(self.num_ports, self.num_channels)
 
 	def memory__alloc(self):
 		self.memory__set_chanport()
@@ -80,7 +86,7 @@ class midi_modernize:
 	def from_cvpj__add_tracks(self, convproj_obj):
 		cvpj_tracks = convproj_obj.tracks
 		self.cvpj_tracks = [x for x in cvpj_tracks.iter_num()]
-		self.cvpj_tracks_midi = [x for x in self.cvpj_tracks if x[2].type == 'midi']
+		self.cvpj_tracks_midi = [x for x in self.cvpj_tracks if x[2].type in ['midi', 'midi_single']]
 		self.num_tracks = len(self.cvpj_tracks)
 		self.num_miditracks = len(self.cvpj_tracks_midi)
 		self.visstore_data.setlen_track(len(self.cvpj_tracks))
@@ -176,7 +182,26 @@ class midi_modernize:
 	
 		self.start_pos = self.notes_data.get_global_startpos()
 
+	def add_track_data(self, convproj_obj, tracknum, trackid, track_obj):
+		logger_compat.info('midi_modernize: Track '+trackid)
+		self.add_track_visual(tracknum, track_obj.visual)
+		self.init_patchchan(track_obj.midi)
+		midievents_obj = track_obj.placements.midievents
+		midievents_obj.add_note_durs()
+		portnum = midievents_obj.port
+		usedchans = list(midievents_obj.get_channums())
+		self.visual_chan(tracknum, portnum, usedchans)
+		self.do_notes(convproj_obj, midievents_obj, 0, -1, 0, 0, portnum, tracknum)
+		for pn, pl_midi in enumerate(track_obj.placements.pl_midi):
+			for x in pl_midi.midievents.get_channums():
+				if x not in usedchans: usedchans.append(x)
+			startpos = pl_midi.time.get_pos()
+			durpos = pl_midi.time.get_dur()
+			offset = pl_midi.time.get_offset()
+			self.do_notes(convproj_obj, pl_midi.midievents, startpos, durpos, offset, pn+1, portnum, tracknum)
+
 	def instchange_from_sysex(self):
+		logger_compat.info('midi_modernize: SysEX')
 		for p, sysex_obj in self.sysex_data:
 	
 			if sysex_obj.vendor == '#43':
@@ -213,49 +238,15 @@ class midi_modernize:
 		self.timesig_data.sort()
 
 	def do_instruments(self):
+		logger_compat.info('midi_modernize: Instruments')
 		self.instchange_data.sort()
 		self.instchange_data.clean()
 		self.notes_data.proc_instchan()
 		self.notes_data.add_instchange(self.instchange_data)
 		self.notes_data.get_note_starts()
 
-	def do_fx_ctrls(self, convproj_obj):
-		for pnum in range(self.num_ports):
-			for enum in range(self.num_channels):
-				chanport = gfunc.calc_channum(enum, pnum, self.num_channels)
-				self.fxmaker.add_fx(pnum, enum, self.ctrl_data.get_cc_used_fx(chanport))
-				startpos = self.notes_data.get_startpos(chanport)
-				self.ctrl_data.add_startpos(startpos, chanport)
-				for c, v in self.ctrl_data.get_init_vals(chanport):
-					self.fxmaker.add_cc_vals(pnum, enum, c, v)
-		self.fxmaker.generate(convproj_obj)
-		self.fxmaker.make_autoloc(convproj_obj, self.autoloc_store)
-		self.ctrl_data.add_loops(convproj_obj.transport)
-
-	def do_automation(self, convproj_obj):
-		for pnum in range(self.num_ports):
-			for enum in range(self.num_channels):
-				chanport = gfunc.calc_channum(enum, pnum, self.num_channels)
-				for ccnum, data, afterstart in self.ctrl_data.get_auto(chanport):
-					autoloc = self.autoloc_store.get_autoloc(pnum, enum, ccnum)
-					math_add, math_div = self.autoloc_store.get_math(pnum, enum, ccnum)
-					if afterstart:
-						cvpj_automation = convproj_obj.automation
-						for pos, val in data:
-							val = (float(val)+math_add)/math_div
-							cvpj_automation.add_autotick(autoloc, 'float', int(pos), val)
-
-	def do_pitch_automation(self, convproj_obj):
-		for pnum in range(self.num_ports):
-			for enum in range(self.num_channels):
-				chanport = gfunc.calc_channum(enum, pnum, self.num_channels)
-				autoloc = self.autoloc_store.get_autoloc_pitch(pnum, enum)
-				if autoloc:
-					cvpj_automation = convproj_obj.automation
-					for pos, val in self.pitch_data.get_auto(chanport):
-						cvpj_automation.add_autotick(autoloc, 'float', int(pos), val)
-
 	def do_tempo(self, convproj_obj):
+		logger_compat.info('midi_modernize: Tempo')
 		inittempo = self.tempo_data.get_inital(self.start_pos)
 		if inittempo: convproj_obj.params.add('bpm', inittempo, 'float')
 		cvpj_automation = convproj_obj.automation
@@ -263,12 +254,27 @@ class midi_modernize:
 			cvpj_automation.add_autotick(['main', 'bpm'], 'float', int(pos), float(val))
 
 	def do_timesig(self, convproj_obj):
+		logger_compat.info('midi_modernize: TimeSig')
 		inittimesig = self.timesig_data.get_inital(self.start_pos)
 		if inittimesig is not None: convproj_obj.timesig = inittimesig
 		for pos, num, denom in self.timesig_data.get_points():
 			convproj_obj.timesig_auto.add_point(pos, [int(num), int(denom)])
 
-	def to_cvpj_inst_visual(self, convproj_obj):
+	def midinotes_to_cvpjnotes(self, tracknotes, cvpj_notelist, offset):
+		if len(tracknotes):
+			compused = np.nonzero(np.logical_and(tracknotes['complete'], tracknotes['used']))[0]
+			cvpj_notelist.clear_size(len(compused))
+			for n in tracknotes:
+				if n['complete']:
+					cvpj_notelist.add_m(instruments.get_inst_id(n['inst']), 
+						int(n['start']-offset), 
+						int(n['end']-n['start']), 
+						int(n['key'])-60, 
+						float(n['vol'])/127, 
+						None)
+					cvpj_notelist.last_add_vol_off(float(n['vol_off'])/127)
+
+	def instrument_visual(self, convproj_obj):
 		self.used_inst = self.notes_data.get_used_inst()
 		self.visstore_data.set_used_inst(self.used_inst)
 		self.visstore_data.set_cust_inst(convproj_obj.midi_cust_inst)
@@ -284,6 +290,106 @@ class midi_modernize:
 			self.visstore_data.proc__fx_to_track()
 			self.visstore_data.proc__inst_to_track()
 	
+	# Regular
+	def r__output_tracks(self, convproj_obj):
+		logger_compat.info('midi_modernize: Tracks')
+		cvpj_tracks = convproj_obj.tracks
+
+		convproj_obj.type = 'r'
+		convproj_obj.fxtype = 'groupreturn'
+
+		org_order = cvpj_tracks.order.copy()
+
+		org_tracks = [x for x in convproj_obj.tracks.iter()]
+
+		groupreturnsmaker = self.groupreturnsmaker
+
+		for instnum, inst in enumerate(self.used_inst):
+			cvpj_trackid, track_obj = instruments.cvpj_create_track(convproj_obj, inst)
+			groupreturnsmaker.inst_track_id.append(cvpj_trackid)
+			groupreturnsmaker.inst_track_obj.append(track_obj)
+
+			chanport = int(inst['chanport'])
+			portnum, channum = gfunc.split_channum(chanport, self.num_channels)
+			self.visstore_data.vis_inst[instnum].to_cvpj_visual(track_obj.visual)
+
+			track_obj.visual.name += ' (Channel #%s)' % str(channum+1)
+
+			org_trackid, org_track = org_tracks[int(inst['track'])]
+			if not org_track.uses_placements:
+				tracknotes = self.notes_data.filter_instexact(inst)
+				self.midinotes_to_cvpjnotes(tracknotes, track_obj.placements.notelist, 0)
+			else:
+				for plnum, pl_midi in enumerate(org_track.placements.pl_midi):
+					pl_notes = track_obj.placements.pl_notes.make_base_from_midi(pl_midi)
+					pl_tracknotes = self.notes_data.filter_instexact_section(inst, plnum+1)
+					self.midinotes_to_cvpjnotes(pl_tracknotes, pl_notes.notelist, pl_notes.time.get_pos())
+
+		for x in org_order:
+			del cvpj_tracks.data[x]
+			cvpj_tracks.order.remove(x)
+
+	def r__do_fx_ctrls(self, convproj_obj):
+		logger_compat.info('midi_modernize: Controls and FX')
+		for pnum in range(self.num_ports):
+			for enum in range(self.num_channels):
+				chanport = gfunc.calc_channum(enum, pnum, self.num_channels)
+				self.groupreturnsmaker.add_fx(pnum, enum, self.ctrl_data.get_cc_used_fx(chanport))
+				startpos = self.notes_data.get_startpos(chanport)
+				self.ctrl_data.add_startpos(startpos, chanport)
+				for c, v in self.ctrl_data.get_init_vals(chanport):
+					self.groupreturnsmaker.add_cc_vals(pnum, enum, c, v)
+
+	def r__output_groups(self, convproj_obj):
+		logger_compat.info('midi_modernize: Groups')
+
+		self.groupreturnsmaker.generate(convproj_obj, self.used_inst)
+
+	# RegularMultiple
+
+	def fxrack__do_fx_ctrls(self, convproj_obj):
+		convproj_obj.fxtype = 'rack'
+		logger_compat.info('midi_modernize: Controls and FX')
+		for pnum in range(self.num_ports):
+			for enum in range(self.num_channels):
+				chanport = gfunc.calc_channum(enum, pnum, self.num_channels)
+				self.fxmaker.add_fx(pnum, enum, self.ctrl_data.get_cc_used_fx(chanport))
+				startpos = self.notes_data.get_startpos(chanport)
+				self.ctrl_data.add_startpos(startpos, chanport)
+				for c, v in self.ctrl_data.get_init_vals(chanport):
+					self.fxmaker.add_cc_vals(pnum, enum, c, v)
+		self.fxmaker.generate(convproj_obj)
+		self.fxmaker.make_autoloc(convproj_obj, self.autoloc_store)
+		self.ctrl_data.add_loops(convproj_obj.transport)
+
+	def fxrack__do_automation(self, convproj_obj):
+		logger_compat.info('midi_modernize: Automation')
+		for pnum in range(self.num_ports):
+			for enum in range(self.num_channels):
+				chanport = gfunc.calc_channum(enum, pnum, self.num_channels)
+				for ccnum, data, afterstart in self.ctrl_data.get_auto(chanport):
+					autoloc = self.autoloc_store.get_autoloc(pnum, enum, ccnum)
+					math_add, math_div = self.autoloc_store.get_math(pnum, enum, ccnum)
+					if afterstart:
+						cvpj_automation = convproj_obj.automation
+						for pos, val in data:
+							val = (float(val)+math_add)/math_div
+							cvpj_automation.add_autotick(autoloc, 'float', int(pos), val)
+
+	def fxrack__do_pitch_automation(self, convproj_obj):
+		logger_compat.info('midi_modernize: Pitch Automation')
+		for pnum in range(self.num_ports):
+			for enum in range(self.num_channels):
+				chanport = gfunc.calc_channum(enum, pnum, self.num_channels)
+				autoloc = self.autoloc_store.get_autoloc_pitch(pnum, enum)
+				if autoloc:
+					cvpj_automation = convproj_obj.automation
+					for pos, val in self.pitch_data.get_auto(chanport):
+						cvpj_automation.add_autotick(autoloc, 'float', int(pos), val)
+
+	def rm__add_instruments(self, convproj_obj):
+		convproj_obj.type = 'rm'
+		logger_compat.info('midi_modernize: Instruments')
 		for n, inst in enumerate(self.used_inst):
 			inst_obj = instruments.cvpj_create_instrument(convproj_obj, inst)
 			inst_obj.fxrack_channel = self.fxmaker.get_fxid(inst['port'], inst['chan'])
@@ -300,21 +406,8 @@ class midi_modernize:
 					fxn =  self.fxmaker.get_fxid(po, ch)
 					self.visstore_data.vis_fxchan[po][ch].to_cvpj_visual(fxchannel_obj.visual)
 
-	def midinotes_to_cvpjnotes(self, tracknotes, cvpj_notelist, offset):
-		if len(tracknotes):
-			compused = np.nonzero(np.logical_and(tracknotes['complete'], tracknotes['used']))[0]
-			cvpj_notelist.clear_size(len(compused))
-			for n in tracknotes:
-				if n['complete']:
-					cvpj_notelist.add_m(instruments.get_inst_id(n['inst']), 
-						int(n['start']-offset), 
-						int(n['end']-n['start']), 
-						int(n['key'])-60, 
-						float(n['vol'])/127, 
-						None)
-					cvpj_notelist.last_add_vol_off(float(n['vol_off'])/127)
-
-	def output_tracks(self, convproj_obj):
+	def rm__output_tracks(self, convproj_obj):
+		logger_compat.info('midi_modernize: Out Tracks')
 		cvpj_tracks = convproj_obj.tracks
 	
 		if self.cvpj_tracks:
@@ -325,7 +418,7 @@ class midi_modernize:
 				cvpj_tracks.remove(first_track[1])
 				chanportlist = np.unique(self.used_inst['chanport'])
 				for chanport in chanportlist:
-					track_obj = cvpj_tracks.add('cm2rm_'+str(chanport), 'instruments', firsttrack_obj.uses_placements, firsttrack_obj.is_indexed)
+					track_obj = cvpj_tracks.add('midimodern_'+str(chanport), 'instruments', firsttrack_obj.uses_placements, firsttrack_obj.is_indexed)
 					tracknotes = self.notes_data.filter_chanport(chanport)
 					portnum, channum = gfunc.split_channum(chanport, self.num_channels)
 					self.visstore_data.vis_fxchan[portnum][channum].to_cvpj_visual(track_obj.visual)
@@ -335,18 +428,16 @@ class midi_modernize:
 					track_obj = strackdata[2]
 					self.visstore_data.vis_track[n].to_cvpj_visual(track_obj.visual)
 					midievents_obj = track_obj.placements.midievents
-					midievents = midievents_obj.data
-
-					cvpj_notelist = track_obj.placements.notelist
 
 					for plnum, pl_midi in enumerate(track_obj.placements.pl_midi):
 						pl_notes = track_obj.placements.pl_notes.make_base_from_midi(pl_midi)
 						pl_tracknotes = self.notes_data.filter_track_section(n, plnum+1)
 						self.midinotes_to_cvpjnotes(pl_tracknotes, pl_notes.notelist, pl_notes.time.get_pos())
 						
+					cvpj_notelist = track_obj.placements.notelist
 					tracknotes = self.notes_data.filter_track_section(n, 0)
-	
-					self.midinotes_to_cvpjnotes(tracknotes, track_obj.placements.notelist, 0)
+					self.midinotes_to_cvpjnotes(tracknotes, cvpj_notelist, 0)
 
 					track_obj.type = 'instruments'
+					midievents = midievents_obj.data
 					midievents.clear()

@@ -10,17 +10,17 @@ import objects.midi_modernize.midi_modernize as midi_modernize
 
 logger_project = logging.getLogger('project')
 
+from functions.convproj_types import convert_cm2rm
+
 def convert(convproj_obj, dawvert_intent):
-	logger_project.info('ProjType Convert: ClassicalMultiple > RegularMultiple')
-
-	cm2rm_split = dawvert_intent.convert_get_param('cm2rm_split', 'none')
-
+	logger_project.info('ProjType Convert: ClassicalSingle > Regular')
+	cm2rm_split = dawvert_intent.convert_get_param('cs2r_split', 'none')
 	out_dawinfo = dawvert_intent.output_dawinfo
-
 	if (not out_dawinfo.notes_midi) or cm2rm_split=='inst':
 		convert_non_midi(convproj_obj, dawvert_intent)
 	else:
 		convert_midi(convproj_obj, dawvert_intent)
+	return 1
 
 def convert_midi_events(convproj_obj, dawvert_intent, startpos, midievents_obj):
 	cvpj_timemarkers = convproj_obj.timemarkers
@@ -53,7 +53,7 @@ def convert_midi(convproj_obj, dawvert_intent):
 			midievents_obj = pl_midi.midievents
 			convert_midi_events(convproj_obj, dawvert_intent, startpos, midievents_obj)
 
-	convproj_obj.type = 'rm'
+	convproj_obj.type = 'r'
 
 def convert_non_midi(convproj_obj, dawvert_intent):
 	cvpj_tracks = convproj_obj.tracks
@@ -81,11 +81,6 @@ def convert_non_midi(convproj_obj, dawvert_intent):
 	modernize_obj.do_timesig(convproj_obj)
 	modernize_obj.instrument_visual(convproj_obj)
 
-	modernize_obj.fxrack__do_fx_ctrls(convproj_obj)
-	modernize_obj.fxrack__do_automation(convproj_obj)
-	modernize_obj.fxrack__do_pitch_automation(convproj_obj)
-	modernize_obj.rm__add_instruments(convproj_obj)
-	modernize_obj.rm__output_tracks(convproj_obj)
-
-	if convproj_obj.transport.loop_start and not convproj_obj.transport.loop_end:
-		convproj_obj.transport.loop_end = convproj_obj.get_dur()
+	modernize_obj.r__output_tracks(convproj_obj)
+	modernize_obj.r__do_fx_ctrls(convproj_obj)
+	modernize_obj.r__output_groups(convproj_obj)

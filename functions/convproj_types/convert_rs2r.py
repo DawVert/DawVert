@@ -53,4 +53,4 @@ def convert(convproj_obj, dawvert_intent):
 
 	convproj_obj.calc_pl_tempo()
 	convproj_obj.type = 'r'
-	#exit()
+	return 1

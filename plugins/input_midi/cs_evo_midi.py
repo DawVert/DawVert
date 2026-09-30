@@ -36,7 +36,6 @@ class input_cvpj_f(plugins.base):
 		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(192)
-		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cs'
 
 		traits_obj = convproj_obj.traits
