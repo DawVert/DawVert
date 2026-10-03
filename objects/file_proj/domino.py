@@ -23,6 +23,8 @@ def printchunk(num, chunk_obj, ebrw_readstr, view):
 	print('    '*(num) + ('--> ' if (num>0) else '') + str(chunk_obj.id), chunk_obj.size if view else '', outview)
 
 class dms_note:
+	__slots__ = ['pos', 'dur', 'key', 'vel']
+
 	def __init__(self):
 		self.pos = 0
 		self.dur = 0
@@ -37,6 +39,8 @@ class dms_note:
 			if chunk_obj.id == 2003: self.dur = ebrw_readstr.int_u32()
 
 class dms_ctrl:
+	__slots__ = ['pos', 'cc', 'data1', 'data2']
+
 	def __init__(self):
 		self.pos = 0
 		self.cc = 0
@@ -51,6 +55,8 @@ class dms_ctrl:
 			if chunk_obj.id == 2003: self.data2 = ebrw_readstr.raw(chunk_obj.size)
 
 class dms_text:
+	__slots__ = ['pos', 'text']
+
 	def __init__(self):
 		self.pos = 0
 		self.text = ''
@@ -61,6 +67,8 @@ class dms_text:
 			if chunk_obj.id == 2001: self.text = ebrw_readstr.string(chunk_obj.size, encoding='shiftjis')
 
 class dms_sysex:
+	__slots__ = ['pos', 'text', 'sysex']
+
 	def __init__(self):
 		self.pos = 0
 		self.text = ''
@@ -73,6 +81,8 @@ class dms_sysex:
 			if chunk_obj.id == 2002: self.sysex = ebrw_readstr.raw(chunk_obj.size)
 
 class dms_expression:
+	__slots__ = ['pos', 'var', 'value']
+
 	def __init__(self):
 		self.pos = 0
 		self.var = ''
@@ -85,6 +95,8 @@ class dms_expression:
 			if chunk_obj.id == 2002: self.value = ebrw_readstr.string(chunk_obj.size, encoding='shiftjis')
 
 class dms_measurelink:
+	__slots__ = ['pos', 'measure_dest', 'key_transpose']
+
 	def __init__(self):
 		self.pos = 0
 		self.measure_dest = 1
@@ -97,6 +109,8 @@ class dms_measurelink:
 			if chunk_obj.id == 2002: self.key_transpose = ebrw_readstr.int_s32()
 
 class dms_timesig:
+	__slots__ = ['pos', 'num', 'nenom']
+
 	def __init__(self):
 		self.pos = 0
 		self.num = 4
@@ -109,6 +123,8 @@ class dms_timesig:
 			if chunk_obj.id == 2002: self.nenom = ebrw_readstr.int_u8()
 
 class dms_keysig:
+	__slots__ = ['pos', 'key']
+
 	def __init__(self):
 		self.pos = 0
 		self.key = 0
@@ -119,6 +135,8 @@ class dms_keysig:
 			if chunk_obj.id == 2001: self.key = ebrw_readstr.int_u8()
 
 class dms_keyscale:
+	__slots__ = ['pos', 'key', 'chord', 'custom', 'name']
+
 	def __init__(self):
 		self.pos = 0
 		self.key = 0
@@ -135,6 +153,8 @@ class dms_keyscale:
 			if chunk_obj.id == 2004: self.name = ebrw_readstr.string(chunk_obj.size, encoding='shiftjis')
 
 class dms_program_change:
+	__slots__ = ['pos', 'patch', 'unk1', 'unk2', 'unk3', 'unk4', 'unk5']
+
 	def __init__(self):
 		self.pos = 0
 		self.patch = 0
@@ -155,6 +175,8 @@ class dms_program_change:
 			if chunk_obj.id == 2006: self.unk5 = ebrw_readstr.int_s16()
 
 class dms_chord:
+	__slots__ = ['pos', 'key', 'chord', 'custom', 'name']
+
 	def __init__(self):
 		self.pos = 0
 		self.key = 0
@@ -171,6 +193,8 @@ class dms_chord:
 			if chunk_obj.id == 2004: self.name = ebrw_readstr.string(chunk_obj.size, encoding='shiftjis')
 
 class dms_tempo:
+	__slots__ = ['pos', 'val']
+	
 	def __init__(self):
 		self.pos = 0
 		self.val = 120

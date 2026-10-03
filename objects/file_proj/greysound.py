@@ -9,6 +9,8 @@ logger_projparse = logging.getLogger('projparse')
 DEBUG_IN_OUT = True
 
 class greysound_insert:
+	__slots__ = ['id', 'trackId', 'slotIndex', 'pluginType', 'bypassed', 'parameters']
+
 	def __init__(self, indict=None):
 		self.id = ""
 		self.trackId = ""
@@ -75,6 +77,8 @@ class greysound_send:
 		return out
 
 class greysound_marker:
+	__slots__ = ['id', 'name', 'position']
+
 	def __init__(self, indict=None):
 		self.id = ""
 		self.name = ""
@@ -96,6 +100,8 @@ class greysound_marker:
 		return out
 
 class greysound_midinote:
+	__slots__ = ['pitch', 'startTicks', 'durationTicks', 'velocity']
+
 	def __init__(self, indict=None):
 		self.pitch = 60
 		self.startTicks = 0
@@ -120,6 +126,8 @@ class greysound_midinote:
 		return out
 
 class greysound_clip:
+	__slots__ = ['id', 'filename', 'storagePath', 'durationSec']
+
 	def __init__(self, indict=None):
 		self.id = ""
 		self.filename = ""
@@ -231,6 +239,8 @@ class greysound_automationLane_target:
 		return out
 
 class greysound_automationLane_point:
+	__slots__ = ['id', 'position', 'value']
+	
 	def __init__(self, indict=None):
 		self.id = ""
 		self.position = {}

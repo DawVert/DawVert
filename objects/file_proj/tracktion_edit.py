@@ -415,6 +415,8 @@ class tracktion_plugin:
 # =================================================== MIDI CLIP ===================================================
 
 class tracktion_control:
+	__slots__ = ['pos','ctype','val','metadata']
+
 	def __init__(self, xmldata=None):
 		self.pos = 0
 		self.ctype = 0
@@ -438,6 +440,8 @@ class tracktion_control:
 		tempxml.set('metadata', str(self.metadata))
 
 class tracktion_note:
+	__slots__ = ['pos','key','dur','vel','chan','mute','auto']
+
 	def __init__(self, xmldata=None):
 		self.pos = 0
 		self.key = 0
@@ -480,6 +484,8 @@ class tracktion_note:
 				a_xml.set('v', str(c_val))
 
 class tracktion_sequence:
+	__slots__ = ['notes','controls']
+
 	def __init__(self, xmldata=None):
 		self.notes = []
 		self.controls = []
@@ -633,6 +639,8 @@ class tracktion_loopinfo:
 		tempxml.set('outMarker', str(self.outMarker))
 
 class tracktion_warpmarker:
+	__slots__ = ['sourceTime','warpTime']
+
 	def __init__(self, xmldata=None):
 		self.sourceTime = 0
 		self.warpTime = 0
@@ -649,6 +657,8 @@ class tracktion_warpmarker:
 		tempxml.set('warpTime', str(self.warpTime))
 
 class tracktion_warptime:
+	__slots__ = ['warpEndMarkerTime','warpmarkers']
+
 	def __init__(self, xmldata=None):
 		self.warpEndMarkerTime = 0
 		self.warpmarkers = []
@@ -671,6 +681,8 @@ class tracktion_warptime:
 				warpmarker.write(warpmarkers)
 
 class tracktion_audioclip_fx:
+	__slots__ = ['fx_type','plugin','warptime']
+
 	def __init__(self, xmldata=None):
 		self.fx_type = ''
 		self.plugin = tracktion_plugin()
@@ -871,6 +883,8 @@ class tracktion_audioclip:
 # =================================================== STEP CLIP ===================================================
 
 class tracktion_stepclip_channel:
+	__slots__ = ['channel','note','velocity','name']
+
 	def __init__(self, xmldata=None):
 		self.channel = 1
 		self.note = 36
@@ -893,6 +907,8 @@ class tracktion_stepclip_channel:
 		tempxml.set('name', str(self.name))
 
 class tracktion_stepclip_pattern:
+	__slots__ = ['numNotes','noteLength','data']
+	
 	def __init__(self, xmldata=None):
 		self.numNotes = 16
 		self.noteLength = 0.25

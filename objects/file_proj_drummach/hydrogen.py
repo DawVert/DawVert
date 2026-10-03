@@ -153,6 +153,8 @@ class hydrogen_instrument:
 # ============================================= pattern ============================================= 
 
 class hydrogen_note:
+	__slots__ = ['position','leadlag','velocity','pan','pitch','key','length','instrument','note_off','probability']
+
 	def __init__(self, xmldata=None):
 		self.position = 0
 		self.leadlag = 0
@@ -181,6 +183,8 @@ class hydrogen_note:
 			if name == 'probability': self.probability = float(x_part.text)
 
 class hydrogen_pattern:
+	__slots__ = ['name','info','category','size','denominator','noteList']
+	
 	def __init__(self, xmldata=None):
 		self.name = ''
 		self.info = ''

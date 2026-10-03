@@ -7,6 +7,8 @@ import xml.etree.ElementTree as ET
 DEBUG_IN_OUT = False
 
 class muse_controller:
+	__slots__ = ['cur', 'color', 'visible', 'autopoints']
+
 	def __init__(self, xmldata=None):
 		self.cur = 0.0
 		self.color = ''
@@ -35,6 +37,8 @@ class muse_controller:
 		trackx.text = ','.join(stretchtxt)
 
 class muse_midi_event:
+	__slots__ = ['tick', 'len', 'type', 'a', 'b', 'c']
+
 	def __init__(self, xmldata=None):
 		self.tick = 0
 		self.len = 0
@@ -62,6 +66,8 @@ class muse_midi_event:
 		if self.c: trackx.set('c', str(self.c))
 
 class muse_poslen_audio:
+	__slots__ = ['sample', 'len']
+
 	def __init__(self, xmldata=None):
 		self.sample = 0
 		self.len = 0
@@ -77,6 +83,8 @@ class muse_poslen_audio:
 		trackx.set('len', str(int(self.len)))
 
 class muse_poslen:
+	__slots__ = ['tick', 'len']
+
 	def __init__(self, xmldata=None):
 		self.tick = 0
 		self.len = 0
@@ -92,6 +100,8 @@ class muse_poslen:
 		trackx.set('len', str(self.len))
 
 class muse_audio_event:
+	__slots__ = ['file', 'frame', 'poslen', 'stretchlist']
+
 	def __init__(self, xmldata=None):
 		self.file = ''
 		self.frame = 0
@@ -115,6 +125,8 @@ class muse_audio_event:
 		ET.SubElement(trackx, 'stretchlist').text = ','.join(stretchtxt)
 
 class muse_audio_part:
+	__slots__ = ['name', 'selected', 'color', 'poslen', 'events']
+
 	def __init__(self, xmldata=None):
 		self.name = ''
 		self.selected = 0
@@ -148,6 +160,8 @@ class muse_audio_part:
 			event_obj.write(trackx)
 
 class muse_midi_part:
+	__slots__ = ['name', 'selected', 'color', 'poslen', 'events', 'mute']
+
 	def __init__(self, xmldata=None):
 		self.name = ''
 		self.selected = 0
@@ -177,6 +191,8 @@ class muse_midi_part:
 		if self.mute: ET.SubElement(trackx, 'mute').text = str(self.mute)
 
 class muse_geometry:
+	__slots__ = ['x', 'y', 'w', 'h']
+
 	def __init__(self, xmldata=None):
 		self.x = 0
 		self.y = 0
@@ -198,6 +214,8 @@ class muse_geometry:
 		trackx.set('h', str(self.h))
 
 class muse_control:
+	__slots__ = ['name', 'val']
+	
 	def __init__(self, xmldata=None):
 		self.name = ''
 		self.val = 0

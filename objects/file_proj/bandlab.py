@@ -6,6 +6,8 @@ import json
 # --------------------------------------------------------- AUTOMATION ---------------------------------------------------------
 
 class bandlab_autopoint:
+	__slots__ = ['position', 'value']
+
 	def __init__(self, indict=None):
 		self.position = 0
 		self.value = 0
@@ -19,6 +21,8 @@ class bandlab_autopoint:
 		return {'position': self.position, 'value': self.value}
 
 class bandlab_automation:
+	__slots__ = ['points']
+
 	def __init__(self):
 		self.points = []
 
@@ -35,6 +39,8 @@ class bandlab_automation:
 		return [x.write() for x in self.points]
 
 class bandlab_track_automation:
+	__slots__ = ['id', 'pan', 'volume']
+
 	def __init__(self, indict=None):
 		self.id = None
 		self.pan = bandlab_automation()
@@ -56,6 +62,8 @@ class bandlab_track_automation:
 # --------------------------------------------------------- DEVICES ---------------------------------------------------------
 
 class bandlab_effect:
+	__slots__ = ['automation', 'bypass', 'params', 'slug']
+
 	def __init__(self, indict=None):
 		self.automation = {}
 		self.bypass = False
@@ -181,6 +189,8 @@ class bandlab_region:
 		return outdata
 
 class bandlab_pattern:
+	__slots__ = ['notes', 'sampleId']
+
 	def __init__(self, indict=None):
 		self.notes = []
 		self.sampleId = ''
@@ -199,6 +209,8 @@ class bandlab_pattern:
 # --------------------------------------------------------- TRACK ---------------------------------------------------------
 
 class bandlab_auxChannel:
+	__slots__ = ['effects', 'id', 'preset', 'returnLevel']
+
 	def __init__(self, indict=None):
 		self.effects = None
 		self.id = ''
@@ -221,6 +233,8 @@ class bandlab_auxChannel:
 		return outdata
 
 class bandlab_auxSend:
+	__slots__ = ['automation', 'id', 'sendLevel']
+
 	def __init__(self, indict=None):
 		self.automation = bandlab_automation()
 		self.id = ''
@@ -391,6 +405,8 @@ class bandlab_sample:
 		return outdata
 
 class bandlab_samplerKits_sample:
+	__slots__ = ['file', 'id', 'status']
+
 	def __init__(self, indict=None):
 		self.file = ''
 		self.id = ''
@@ -410,6 +426,8 @@ class bandlab_samplerKits_sample:
 		return outdata
 
 class bandlab_samplerKits:
+	__slots__ = ['samples']
+	
 	def __init__(self, indict=None):
 		self.samples = []
 		if indict is not None: self.read(indict)

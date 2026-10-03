@@ -12,7 +12,7 @@ class_MListNode = globalstate.classes['MListNode']
 class_MAutomationNode = globalstate.classes['MAutomationNode']
 class_MAutoFadeSetting = globalstate.classes['MAutoFadeSetting']
 
-@dataclass
+@dataclass(slots=True)
 class class_MAudioTrack:
 	idnum: int = 0
 	connection_type: int = 0
@@ -36,7 +36,7 @@ class class_MAudioTrack:
 		makeval__int(xmlobj, 'Flags', self.flags)
 globalstate.classes['MAudioTrack'] = class_MAudioTrack
 
-@dataclass
+@dataclass(slots=True)
 class class_MAudioTrackEvent:
 	idnum: int = 0
 	flags: int = 0.0
@@ -78,7 +78,7 @@ class class_MAudioTrackEvent:
 		makeval__obj(xmlobj, 'Autofade Settings', self.autofade_settings)
 globalstate.classes['MAudioTrackEvent'] = class_MAudioTrackEvent
 
-@dataclass
+@dataclass(slots=True)
 class class_AudioCluster:
 	idnum: int = 0
 	substreams: cubasexml_list_obj = field(default_factory=cubasexml_list_obj)
@@ -93,7 +93,7 @@ class class_AudioCluster:
 		makeval__list(xmlobj, 'Segments', self.segments)
 globalstate.classes['AudioCluster'] = class_AudioCluster
 
-@dataclass
+@dataclass(slots=True)
 class class_AudioFile:
 	idnum: int = 0
 	fpath: class_FNPath = field(default_factory=class_FNPath)
@@ -132,7 +132,7 @@ class class_AudioFile:
 		makeval__int(xmlobj, 'DataOffset', self.dataoffset)
 globalstate.classes['AudioFile'] = class_AudioFile
 
-@dataclass
+@dataclass(slots=True)
 class class_MAudioEvent:
 	idnum: int = 0
 	clip_idnum: int = -1
@@ -165,7 +165,7 @@ class class_MAudioEvent:
 		if self.additional_attributes: makeval__dict(xmlobj, 'Additional Attributes', self.additional_attributes)
 globalstate.classes['MAudioEvent'] = class_MAudioEvent
 
-@dataclass
+@dataclass(slots=True)
 class class_PAudioClip:
 	idnum: int = 0
 	name: str = ''
@@ -205,7 +205,7 @@ class class_PAudioClip:
 		if self.uid: makeval__list(xmlobj, 'UID', self.uid)
 globalstate.classes['PAudioClip'] = class_PAudioClip
 
-@dataclass
+@dataclass(slots=True)
 class class_PAudioWarpScale:
 	idnum: int = 0
 	warptab: cubasexml_list_obj = field(default_factory=cubasexml_list_obj)
@@ -217,7 +217,7 @@ class class_PAudioWarpScale:
 		makeval__list(xmlobj, 'WarpTab', self.warptab)
 globalstate.classes['PAudioWarpScale'] = class_PAudioWarpScale
 
-@dataclass
+@dataclass(slots=True)
 class class_PWarpTab:
 	idnum: int = 0
 	position: float = 0.0
@@ -232,7 +232,7 @@ class class_PWarpTab:
 		makeval__float(xmlobj, 'Warped', self.warped)
 globalstate.classes['PWarpTab'] = class_PWarpTab
 
-@dataclass
+@dataclass(slots=True)
 class class_SmtgAlgoDescription:
 	idnum: int = 0
 	precision: int = 3
@@ -253,7 +253,7 @@ class class_SmtgAlgoDescription:
 		makeval__float(xmlobj, 'variance', self.variance)
 globalstate.classes['SmtgAlgoDescription'] = class_SmtgAlgoDescription
 
-@dataclass
+@dataclass(slots=True)
 class class_ElastiquePreset:
 	idnum: int = 0
 	processingmode: str = ''

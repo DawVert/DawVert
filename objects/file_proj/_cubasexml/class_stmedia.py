@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 
 from objects.file_proj._cubasexml.func import *
 
-@dataclass
+@dataclass(slots=True)
 class class_StMedia__PureCategoryFilter:
 	idnum: int = 0
 	ctype: int = 0
@@ -22,7 +22,7 @@ class class_StMedia__PureCategoryFilter:
 		makeval__dict(xmlobj, 'filters', self.filters)
 globalstate.classes['StMedia::PureCategoryFilter'] = class_StMedia__PureCategoryFilter
 
-@dataclass
+@dataclass(slots=True)
 class class_StMedia__MultiAttributeFilter:
 	idnum: int = 0
 	operator: int = 5
@@ -40,7 +40,7 @@ class class_StMedia__MultiAttributeFilter:
 		makeval__string(xmlobj, 'searchString', self.searchString, 1)
 globalstate.classes['StMedia::MultiAttributeFilter'] = class_StMedia__MultiAttributeFilter
 
-@dataclass
+@dataclass(slots=True)
 class class_StMedia__CategoryFilter:
 	idnum: int = 0
 	ctype: int = 0
@@ -55,7 +55,7 @@ class class_StMedia__CategoryFilter:
 		makeval__dict(xmlobj, 'filters', self.filters)
 globalstate.classes['StMedia::CategoryFilter'] = class_StMedia__CategoryFilter
 
-@dataclass
+@dataclass(slots=True)
 class class_StMedia__RatingFilter:
 	idnum: int = 0
 	ctype: int = 0
@@ -70,7 +70,7 @@ class class_StMedia__RatingFilter:
 		makeval__dict(xmlobj, 'filters', self.filters)
 globalstate.classes['StMedia::RatingFilter'] = class_StMedia__RatingFilter
 
-@dataclass
+@dataclass(slots=True)
 class class_StMedia__TypeFilter:
 	idnum: int = 0
 	types: dict = field(default_factory=dict)
@@ -82,7 +82,7 @@ class class_StMedia__TypeFilter:
 		makeval__dict(xmlobj, 'types', self.types)
 globalstate.classes['StMedia::TypeFilter'] = class_StMedia__TypeFilter
 
-@dataclass
+@dataclass(slots=True)
 class class_StMedia__ExtraMultiAttributeFilter:
 	idnum: int = 0
 	operator: int = 9
@@ -100,7 +100,7 @@ class class_StMedia__ExtraMultiAttributeFilter:
 		makeval__string(xmlobj, 'searchString', self.searchString, 1)
 globalstate.classes['StMedia::ExtraMultiAttributeFilter'] = class_StMedia__ExtraMultiAttributeFilter
 
-@dataclass
+@dataclass(slots=True)
 class class_StMedia__ValueListFilter:
 	idnum: int = 0
 	attribId: str = ''
@@ -118,7 +118,7 @@ class class_StMedia__ValueListFilter:
 		makeval__dict(xmlobj, 'values', self.values)
 globalstate.classes['StMedia::ValueListFilter'] = class_StMedia__ValueListFilter
 
-@dataclass
+@dataclass(slots=True)
 class class_StMedia__ValueMatrixFilter:
 	idnum: int = 0
 	ctype: int = 0

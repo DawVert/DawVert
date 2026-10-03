@@ -6,6 +6,7 @@ from external.easybinrw import easybinrw
 VERBOSE = False
 
 class musicphrase_control:
+	__slots__ = ['pos', 'type', 'chan', 'data1', 'data2']
 	def __init__(self, ebrw_readstr):
 		self.pos = ebrw_readstr.int_u32()
 		self.type, self.chan = ebrw_readstr.int_u4_2()
@@ -14,6 +15,7 @@ class musicphrase_control:
 		if VERBOSE: print('CTRL -', self.pos, self.type, self.chan, self.data1, self.data2)
 
 class musicphrase_note:
+	__slots__ = ['pos', 'unk2', 'end', 'unk3', 'note', 'vel', 'vel_off']
 	def __init__(self, ebrw_readstr):
 		self.pos = ebrw_readstr.int_u16()
 		self.unk2 = ebrw_readstr.int_u16()
@@ -25,6 +27,7 @@ class musicphrase_note:
 		if VERBOSE: print('NOTE -', self.pos, self.unk2, self.end, self.unk3, self.note, self.vel, self.vel_off)
 
 class musicphrase_unkp:
+	__slots__ = ['pos', 'end', 'data']
 	def __init__(self, ebrw_readstr):
 		self.pos = ebrw_readstr.int_u32()
 		self.end = ebrw_readstr.int_u32()
@@ -32,6 +35,7 @@ class musicphrase_unkp:
 		#if VERBOSE: print('unkp -', self.pos, self.end, self.data)
 
 class musicphrase_segment:
+	__slots__ = ['notes', 'ctrls', 'size', 'name', 'color', 'unk2', 'start']
 	def __init__(self, ebrw_readstr):
 		if VERBOSE: print('--PART--')
 		numevents = ebrw_readstr.int_u32()
@@ -105,6 +109,7 @@ class musicphrase_phrasebank_phrase:
 		self.drum = ebrw_readstr.int_s32()
 
 class musicphrase_phrasebank:
+	__slots__ = ['name', 'phrases']
 	def __init__(self, ebrw_readstr):
 		self.name = ebrw_readstr.string(ebrw_readstr.int_u8())
 		self.phrases = []
@@ -125,6 +130,7 @@ class musicphrase_window:
 		print(self.state, self.pos_x, self.pos_y, self.size_x, self.size_y)
 
 class musicphrase_song:
+	__slots__ = ['tracks', 'phrasebanks']
 	def __init__(self):
 		self.tracks = []
 		self.phrasebanks = []

@@ -8,6 +8,8 @@ import logging
 logger_projparse = logging.getLogger('projparse')
 
 class nbs_key:
+	__slots__ = ['pos', 'inst', 'key', 'vel', 'pan', 'pitch']
+
 	def __init__(self):
 		self.pos = 0
 		self.inst = 0
@@ -25,6 +27,7 @@ class nbs_key:
 			self.pitch = ebrw_readstr.int_s16()
 
 class nbs_layer:
+	__slots__ = ['notes', 'name', 'lock', 'vol', 'stereo']
 	def __init__(self):
 		self.notes = []
 		self.name = ''
@@ -33,6 +36,7 @@ class nbs_layer:
 		self.stereo = 100
 
 class nbs_custom_inst:
+	__slots__ = ['name', 'file', 'key', 'presskey']
 	def __init__(self):
 		self.name = ''
 		self.file = ''

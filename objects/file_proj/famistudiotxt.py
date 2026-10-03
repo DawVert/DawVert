@@ -231,6 +231,23 @@ class fs_instrument:
 		for x in self.DPCMMappings: x.write(block_obj.add_block('DPCMMapping'))
 
 class fs_note:
+	__slots__ = [
+		'Time',
+		'Value',
+		'Duration',
+		'Instrument',
+		'SlideTarget',
+		'Attack',
+		'FinePitch',
+		'Volume',
+		'VolumeSlideTarget',
+		'VibratoSpeed',
+		'VibratoDepth',
+		'Arpeggio',
+		'Release',
+		'DutyCycle'
+	]
+
 	def __init__(self, block_obj=None):
 		self.Time = 0
 		self.Value = ''

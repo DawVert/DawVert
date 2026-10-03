@@ -7,6 +7,7 @@ from io import BytesIO
 from contextlib import contextmanager
 
 class chunk_size:
+	__slots__ = ['size_id', 'size_chunk', 'endian']
 	def __init__(self):
 		self.size_id = 4
 		self.size_chunk = 4

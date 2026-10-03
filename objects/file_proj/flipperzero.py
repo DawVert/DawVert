@@ -5,6 +5,7 @@ import re
 from objects.exceptions import ProjectFileParserException
 
 class fmf_note:
+	__slots__ = ['duration', 'key', 'sharp', 'octave', 'dots']
 	def __init__(self):
 		self.duration = 1
 		self.key = ''

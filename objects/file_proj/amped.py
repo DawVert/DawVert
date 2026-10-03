@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 class amped_contentGuid:
+	__slots__ = ['is_custom', 'id']
+
 	def __init__(self, indict=None):
 		self.is_custom = False
 		self.id = None
@@ -18,6 +20,8 @@ class amped_contentGuid:
 		return {"userAudio": {"exportedId": self.id}} if self.is_custom else self.id
 
 class amped_automation:
+	__slots__ = ['param', 'is_device', 'deviceid', 'points', 'spec']
+
 	def __init__(self, indict=None):
 		self.param = ''
 		self.is_device = False
@@ -135,6 +139,8 @@ class amped_region:
 		return amped_region
 
 class amped_param:
+	__slots__ = ['id', 'name', 'value']
+	
 	def __init__(self, indict=None):
 		self.id = 0
 		self.name = ''

@@ -178,6 +178,8 @@ class magda_clip_audio:
 		return o
 
 class magda_clip_midiNote:
+	__slots__ = ['noteNumber', 'velocity', 'startBeat', 'lengthBeats']
+	
 	def __init__(self, indict=None):
 		self.noteNumber = 60
 		self.velocity = 100

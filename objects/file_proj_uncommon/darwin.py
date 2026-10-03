@@ -4,6 +4,8 @@
 import json
 
 class darwin_note:
+	__slots__ = ['durationTicks','pitch','startTick','velocity']
+
 	def __init__(self, indict=None):
 		self.durationTicks = 0
 		self.pitch = 60
@@ -26,6 +28,8 @@ class darwin_note:
 		return outdict
 
 class darwin_clip:
+	__slots__ = ['clipType','durationTicks','notes','startTick']
+
 	def __init__(self, indict=None):
 		self.clipType = "midi"
 		self.durationTicks = 128
@@ -52,6 +56,23 @@ class darwin_clip:
 		return outdict
 
 class darwin_track:
+	__slots__ = [
+		'clips',
+		'color',
+		'folderExpanded',
+		'id',
+		'instrumentName',
+		'isFolder',
+		'muted',
+		'name',
+		'pan',
+		'parentFolderId',
+		'solo',
+		'timingOffsetMs',
+		'visible',
+		'volume'
+	]
+
 	def __init__(self, indict=None):
 		self.clips = []
 		self.color = "#888888"
@@ -108,6 +129,8 @@ class darwin_track:
 		return outdict
 
 class darwin_project:
+	__slots__ = ['bpm','formatVersion','masterTrack','name','tracks']
+	
 	def __init__(self, indict=None):
 		self.bpm = 128
 		self.formatVersion = 1

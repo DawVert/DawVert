@@ -29,6 +29,8 @@ def decode_events(ebrw_readstr):
 	return sop_eventdata
 
 class adlib_sop_track:
+	__slots__ = ['chanmode','events']
+	
 	def __init__(self):
 		self.chanmode = 0
 		self.events = []

@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 
 from objects.file_proj._cubasexml.func import *
 
-@dataclass
+@dataclass(slots=True)
 class class_MMidiNote:
 	idnum: int = 0
 	start: float = 0
@@ -43,7 +43,7 @@ class class_MMidiNote:
 		makeval__int(xmlobj, 'Data3', self.data3)
 globalstate.classes['MMidiNote'] = class_MMidiNote
 
-@dataclass
+@dataclass(slots=True)
 class class_MMidiPartEvent:
 	idnum: int = 0
 	node_idnum: int = -1
@@ -76,7 +76,7 @@ class class_MMidiPartEvent:
 		makeval__obj(xmlobj, 'Quantize', self.quantize)
 globalstate.classes['MMidiPartEvent'] = class_MMidiPartEvent
 
-@dataclass
+@dataclass(slots=True)
 class class_MMidiController:
 	idnum: int = 0
 	start: float = 0
@@ -97,7 +97,7 @@ class class_MMidiController:
 		makeval__int(xmlobj, 'Flags', self.flags)
 globalstate.classes['MMidiController'] = class_MMidiController
 
-@dataclass
+@dataclass(slots=True)
 class class_MMidiAfterTouch:
 	idnum: int = 0
 	start: float = 0
@@ -115,7 +115,7 @@ class class_MMidiAfterTouch:
 		makeval__int(xmlobj, 'Flags', self.flags)
 globalstate.classes['MMidiAfterTouch'] = class_MMidiAfterTouch
 
-@dataclass
+@dataclass(slots=True)
 class class_MMidiPitchBend:
 	idnum: int = 0
 	start: float = 0
@@ -136,7 +136,7 @@ class class_MMidiPitchBend:
 		makeval__int(xmlobj, 'Flags', self.flags)
 globalstate.classes['MMidiPitchBend'] = class_MMidiPitchBend
 
-@dataclass
+@dataclass(slots=True)
 class class_MMidiPart:
 	idnum: int = 0
 	name: str = ''

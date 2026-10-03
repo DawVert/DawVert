@@ -35,6 +35,8 @@ def t_error(t):
 	t.lexer.skip(1)
 
 class zquence_group:
+	__slots__ = ['attrib','groups','name']
+	
 	def __init__(self):
 		self.attrib = {}
 		self.groups = []

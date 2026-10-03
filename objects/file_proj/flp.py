@@ -53,13 +53,13 @@ class flp_note:
 		self.mod_y = 128
 
 class flp_pattern:
+	__slots__ = ['color', 'automation', 'notes', 'name', 'timemarkers']
 	def __init__(self):
 		self.color = None
 		self.automation = {}
 		self.notes = []
 		self.name = None
 		self.timemarkers = []
-
 
 class debug_eventview:
 	def __init__(self):

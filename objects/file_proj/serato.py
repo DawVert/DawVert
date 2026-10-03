@@ -211,6 +211,8 @@ class serato_scene_deck:
 		return out
 
 class serato_note:
+	__slots__ = ['start','duration','channel','number','velocity']
+	
 	def __init__(self, indict=None):
 		self.start = 0
 		self.duration = 0

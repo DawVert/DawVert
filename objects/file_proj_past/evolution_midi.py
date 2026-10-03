@@ -6,6 +6,8 @@ import zlib
 import logging
 
 class evo_midi_event:
+	__slots__ = ['unk1','pos','type','chan','data']
+
 	def __init__(self, ebrw_readstr):
 		if ebrw_readstr: self.read(ebrw_readstr)
 

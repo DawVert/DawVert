@@ -1,6 +1,8 @@
 import xml.etree.ElementTree as ET
 
 class dawproject_pointtarget:
+	__slots__ = ['expression', 'parameter']
+
 	def __init__(self, xml_data=None):
 		self.expression = None
 		self.parameter = None
@@ -16,6 +18,8 @@ class dawproject_pointtarget:
 		if self.parameter != None: tempxml.set('parameter', self.parameter)
 
 class dawproject_realpoint:
+	__slots__ = ['time', 'interpolation', 'value']
+
 	def __init__(self, xml_data=None):
 		self.time = None
 		self.interpolation = None
@@ -34,6 +38,8 @@ class dawproject_realpoint:
 		if self.time != None: tempxml.set('time',  '%.6f' % self.time)
 
 class dawproject_boolpoint:
+	__slots__ = ['time', 'value']
+
 	def __init__(self, xml_data=None):
 		self.time = None
 		self.value = None
@@ -49,6 +55,8 @@ class dawproject_boolpoint:
 		if self.time != None: tempxml.set('time', '%.6f' % self.time)
 
 class dawproject_points:
+	__slots__ = ['id', 'unit', 'points', 'points_bool', 'target']
+
 	def __init__(self, xml_data=None):
 		self.id = None
 		self.unit = None
@@ -77,6 +85,8 @@ class dawproject_points:
 		for x in self.points_bool: x.write(tempxml)
 
 class dawproject_timesigpoint:
+	__slots__ = ['time', 'numerator', 'denominator']
+
 	def __init__(self, xml_data=None):
 		self.time = None
 		self.numerator = 4
@@ -95,6 +105,8 @@ class dawproject_timesigpoint:
 		if self.time != None: tempxml.set('time',  '%.6f' % self.time)
 
 class dawproject_points_timesig:
+	__slots__ = ['id', 'unit', 'points', 'target']
+	
 	def __init__(self, xml_data=None):
 		self.id = None
 		self.unit = None

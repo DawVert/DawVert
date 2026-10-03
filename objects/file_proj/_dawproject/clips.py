@@ -73,6 +73,8 @@ class dawproject_warps:
 		for x in self.points: x.write(tempxml)
 
 class dawproject_note:
+	__slots__ = ['time', 'duration', 'channel', 'key', 'vel', 'rel', 'points', 'lanes']
+	
 	def __init__(self, xml_data=None):
 		self.time = None
 		self.duration = None

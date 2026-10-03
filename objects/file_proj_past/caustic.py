@@ -474,6 +474,7 @@ dtype_autoset = np.dtype([
 	]) 
 
 class caustic_autoset:
+	__slots__ = ['data']
 	def __init__(self):
 		self.data = {}
 

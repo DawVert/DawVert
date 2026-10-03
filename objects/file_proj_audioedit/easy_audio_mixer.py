@@ -6,6 +6,8 @@ import xml.etree.ElementTree as ET
 def getbool(v): return v=='true'
 
 class easyamixr_EAM1_AutomationPointClass:
+	__slots__ = ['BeatN','Value','ID','Selected']
+
 	def __init__(self, xmldata=None):
 		self.BeatN = 0
 		self.Value = 0
@@ -22,6 +24,19 @@ class easyamixr_EAM1_AutomationPointClass:
 			if tagname == 'Selected': self.Selected = getbool(xpart.text)
 
 class easyamixr_EAM1_AutomationClass:
+	__slots__ = [
+		'ID',
+		'DestinationID',
+		'AutomationType',
+		'OwnerISAudioChannel',
+		'ParameterIndex',
+		'MidiControllerNumber',
+		'HTMLColor',
+		'Visible',
+		'DisplayMode',
+		'Points'
+	]
+
 	def __init__(self, xmldata=None):
 		self.ID = 0
 		self.DestinationID = 0

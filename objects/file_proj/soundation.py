@@ -7,6 +7,8 @@ logger_projparse = logging.getLogger('projparse')
 # ============================================= device ============================================= 
 
 class soundation_param:
+	__slots__ = ['value','automation','has_auto']
+
 	def __init__(self, indict=None):
 		self.value = 0
 		self.automation = []
@@ -23,6 +25,8 @@ class soundation_param:
 			else: logger_projparse.warning('soundation: param: unimplemented attrib: '+n)
 
 class soundation_paramset:
+	__slots__ = ['data']
+
 	def __init__(self):
 		self.data = {}
 
@@ -55,6 +59,8 @@ class soundation_paramset:
 			dictin[n] = param_data
 
 class soundation_device:
+	__slots__ = ['rackName','identifier','bypass','params','data']
+	
 	def __init__(self, indict=None):
 		self.rackName = None
 		self.identifier = None

@@ -30,13 +30,14 @@ pb_gptr = np.dtype([
 	])
 
 class v2m_track:
+	__slots__ = ['notes','cc','pc','pb']
+
 	def __init__(self, ebrw_readstr):
 		numnotes = ebrw_readstr.int_u32()
 		self.notes = np.empty(numnotes, dtype=notes_dtype)
 		self.cc = []
 		self.pc = []
 		self.pb = []
-		self.cc = []
 
 		if numnotes:
 			ebrw_readstr.isolate_size(5*numnotes)

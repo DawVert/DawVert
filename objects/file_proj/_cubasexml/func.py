@@ -43,6 +43,8 @@ def add_list_genid(list, classname, counter_obj):
 # ================================================ OBJECTS ================================================
 
 class cubasexml_string:
+	__slots__ = ['text', 'wide']
+
 	def __init__(self, indata):
 		self.text = None
 		self.wide = False
@@ -59,6 +61,8 @@ class cubasexml_string:
 		self.wide = indata.get('wide')=='true'
 
 class cubasexml_object:
+	__slots__ = ['obj_class', 'obj_id', 'obj_data', 'ref_obj', 'is_pointer']
+	
 	def __init__(self, indata):
 		self.obj_class = None
 		self.obj_id = -1
@@ -101,6 +105,7 @@ class cubasexml_object:
 			globalstate.debug_allp[self.obj_id] = self
 
 class cubasexml_list_int:
+	__slots__ = ['data']
 	def __init__(self, *args): self.data = args[0] if args else []
 	def __len__(self): return self.data.__len__()
 	def __getitem__(self, i): return self.data.__getitem__(i)
@@ -116,6 +121,7 @@ class cubasexml_list_int:
 			inxml.set('value', str(x))
 
 class cubasexml_list_float:
+	__slots__ = ['data']
 	def __init__(self, *args): self.data = args[0] if args else []
 	def __len__(self): return self.data.__len__()
 	def __getitem__(self, i): return self.data.__getitem__(i)
@@ -131,6 +137,7 @@ class cubasexml_list_float:
 			inxml.set('value', str(x))
 
 class cubasexml_list_string:
+	__slots__ = ['data']
 	def __init__(self, *args): self.data = args[0] if args else []
 	def __len__(self): return self.data.__len__()
 	def __getitem__(self, i): return self.data.__getitem__(i)
@@ -146,6 +153,7 @@ class cubasexml_list_string:
 			inxml.set('value', x.text)
 
 class cubasexml_list_dict:
+	__slots__ = ['data']
 	def __init__(self, *args): self.data = args[0] if args else []
 	def __len__(self): return self.data.__len__()
 	def __getitem__(self, i): return self.data.__getitem__(i)
@@ -161,6 +169,7 @@ class cubasexml_list_dict:
 			write_xdata(x, inxml)
 
 class cubasexml_list_obj:
+	__slots__ = ['data']
 	def __init__(self, *args): self.data = args[0] if args else []
 	def __len__(self): return self.data.__len__()
 	def __getitem__(self, i): return self.data.__getitem__(i)
@@ -357,7 +366,7 @@ class seq_value:
 	def to_dict(self):
 		return {'Value': int(self.value), 'Min': int(self.v_min), 'Max': int(self.v_max)}
 
-@dataclass
+@dataclass(slots=True)
 class obj_pointer:
 	idnum: int = -1
 	def from_seqobj(self, seqobj):

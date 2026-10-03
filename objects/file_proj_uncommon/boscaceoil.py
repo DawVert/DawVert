@@ -33,6 +33,8 @@ scale_data = [
 ]
 
 class ceol_instrument:
+	__slots__ = ['inst','type','palette','cutoff','resonance','volume']
+
 	def __init__(self, ebrw_readstr):
 		self.inst = 0
 		self.type = 0
@@ -80,6 +82,8 @@ class ceol_note:
 		ebrw_writestr.int_u16(0)
 
 class ceol_pattern:
+	__slots__ = ['notes','key','scale','inst','palette','recordfilter']
+
 	def __init__(self, ebrw_readstr):
 		self.notes = []
 		self.key = 0
@@ -117,6 +121,22 @@ class ceol_pattern:
 # ============================================= song ============================================= 
 
 class ceol_song:
+	__slots__ = [
+		'versionnum',
+		'swing',
+		'effect_type',
+		'effect_value',
+		'bpm',
+		'pattern_length',
+		'bar_length',
+		'instruments',
+		'patterns',
+		'spots',
+		'length',
+		'loopstart',
+		'loopend'
+	]
+
 	def __init__(self):
 		self.versionnum = 1
 		self.swing = 0

@@ -43,6 +43,8 @@ class note_note:
 		ebrw_readstr.skip(1)
 
 class notev2_pattern:
+	__slots__ = ['tempo', 'notes', 'size']
+
 	def __init__(self, ebrw_readstr, tempo):
 		self.tempo = tempo
 		self.notes = []
@@ -54,6 +56,8 @@ class notev2_pattern:
 			self.notes.append(note)
 
 class notev2_song:
+	__slots__ = ['name', 'author', 'date1', 'date2', 'order', 'tempo_table', 'patterns']
+	
 	def __init__(self):
 		self.name = ''
 		self.author = ''

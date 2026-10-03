@@ -4,6 +4,7 @@ import numpy as np
 import struct
 
 class oldflm_note:
+	__slots__ = ['pos','dur','key','vol','num_auto','unk7','unk8','auto']
 	def __init__(self, ebrw_readstr):
 		self.pos = ebrw_readstr.int_u32()
 		self.dur = ebrw_readstr.int_u16()
@@ -12,7 +13,6 @@ class oldflm_note:
 		self.num_auto = ebrw_readstr.int_u16()
 		self.unk7 = ebrw_readstr.int_u8()
 		self.unk8 = ebrw_readstr.int_u8()
-
 		self.auto = []
 
 def read_notes(ebrw_readstr):

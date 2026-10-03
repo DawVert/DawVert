@@ -17,6 +17,8 @@ def list_fixnat(ind):
 # ============================================= fx ============================================= 
 
 class nanostudio_fxslot:
+	__slots__ = ['type', 'patch']
+
 	def __init__(self, xmldata):
 		self.type = None
 		self.patch = None
@@ -28,6 +30,8 @@ class nanostudio_fxslot:
 			if x_part.tag == 'Patch': self.patch = x_part.attrib.copy()
 
 class nanostudio_insertfx:
+	__slots__ = ['node_in', 'node_slot1', 'node_slot2', 'node_slot3', 'node_slot4', 'node_out']
+
 	def __init__(self, xmldata):
 		self.node_in = None
 		self.node_slot1 = nanostudio_fxslot(None)
@@ -49,6 +53,8 @@ class nanostudio_insertfx:
 					if x_inpart.tag == 'SLOT4': self.node_slot4.read(x_inpart)
 
 class nanostudio_mixerchannel:
+	__slots__ = ['vol', 'Pan', 'insertfx']
+	
 	def __init__(self, xmldata):
 		self.vol = 1
 		self.Pan = 0.5

@@ -6,6 +6,8 @@ from external.easybinrw import easybinrw
 from functions import data_bytes
 
 class track_tempo:
+	__slots__ = ['name','tempo','events']
+
 	def __init__(self): 
 		self.name = ''
 		self.tempo = 120
@@ -17,6 +19,8 @@ class track_tempo:
 		self.events = [[ebrw_readstr.int_u16(), ebrw_readstr.float()] for _ in range(ebrw_readstr.int_u16())]
 
 class track_voice:
+	__slots__ = ['name','events']
+
 	def __init__(self): 
 		self.name = ''
 		self.events = []
@@ -32,6 +36,8 @@ class track_voice:
 			self.events.append([value, deltatime])
 
 class track_timbre:
+	__slots__ = ['name','events']
+
 	def __init__(self): 
 		self.name = ''
 		self.events = []
@@ -46,6 +52,8 @@ class track_timbre:
 			self.events.append([timbre_pos, timbre_name])
 
 class track_float:
+	__slots__ = ['name','events']
+
 	def __init__(self): 
 		self.name = ''
 		self.events = []
@@ -56,6 +64,8 @@ class track_float:
 		self.events = [[ebrw_readstr.int_u16(), ebrw_readstr.float()] for _ in range(numevents)]
 
 class adlib_rol_track:
+	__slots__ = ['voice','timbre','volume','pitch']
+	
 	def __init__(self): 
 		self.voice = track_voice()
 		self.timbre = track_timbre()

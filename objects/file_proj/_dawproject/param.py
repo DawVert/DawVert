@@ -2,6 +2,8 @@
 import xml.etree.ElementTree as ET
 
 class dawproject_param_path:
+	__slots__ = ['xmlname', 'used', 'path', 'external']
+
 	def __init__(self, name):
 		self.xmlname = name
 		self.used = False
@@ -32,6 +34,8 @@ class dawproject_param_path:
 			if self.path != None: tempxml.set('path', str(self.path))
 
 class dawproject_param_numeric:
+	__slots__ = ['xmlname', 'used', 'max', 'min', 'unit', 'value', 'id', 'name']
+
 	def __init__(self, name):
 		self.xmlname = name
 		self.used = False
@@ -71,6 +75,8 @@ class dawproject_param_numeric:
 			if self.name != None: tempxml.set('name', str(self.name))
 
 class dawproject_param_bool:
+	__slots__ = ['xmlname', 'used', 'name', 'unit', 'value', 'id']
+
 	def __init__(self, name):
 		self.xmlname = name
 		self.used = False
@@ -96,6 +102,8 @@ class dawproject_param_bool:
 			if self.name != None: tempxml.set('name', str(self.name))
 
 class dawproject_param_timesignature:
+	__slots__ = ['xmlname', 'used', 'denominator', 'numerator', 'id']
+	
 	def __init__(self, name):
 		self.xmlname = name
 		self.used = False

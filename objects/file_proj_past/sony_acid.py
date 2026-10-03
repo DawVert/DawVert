@@ -7,6 +7,8 @@ from external.easybinrw import easybinrw
 from external.easybinrw import riff_chunks
 
 class sdml_env:
+	__slots__ = ['type', 'points']
+
 	def __init__(self):
 		self.type = 0
 		self.points = []
@@ -26,6 +28,18 @@ class sdml_env:
 			pass
 
 class sdml_region:
+	__slots__ = [
+		'start', 
+		'end', 
+		'unk3', 
+		'offset', 
+		'unk5', 
+		'unk6', 
+		'pitch', 
+		'unk8', 
+		'envs'
+	]
+
 	def __init__(self):
 		self.start = 0
 		self.end = 0
@@ -67,6 +81,8 @@ warp_dtype = np.dtype([
 	])
 
 class sdml_track_send:
+	__slots__ = ['id', 'vol']
+
 	def __init__(self):
 		self.id = 0
 		self.vol = 0
@@ -174,6 +190,8 @@ class sdml_track:
 							pass
 
 class sdml_port:
+	__slots__ = ['type', 'points', 'vol_left', 'vol_right', 'num']
+
 	def __init__(self):
 		self.type = 0
 		self.points = []
@@ -190,6 +208,8 @@ class sdml_port:
 		self.name = ebrw_readstr.string16(ebrw_readstr.int_u32())
 
 class sdml_marker:
+	__slots__ = ['pos', 'id', 'text']
+
 	def __init__(self):
 		self.pos = 0
 		self.id = 0
@@ -203,6 +223,17 @@ class sdml_marker:
 		self.text = ebrw_readstr.string16(ebrw_readstr.int_u32())
 
 class sdml_fxdx:
+	__slots__ = [
+		'preset_obj',
+		'level_l',
+		'level_r',
+		'fx_num',
+		'name',
+		'id',
+		'name2',
+		'preset_name'
+	]
+
 	def __init__(self):
 		from objects.file import preset_dx
 		self.preset_obj = preset_dx.dx_preset()

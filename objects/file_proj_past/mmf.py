@@ -36,7 +36,18 @@ def calc_gatetime_3(ebrw_readstr):
 	return out_duration
 
 class smaf_track_ma3:
-	def __init__(self, ebrw_readstr, end):
+	__slots__ = [
+		'format_type',
+		'sequence_type',
+		'timebase_dur',
+		'timebase_gate',
+		'channel_stat',
+		'sequence',
+		'setup',
+		'audio'
+	]
+
+	 def __init__(self, ebrw_readstr, end):
 		self.format_type = ebrw_readstr.int_u8()
 		self.sequence_type = ebrw_readstr.int_u8()
 		self.timebase_dur = ebrw_readstr.int_u8()
@@ -162,6 +173,21 @@ def calc_gatetime_2(ebrw_readstr):
 	return out_duration
 
 class smaf_event_ma2:
+	__slots__ = [
+		'deltaTime',
+		'channel',
+		'event_type',
+		'value',
+		'is_short',
+		'note_key',
+		'note_oct',
+		'duration',
+		'data',
+		'resttime',
+		'ch_oc',
+		'notenum'
+	]
+
 	def __init__(self, ebrw_readstr):
 		self.deltaTime = 0
 		self.channel = 0
@@ -260,6 +286,16 @@ class smaf_event_ma2:
 		#	exit()
 
 class smaf_track_ma2:
+	__slots__ = [
+		'format_type',
+		'sequence_type',
+		'timebase_dur',
+		'timebase_gate',
+		'channel_stat',
+		'sequence',
+		'setup'
+	]
+
 	def __init__(self, ebrw_readstr, end):
 		self.format_type = ebrw_readstr.int_u8()
 		self.sequence_type = ebrw_readstr.int_u8()

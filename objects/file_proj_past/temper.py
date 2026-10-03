@@ -32,6 +32,8 @@ class metaevent_key:
 		return cls
 
 class metaevent_bpm:
+	__slots__ = ['td','bpm']
+
 	def __init__(self):
 		self.td = 0
 		self.bpm = 0
@@ -62,6 +64,8 @@ class metaevent_meter:
 # ============================================= event ============================================= 
 
 class event_note:
+	__slots__ = ['td','d','p','v','r']
+
 	def __init__(self):
 		self.td = 0
 		self.d = 0
@@ -80,6 +84,8 @@ class event_note:
 		return cls
 
 class event_aftertouch:
+	__slots__ = ['td','v','ct']
+
 	def __init__(self):
 		self.td = 0
 		self.v = 0
@@ -94,6 +100,8 @@ class event_aftertouch:
 		return cls
 
 class event_patch:
+	__slots__ = ['td','v','ct']
+
 	def __init__(self):
 		self.td = 0
 		self.v = 0
@@ -108,6 +116,8 @@ class event_patch:
 		return cls
 
 class event_pitch:
+	__slots__ = ['td','v','ct']
+
 	def __init__(self):
 		self.td = 0
 		self.v = 0
@@ -122,6 +132,8 @@ class event_pitch:
 		return cls
 
 class event_control:
+	__slots__ = ['td','n','v','ct']
+
 	def __init__(self):
 		self.td = 0
 		self.n = 0
@@ -140,6 +152,8 @@ class event_control:
 # ============================================= clips ============================================= 
 
 class temper_clip_ui:
+	__slots__ = ['name','color_bg','color_fg']
+
 	def __init__(self):
 		self.name = None
 		self.color_bg = None
@@ -164,6 +178,8 @@ class temper_clip_ui:
 		return cls
 
 class temper_phrase:
+	__slots__ = ['td','d','events','ui']
+
 	def __init__(self):
 		self.td = 0
 		self.d = 0
@@ -187,6 +203,8 @@ class temper_phrase:
 		return cls
 
 class event_audio:
+	__slots__ = ['td','file','end','off','flags','ui']
+
 	def __init__(self):
 		self.td = 0
 		self.file = 0
@@ -208,6 +226,8 @@ class event_audio:
 		return cls
 
 class temper_keynames_keyname:
+	__slots__ = ['key','name']
+
 	def __init__(self):
 		self.key = ''
 		self.name = ''
@@ -220,6 +240,8 @@ class temper_keynames_keyname:
 		return cls
 
 class temper_keynames:
+	__slots__ = ['maps','name']
+
 	def __init__(self):
 		self.maps = []
 		self.name = None
@@ -236,6 +258,8 @@ class temper_keynames:
 # ============================================= project ============================================= 
 
 class temper_track_metrics_part:
+	__slots__ = ['s','n','h','fcfg']
+	
 	def __init__(self):
 		self.s = ''
 		self.n = ''

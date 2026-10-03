@@ -7,6 +7,8 @@ import logging
 # ============================================= track ============================================= 
 
 class midsequer_event_note:
+	__slots__ = ['note','vel','dur','time']
+
 	def __init__(self, xmldata=None):
 		self.note = 60
 		self.vel = 100
@@ -22,6 +24,8 @@ class midsequer_event_note:
 			elif n == 't': self.time = int(v)
 
 class midsequer_track_ini:
+	__slots__ = ['inst_pc','volume']
+	
 	def __init__(self, xmldata=None):
 		self.inst_pc = 0
 		self.volume = 100

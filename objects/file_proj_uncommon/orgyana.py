@@ -26,6 +26,8 @@ def stream_encode(invals):
 	return invals
 
 class orgyana_orgsamp():
+	__slots__ = ['sample_data', 'drum_data', 'num_drums', 'drum_rate', 'loaded']
+
 	def __init__(self): 
 		self.sample_data = []
 		self.drum_data = []
@@ -48,6 +50,8 @@ class orgyana_orgsamp():
 			return False
 
 class orgyana_track:
+	__slots__ = ['pitch', 'instrument', 'disable_sustaining_notes', 'number_of_notes', 'notes']
+
 	def __init__(self):
 		self.pitch = 1000
 		self.instrument = 0
@@ -69,6 +73,16 @@ class orgyana_track:
 		ebrw_writestr.int_u16(len(self.notes))
 
 class orgyana_project:
+	__slots__ = [
+		'oldperc', 
+		'wait', 
+		'stepsperbar', 
+		'beatsperstep', 
+		'loop_beginning', 
+		'loop_end', 
+		'tracks'
+	]
+	
 	def __init__(self):
 		self.oldperc = False
 		self.wait = 120

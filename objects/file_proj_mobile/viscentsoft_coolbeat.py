@@ -85,6 +85,8 @@ class coolbeat_track:
 		if 'pitchRange' in indict: self.pitchRange = indict['pitchRange']
 
 class coolbeat_section:
+	__slots__ = ['startTick','length','startOffsetTick','endOffsetTick','notes','label']
+	
 	def __init__(self, indict=None):
 		self.startTick = 0
 		self.length = 0
@@ -103,6 +105,8 @@ class coolbeat_section:
 		if 'label' in indict: self.label = indict['label']
 
 class coolbeat_note:
+	__slots__ = ['startTick','length','key','volume']
+
 	def __init__(self, indict=None):
 		self.startTick = 0
 		self.length = 120

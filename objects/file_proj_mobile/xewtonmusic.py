@@ -112,6 +112,8 @@ notes_dtype = np.dtype([
 	])
 
 class xewtonmusic_song_note:
+	__slots__ = ['pos','dur','key','vol','auto']
+	
 	def __init__(self):
 		self.pos = 0
 		self.dur = 0

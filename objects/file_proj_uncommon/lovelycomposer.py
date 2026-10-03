@@ -8,6 +8,8 @@ from objects.exceptions import ProjectFileParserException
 vl_dtype = np.dtype([('n', np.int16),('t', np.int16),('v', np.int16),('f', np.int16),('id', np.int32),('x', np.int16),('p', np.int16),('e', np.int16)])
 
 class LCSound:
+	__slots__ = ['play_notes','play_speed','vl','voicelist']
+
 	def __init__(self, indict=None):
 		self.play_notes = 32
 		self.play_speed = 30
@@ -46,6 +48,8 @@ class LCSound:
 					if dat['e'] != None: vlp['e'] = dat['e']
 
 class LCSoundList:
+	__slots__ = ['sl']
+
 	def __init__(self, indict=None):
 		self.sl = []
 		if indict is not None: self.read(indict)
@@ -56,6 +60,8 @@ class LCSoundList:
 				self.sl.append(LCSound(ch))
 
 class LCChannelList:
+	__slots__ = ['ch']
+
 	def __init__(self):
 		self.ch = []
 
@@ -65,6 +71,21 @@ class LCChannelList:
 				self.ch.append(LCSoundList(ch))
 
 class LCRhythm:
+	__slots__ = [
+		'enable_drum',
+		'enable_base',
+		'enable_melody',
+		'bar_rhythm_rate',
+		'bar_arpeggio_rate',
+		'arpeggio',
+		'arpeggio_octave',
+		'arpeggio_length',
+		'arpeggio_reverse',
+		'pattern',
+		'sub_pattern',
+		'enable_chordpart'
+	]
+
 	def __init__(self, indict=None):
 		self.enable_drum = True
 		self.enable_base = True
@@ -96,6 +117,8 @@ class LCRhythm:
 			if 'enable_chordpart' in indict: self.enable_chordpart = indict['enable_chordpart']
 
 class LCRhythmList:
+	__slots__ = ['ry']
+	
 	def __init__(self):
 		self.ry = []
 

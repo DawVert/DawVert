@@ -5,11 +5,11 @@ import json
 
 
 class cvpj_chord:
+	__slots__ = ['keys','base_key','chord_type']
+	
 	chorddata = []
 	basechorddata = []
 
-	__slots__ = ['keys','base_key','chord_type']
-	
 	def __init__(self):
 		self.keys = []
 		self.base_key = 0

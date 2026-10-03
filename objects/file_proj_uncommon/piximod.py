@@ -9,6 +9,8 @@ import numpy as np
 logger_projparse = logging.getLogger('projparse')
 
 class piximod_pattern:
+	__slots__ = ['tracks', 'length', 'data']
+	
 	def __init__(self, ebrw_readstr):
 		self.tracks = 0
 		self.length = 0

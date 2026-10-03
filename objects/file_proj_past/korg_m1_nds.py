@@ -5,6 +5,7 @@ from external.easybinrw import easybinrw
 # ============================================= pattern ============================================= 
 
 class korg_m1_note:
+	__slots__ = ['length','velocity','pitch','offset']
 	def __init__(self):
 		self.length = 0
 		self.velocity = 0
@@ -12,6 +13,7 @@ class korg_m1_note:
 		self.offset = 0
 
 class korg_m1_block:
+	__slots__ = ['offset','notes']
 	def __init__(self):
 		self.offset = 0
 		self.notes = []
@@ -19,6 +21,7 @@ class korg_m1_block:
 # ============================================= channel ============================================= 
 
 class korg_m1_channel_drumsettings:
+	__slots__ = ['level','pan','tune']
 	def __init__(self):
 		self.level = 0
 		self.pan = 0

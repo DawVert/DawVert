@@ -484,6 +484,8 @@ verboseid['bc945f925a52d21186dc00c04f8edb8a'] = 'Group:MetaData'
 verboseid['35fdff0c5f03ec4a9cc373b0187005a7'] = 'Group:Arranger'
 
 class sony_acid_chunk:
+	__slots__ = ['id', 'size', 'start', 'end', 'is_list', 'in_data', 'content']
+	
 	def __init__(self):
 		self.id = None
 		self.size = 0

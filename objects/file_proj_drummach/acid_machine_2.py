@@ -24,6 +24,8 @@ class acid_amx_info:
 		if 'songDate' in indict: self.songDate = indict['songDate']
 
 class acid_amx_note:
+	__slots__ = ['type','start','val','duration','offset','slide','accent','octUp','octDown','veloc']
+
 	def __init__(self, indict=None):
 		self.type = 0
 		self.start = 0
@@ -50,6 +52,8 @@ class acid_amx_note:
 		if 'veloc' in indict: self.veloc = indict['veloc']
 
 class acid_amx_pattern:
+	__slots__ = ['barLength','pattern']
+	
 	def __init__(self, indict=None):
 		self.barLength = 1
 		self.pattern = {}

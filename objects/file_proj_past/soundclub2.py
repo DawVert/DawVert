@@ -36,7 +36,7 @@ class sn2_instrument:
 				self.data = b''
 
 class sn2_event:
-	__slot__ = ['len', 'type', 'value', 'p_len', 'p_key']
+	__slots__ = ['len', 'type', 'value', 'p_len', 'p_key']
 	def __init__(self):
 		self.len = 0
 		self.type = 0
