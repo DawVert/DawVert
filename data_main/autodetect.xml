@@ -477,7 +477,7 @@
 		<file fileext=".mmcmp"/>
 	</plugin>
 
-	<plugin pluginset="main" name="darwin">
+	<plugin pluginset="uncommon" name="darwin">
 		<file fileext=".darwin"/>
 	</plugin>
 
@@ -509,5 +509,10 @@
 	<plugin pluginset="mobile" name="bajloop">
 		<file fileext=".bjm"/>
 		<bytes_header data="52656369706520666F7220707572652076656720736F6E6720312E30303A00"/>
+	</plugin>
+
+	<plugin pluginset="mobile" name="meteor">
+		<xml root_name="Project"/>
+		<file fileext=".mtproj"/>
 	</plugin>
 </autodetect>
