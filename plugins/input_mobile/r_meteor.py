@@ -11,12 +11,9 @@ def do_effect(convproj_obj, fxid, track_obj, m_fx):
 	typeid = m_fx.typeid
 	wetlvl = m_fx.mix/64
 	fxparams = m_fx.params
-	if typeid==11:
-		plugin_obj = convproj_obj.plugin__add(fxid, 'universal', 'noise_gate', None)
+	if typeid!=0:
+		plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'meteor', str(typeid))
 		plugin_obj.fxdata_add(True, wetlvl)
-		if 'Threshold' in fxparams: plugin_obj.params.add('time', fxparams['Threshold']-64, 'int')
-		if 'Attack' in fxparams: plugin_obj.params.add('attack', fxparams['Attack']/1000, 'int')
-		if 'Release' in fxparams: plugin_obj.params.add('release', fxparams['Release']/1000, 'int')
 
 class input_meteor(plugins.base):
 	def is_dawvert_plugin(self):
