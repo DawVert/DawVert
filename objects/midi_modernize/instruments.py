@@ -35,6 +35,8 @@ instchange_premake = dynbytearr.dynbytearr_premake([
 	])
 
 class instchange:
+	__slots__ = ['num_channels','num_ports','data','cur']
+	
 	def __init__(self, num_ports, num_channels):
 		self.num_channels = num_channels
 		self.num_ports = num_ports

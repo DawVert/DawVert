@@ -242,8 +242,16 @@ class input_notessimo_v3(plugins.base):
 	def get_configdef(self, configdef):
 		configdef.add_bool('sharp_bug', True, 'Recreate Sharp/Flat Bug')
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_uncommon import notessimo_v3 as proj_notessimo_v3
+		project_obj = proj_notessimo_v3.notev3_file()
+		if dawvert_intent.input_mode == 'file':
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
 
 		global sheetrealsize
 		global samplefolder
@@ -252,9 +260,6 @@ class input_notessimo_v3(plugins.base):
 		globalstore.datapack.load('notessimo_v3', './data/datapack/app/notessimo_v3.xml')
 		
 		# ---------- file load: project ----------
-		project_obj = proj_notessimo_v3.notev3_file()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
 		songlist = list(project_obj.songs)
 

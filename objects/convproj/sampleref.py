@@ -17,7 +17,6 @@ get_path_type = globalstore.os_info_target.get_path_type
 VERBOSE = False
 
 class cvpj_sampleref:
-
 	audiofile_selector = dv_plugins.create_selector('audiofile')
 	audioconv_selector = dv_plugins.create_selector('audioconv')
 
@@ -39,9 +38,6 @@ class cvpj_sampleref:
 		self.visual = visual.cvpj_visual()
 		self.defined_meta = []
 		self.fileinfo_source = 'none'
-
-
-
 
 	def to_dict(self):
 		out = {}

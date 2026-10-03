@@ -121,13 +121,17 @@ class input_serato(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'ms'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import serato as proj_serato
-		from objects.convproj import sample_entry
-
 		project_obj = proj_serato.serato_song()
 		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+		from objects.convproj import sample_entry
 
 		fileref_global = fileref.cvpj_fileref_global
 		fileref_global.add_prefix('serato_content', 'win', contentpath)

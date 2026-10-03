@@ -28,18 +28,25 @@ class input_mod(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single']
 		in_dict['projtype'] = 'ts'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_tracker import tracker_mod as proj_mod
+		project_obj = proj_mod.mod_song()
+		if dawvert_intent.input_mode == 'file':
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+		if dawvert_intent.input_mode == 'bytes':
+			project_obj.load_from_raw(dawvert_intent.input_data)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+
 		from objects import audio_data
 		from objects import globalstore
 		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.xml')
 		
-		project_obj = proj_mod.mod_song()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file, IGNORE_ERRORS): exit()
-		if dawvert_intent.input_mode == 'bytes':
-			if not project_obj.load_from_raw(dawvert_intent.input_data, IGNORE_ERRORS): exit()
-
 		samplefolder = dawvert_intent.path_samples['extracted']
 
 		# ---------- convproj init ----------

@@ -67,16 +67,21 @@ class input_pxtone(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single']
 		in_dict['projtype'] = 'rm'
 
-	def parse(self, convproj_obj, dawvert_intent):
-		from objects import colors
-		from objects import audio_data
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_uncommon import pxtone as proj_pxtone
-		
 		project_obj = proj_pxtone.ptcop_song()
 		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-		project_obj.postprocess()
+			project_obj.load_from_file(dawvert_intent.input_file)
+			project_obj.postprocess()
+			conversion_state.project = project_obj
+			return True
 
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+
+		from objects import colors
+		from objects import audio_data
+		
 		globalstore.datapack.load('pxtone', './data/datapack/app/pxtone.xml')
 		colordata = colors.colorset.from_datapack('pxtone', 'track', 'main')
 

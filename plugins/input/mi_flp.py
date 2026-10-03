@@ -206,21 +206,27 @@ class input_flp(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single','universal:arpeggiator','native:flstudio','universal:soundfont2','universal:invert','universal:swap_lr']
 		in_dict['projtype'] = 'mi'
 
-	def parse(self, convproj_obj, dawvert_intent):
-		from functions.dawspecific import flp_dec_plugins
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import flp as proj_flp
-		from objects.inst_params import fx_delay
-
 		flp_obj = proj_flp.flp_project()
-
 		if dawvert_intent.input_mode == 'file':
 			flp_obj.read(dawvert_intent.input_file)
+			conversion_state.project = flp_obj
+			conversion_state.archive = flp_obj.zipped
+			return True
 
-		if flp_obj.zipped:
-			for filename in flp_obj.zipfile.namelist():
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		flp_obj = conversion_state.project
+
+		from functions.dawspecific import flp_dec_plugins
+		from objects.inst_params import fx_delay
+
+		zip_file = conversion_state.archive
+		if zip_file:
+			for filename in zip_file.namelist():
 				if not filename.endswith('.flp'):
 					try:
-						flp_obj.zipfile.extract(filename, path=dawvert_intent.path_samples['extracted'], pwd=None)
+						zip_file.extract(filename, path=dawvert_intent.path_samples['extracted'], pwd=None)
 					except PermissionError:
 						pass
 
@@ -388,7 +394,7 @@ class input_flp(plugins.base):
 				if fl_channel_obj.type == 2:
 					if fl_channel_obj.plugin.name != None: 
 						inst_obj.plugslots.set_synth(instplugid)
-						plugin_obj = flp_dec_plugins.getparams(convproj_obj, instplugid, fl_channel_obj.plugin, samplefolder, flp_obj.zipfile, dawvert_intent)
+						plugin_obj = flp_dec_plugins.getparams(convproj_obj, instplugid, fl_channel_obj.plugin, samplefolder, zip_file, dawvert_intent)
 						if fl_channel_obj.plugin.name == 'fruity wrapper':
 							wrapper_plugids.append(instplugid)
 
@@ -830,7 +836,7 @@ class input_flp(plugins.base):
 				if slot_obj:
 					try:
 						pluginid = 'FLPlug_F_'+str(mixer_id)+'_'+str(slot_id)
-						plugin_obj = flp_dec_plugins.getparams(convproj_obj, pluginid, slot_obj.plugin, samplefolder, flp_obj.zipfile, dawvert_intent)
+						plugin_obj = flp_dec_plugins.getparams(convproj_obj, pluginid, slot_obj.plugin, samplefolder, zip_file, dawvert_intent)
 
 						plugin_obj.fxdata_add(bool(route_on), route_wet)
 						plugin_obj.role = 'effect'

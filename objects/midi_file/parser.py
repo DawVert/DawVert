@@ -93,7 +93,7 @@ def parseEvent(memoryMap, parseState):
 	elif runningStatus >= 0x80:
 		return parseChannelEvent(deltaTime, runningStatus, memoryMap)
 
-@dataclass
+@dataclass(slots=True)
 class MidiParseState:
 	runningStatus: int = 0
 
@@ -111,7 +111,7 @@ def parseTrackHeader(memoryMap):
 	chunkLength = struct.unpack(">I", memoryMap.read(4))[0]
 	return chunkLength
 
-@dataclass
+@dataclass(slots=True)
 class MidiTrack:
 	events: List
 
@@ -134,7 +134,7 @@ def parseHeader(memoryMap):
 def parseTracks(memoryMap, tracksCount):
 	return [MidiTrack.fromMemoryMap(memoryMap) for i in range(tracksCount)]
 
-@dataclass
+@dataclass(slots=True)
 class MidiFile:
 	midiFormat: int
 	ppqn: int

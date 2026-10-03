@@ -12,10 +12,13 @@ import os
 flagnames = ['disabled', 'selected']
 
 class notelist_cursor:
+	__slots__ = ['base_nl','pos','enable_go_last','go_last']
+
 	def __init__(self, base_nl):
 		self.base_nl = base_nl
 		self.pos = -1
 		self.enable_go_last = True
+		self.go_last = False
 		self.goto_last()
 
 	def __iter__(self):

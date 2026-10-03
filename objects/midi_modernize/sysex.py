@@ -4,6 +4,7 @@
 import objects.midi_modernize.sysex_decode as sysex_decode
 
 class sysex_data:
+	__slots__ = ['data']
 	def __init__(self):
 		self.data = {}
 
@@ -20,6 +21,7 @@ class sysex_data:
 		self.data[pos].append(sysex_obj)
 
 class seqspec_data:
+	__slots__ = ['data']
 	def __init__(self):
 		self.data = {}
 

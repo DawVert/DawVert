@@ -57,13 +57,16 @@ class input_coolbeat(plugins.base):
 		in_dict['plugin_included'] = ['universal:soundfont2']
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_mobile import viscentsoft_coolbeat
-
 		project_obj = viscentsoft_coolbeat.coolbeat_root()
-
 		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks

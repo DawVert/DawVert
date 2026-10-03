@@ -6,6 +6,8 @@ from objects.data_bytes import riff_chunks
 from objects.data_bytes import bytewriter
 
 class riff_chunk:
+	__slots__ = ['name', 'data', 'start', 'end', 'size', 'is_list', 'in_data']
+
 	def __init__(self):
 		self.name = None
 		self.data = b''

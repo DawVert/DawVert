@@ -44,14 +44,16 @@ class input_magda(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import magda as proj_magda
-
-
 		project_obj = proj_magda.magda_session()
-
 		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
 
 		projprop = project_obj.project
 

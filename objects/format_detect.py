@@ -11,6 +11,7 @@ import fnmatch
 import re
 
 class file_detector_bytesheader:
+	__slots__ = ['offset', 'data']
 	def __init__(self):
 		self.offset = 0
 		self.data = b''
@@ -22,8 +23,26 @@ class file_detector_bytesheader:
 				return True
 		return False
 
-
 class file_detector_def:
+	__slots__ = [
+				'is_folder',
+				'file__type',
+				'file__ext',
+				'file__format',
+				'xml__root_name',
+				'plug__set',
+				'plug__name',
+				'folder__fileext',
+				'folder__files',
+				'bytesheaders',
+				'compressed__type',
+				'compressed__required',
+				'compressed__offset',
+				'archived__type',
+				'archived__required',
+				'archived__infiles'
+	]
+
 	def __init__(self):
 		self.is_folder = False
 
@@ -109,6 +128,17 @@ def comp__startdata(offset, ebrw_readstr, comptype):
 DEBUGTXT = False
 
 class file_detector:
+	__slots__ = [
+				'formats',
+				'q_filenames',
+				'q_file',
+				'q_folder',
+				'q_archived__type',
+				'q_nonarchived_none',
+				'q_nonarchived_xml',
+				'q_filenames',
+	]
+
 	def __init__(self):
 		self.formats = []
 		self.q_filenames = {}

@@ -3,6 +3,8 @@ import numpy.lib.recfunctions as recfc
 import math
 
 class dynarray_premake:
+	__slots__ = ['dtype', 'n_idx', 'n_idx_nodupe', 'out_dtype']
+
 	def __init__(self, dtype, **kwargs):
 		self.dtype = dtype
 		self.n_idx = kwargs['idx'] if 'idx' in kwargs else []
@@ -23,9 +25,14 @@ class dynarray_premake:
 		return da_obj
 
 class dynarray_data:
+	__slots__ = ['data', 'dtype', 'alloc_size', 'cursor', 'num_parts', 'n_idx', 'n_idx_nodupe']
+
 	def __init__(self, dtype, n_idx, n_idx_nodupe):
+		self.data = np.zeros(0, dtype=self.dtype)
 		self.dtype = dtype
 		self.alloc_size = 16
+		self.cursor = -1
+		self.num_parts = 0
 
 		self.n_idx = n_idx
 		self.n_idx_nodupe = n_idx_nodupe

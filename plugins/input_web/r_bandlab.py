@@ -32,13 +32,16 @@ class input_bandlab(plugins.base):
 		in_dict['plugin_included'] = ['native:bandlab']
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import bandlab as proj_bandlab
-
 		project_obj = proj_bandlab.bandlab_project()
-
 		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
 
 		globalstore.datapack.load('bandlab', './data/datapack/app/bandlab.xml')
 

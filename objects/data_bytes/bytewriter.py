@@ -60,6 +60,8 @@ class bytewriter:
 	dtype_float_b = np.dtype('>f')
 	dtype_double_b = np.dtype('>d')
 
+	__slots__ = ['buf', 'end', 'chunkprop']
+	
 	def __init__(self):
 		self.buf = BytesIO()
 		self.end = 0

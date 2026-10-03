@@ -54,7 +54,7 @@ class input_greysound(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import greysound as proj_greysound
 
 		session_obj = proj_greysound.greysound_session()
@@ -79,10 +79,14 @@ class input_greysound(plugins.base):
 					bytestream = open(dawvert_intent.input_file, 'r')
 					gs_proj = json.load(bytestream)
 					session_obj.read(gs_proj)
+					conversion_state.project = session_obj
 				except UnicodeDecodeError:
 					raise ProjectFileParserException('greysound: File is not text')
 				except json.decoder.JSONDecodeError as t:
 					raise ProjectFileParserException('greysound: JSON parsing error: '+str(t))
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		session_obj = conversion_state.project
 
 		globalstore.datapack.load('greysound', './data/datapack/app/greysound.xml')
 

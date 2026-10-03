@@ -30,15 +30,20 @@ class input_mariopaint_smp(plugins.base):
 		in_dict['plugin_included'] = ['universal:midi']
 		in_dict['projtype'] = 'rm'
 
-	def parse(self, convproj_obj, dawvert_intent):
-		from objects.songinput import mariopaint
-
+	def parse(self, conversion_state, dawvert_intent):
 		if dawvert_intent.input_mode == 'file':
 			f_smp = open(dawvert_intent.input_file, 'r')
 		try:
 			lines_smp = f_smp.readlines()
+			conversion_state.project = lines_smp
+			return True
 		except UnicodeDecodeError:
 			raise ProjectFileParserException('mariopaint_smp: File is not text')
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		lines_smp = conversion_state.project
+
+		from objects.songinput import mariopaint
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'

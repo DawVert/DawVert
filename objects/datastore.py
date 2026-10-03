@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later 
 
 class auto_multidata:
+	__slots__ = ['autodata']
+	
 	def __init__(self): 
 		self.autodata = {}
 

@@ -7,11 +7,13 @@ import logging
 logger_input = logging.getLogger('input')
 
 class reader_midifile_class():
-	def do_song(self, input_file, convproj_obj):
-		cvpj_tracks = convproj_obj.tracks
-
+	def load_file(self, input_file):
 		from objects.midi_file.parser import MidiFile
-		midifile = MidiFile.fromFile(input_file)
+		self.midifile = MidiFile.fromFile(input_file)
+
+	def do_song(self, convproj_obj):
+		midifile = self.midifile
+		cvpj_tracks = convproj_obj.tracks
 		self.ppq = midifile.ppqn
 		convproj_obj.set_timings(self.ppq)
 		for n, miditrack in enumerate(midifile.tracks):
@@ -63,18 +65,24 @@ class input_midi(plugins.base):
 		in_dict['plugin_included'] = ['universal:midi']
 		in_dict['projtype'] = 'cm'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
+		midiread_obj = reader_midifile_class()
+		if dawvert_intent.input_mode == 'file':
+			midiread_obj.load_file(dawvert_intent.input_file)
+			conversion_state.project = midiread_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		midiread_obj = conversion_state.project
+		
 		convproj_obj.type = 'cm'
+
+		midiread_obj.do_song(convproj_obj)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.fxrack_params = ['vol','pan','pitch']
 		traits_obj.auto_types = ['nopl_ticks']
 		traits_obj.track_nopl = True
-
-		midiread_obj = reader_midifile_class()
-
-		if dawvert_intent.input_mode == 'file':
-			midiread_obj.do_song(dawvert_intent.input_file, convproj_obj)
 
 		convproj_obj.do_actions.append('do_addloop')
 		convproj_obj.do_actions.append('do_singlenotelistcut')

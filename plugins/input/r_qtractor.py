@@ -57,12 +57,16 @@ class input_midi(plugins.base):
 		configdef.set_group('visual', 'Visual')
 		configdef.add_bool('swap_bg_fg', False, 'Swap BG/FG colors')
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import qtractor as proj_qtractor
-
 		project_obj = proj_qtractor.qtractor_project()
 		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks

@@ -7,6 +7,8 @@ import os
 VERBOSE = False
 
 class cvpj_videoref:
+	__slots__ = ['fileref','found','dur_samples','dur_sec','hz','defined_meta']
+	
 	def __init__(self):
 		self.fileref = fileref.cvpj_fileref()
 		self.found = False

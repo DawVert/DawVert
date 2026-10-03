@@ -19,14 +19,18 @@ class input_petaporon(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import flipperzero as proj_flipperzero
-		from functions import note_data
-
 		project_obj = proj_flipperzero.fmf_song()
-
 		if dawvert_intent.input_mode == 'file':
 			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+		
+		from functions import note_data
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks

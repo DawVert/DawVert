@@ -341,17 +341,16 @@ class input_amped(plugins.base):
 		in_dict['plugin_included'] = ['native:amped', 'universal:midi', 'user:reasonstudios:europa', 'universal:sampler:multi']
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import amped as proj_amped
 
-		global samplefolder
-		
 		# ---------- file load: ZIP ----------
 		try:
 			if dawvert_intent.input_mode == 'file':
 				zip_data = zipfile.ZipFile(dawvert_intent.input_file, 'r')
 		except zipfile.BadZipFile as t:
 			raise ProjectFileParserException('amped: Bad ZIP File: '+str(t))
+		conversion_state.archive = zip_data
 
 		# ---------- file load: project ----------
 		try:
@@ -360,14 +359,25 @@ class input_amped(plugins.base):
 			raise ProjectFileParserException('amped: amped-studio-project.json not found')
 		amped_project = json.loads(jsonproject)
 		amped_obj = proj_amped.amped_project(amped_project)
+		conversion_state.project = amped_obj
 
 		# ---------- file load: filenames ----------
 		try:
 			jsonfilenames = zip_data.read('filenames.json')
+			amped_filenames = json.loads(jsonfilenames)
+			conversion_state.others['filenames'] = amped_filenames
 		except KeyError as t:
 			raise ProjectFileParserException('amped: filenames.json not found')
 
-		amped_filenames = json.loads(jsonfilenames)
+		return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		amped_obj = conversion_state.project
+		zip_data = conversion_state.archive
+		amped_filenames = conversion_state.others['filenames']
+
+		samplefolder = dawvert_intent.path_samples['extracted']
+
 		for amped_filename, realfilename in amped_filenames.items():
 			old_file = os.path.join(samplefolder,amped_filename)
 			new_file = os.path.join(samplefolder,realfilename)
@@ -379,8 +389,6 @@ class input_amped(plugins.base):
 		# -------------------------------------------
 		globalstore.datapack.load('amped', './data/datapack/app/amped.xml')
 		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.xml')
-
-		samplefolder = dawvert_intent.path_samples['extracted']
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks

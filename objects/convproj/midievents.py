@@ -68,6 +68,21 @@ all_dur_dtype = np.dtype([
 	])
 
 class midievents:
+	__slots__ = [
+			'data',
+			'cursor',
+			'ppq',
+			'track_name',
+			'copyright',
+			'port',
+			'sysex',
+			'texts',
+			'markers',
+			'lyrics',
+			'seq_spec',
+			'has_duration'
+		]
+
 	def __init__(self):
 		self.data = dynbytearr.dynbytearr(in_dtype)
 		self.cursor = self.data.create_cursor()

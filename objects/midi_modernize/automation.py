@@ -25,6 +25,8 @@ def gen_cc_names(p, c):
 	return ccdata
 
 class autoloc_store:
+	__slots__ = ['num_channels','num_ports','data','data_pitch']
+
 	def __init__(self, num_ports, num_channels):
 		self.num_channels = num_channels
 		self.num_ports = num_ports
@@ -94,6 +96,18 @@ auto_cc_channel = np.dtype([
 	])
 
 class ctrl_auto:
+	__slots__ = [
+	'num_channels',
+	'num_ports',
+	'diff',
+	'data',
+	'data_startvals',
+	'data_dictids',
+	'data_after_notes',
+	'data_startvals',
+	'auto'
+	]
+
 	def __init__(self, num_ports, num_channels):
 		import objects.midi_modernize.ctrls as ctrls
 		self.num_channels = num_channels
@@ -118,6 +132,8 @@ tempo_premake = dynbytearr.dynbytearr_premake([
 	])
 
 class tempo_data:
+	__slots__ = ['data','cur']
+
 	def __init__(self):
 		self.data = tempo_premake.create()
 		self.cur = self.data.create_cursor()
@@ -160,6 +176,8 @@ timesig_premake = dynbytearr.dynbytearr_premake([
 	])
 
 class timesig_data:
+	__slots__ = ['data','cur']
+	
 	def __init__(self):
 		self.data = timesig_premake.create()
 		self.cur = self.data.create_cursor()

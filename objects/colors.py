@@ -5,6 +5,8 @@ import copy
 from objects import globalstore
 
 class colorset:
+	__slots__ = ['colorset','colorlen','num']
+	
 	def __init__(self, colorset):
 		self.colorset = colorset
 		self.colorlen = len(self.colorset) if self.colorset != None else 0

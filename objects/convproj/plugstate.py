@@ -27,6 +27,8 @@ from objects.plugin_manu import plugmanu as plugdatamanu
 from objects.plugin_manu import extplug as extplugmanu
 
 class cvpj_regions:
+	__slots__ = ['data']
+
 	def __init__(self):
 		self.data = []
 
@@ -38,6 +40,8 @@ class cvpj_regions:
 			yield x
 
 class cvpj_sampleregions:
+	__slots__ = ['data']
+
 	def __init__(self):
 		self.data = []
 
@@ -49,6 +53,8 @@ class cvpj_sampleregions:
 			yield x
 
 class cvpj_modulation:
+	__slots__ = ['source','destination','amount','power','env_points','bipolar','bypass','stereo']
+
 	def __init__(self):
 		self.source = []
 		self.destination = []
@@ -62,6 +68,8 @@ class cvpj_modulation:
 		self.stereo = False
 
 class cvpj_preset:
+	__slots__ = ['name','program']
+
 	def __init__(self):
 		self.name = 'DawVert'
 		self.program = 0

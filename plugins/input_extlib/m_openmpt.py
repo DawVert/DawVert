@@ -27,19 +27,27 @@ class input_openmpt(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'ts'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.extlib import openmpt
-		
+
+		openmpt_obj = openmpt.openmpt()
+		openmpt_obj.load_lib()
+		moduledata = None
+		project_obj = proj_hypnospace_hsm.hsm_song()
 		if dawvert_intent.input_mode == 'file':
 			f = open(dawvert_intent.input_file, 'rb')
 			moduledata = f.read()
 		if dawvert_intent.input_mode == 'bytes':
 			moduledata = dawvert_intent.input_data
 
-		openmpt_obj = openmpt.openmpt()
-		openmpt_obj.load_lib()
-		openmpt_obj.openmpt_module_create_from_memory2(moduledata)
+		if moduledata:
+			openmpt_obj.openmpt_module_create_from_memory2(moduledata)
+			conversion_state.project = openmpt_obj
+			return True
 
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		openmpt_obj = conversion_state.project
+		
 		num_channels = openmpt_obj.openmpt_module_get_num_channels()
 		num_instruments = openmpt_obj.openmpt_module_get_num_instruments()
 		num_samples = openmpt_obj.openmpt_module_get_num_samples()

@@ -52,23 +52,30 @@ class input_mariopaint_msq(plugins.base):
 		in_dict['plugin_included'] = ['universal:midi']
 		in_dict['projtype'] = 'rm'
 	
-	def parse(self, convproj_obj, dawvert_intent):
-		from objects.songinput import mariopaint
-
+	def parse(self, conversion_state, dawvert_intent):
+		from objects.file_proj_past import temper as proj_temper
 		if dawvert_intent.input_mode == 'file':
 			f_msq = open(dawvert_intent.input_file, 'r')
 
-		msq_values = {}
-		
 		try:
 			lines_msq = f_msq.readlines()
-			for n, line in enumerate(lines_msq):
-				if '=' not in line:
-					ProjectFileParserException('mariopaint_msq: Line '+str(n+1)+': "=" not found.')
-				msq_name, fmf_val = line.rstrip().split('=', 1)
-				msq_values[msq_name] = fmf_val
+			conversion_state.project = lines_msq
+			return True
 		except UnicodeDecodeError:
 			raise ProjectFileParserException('mariopaint_msq: File is not text')
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		lines_msq = conversion_state.project
+
+		from objects.songinput import mariopaint
+
+		msq_values = {}
+		
+		for n, line in enumerate(lines_msq):
+			if '=' not in line:
+				ProjectFileParserException('mariopaint_msq: Line '+str(n+1)+': "=" not found.')
+			msq_name, fmf_val = line.rstrip().split('=', 1)
+			msq_values[msq_name] = fmf_val
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'

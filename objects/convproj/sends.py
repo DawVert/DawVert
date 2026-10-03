@@ -4,6 +4,8 @@
 from objects.convproj import params
 
 class cvpj_send:
+	__slots__ = ['sendautoid','params']
+
 	def __init__(self):
 		self.sendautoid = None
 		self.params = params.cvpj_paramset()
@@ -11,8 +13,9 @@ class cvpj_send:
 	def __bool__(self):
 		return bool(self.params) or self.sendautoid
 
-
 class cvpj_sends:
+	__slots__ = ['data','to_master','to_master_active']
+
 	def __init__(self):
 		self.data = {}
 		self.to_master = cvpj_send()

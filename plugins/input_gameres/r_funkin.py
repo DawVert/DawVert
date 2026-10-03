@@ -27,19 +27,21 @@ class input_ex_basic_pitch(plugins.base):
 		configdef.set_group('visual', 'Visual')
 		configdef.add_bool('colors', True, 'Track Colors')
 
-	def parse(self, convproj_obj, dawvert_intent):
-
+	def parse(self, conversion_state, dawvert_intent):
 		if dawvert_intent.input_mode == 'file':
 			bytestream = open(dawvert_intent.input_file, 'r', encoding='utf8')
 
 		try:
 			funkin_json = json.load(bytestream)
+			conversion_state.project = funkin_json
+			return True
 		except UnicodeDecodeError as t:
 			logger_input.error('funkin: Unicode Decode Error: '+str(t))
-			exit()
 		except json.decoder.JSONDecodeError as t:
 			logger_input.error('funkin: JSON parsing error: '+str(t))
-			exit()
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		funkin_json = conversion_state.project
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks

@@ -56,18 +56,23 @@ class input_zmaestro(plugins.base):
 		in_dict['projtype'] = 'r'
 		in_dict['plugin_included'] = ['native:z_maestro','universal:midi','universal:soundfont2']
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_past import z_maestro as proj_z_maestro
+		project_obj = proj_z_maestro.zmaestro_song()
+		if dawvert_intent.input_mode == 'file':
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+
 		from objects import audio_data
 		from objects.inst_params import fx_delay
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
 		globalstore.datapack.load('z_maestro', './data/datapack/app/z_maestro.xml')
-
-		project_obj = proj_z_maestro.zmaestro_song()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks

@@ -32,9 +32,7 @@ class input_cvpj_f(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
-		from functions import note_data
-
+	def parse(self, conversion_state, dawvert_intent):
 		if dawvert_intent.input_mode == 'file':
 			bytestream = open(dawvert_intent.input_file, 'r')
 		
@@ -45,8 +43,15 @@ class input_cvpj_f(plugins.base):
 
 		try:
 			mmc_main = json.loads(file_data)
+			conversion_state.project = mmc_main
+			return True
 		except json.decoder.JSONDecodeError as t:
 			ProjectFileParserException('mekimekichip: JSON parsing error: '+str(t))
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		mmc_main = conversion_state.project
+		
+		from functions import note_data
 
 		#if 'debug' in dawvert_intent:
 		#	with open(input_file+'_pritty', "w") as fileout: json.dump(mmc_main, fileout, indent=4, sort_keys=True)

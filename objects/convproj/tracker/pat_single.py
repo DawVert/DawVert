@@ -6,6 +6,8 @@ from objects.convproj.tracker import pat_data
 from objects.convproj import visual
 
 class single_pattern:
+	__slots__ = ['name', 'num_rows', 'data', 'notekeys']
+	
 	def __init__(self, num_channels, num_rows):
 		self.name = None
 		self.num_rows = num_rows

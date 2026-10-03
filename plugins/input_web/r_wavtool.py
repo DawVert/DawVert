@@ -407,13 +407,8 @@ class input_wavtool(plugins.base):
 		in_dict['plugin_included'] = ['native:wavtool','universal:sampler:single','universal:sampler:multi']
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import wavtool as proj_wavtool
-
-		global zip_data
-		global samplefolder
-
-		# ---------- file load ----------
 
 		try:
 			if dawvert_intent.input_mode == 'file':
@@ -422,7 +417,6 @@ class input_wavtool(plugins.base):
 			raise ProjectFileParserException('wavtool: Bad ZIP File: '+str(t))
 
 		json_filename = None
-		samplefolder = dawvert_intent.path_samples['extracted']
 		for jsonname in zip_data.namelist():
 			if '.json' in jsonname: json_filename = jsonname
 		if not json_filename:
@@ -431,6 +425,19 @@ class input_wavtool(plugins.base):
 		t_wavtool_project = zip_data.read(json_filename)
 		wt_proj = json.loads(t_wavtool_project)
 		wavtool_obj = proj_wavtool.wavtool_project(wt_proj)
+
+		conversion_state.project = wavtool_obj
+		conversion_state.archive = zip_data
+		return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		global zip_data
+		global samplefolder
+
+		wavtool_obj = conversion_state.project
+		zip_data = conversion_state.archive
+
+		samplefolder = dawvert_intent.path_samples['extracted']
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks

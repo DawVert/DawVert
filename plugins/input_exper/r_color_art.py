@@ -26,16 +26,22 @@ class input_color_art(plugins.base):
 		cfgpart = configdef.add_int('size', 28, 'Max Size')
 		cfgpart.set_range(4, 80)
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from PIL import Image
+		if dawvert_intent.input_mode == 'file':
+			im = Image.open(dawvert_intent.input_file)
+			conversion_state.project = im
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		im = conversion_state.project
+
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(4)
 
 		traits_obj = convproj_obj.traits
 		traits_obj.placement_loop = ['loop', 'loop_off', 'loop_adv']
 
-		if dawvert_intent.input_mode == 'file':
-			im = Image.open(dawvert_intent.input_file)
 
 		w, h = im.size
 

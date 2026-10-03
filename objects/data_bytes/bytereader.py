@@ -7,6 +7,7 @@ from io import BytesIO
 from contextlib import contextmanager
 
 class chunk_size:
+	__slots__ = ['size_id', 'size_id_num', 'size_chunk', 'endian', 'unpackfunc', 'unpackfunc_id']
 	def __init__(self):
 		self.size_id = 4
 		self.size_id_num = False
@@ -41,6 +42,7 @@ class chunk_size:
 			if self.size_id == 4: self.unpackfunc_id = struct.Struct('>I' if self.endian else '<I').unpack
 
 class chunk_loc:
+	__slots__ = ['t_byteread', 't_sizedata', 'id', 'start', 'end', 'size']
 	def __init__(self, byteread, sizedata):
 		self.t_byteread = byteread
 		self.t_sizedata = sizedata
@@ -58,6 +60,7 @@ class chunk_loc:
 		print(self.id, self.start, self.end)
 
 class iff_chunkdata:
+	__slots__ = ['byteread', 'sizedata']
 	def __init__(self, byteread):
 		self.byteread = byteread
 		self.sizedata = chunk_size()
@@ -122,13 +125,14 @@ class bytereader:
 	unpack_s_long = struct.Struct('<q').unpack
 	unpack_s_long_b = struct.Struct('>q').unpack
 	
-	def __init__(self, *argv):
+	__slots__ = ['buf', 'start', 'end', 'iso_range']
+
+	def __init__(self, argv=None):
 		self.buf = None
 		self.start = 0
 		self.end = 0
 		self.iso_range = []
-		if argv:
-			self.load_raw(argv[0])
+		if argv: self.load_raw(argv[0])
 
 	def chunk_objmake(self): 
 		return iff_chunkdata(self)

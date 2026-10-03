@@ -12,6 +12,7 @@ pitch_premake = dynbytearr.dynbytearr_premake([
 	])
 
 class pitch_data:
+	__slots__ = ['data','cur','num_channels','num_ports']
 	def __init__(self, num_ports, num_channels):
 		self.data = pitch_premake.create()
 		self.cur = self.data.create_cursor()

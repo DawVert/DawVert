@@ -222,6 +222,8 @@ class ConversionWorker(QtCore.QObject):
 		try:
 			converterstate.is_converting = True
 
+			conversion_state = dv_core.dawvert_conversion_state()
+
 			inname = dawvert_core.input_get_current_name()
 			outname = dawvert_core.output_get_current_name()
 
@@ -265,7 +267,7 @@ class ConversionWorker(QtCore.QObject):
 
 			self.update_ui.emit([1, 0])
 			self.update_ui.emit([0, 'Processing Input...'])
-			dawvert_core.parse_input(dawvert_intent)
+			dawvert_core.parse_input(dawvert_intent, conversion_state)
 			self.update_ui.emit([1, 25])
 			self.update_ui.emit([0, 'Converting Project Type and Samples...'])
 			dawvert_core.convert_type_output(dawvert_intent)

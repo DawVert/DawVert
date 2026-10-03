@@ -7,6 +7,8 @@ from objects.convproj.tracker import notestream
 from objects.convproj.tracker import pat_data
 
 class multi_patsong:
+	__slots__ = ['num_chans', 'num_rows', 'datapack_name', 'datapack_cat', 'channels', 'patdata', 'orders']
+	
 	def __init__(self):
 		self.num_chans = 0
 		self.num_rows = 0

@@ -86,6 +86,8 @@ if not args.debug_multioutplugs:
 		logger_core.error('Output File Not Specified.')
 		exit()
 
+conversion_state = core.dawvert_conversion_state()
+
 dawvert_intent = core.dawvert_intent()
 dawvert_intent.config_load('./__config/config.ini')
 dawvert_intent.plugin_set = True
@@ -137,7 +139,7 @@ if not args.debug_multioutplugs:
 			logger_core.error('Not overwriting - exiting')
 			exit()
 
-	try: dawvert_core.parse_input(dawvert_intent)
+	try: dawvert_core.parse_input(dawvert_intent, conversion_state)
 	except ProjectFileParserException: exit()
 	
 	dawvert_core.convert_type_output(dawvert_intent)

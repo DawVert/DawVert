@@ -31,14 +31,18 @@ class input_mmf(plugins.base):
 		in_dict['plugin_included'] = ['universal:midi']
 		in_dict['projtype'] = 'cm'
 
-	def parse(self, convproj_obj, dawvert_intent):
-		from objects import audio_data
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_past import mmf as proj_mmf
-
 		project_obj = proj_mmf.smaf_song()
-
 		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+
+		from objects import audio_data
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 

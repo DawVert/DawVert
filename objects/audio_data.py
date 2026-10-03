@@ -6,6 +6,7 @@ import os
 import copy
 
 class codec_obj:
+	__slots__ = ['is_pcm','pcm_bits','pcm_uses_float','pcm_signed']
 	def __init__(self, codectype):
 		self.is_pcm = True
 		self.pcm_bits = 8

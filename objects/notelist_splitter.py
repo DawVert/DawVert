@@ -42,6 +42,7 @@ def remove_pos_clones(splitdata):
 	splitdata.clean()
 
 class timesigblocks:
+	__slots__ = ['splitdata','cur_splitdata']
 	def __init__(self):
 		self.splitdata = timesig_premake.create()
 		self.cur_splitdata = self.splitdata.create_cursor()
@@ -170,10 +171,14 @@ def create_blocksdata(timesigblocks_obj, data):
 	return useddata, blocksdata
 
 class cvpj_midievents_splitter:
+	__slots__ = ['data','ppq','timesigblocks_obj','useddata','blocksdata']
+	
 	def __init__(self, timesigblocks_obj, ppq):
 		self.data = []
 		self.ppq = ppq
 		self.timesigblocks_obj = timesigblocks_obj
+		self.useddata = None
+		self.blocksdata = None
 
 	def add_pldata(self, i_pl):
 		self.data.append(i_pl)
@@ -211,10 +216,13 @@ class cvpj_midievents_splitter:
 			pldata.uses_placements = 1
 
 class cvpj_notelist_splitter:
+	__slots__ = ['data','ppq','timesigblocks_obj','useddata','blocksdata']
 	def __init__(self, timesigblocks_obj, ppq):
 		self.data = []
 		self.ppq = ppq
 		self.timesigblocks_obj = timesigblocks_obj
+		self.useddata = None
+		self.blocksdata = None
 
 	def add_pldata(self, i_pl):
 		self.data.append(i_pl)

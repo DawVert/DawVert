@@ -156,6 +156,8 @@ class time_position:
 # --------------------------------------------- CONTENT ---------------------------------------------
 
 class cvpj_warp_point:
+	__slots__ = ['beat','second','speed']
+
 	def __init__(self):
 		self.beat = 0
 		self.second = 0
@@ -176,7 +178,7 @@ class cvpj_warp_point:
 	def sec_from_beat(self, speed):
 		return (self.beat/2)/speed
 
-@dataclass
+@dataclass(slots=True)
 class cvpj_stretch_warp:
 	points: list = field(default_factory=list)
 	seconds: float = -1
@@ -456,7 +458,7 @@ class cvpj_stretch_warp:
 	def fix__sort(self):
 		self.points = sorted(self.points, key=lambda x: x.beat)
 
-@dataclass
+@dataclass(slots=True)
 class time_content:
 	time_type: str = 'speed'
 	original_bpm: float = 0
@@ -663,6 +665,8 @@ class time_content:
 outletters = ['','d','t']
 
 class time_lfo:
+	__slots__ = ['type','org_bpm','speed_seconds','speed_steps','from_bpm','frozen','keytrack_transpose','keytrack_tune']
+
 	def __init__(self):
 		self.type = 'seconds'
 		self.org_bpm = 120

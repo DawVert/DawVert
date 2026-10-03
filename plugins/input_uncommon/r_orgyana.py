@@ -38,15 +38,18 @@ class input_orgyana(plugins.base):
 		cfgpart = configdef.add_float('pan_smooth', 0.75, 'Smooth')
 		cfgpart.set_range(0, 1)
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_uncommon import orgyana as proj_orgyana
-		from objects import colors
-		from objects import audio_data
-
-		# ---------- load file: project ----------
 		project_obj = proj_orgyana.orgyana_project()
 		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+		from objects import colors
+		from objects import audio_data
 
 		# ---------- load file: orgsamp ----------
 		orgsamp_filename = os.path.join(dawvert_intent.path_external_data, 'orgyana', 'orgsamp.dat')

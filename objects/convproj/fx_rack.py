@@ -10,6 +10,8 @@ import logging
 logger_project = logging.getLogger('project')
 
 class cvpj_fxchannel:
+	__slots__ = ['visual','visual_ui','params','plugslots','sends','latency_offset']
+
 	def __init__(self):
 		self.visual = visual.cvpj_visual()
 		self.visual_ui = visual.cvpj_visual_ui()
@@ -19,6 +21,8 @@ class cvpj_fxchannel:
 		self.latency_offset = 0
 
 class cvpj_fxrack:
+	__slots__ = ['channels']
+
 	def __init__(self):
 		self.channels = {}
 

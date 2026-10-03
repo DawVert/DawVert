@@ -25,15 +25,20 @@ class input_eam2(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_audioedit import easy_audio_mixer as proj_easy_audio_mixer
+		project_obj = proj_easy_audio_mixer.easyamixr_proj()
+		if dawvert_intent.input_mode == 'file':
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+		
 		from objects import colors
 		from objects.convproj import fileref
 
-		project_obj = proj_easy_audio_mixer.easyamixr_proj()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-		
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation

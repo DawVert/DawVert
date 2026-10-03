@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later 
 
 class counter:
+	__slots__ = ['current','start_txt']
+	
 	def __init__(self, starting_num, start_txt):
 		self.current = starting_num
 		self.start_txt = start_txt

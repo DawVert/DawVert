@@ -4,14 +4,17 @@
 from objects.convproj import visual
 
 class cvpj_realdevice_audio:
+	__slots__ = ['visual']
 	def __init__(self):
 		self.visual = visual.cvpj_visual()
 
 class cvpj_realdevice_midi:
+	__slots__ = ['visual']
 	def __init__(self):
 		self.visual = visual.cvpj_visual()
 
 class cvpj_realdevicelist:
+	__slots__ = ['audio_in', 'audio_out', 'midi']
 	def __init__(self):
 		self.audio_in = {}
 		self.audio_out = {}

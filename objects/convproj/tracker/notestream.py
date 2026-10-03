@@ -14,6 +14,8 @@ def calc_tracker_pitch(pitch, speed):
 	return 0
 
 class autostream:
+	__slots__ = ['placements','pl_pos','cur_pos','active']
+
 	def __init__(self):
 		self.placements = []
 		self.pl_pos = 0
@@ -64,6 +66,23 @@ class autostream:
 					auto_all_obj.add_autopoint(pl_pos+pos, value, 'instant')
 
 class notestream:
+	__slots__ = [
+		'placements',
+		'used_inst',
+		'cur_inst',
+		'note_active',
+		'assoc_instid',
+		'cur_pos',
+		'note_pos',
+		'slide_speed',
+		'vol',
+		'freeze_inst',
+		'freeze_octave',
+		'key_to_inst',
+		'off_methods',
+		'record_off_methods'
+	]
+
 	def __init__(self, assoc_instid):
 		self.placements = []
 		self.used_inst = []

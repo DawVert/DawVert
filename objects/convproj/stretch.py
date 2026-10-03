@@ -10,7 +10,7 @@ import bisect
 
 time_content = time.time_content
 
-@dataclass
+@dataclass(slots=True)
 class cvpj_stretch_algo:
 	type: str = 'stretch'
 	subtype: str = ''
@@ -18,13 +18,13 @@ class cvpj_stretch_algo:
 	formant: float = 0
 	preserve_formants: float = 0
 
-@dataclass
+@dataclass(slots=True)
 class pl_manip:
 	pos_offset: float = 0
 	cut_offset: float = 0
 	cut_mul: float = 1
 
-@dataclass
+@dataclass(slots=True)
 class cvpj_stretch:
 	algorithm: cvpj_stretch_algo = field(default_factory=cvpj_stretch_algo)
 	timing: time_content = field(default_factory=time_content)

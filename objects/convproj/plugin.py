@@ -31,6 +31,8 @@ logger_plugins = logging.getLogger('plugins')
 logger_plugconv = logging.getLogger('plugconv')
 
 class cvpj_audioports:
+	__slots__ = ['num_inputs','num_outputs','in_ports','out_ports']
+	
 	def __init__(self):
 		self.num_inputs = 2
 		self.num_outputs = 2

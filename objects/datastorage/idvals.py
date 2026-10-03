@@ -5,6 +5,8 @@ import os
 import chardet
 
 class idvals:
+	__slots__ = ['l_params']
+	
 	def __init__(self, filename):
 		self.l_params = {}
 		if os.path.exists(filename):

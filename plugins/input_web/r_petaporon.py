@@ -39,8 +39,7 @@ class input_petaporon(plugins.base):
 		in_dict['plugin_included'] = ['universal:synth-osc','universal:midi']
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
-		from objects import colors
+	def parse(self, conversion_state, dawvert_intent):
 		if dawvert_intent.input_mode == 'file':
 			bytestream = open(dawvert_intent.input_file, 'r')
 		
@@ -50,6 +49,14 @@ class input_petaporon(plugins.base):
 			raise ProjectFileParserException('petaporon: File is not text')
 		except json.decoder.JSONDecodeError as t:
 			raise ProjectFileParserException('petaporon: JSON parsing error: '+str(t))
+
+		conversion_state.project = petapo_data
+		return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		from objects import colors
+
+		petapo_data = conversion_state.project
 
 		globalstore.datapack.load('petaporon', './data/datapack/app/petaporon.xml')
 		colordata = colors.colorset.from_datapack('petaporon', 'inst', 'main')

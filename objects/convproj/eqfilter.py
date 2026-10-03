@@ -4,6 +4,8 @@
 from objects.valobjs import dualstr
 
 class cvpj_filter:
+	__slots__ = ['on','type','freq','q','gain','slope','filter_algo']
+
 	def __init__(self):
 		self.on = False
 		self.type = dualstr()
@@ -23,6 +25,8 @@ class cvpj_filter:
 		print('FILTER filter_algo', '|', self.filter_algo )
 
 class cvpj_eq:
+	__slots__ = ['basename','filtnum','plugstate_obj','num_bands','bands']
+	
 	def __init__(self, plugin_obj, basename):
 		self.basename = basename
 		self.filtnum = 0

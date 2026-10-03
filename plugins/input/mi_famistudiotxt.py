@@ -304,17 +304,20 @@ class input_famistudio(plugins.base):
 		cfgpart.add_choice('ntsc', 'NTSC')
 		cfgpart.add_choice('pal', 'PAL')
 
-	def parse(self, i_convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import famistudiotxt as proj_famistudiotxt
-		
+		project_obj = proj_famistudiotxt.famistudiotxt_project()
+		if dawvert_intent.input_mode == 'file':
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, i_convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+
 		global samplefolder
 		global convproj_obj
 		convproj_obj = i_convproj_obj
-
-		project_obj = proj_famistudiotxt.famistudiotxt_project()
-
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
 		globalstore.datapack.load('famistudio', './data/datapack/app/famistudio.xml')
 		samplefolder = dawvert_intent.path_samples['extracted']

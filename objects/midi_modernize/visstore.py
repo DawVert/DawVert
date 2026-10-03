@@ -10,6 +10,8 @@ import logging
 logger_compat = logging.getLogger('compat')
 
 class midivis_data:
+	__slots__ = ['name','color','uses_name','uses_color','is_drum','used']
+
 	def __init__(self):
 		self.name = None
 		self.color = None

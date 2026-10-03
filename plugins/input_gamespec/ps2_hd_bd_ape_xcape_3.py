@@ -169,7 +169,21 @@ class input_petaporon(plugins.base):
 	def get_configdef(self, configdef):
 		configdef.add_file_open('sampfile', '', 'VAG Sample File (.BD)')
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
+		midiread_obj = reader_midifile_class()
+
+		if dawvert_intent.input_mode == 'file':
+			midiread_obj.do_song(dawvert_intent.input_file, convproj_obj)
+
+			path_hd = os.path.splitext(dawvert_intent.input_file)[0]+'.hd'
+			apeinst_obj.load_from_file(path_hd)
+
+			conversion_state.project = midiread_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		midiread_obj = conversion_state.project
+
 		from objects import audio_data
 
 		samplefolder = dawvert_intent.path_samples['extracted']
@@ -178,17 +192,11 @@ class input_petaporon(plugins.base):
 		in_bd = dawvert_intent.input_get_param('sampfile', '')
 
 		# ---------- load project ----------
-		midiread_obj = reader_midifile_class()
-
+		
 		apeinst_obj = apeescape()
 		sample_obj = apeescape_bd()
 
 		if dawvert_intent.input_mode == 'file':
-			midiread_obj.do_song(dawvert_intent.input_file, convproj_obj)
-
-			path_hd = os.path.splitext(dawvert_intent.input_file)[0]+'.hd'
-			apeinst_obj.load_from_file(path_hd)
-	
 			path_bd = os.path.splitext(dawvert_intent.input_file)[0]+'.bd' if not in_bd else in_bd
 			sample_obj.load_from_file(path_bd)
 

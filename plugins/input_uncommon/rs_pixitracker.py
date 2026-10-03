@@ -29,18 +29,22 @@ class input_cvpj_f(plugins.base):
 	def get_configdef(self, configdef):
 		configdef.add_bool('tracker_mode', False, 'Tracker Mode')
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
+		from objects.file_proj_uncommon import piximod as proj_piximod
+		project_obj = proj_piximod.piximod_song()
+		if dawvert_intent.input_mode == 'file':
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+
 		from objects import audio_data
 		from objects import colors
-		from objects.file_proj_uncommon import piximod as proj_piximod
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']
-
-		project_obj = proj_piximod.piximod_song()
-
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks

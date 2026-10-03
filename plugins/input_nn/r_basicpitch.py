@@ -23,9 +23,17 @@ class input_ex_basic_pitch(plugins.base):
 		usable_meg = 'Basic Pitch is not installed. do "pip install basic_pitch"' if not usable else ''
 		return usable, usable_meg
 	
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from basic_pitch.inference import predict
 		from basic_pitch import ICASSP_2022_MODEL_PATH
+
+		if dawvert_intent.input_mode == 'file':
+			model_output, midi_data, note_events = predict(dawvert_intent.input_file)
+			conversion_state.project = note_events
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		note_events = conversion_state.project
 
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(4.0)
@@ -34,9 +42,6 @@ class input_ex_basic_pitch(plugins.base):
 		traits_obj.track_nopl = True
 
 		convproj_obj.params.add('bpm', 120, 'float')
-
-		if dawvert_intent.input_mode == 'file':
-			model_output, midi_data, note_events = predict(dawvert_intent.input_file)
 
 		cvpj_tracks = convproj_obj.tracks
 

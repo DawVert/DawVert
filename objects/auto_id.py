@@ -7,6 +7,8 @@ from objects.convproj import automation
 from objects import counter
 
 class convproj2autoid:
+	__slots__ = ['in_data','time_ppq']
+	
 	def __init__(self, time_ppq):
 		self.in_data = {}
 		self.time_ppq = time_ppq

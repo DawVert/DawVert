@@ -14,6 +14,8 @@ def routetrackord(trackord, groupdata, outl, insidegroup):
 			if t == 'GROUP': routetrackord(groupdata[i], groupdata, outl, i)
 
 class groupassoc:
+	__slots__ = ['groupdata', 'inside_found']
+
 	def __init__(self):
 		self.groupdata = []
 		self.inside_found = []
@@ -43,6 +45,8 @@ class groupassoc:
 					yield d
 
 class cvpj_groups:
+	__slots__ = ['data', 'convproj_obj']
+
 	def __init__(self, convproj_obj):
 		self.data = {}
 		self.convproj_obj = convproj_obj

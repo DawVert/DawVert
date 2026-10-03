@@ -11,6 +11,8 @@ import struct
 import math
 
 class cvpj_harmonics:
+	__slots__ = ['waves']
+	
 	def __init__(self):
 		self.waves = {}
 

@@ -116,8 +116,12 @@ class list_printer:
 				'%s | %s | %s | %s | %s' %
 				(x[0].ljust(3), x[1].ljust(10), x[2].ljust(2).upper(), x[3].ljust(16), x[4])
 				)
-		
 
+class dawvert_conversion_state:
+	def __init__(self):
+		self.project = None
+		self.archive = None
+		self.others = {}
 
 class dawvert_intent:
 	def __init__(self):
@@ -458,7 +462,7 @@ class core:
 
 	def output_set(self, pluginname): return self.currentplug_output.set(pluginname)
 
-	def parse_input(self, dawvert_intent):
+	def parse_input(self, dawvert_intent, conversion_state):
 		self.convproj_obj = convproj.cvpj_project()
 		selected_plugin = self.currentplug_input.selected_plugin
 		plug_obj = selected_plugin.plug_obj
@@ -471,7 +475,8 @@ class core:
 					dawvert_intent.input_params[k] = v.value_def
 
 		if selected_plugin.usable:
-			plug_obj.parse(self.convproj_obj, dawvert_intent)
+			plug_obj.parse(conversion_state, dawvert_intent)
+			plug_obj.to_convproj(self.convproj_obj, dawvert_intent, conversion_state)
 		else:
 			logger_core.error(self.currentplug_input.selected_shortname+' is not usable: '+selected_plugin.usable_meg)
 			exit()

@@ -425,18 +425,14 @@ class input_dawproject(plugins.base):
 		in_dict['plugin_included'] = ['universal:compressor', 'universal:limiter', 'universal:noise_gate', 'universal:eq:bands']
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import dawproject as proj_dawproject
-		from objects import auto_id
-
-		global zip_data
-		
-		# ---------- file load ----------
-
 		project_obj = proj_dawproject.dawproject_song()
+
 		try:
 			if dawvert_intent.input_mode == 'file':
 				zip_data = zipfile.ZipFile(dawvert_intent.input_file, 'r')
+				conversion_state.archive = zip_data
 		except zipfile.BadZipFile as t:
 			raise ProjectFileParserException('dawproject: Bad ZIP File: '+str(t))
 
@@ -446,10 +442,25 @@ class input_dawproject(plugins.base):
 		except: 
 			pass
 
-		try: xmldata = zip_data.read('project.xml')
-		except KeyError as t: raise ProjectFileParserException('dawproject: project.xml not found')
+		try: 
+			xmldata = zip_data.read('project.xml')
+			project_obj.load_from_data(xmldata.decode())
+			conversion_state.project = project_obj
+			return True
+		except KeyError as t:
+			raise ProjectFileParserException('dawproject: project.xml not found')
 
-		project_obj.load_from_data(xmldata.decode())
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+
+		from objects import auto_id
+
+		global zip_data
+		zip_data = conversion_state.archive
+		
+		# ---------- file load ----------
+
+
 
 		# --------------------
 		global autoid_assoc

@@ -56,12 +56,16 @@ class input_1bitdragon(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'ms'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_uncommon import onebitdragon as proj_1bitdragon
-
 		project_obj = proj_1bitdragon.onebitd_song()
 		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
 
 		#onebit_ext = onebit_external()
 		#onebit_ext.load_file(os.path.join(dawvert_intent.path_external_data,'1bitdragon','1BITDRAGON_Data','resources.assets'))

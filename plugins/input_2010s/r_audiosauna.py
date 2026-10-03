@@ -56,13 +56,19 @@ class input_audiosanua(plugins.base):
 		in_dict['plugin_included'] = ['native:audiosauna', 'universal:sampler:multi', 'universal:bitcrush']
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_past import audiosauna as proj_audiosauna
-		from objects.convproj import fileref
-
 		project_obj = proj_audiosauna.audiosauna_song()
 		if dawvert_intent.input_mode == 'file':
-			zip_data = project_obj.load_from_file(dawvert_intent.input_file)
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+
+		from objects.convproj import fileref
+
 		samplefolder = dawvert_intent.path_samples['extracted']
 
 		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'audiosauna', ['audiosauna'])

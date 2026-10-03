@@ -96,17 +96,24 @@ class input_it(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single', 'universal:sampler:multi']
 		in_dict['projtype'] = 'ts'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_tracker import tracker_it as proj_it
+		project_obj = proj_it.it_song()
+		if dawvert_intent.input_mode == 'file':
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+		if dawvert_intent.input_mode == 'bytes':
+			project_obj.load_from_raw(dawvert_intent.input_data)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+
 		global samplefolder
 		from objects import globalstore
 		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.xml')
-
-		project_obj = proj_it.it_song()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
-		if dawvert_intent.input_mode == 'bytes':
-			if not project_obj.load_from_raw(dawvert_intent.input_data): exit()
 
 		try: import xmodits
 		except: xmodits_exists = False

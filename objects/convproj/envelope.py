@@ -65,6 +65,19 @@ def tension_detect(env_pointsdata, start, end):
 	return tension
 
 class cvpj_envelope_adsr:
+	__slots__ = [
+		'predelay',
+		'attack',
+		'hold',
+		'decay',
+		'sustain',
+		'release',
+		'amount',
+		'attack_tension',
+		'decay_tension',
+		'release_tension'
+	]
+
 	def __init__(self):
 		self.reset()
 
@@ -400,6 +413,8 @@ class cvpj_envelope_adsr:
 				self.from_envpoints__internal_5point(sustainnum, env_pointsdata)
 
 class cvpj_envelope_blocks:
+	__slots__ = ['found','values','time','max','loop','release']
+
 	def __init__(self):
 		self.found = False
 

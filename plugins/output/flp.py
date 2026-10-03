@@ -613,8 +613,7 @@ class output_cvpjs(plugins.base):
 					fl_fxchan.routing.append(0)
 					flp_obj.initfxvals.initvals['fx/'+str(fx_num)+'/route/0'] = 12800
 
-
-				if fx_num == 0: fxchannel_obj.outchannum = 1
+				if fx_num == 0: fl_fxchan.outchannum = 1
 
 				for pluginid in fxchannel_obj.plugslots.slots_mixer:
 					plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)

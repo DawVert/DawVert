@@ -83,6 +83,7 @@ cvpj_visual = visual.cvpj_visual
 cvpj_stretch = stretch.cvpj_stretch
 
 class cvpj_chanport:
+	__slots__ = ['chan','port','port_name']
 	def __init__(self):
 		self.chan = -1
 		self.port = -1
@@ -104,6 +105,17 @@ class cvpj_chanport:
 		return cls
 
 class cvpj_midiport:
+	__slots__ = [
+			'in_enabled',
+			'in_chanport',
+			'in_fixedvelocity',
+			'out_enabled',
+			'out_chanport',
+			'out_fixedvelocity',
+			'out_inst',
+			'basevelocity'
+	]
+
 	def __init__(self):
 		self.in_enabled = False
 		self.in_chanport = cvpj_chanport()
@@ -331,6 +343,8 @@ class cvpj_return_track:
 		self.plugslots.plugin_autoplace(plugin_obj, pluginid)
 
 class cvpj_lane:
+	__slots__ = ['visual','visual_ui','params','datavals','placements']
+
 	def __init__(self, track_type, time_ppq, uses_placements, is_indexed):
 		self.visual = visual.cvpj_visual()
 		self.visual_ui = visual.cvpj_visual_ui()
@@ -358,6 +372,8 @@ class cvpj_lane:
 		return cls
 
 class cvpj_armstate:
+	__slots__ = ['on','in_keys','in_audio']
+
 	def __init__(self):
 		self.on = False
 		self.in_keys = False
@@ -628,6 +644,8 @@ class cvpj_track:
 
 
 class cvpj_project_tracks:
+	__slots__ = ['data','order','convproj_obj']
+	
 	def __init__(self, convproj_obj):
 		self.data = {}
 		self.order = []

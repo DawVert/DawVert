@@ -6,6 +6,8 @@ from functions import xtramath
 import bisect
 
 class regions:
+	__slots__ = ['data', 'cursor']
+
 	dtype = [
 	('used', np.int16),
 	('start', np.int16),
@@ -71,6 +73,8 @@ class regions:
 		return '|'.join([''.join(x) for x in txttab])
 
 class posdurblocks:
+	__slots__ = ['processed','loop_start','loop_end','data','steps','tempo']
+
 	dtype = [
 	('steps', np.int16),
 	('tempo', float),
@@ -83,9 +87,9 @@ class posdurblocks:
 		self.processed = False
 		self.loop_start = 0
 		self.loop_end = 0
-		self.data = np.zeros(size, dtype=posdurblocks.dtype)
 		self.steps = steps
 		self.tempo = tempo
+		self.data = np.zeros(size, dtype=posdurblocks.dtype)
 		self.data['steps'][:] = steps
 		self.data['notemul'][:] = 1
 		self.data['tempo'][0] = tempo
@@ -149,6 +153,7 @@ class posdurblocks:
 			prevtimesig = temptimesig
 
 class rootnote_stor():
+	__slots__ = ['data']
 	def __init__(self):
 		self.data = []
 	

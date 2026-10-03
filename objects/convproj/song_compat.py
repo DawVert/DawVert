@@ -36,6 +36,8 @@ logger_compat = logging.getLogger('compat')
 DEBUG_BEF_AFT_TRACKS = False
 
 class song_compat:
+	__slots__ = ['finished_processes','currenttime','current_dawcap','tempostore']
+
 	def __init__(self):
 		self.finished_processes = []
 		self.currenttime = None
@@ -139,6 +141,16 @@ conv_act_class['ts2m'] = convert_ts2m.convert
 conv_act_class['cm2cs'] = convert_cm2cs.convert
 
 class compat_actions:
+	__slots__ = [
+		'compactclass',
+		'convproj_obj',
+		'in_dawinfo',
+		'out_dawinfo',
+		'out_type',
+		'dawvert_intent',
+		'vars'
+	]
+
 	def __init__(self):
 		self.compactclass = song_compat()
 		self.convproj_obj = None

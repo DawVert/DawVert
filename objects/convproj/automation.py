@@ -16,6 +16,8 @@ import logging
 logger_automation = logging.getLogger('automation')
 
 class midifile_to_automation:
+	__slots__ = ['defined','auto_obj']
+
 	def __init__(self, auto_obj):
 		self.defined = {}
 		self.auto_obj = auto_obj
@@ -361,6 +363,8 @@ class cvpj_s_automation:
 
 
 class cvpj_autoloc:
+	__slots__ = ['autoloc']
+	
 	def __init__(self, indata):
 		if isinstance(indata, list): self.autoloc = indata
 		elif isinstance(indata, str): self.autoloc = indata.split(';')

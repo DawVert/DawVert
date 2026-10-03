@@ -192,17 +192,23 @@ class input_sequel3(plugins.base):
 	def get_prop(self, in_dict): 
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
+		from objects.file_proj import cubasexml as proj_sequel
+		project_obj = proj_sequel.sequel_project()
+		if dawvert_intent.input_mode == 'file':
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+
 		from objects.file_proj import cubasexml as proj_sequel
 		from objects.file_proj._cubasexml import class_audio
 		from objects.file_proj._cubasexml import class_midi
 		from objects import audio_data
 
 		samplefolder = dawvert_intent.path_samples['extracted']
-
-		project_obj = proj_sequel.sequel_project()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
 		seq_project = project_obj.obj_project
 		obj_devices = project_obj.obj_devices.data

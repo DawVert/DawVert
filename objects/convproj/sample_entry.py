@@ -10,7 +10,7 @@ from objects.convproj import stretch
 cvpj_visual = visual.cvpj_visual
 cvpj_stretch = stretch.cvpj_stretch
 
-@dataclass
+@dataclass(slots=True)
 class cvpj_sample_slice:
 	start: int = 0
 	end: int = -1
@@ -19,7 +19,7 @@ class cvpj_sample_slice:
 	is_custom_key: bool = False
 	reverse: bool = False
 
-@dataclass
+@dataclass(slots=True)
 class cvpj_sample_entry:
 	visual: cvpj_visual = field(default_factory=cvpj_visual)
 	sampleref: str = ''
@@ -130,14 +130,14 @@ class cvpj_sample_entry:
 				return pow(2, -self.pitch/12)
 		return 1
 
-@dataclass
+@dataclass(slots=True)
 class cvpj_drumpad_layer:
 	samplepartid: str = ''
 	vel_min: float = 0
 	vel_max: float = 1
 	envs: dict = field(default_factory=dict)
 
-@dataclass
+@dataclass(slots=True)
 class cvpj_drumpad:
 	visual: cvpj_visual = field(default_factory=cvpj_visual)
 	vol: float = 1

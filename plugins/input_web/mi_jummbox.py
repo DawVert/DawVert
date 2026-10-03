@@ -236,7 +236,7 @@ class input_jummbox(plugins.base):
 	def get_configdef(self, configdef):
 		configdef.add_bool('transpose_ignore', False, 'Ignore Transpose')
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import jummbox as proj_jummbox
 
 		if dawvert_intent.input_mode == 'file':
@@ -250,6 +250,10 @@ class input_jummbox(plugins.base):
 			raise ProjectFileParserException('jummbox: JSON parsing error: '+str(t))
 
 		jummbox_obj = proj_jummbox.jummbox_project(jummbox_json)
+		conversion_state.project = jummbox_obj
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		jummbox_obj = conversion_state.project
 
 		colors_pitch = colors.colorset.from_datapack('beepbox', 'inst', 'beepbox_dark')
 		colors_drums = colors.colorset.from_datapack('beepbox', 'drums', 'beepbox_dark')

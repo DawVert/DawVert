@@ -19,6 +19,8 @@ def decode_anvil_color(anvilcolordata):
 	return [out_red, out_green, out_blue]
 
 class seqspec_obj:
+	__slots__ = ['data','known','vendor','sequencer','command','param','value']
+
 	def __init__(self):
 		self.data = None
 		self.known = False
@@ -79,6 +81,8 @@ class seqspec_obj:
 # ------------------------------------------ Vendor ------------------------------------------
 
 class vendor_obj:
+	__slots__ = ['bytes','ext','hex']
+
 	def __init__(self):
 		globalstore.idvals.load('midi_sysex', './data_main/idvals/midi_sysex.csv')
 		self.bytes = None
@@ -110,6 +114,23 @@ class vendor_obj:
 # ------------------------------------------ SysEx ------------------------------------------
 
 class sysex_obj:
+	__slots__ = [
+		'known',
+		'starttxt',
+		'vendor',
+		'model_id',
+		'model_name',
+		'device',
+		'command',
+		'category',
+		'group',
+		'subgroup',
+		'num',
+		'param',
+		'value',
+		'address',
+	]
+	
 	def __init__(self):
 		self.known = False
 

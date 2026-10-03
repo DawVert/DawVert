@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 class dualstr:
+	__slots__ = ['type', 'subtype']
 	def __init__(self):
 		self.type = None
 		self.subtype = None
@@ -62,6 +63,7 @@ class dualstr:
 		else: return False
 
 class triplestr:
+	__slots__ = ['category', 'type', 'subtype']
 	def __init__(self):
 		self.category = None
 		self.type = None
@@ -129,6 +131,8 @@ class triplestr:
 		return False not in (eq_cat, eq_type, eq_subtype)
 
 class indexed_value:
+	__slots__ = ['data']
+	
 	def __init__(self):
 		self.data = []
 

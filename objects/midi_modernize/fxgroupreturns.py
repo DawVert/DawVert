@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import numpy as np
 import objects.midi_modernize.ctrls as ctrls
 import objects.midi_modernize.gfunc as gfunc
 import objects.midi_modernize.fxchans_base as fxchans_base
@@ -8,6 +9,8 @@ calcval = ctrls.calcval
 split_channum = gfunc.split_channum
 
 class fxgroupreturns_maker(fxchans_base.fx_maker_base):
+	__slots__ = ['inst_track_id','inst_track_obj','autolocstart','chanport_groups']
+	
 	def __init__(self, num_ports, num_channels):
 		super().__init__(num_ports, num_channels)
 		self.inst_track_id = []

@@ -44,15 +44,21 @@ class input_mod(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single', 'universal:sampler:multi']
 		in_dict['projtype'] = 'ts'
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_tracker import umx as proj_umx
+
+		project_obj = proj_umx.umx_file()
+		if dawvert_intent.input_mode == 'file':
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+			
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
 
 		filedetector_obj = format_detect.file_detector()
 		filedetector_obj.load_def('data_main/autodetect.xml')
 
-		project_obj = proj_umx.umx_file()
-		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
 
 		isdetected = None
 		if "Music" not in project_obj.nametable:

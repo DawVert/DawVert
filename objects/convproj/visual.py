@@ -24,7 +24,7 @@ def hsv_to_rgb(h, s, v) -> tuple:
 		if i==5: return (v, w, q)
 	else: return (v, v, v)
 
-@dataclass
+@dataclass(slots=True)
 class cvpj_color:
 	r_i: int = 0
 	g_i: int = 0
@@ -324,6 +324,7 @@ class cvpj_color:
 			self.internal_toint()
 
 class cvpj_visual_ui:
+	__slots__ = ['height','other']
 	def __init__(self):
 		self.height = 1
 		self.other = {}
@@ -530,6 +531,8 @@ class cvpj_window_data:
 		return cls
 
 class cvpj_visual_keynote:
+	__slots__ = ['data','name']
+	
 	def __init__(self):
 		self.data = {}
 		self.name = None

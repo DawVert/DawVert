@@ -33,16 +33,19 @@ class input_onlinesequencer(plugins.base):
 		cfgpart = configdef.add_int('groupmin', 3, 'Group if more then')
 		cfgpart.set_range(0, 10)
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import onlineseq as proj_onlineseq
-		from objects.inst_params import fx_delay
-
-		global onlseq_notelist
-		global onlseq_customnames
 
 		project_obj = proj_onlineseq.onlineseq_project()
 		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+		
+		from objects.inst_params import fx_delay
 
 		globalstore.datapack.load('onlineseq', './data/datapack/app/onlineseq.xml')
 

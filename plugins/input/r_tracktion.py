@@ -563,9 +563,11 @@ class input_tracktion_edit(plugins.base):
 		in_dict['plugin_included'] = ['native:tracktion','universal:sampler:single','universal:sampler:multi']
 		in_dict['projtype'] = 'r'
 
-	def parse(self, convproj_obj, dawvert_intent):
-		from objects.file_proj import tracktion_edit as proj_tracktion_edit
-		from objects.file_proj import tracktion_project as proj_tracktion_project
+	def parse(self, conversion_state, dawvert_intent):
+		pass
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
 
 		# ---------- file load ----------
 		samples = {}

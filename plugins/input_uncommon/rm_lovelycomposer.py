@@ -160,12 +160,16 @@ class input_lc(plugins.base):
 	def get_configdef(self, configdef):
 		configdef.add_bool('repeat_chords', False, 'Repeating Chords')
 
-	def parse(self, convproj_obj, dawvert_intent):
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_uncommon import lovelycomposer as proj_lovelycomposer
-
 		project_obj = proj_lovelycomposer.LCMusic()
 		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
 
 		globalstore.datapack.load('lovelycomposer', './data/datapack/app/lovelycomposer.xml')
 		colordata = colors.colorset.from_datapack('lovelycomposer', 'track', 'main')

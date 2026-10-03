@@ -30,12 +30,16 @@ class input_korg_m1_nds(plugins.base):
 		cfgpart.add_choice('none', 'None')
 		cfgpart.add_choice('instset', 'Inst Category')
 
-	def parse(self, convproj_obj, dawvert_intent):
-		from objects.file_proj_past import korg_m1_nds as proj_korg_m1_nds
-
-		project_obj = proj_korg_m1_nds.korg_m1_proj()
+	def parse(self, conversion_state, dawvert_intent):
+		from objects.file_proj_past import korg_m1_nds
+		project_obj = korg_m1_nds.korg_m1_proj()
 		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
+
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
 
 		projsong_obj = project_obj.songs[dawvert_intent.songnum]
 

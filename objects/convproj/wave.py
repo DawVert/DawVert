@@ -13,6 +13,17 @@ def wave_tri(x): return (abs((x*2)%(2)-1)-0.5)*2
 def wave_squ(x, pw): return 1 if wave_sine(x) > pw else -1
 
 class cvpj_wave:
+	__slots__ = [
+		'range_min',
+		'range_max',
+		'points',
+		'numpoints',
+		'smooth',
+		'visname',
+		'author',
+		'data'
+	]
+
 	def __init__(self):
 		self.range_min = -1
 		self.range_max = 1

@@ -92,10 +92,8 @@ class input_soundation(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single','user:reasonstudios:europa','native:soundation']
 		in_dict['projtype'] = 'r'
 
-	def parse(self, i_convproj_obj, dawvert_intent):
-		from objects import colors
+	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import soundation as proj_soundation
-		global convproj_obj
 
 		soundation_obj = None
 
@@ -121,6 +119,20 @@ class input_soundation(plugins.base):
 				soundation_obj = proj_soundation.soundation_project(sndstat_data)
 			except:
 				raise ProjectFileParserException('soundation: file is not Zipped or JSON')
+
+		if soundation_obj:
+			conversion_state.project = soundation_obj
+			conversion_state.archive = zip_data
+			return True
+		else:
+			return False
+
+	def to_convproj(self, i_convproj_obj, dawvert_intent, conversion_state):
+		soundation_obj = conversion_state.project
+		zip_data = conversion_state.archive
+
+		from objects import colors
+		global convproj_obj
 
 		globalstore.datapack.load('soundation', './data/datapack/app/soundation.xml')
 		globalstore.datapack.load('synth_nonfree', './data/datapack/softsynth/synth_nonfree.xml')

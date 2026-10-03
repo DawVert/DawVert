@@ -20,6 +20,8 @@ autopoints_premake = dynbytearr.dynbytearr_premake([
 	])
 
 class output_autopoint:
+	__slots__ = ['pos','value','value_end','instant_mode','tension','point_type']
+
 	def __init__(self, maindata, point):
 		val_type = maindata.val_type
 		self.pos = float(point['pos']) if type(maindata.time_ppq)==float else int(point['pos'])
@@ -49,14 +51,50 @@ autoblocks_premake = dynbytearr.dynbytearr_premake([
 	])
 
 class cvpj_autopoints:
+	__slots__ = [
+	'time_ppq',
+	'val_type',
+	'is_seconds',
+	'name',
+	'data',
+	'points',
+	'points_cur',
+	'point_types',
+	'enabled',
+	'loop_on',
+	'loop_start',
+	'loop_end',
+	'sustain_on',
+	'sustain_loop',
+	'sustain_point',
+	'sustain_end'
+	]
+
 	def __init__(self, time_ppq, val_type):
 		self.time_ppq = time_ppq
 		self.val_type = val_type
 		self.is_seconds = False
 
+		self.name = ''
+
 		self.clear()
 
-		self.name = ''
+	def clear(self):
+		self.data = {}
+
+		self.points = autopoints_premake.create()
+		self.points_cur = self.points.create_cursor()
+		self.point_types = valobjs.indexed_value()
+
+		self.enabled = True
+		self.loop_on = False
+		self.loop_start = 0
+		self.loop_end = 0
+
+		self.sustain_on = False
+		self.sustain_loop = False
+		self.sustain_point = 0
+		self.sustain_end = 0
 
 	def __len__(self):
 		return self.points.__len__()
@@ -81,23 +119,6 @@ class cvpj_autopoints:
 	def iter_raw(self):
 		for x in self.points:
 			yield x.copy()
-
-	def clear(self):
-		self.data = {}
-
-		self.points = autopoints_premake.create()
-		self.points_cur = self.points.create_cursor()
-		self.point_types = valobjs.indexed_value()
-
-		self.enabled = True
-		self.loop_on = False
-		self.loop_start = 0
-		self.loop_end = 0
-
-		self.sustain_on = False
-		self.sustain_loop = False
-		self.sustain_point = 0
-		self.sustain_end = 0
 
 	def debugview(self, txti='', vsize=6, hsize=120):
 		from objects.convproj import autopoints_debug

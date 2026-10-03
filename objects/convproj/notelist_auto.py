@@ -5,6 +5,8 @@ from objects.convproj import autopoints
 from functions import xtramath
 
 class pitchmod:
+	__slots__ = ['current_pitch','start_note','porta_target','pitch_change','slide_data']
+
 	def __init__(self, c_note):
 		self.current_pitch = 0
 		self.start_note = c_note
@@ -97,6 +99,8 @@ class pitchmod:
 			notelist_obj.last_add_auto('pitch', spoint[0], spoint[1])
 
 class notelist_note_auto:
+	__slots__ = ['time_ppq','u_notemod','mod_pitch','mod_pan','u_slide','slide','u_auto','auto']
+	
 	def __init__(self, time_ppq):
 		self.time_ppq = time_ppq
 

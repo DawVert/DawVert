@@ -94,13 +94,17 @@ class input_fruitytracks(plugins.base):
 		cfgpart.add_choice('clip', 'Clip')
 		cfgpart.add_choice('mixed', 'Mixed')
 
-	def parse(self, convproj_obj, dawvert_intent):
-		from objects.file_proj_past import fruitytracks as proj_fruitytracks
-
-		project_obj = proj_fruitytracks.ftr_song()
+	def parse(self, conversion_state, dawvert_intent):
+		from objects.file_proj_past import fruitytracks
+		project_obj = fruitytracks.ftr_song()
 		if dawvert_intent.input_mode == 'file':
-			if not project_obj.load_from_file(dawvert_intent.input_file): exit()
+			project_obj.load_from_file(dawvert_intent.input_file)
+			conversion_state.project = project_obj
+			return True
 
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		project_obj = conversion_state.project
+		
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
