@@ -427,6 +427,9 @@ class cvpj_placements_multi_base:
 	def __bool__(self):
 		return bool(self.data)
 
+	def __getitem__(self, k):
+		return self.data.__getitem__(k)
+
 	def add(self):
 		pl_obj = self.plclass(self.time_ppq)
 		self.data.append(pl_obj)

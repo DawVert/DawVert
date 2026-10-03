@@ -23,6 +23,15 @@ class gems_samplepack:
 	def __init__(self):
 		self.samples = []
 
+	def __len__(self):
+		return self.samples.__len__()
+
+	def __iter__(self):
+		return self.samples.__iter__()
+
+	def __getitem__(self, a):
+		return self.samples.__getitem__(a)
+
 	def load_from_file(self, inputfile):
 		ebrw_readstr = easybinrw.binread()
 		ebrw_readstr.load_file(inputfile)
@@ -51,6 +60,15 @@ class gems_samplepack:
 class gems_seqpack:
 	def __init__(self):
 		self.songptrs = []
+
+	def __len__(self):
+		return self.songptrs.__len__()
+
+	def __iter__(self):
+		return self.songptrs.__iter__()
+
+	def __getitem__(self, a):
+		return self.songptrs.__getitem__(a)
 
 	def load_from_file(self, inputfile):
 		ebrw_readstr = easybinrw.binread()

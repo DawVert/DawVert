@@ -54,6 +54,15 @@ class LCSoundList:
 		self.sl = []
 		if indict is not None: self.read(indict)
 
+	def __len__(self):
+		return self.sl.__len__()
+
+	def __iter__(self):
+		return self.sl.__iter__()
+
+	def __getitem__(self, a):
+		return self.sl.__getitem__(a)
+
 	def read(self, indict):
 		if '__LCSoundList__' in indict:
 			for ch in indict['sl']:
@@ -64,6 +73,15 @@ class LCChannelList:
 
 	def __init__(self):
 		self.ch = []
+
+	def __len__(self):
+		return self.ch.__len__()
+
+	def __iter__(self):
+		return self.ch.__iter__()
+
+	def __getitem__(self, a):
+		return self.ch.__getitem__(a)
 
 	def load(self, indict):
 		if '__LCChannelList__' in indict:

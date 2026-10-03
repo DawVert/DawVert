@@ -21,6 +21,12 @@ class cvpj_sends:
 		self.to_master = cvpj_send()
 		self.to_master_active = True
 
+	def __getitem__(self, k):
+		return self.data.__getitem__(k)
+
+	def __contains__(self, k):
+		return self.data.__contains__(k)
+
 	def __bool__(self):
 		return (self.to_master_active != True) or self.to_master or bool(self.data)
 

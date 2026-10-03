@@ -16,6 +16,12 @@ class cvpj_harmonics:
 	def __init__(self):
 		self.waves = {}
 
+	def __getitem__(self, k):
+		return self.waves.__getitem__(k)
+
+	def __contains__(self, k):
+		return self.waves.__contains__(k)
+
 	def add(self, num, vol, data):
 		self.waves[num] = [vol, data]
 
