@@ -91,6 +91,10 @@ class input_soundop(plugins.base):
 			project_obj.load_from_file(dawvert_intent.input_file)
 			conversion_state.project = project_obj
 			return True
+		if dawvert_intent.input_mode == 'bytes':
+			project_obj.load_from_raw(dawvert_intent.input_data)
+			conversion_state.project = project_obj
+			return True
 
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		project_obj = conversion_state.project

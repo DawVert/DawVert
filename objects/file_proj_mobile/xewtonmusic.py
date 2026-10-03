@@ -282,9 +282,17 @@ class xewtonmusic_inst_file:
 		self.header = xewtonmusic_inst_header()
 		self.samples = []
 
+	def load_from_raw(self, input_data):
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_data(input_data)
+		return self.load(ebrw_readstr)
+
 	def load_from_file(self, input_file):
 		ebrw_readstr = easybinrw.binread()
 		ebrw_readstr.load_file(input_file)
+		return self.load(ebrw_readstr)
+
+	def load(self, ebrw_readstr):
 
 		ebrw_readstr.magic_check(b'INST')
 		ebrw_readstr.skip(4)
