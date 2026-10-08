@@ -20,14 +20,12 @@ class fxchans_maker(fxchans_base.fx_maker_base):
 
 		fxnum = 1
 		for p in range(self.num_ports):
-			curd_port = self.data_port[p]
-
 			for c in range(self.num_channels):
 				curd_channel = self.data_channel[p][c]
 				fxchannel_obj = fxrack_obj.add(fxnum)
 				self.out_params_std(p, c, fxchannel_obj.params)
 				self.out_params_cc(p, c, fxchannel_obj.params)
-				self.add_obj(curd_channel['idstor'], fxnum, fxchannel_obj)
+				self.add_obj_chan(p, c, fxnum, fxchannel_obj)
 				fxnum += 1
 				if curd_channel['fx__chorus__used']:
 					self.add_chorus(p, c, convproj_obj, fxchannel_obj.plugslots)
@@ -36,19 +34,19 @@ class fxchans_maker(fxchans_base.fx_maker_base):
 				reverb_fxchannel_obj = fxrack_obj.add(fxnum)
 				reverb_fxchannel_obj.visual.name = 'Reverb'
 				reverb_fxchannel_obj.visual_ui.other['docked'] = 1
-				self.add_obj(curd_port['reverb_idstor'], fxnum, reverb_fxchannel_obj)
+				self.add_obj_fx_chan(p, 'reverb', fxnum, reverb_fxchannel_obj)
 				self.add_reverb(p, convproj_obj, reverb_fxchannel_obj.plugslots)
 
 				for c in range(self.num_channels):
 					curd_channel = self.data_channel[p][c]
+					fxchannel_obj = self.get_obj_chan(p, c).object
+
 					chan_cc = curd_channel['val_cc']
-					fxchannel_obj = self.get_obj(self.data_channel[p][c]['idstor'])
-					if fxchannel_obj: fxchannel_obj.sends.add(fxnum, '_'.join([str(p), str(c), 'reverb']), calcval(chan_cc[91], 91))
+					if fxchannel_obj: 
+						fxchannel_obj.sends.add(fxnum, '_'.join([str(p), str(c), 'reverb']), calcval(chan_cc[91], 91))
 				fxnum += 1
 
 	def make_autoloc(self, convproj_obj, autoloc_store):
 		for p in range(self.num_ports):
-			curd_port = self.data_port[p]
 			for c in range(self.num_channels):
-				curd_channel = self.data_channel[p][c]
-				autoloc_store.setup_fxchan(p, curd_port, c, curd_channel)
+				autoloc_store.setup_fxchan(p, c, self)

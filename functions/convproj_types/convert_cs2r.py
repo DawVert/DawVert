@@ -84,3 +84,9 @@ def convert_non_midi(convproj_obj, dawvert_intent):
 	modernize_obj.r__output_tracks(convproj_obj)
 	modernize_obj.r__do_fx_ctrls(convproj_obj)
 	modernize_obj.r__output_groups(convproj_obj)
+	modernize_obj.r__do_autoloc(convproj_obj)
+	modernize_obj.do_automation(convproj_obj)
+	modernize_obj.do_pitch_automation(convproj_obj)
+	
+	if convproj_obj.transport.loop_start and not convproj_obj.transport.loop_end:
+		convproj_obj.transport.loop_end = convproj_obj.get_dur()

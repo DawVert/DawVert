@@ -8,15 +8,9 @@ split_channum = gfunc.split_channum
 
 import numpy as np
 
-fxmaker_idstor = np.dtype([
-	('used', np.int8),
-	('chanid', np.int32),
-	('mem', np.uintp),
-	])
-
-fxmaker_port = np.dtype([
-	('reverb_idstor', fxmaker_idstor),
-	])
+#fxmaker_port = np.dtype([
+#	('reverb_idstor', fxmaker_idstor),
+#	])
 
 fxmaker_channel = np.dtype([
 	('fx__reverb__used', np.int8),
@@ -25,21 +19,28 @@ fxmaker_channel = np.dtype([
 	('fx__detune__used', np.int8),
 	('fx__tremolo__used', np.int8),
 	('fx__phaser__used', np.int8),
-	('idstor', fxmaker_idstor),
 	('val_cc', np.uint8, 128),
 	('val_pressure', np.uint8),
 	('val_pitch', np.int32),
 	])
+
+class midicvpj_fx_assoc:
+	def __init__(self):
+		self.used = False
+		self.object = None
+		self.chanid = None
 
 class fx_maker_base:
 	def __init__(self, num_ports, num_channels):
 		import objects.midi_modernize.ctrls as ctrls
 		self.num_channels = num_channels
 		self.num_ports = num_ports
-		self.data_port = np.zeros((num_ports), dtype=fxmaker_port)
+		#self.data_port = np.zeros((num_ports), dtype=fxmaker_port)
 		self.data_channel = np.zeros((num_ports, num_channels), dtype=fxmaker_channel)
 		self.data_channel['val_cc'][0:128] = ctrls.cc_defualtvals
-		self.data_objs = {}
+
+		self.cvpj_assoc = [[midicvpj_fx_assoc() for c in range(num_channels)] for p in range(num_ports)]
+		self.cvpj_fx_assoc = [{} for p in range(num_ports)]
 
 	def add_fx(self, p, c, t):
 		d = self.data_channel[p][c]
@@ -50,15 +51,22 @@ class fx_maker_base:
 		if 'phaser' in t: d['fx__phaser__used'] = 1
 		if 'filter' in t: d['fx__filter__used'] = 1
 
-	def add_obj(self, idstor, fxnum, objdata):
-		idval = id(objdata)
-		idstor['mem'] = idval
-		idstor['chanid'] = fxnum
-		idstor['used'] = 1
-		self.data_objs[idval] = objdata
+	def add_obj_chan(self, p, c, fxnum, objdata):
+		assoc_obj = self.cvpj_assoc[p][c]
+		assoc_obj.used = True
+		assoc_obj.object = objdata
+		assoc_obj.chanid = fxnum
 
-	def get_obj(self, idstor):
-		return self.data_objs[idstor['mem']] if idstor['mem'] else None
+	def get_obj_chan(self, p, c):
+		return self.cvpj_assoc[p][c]
+
+	def add_obj_fx_chan(self, p, fxtype, fxnum, objdata):
+		assoc_d = self.cvpj_fx_assoc[p]
+		if fxtype not in assoc_d: assoc_d[fxtype] = midicvpj_fx_assoc()
+		assoc_obj = assoc_d[fxtype]
+		assoc_obj.used = True
+		assoc_obj.object = objdata
+		assoc_obj.chanid = fxnum
 
 	def out_params_std(self, p, c, param_obj):
 		curd_channel = self.data_channel[p][c]
@@ -101,10 +109,7 @@ class fx_maker_base:
 		self.data_channel[p][c]['val_cc'][s] = v
 
 	def get_fxid(self, po, ch):
-		return self.data_channel[po][ch]['idstor']['chanid']
-
-	def get_fxobj(self, po, ch):
-		return self.get_obj(self.data_channel[po][ch]['idstor'])
+		return self.cvpj_assoc[po][ch]
 
 	def split_channum(self, chanport):
 		return split_channum(chanport, self.num_channels)

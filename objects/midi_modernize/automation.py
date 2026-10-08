@@ -45,13 +45,49 @@ class autoloc_store:
 				ccdata['autoloc'][:,3] = range(128)
 				aloc[p,c] = ccdata
 
-	def setup_fxchan(self, p, curd_port, c, curd_channel):
+	def setup_groupreturn(self, p, c, mainfxchano):
 		import objects.midi_modernize.ctrls as ctrls
-		idstor = curd_channel['idstor']
-		if idstor['used']:
+
+		curd_channel = mainfxchano.data_channel[p][c]
+		assoc_obj = mainfxchano.get_obj_chan(p, c)
+
+		autolocpart = assoc_obj.chanid
+
+		if assoc_obj.used:
+			ccdata = np.empty(128, dtype_autoloc)
+			ccdata['autoloc'][:,0] = autolocpart[0]
+			ccdata['autoloc'][:,1] = autolocpart[1]
+			ccdata['autoloc'][:,2] = ctrls.cc_defualtnames
+			ccdata['autoloc'][:,3] = ''
+
+			ccdata['math_add'][:] = ctrls.cc_data['math_add']
+			ccdata['math_div'][:] = ctrls.cc_data['math_div']
+
+			ccdata['autoloc'][93,0] = 'plugin'
+			ccdata['autoloc'][93,1] = '_'.join([str(p), str(c), 'chorus'])
+			ccdata['autoloc'][93,2] = 'amount'
+
+			ccdata['autoloc'][91,0] = 'send'
+			ccdata['autoloc'][91,1] = '_'.join([str(p), str(c), 'reverb'])
+			ccdata['autoloc'][91,2] = 'amount'
+
+			self.data[p,c] = ccdata
+
+			self.data_pitch['autoloc'][p,c,0] = autolocpart[0]
+			self.data_pitch['autoloc'][p,c,1] = autolocpart[1]
+			self.data_pitch['autoloc'][p,c,2] = 'pitch'
+			self.data_pitch['autoloc'][p,c,3] = ''
+
+	def setup_fxchan(self, p, c, mainfxchano):
+		import objects.midi_modernize.ctrls as ctrls
+
+		curd_channel = mainfxchano.data_channel[p][c]
+		assoc_obj = mainfxchano.get_obj_chan(p, c)
+
+		if assoc_obj.used:
 			ccdata = np.empty(128, dtype_autoloc)
 			ccdata['autoloc'][:,0] = 'fxmixer'
-			ccdata['autoloc'][:,1] = idstor['chanid']
+			ccdata['autoloc'][:,1] = assoc_obj.chanid
 			ccdata['autoloc'][:,2] = ctrls.cc_defualtnames
 			ccdata['autoloc'][:,3] = ''
 
@@ -69,7 +105,7 @@ class autoloc_store:
 			self.data[p,c] = ccdata
 
 			self.data_pitch['autoloc'][p,c,0] = 'fxmixer'
-			self.data_pitch['autoloc'][p,c,1] = idstor['chanid']
+			self.data_pitch['autoloc'][p,c,1] = assoc_obj.chanid
 			self.data_pitch['autoloc'][p,c,2] = 'pitch'
 			self.data_pitch['autoloc'][p,c,3] = ''
 

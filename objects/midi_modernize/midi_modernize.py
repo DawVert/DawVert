@@ -162,8 +162,8 @@ class midi_modernize:
 		chanport = self.calc_channum(x['chan'], portnum)
 		self.instchange_data.add_program(pos, chanport, x['value'])
 
-	def from_evt__sysex(self, x, pos):
-		self.sysex_data.add(pos, midievents_obj.sysex[x['uhival']])
+	def from_evt__sysex(self, x, pos, sysex_data):
+		self.sysex_data.add(pos, sysex_data)
 
 	def from_evt__tempo(self, x, pos):
 		self.tempo_data.add(pos, struct.unpack('f', struct.pack('I', x['uhival']))[0])
@@ -210,7 +210,9 @@ class midi_modernize:
 				elif x['type'] == event_control: self.from_evt__control(x, portnum, pos)
 				elif x['type'] == event_pitch: self.from_evt__pitch(x, portnum, pos)
 				elif x['type'] == event_program: self.from_evt__program(x, portnum, pos)
-				elif x['type'] == event_sysex: self.from_evt__sysex(x, pos)
+				elif x['type'] == event_sysex: 
+					sysex_data = midievents_obj.sysex[x['uhival']]
+					self.from_evt__sysex(x, pos, sysex_data)
 				elif x['type'] == event_tempo: self.from_evt__tempo(x, pos)
 				elif x['type'] == event_timesig: self.from_evt__timesig(x, pos)
 				elif x['type'] == event_text: 
@@ -382,7 +384,10 @@ class midi_modernize:
 	def r__output_groups(self, convproj_obj):
 		logger_compat.info('midi_modernize: Groups')
 
-		self.groupreturnsmaker.generate(convproj_obj, self.used_inst)
+		self.groupreturnsmaker.generate(convproj_obj, self.used_inst, self.visstore_data)
+
+	def r__do_autoloc(self, convproj_obj):
+		self.groupreturnsmaker.make_autoloc(convproj_obj, self.autoloc_store)
 
 	# ====================================== RegularMultiple ======================================
 
@@ -401,7 +406,8 @@ class midi_modernize:
 		self.fxmaker.make_autoloc(convproj_obj, self.autoloc_store)
 		self.ctrl_data.add_loops(convproj_obj.transport)
 
-	def fxrack__do_automation(self, convproj_obj):
+	def do_automation(self, convproj_obj):
+		cvpj_automation = convproj_obj.automation
 		logger_compat.info('midi_modernize: Automation')
 		for pnum in range(self.num_ports):
 			for enum in range(self.num_channels):
@@ -410,12 +416,11 @@ class midi_modernize:
 					autoloc = self.autoloc_store.get_autoloc(pnum, enum, ccnum)
 					math_add, math_div = self.autoloc_store.get_math(pnum, enum, ccnum)
 					if afterstart:
-						cvpj_automation = convproj_obj.automation
 						for pos, val in data:
 							val = (float(val)+math_add)/math_div
 							cvpj_automation.add_autotick(autoloc, 'float', int(pos), val)
 
-	def fxrack__do_pitch_automation(self, convproj_obj):
+	def do_pitch_automation(self, convproj_obj):
 		logger_compat.info('midi_modernize: Pitch Automation')
 		for pnum in range(self.num_ports):
 			for enum in range(self.num_channels):
@@ -431,7 +436,7 @@ class midi_modernize:
 		logger_compat.info('midi_modernize: Instruments')
 		for n, inst in enumerate(self.used_inst):
 			inst_obj = instruments.cvpj_create_instrument(convproj_obj, inst)
-			inst_obj.fxrack_channel = self.fxmaker.get_fxid(inst['port'], inst['chan'])
+			inst_obj.fxrack_channel = self.fxmaker.get_obj_chan(inst['port'], inst['chan']).chanid
 			self.visstore_data.vis_inst[n].to_cvpj_visual(inst_obj.visual)
 			for x in convproj_obj.midi_cust_inst:
 				if instruments.match_custom(inst, x):
@@ -440,9 +445,8 @@ class midi_modernize:
 	
 		for po in range(self.num_ports):
 			for ch in range(self.num_channels):
-				fxchannel_obj =  self.fxmaker.get_fxobj(po, ch)
+				fxchannel_obj = self.fxmaker.get_obj_chan(po, ch).object
 				if fxchannel_obj:
-					fxn =  self.fxmaker.get_fxid(po, ch)
 					self.visstore_data.vis_fxchan[po][ch].to_cvpj_visual(fxchannel_obj.visual)
 
 	def rm__output_tracks(self, convproj_obj):
