@@ -9,6 +9,8 @@ def getbool(v): return v=='true'
 # ============================================= drumkit ============================================= 
 
 class hydrogen_drumkitComponent:
+	__slots__ = ['id','name','volume']
+
 	def __init__(self, xmldata=None):
 		self.id = 0
 		self.name = ''
@@ -25,6 +27,24 @@ class hydrogen_drumkitComponent:
 # ============================================= instrument ============================================= 
 
 class hydrogen_layer:
+	__slots__ = [
+		'filename',
+		'min',
+		'max',
+		'gain',
+		'pitch',
+		'ismodified',
+		'smode',
+		'startframe',
+		'loopframe',
+		'loops',
+		'endframe',
+		'userubber',
+		'rubberdivider',
+		'rubberCsettings',
+		'rubberPitch',
+	]
+
 	def __init__(self, xmldata=None):
 		self.filename = ''
 		self.min = 0
@@ -63,6 +83,8 @@ class hydrogen_layer:
 			if name == 'rubberPitch': self.rubberPitch = float(x_part.text)
 
 class hydrogen_instrumentComponent:
+	__slots__ = ['component_id','gain','layers']
+
 	def __init__(self, xmldata=None):
 		self.component_id = 0
 		self.gain = 1

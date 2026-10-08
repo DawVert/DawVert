@@ -181,10 +181,11 @@ class input_pxtone(plugins.base):
 			unitstream = pxtone_cmdstream(track_obj.placements.notelist, convproj_obj, cvpj_trackid)
 
 			for e in unit_notes:
-				if e['eventnum'] == 1: unitstream.note(e['d_position'], e['value'])
-				if e['eventnum'] == 2: unitstream.note_pitch(e['d_position'], e['value'])
-				if e['eventnum'] == 5: unitstream.vol(e['d_position'], e['value'])
-				if e['eventnum'] == 6: unitstream.porta(e['value'])
-				if e['eventnum'] == 12: unitstream.voice(e['value'])
-				if e['eventnum'] == 14: unitstream.pitch(e['d_position'], e['value'])
-				if e['eventnum'] == 15: unitstream.pan(e['d_position'], e['value'])
+				eventnum = e['eventnum']
+				if eventnum == 1: unitstream.note(e['d_position'], e['value'])
+				elif eventnum == 2: unitstream.note_pitch(e['d_position'], e['value'])
+				elif eventnum == 5: unitstream.vol(e['d_position'], e['value'])
+				elif eventnum == 6: unitstream.porta(e['value'])
+				elif eventnum == 12: unitstream.voice(e['value'])
+				elif eventnum == 14: unitstream.pitch(e['d_position'], e['value'])
+				elif eventnum == 15: unitstream.pan(e['d_position'], e['value'])

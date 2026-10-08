@@ -28,15 +28,19 @@ class input_mod(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single']
 		in_dict['projtype'] = 'ts'
 
+	def get_configdef(self, configdef):
+		configdef.add_bool('ignore_errors', False, 'Ignore Invalid Data')
+
 	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_tracker import tracker_mod as proj_mod
+		ignore_errors = dawvert_intent.input_get_param('ignore_errors', False)
 		project_obj = proj_mod.mod_song()
 		if dawvert_intent.input_mode == 'file':
-			project_obj.load_from_file(dawvert_intent.input_file)
+			project_obj.load_from_file(dawvert_intent.input_file, ignore_errors)
 			conversion_state.project = project_obj
 			return True
 		if dawvert_intent.input_mode == 'bytes':
-			project_obj.load_from_raw(dawvert_intent.input_data)
+			project_obj.load_from_raw(dawvert_intent.input_data, ignore_errors)
 			conversion_state.project = project_obj
 			return True
 
@@ -85,7 +89,7 @@ class input_mod(plugins.base):
 				audio_obj = audio_data.audio_obj()
 				audio_obj.set_codec('int8')
 				audio_obj.pcm_from_bytes(sample_obj.data)
-				if not IGNORE_ERRORS: audiorate = FINETUNE[sample_obj.finetune]
+				if not IGNORE_ERRORS: audiorate = FINETUNE[sample_obj.finetune%len(FINETUNE)]
 				else: audiorate = FINETUNE[sample_obj.finetune%len(FINETUNE)]
 				audio_obj.rate = audiorate
 

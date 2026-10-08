@@ -80,7 +80,8 @@ class notestream:
 		'freeze_octave',
 		'key_to_inst',
 		'off_methods',
-		'record_off_methods'
+		'record_off_methods',
+		'slide_pitch'
 	]
 
 	def __init__(self, assoc_instid):
@@ -98,6 +99,7 @@ class notestream:
 		self.key_to_inst = 0
 		self.off_methods = {}
 		self.record_off_methods = False
+		self.slide_pitch = None
 
 	def add_off_method(self, instnum, cuttype):
 		if instnum not in self.off_methods: self.off_methods[instnum] = {}

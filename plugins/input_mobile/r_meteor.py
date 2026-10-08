@@ -7,13 +7,32 @@ from objects.convproj import fileref
 from objects import globalstore
 import os
 
-def do_effect(convproj_obj, fxid, track_obj, m_fx):
+def do_effect(convproj_obj, fxid, plugslots, m_fx):
 	typeid = m_fx.typeid
 	wetlvl = m_fx.mix/64
 	fxparams = m_fx.params
 	if typeid!=0:
-		plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'meteor', str(typeid))
+		strtype = str(typeid)
+		plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'meteor', strtype)
 		plugin_obj.fxdata_add(True, wetlvl)
+		for param_id, datapack_param in globalstore.datapack.get_params('native', 'plugin', strtype):
+			paramval = m_fx.params[param_id] if param_id in m_fx.params else None
+			plugin_obj.datapack_param__add(param_id, paramval, datapack_param)
+		plugslots.slots_audio.append(fxid)
+
+returnnames = {
+	1: "Delay",
+	2: "Chorus",
+	3: "Reverb",
+	4: "Phaser",
+	5: "Tremolo",
+	6: "EQ",
+	7: "Pitch Shift",
+	8: "Filter",
+	9: "Overdrive",
+	10: "Tone Boost",
+	11: "Noise Gate"
+}
 
 class input_meteor(plugins.base):
 	def is_dawvert_plugin(self):
@@ -23,7 +42,7 @@ class input_meteor(plugins.base):
 		return 'meteor'
 	
 	def get_name(self):
-		return 'meteor'
+		return 'MeTeoR'
 	
 	def get_priority(self):
 		return 0
@@ -67,6 +86,7 @@ class input_meteor(plugins.base):
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(480)
+		convproj_obj.do_actions.append('do_addloop')
 
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']
@@ -88,6 +108,10 @@ class input_meteor(plugins.base):
 		for n, retu in enumerate(project_obj.aux_returns):
 			return_obj = convproj_obj.track_master.fx__return__add(str(n))
 			return_obj.params.add('vol', retu.volume/64, 'float')
+			fxid = 'return%i_fx' % (n)
+			do_effect(convproj_obj, fxid, return_obj.plugslots, retu.effect)
+			fxtypeid = retu.effect.typeid
+			if fxtypeid!=0: return_obj.visual.name = returnnames[fxtypeid]
 
 		for n, track in enumerate(project_obj.tracks):
 			trackid = 'track_'+str(n)
@@ -99,6 +123,7 @@ class input_meteor(plugins.base):
 			track_obj.params.add('vol', track.volume/64, 'float')
 			track_obj.params.add('pan', (track.pan-32)/32, 'float')
 
+			track_obj.visual.name = 'Track #%i' % (n+1)
 			track_obj.visual.color.set_int(color_track.getcolornum(track.color))
 			track_obj.visual.color.fx_allowed = ['saturate', 'brighter']
 
@@ -113,7 +138,7 @@ class input_meteor(plugins.base):
 			effects = track.effects
 			for fn, effect in effects.items():
 				fxid = 'track%i_fx%i' % (n, fn)
-				do_effect(convproj_obj, fxid, track_obj, effect)
+				do_effect(convproj_obj, fxid, track_obj.plugslots, effect)
 
 			# clips
 			for clip in track.clips:

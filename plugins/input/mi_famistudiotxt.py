@@ -237,7 +237,7 @@ def make_auto(cvpj_automation, fs_pattern, NoteLength, timemul, patpos, patdur, 
 			autopoints_obj.points__add_instant(c_pos, c_val/15)
 			prev_slidetarg = slitarget
 
-def parse_notes(cvpj_notelist, fs_notes, chiptype, NoteLength, arpeggios, fxchan):
+def parse_notes(cvpj_notelist, fs_notes, chiptype, NoteLength, arpeggios, fxchan, arpeggiochord):
 	for notedata in fs_notes:
 		if notedata.Duration != None:
 			t_duration = float(notedata.Duration)/NoteLength
@@ -256,7 +256,7 @@ def parse_notes(cvpj_notelist, fs_notes, chiptype, NoteLength, arpeggios, fxchan
 							cvpj_notelist.last_add_auto('pitch', 0, 0)
 							cvpj_notelist.last_add_auto('pitch', t_duration, t_slidenote-t_key)
 
-						if notedata.Arpeggio:
+						if notedata.Arpeggio and arpeggiochord:
 							if notedata.Arpeggio in arpeggios:
 								multikeys = arpeggios[notedata.Arpeggio].Values
 								multikeys_r = []
@@ -303,6 +303,7 @@ class input_famistudio(plugins.base):
 		cfgpart = configdef.add_enum('dpcm_freq', 'ntsc', 'DPCM NTSC/PAL')
 		cfgpart.add_choice('ntsc', 'NTSC')
 		cfgpart.add_choice('pal', 'PAL')
+		configdef.add_bool('arpeggiochord', True, 'Arpeggio to Chord')
 
 	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj import famistudiotxt as proj_famistudiotxt
@@ -345,6 +346,7 @@ class input_famistudio(plugins.base):
 
 		dpcm_sel = dawvert_intent.input_get_param('dpcm_freq', 'ntsc')
 		dpcm_freqlist = dpcm_rate_arr_ntsc if dpcm_sel=='ntsc' else dpcm_rate_arr_pal
+		arpeggiochord = dawvert_intent.input_get_param('arpeggiochord', True)
 
 		# ---------- metadata ----------
 		if not convproj_obj.metadata.name:
@@ -493,7 +495,7 @@ class input_famistudio(plugins.base):
 				visual_obj.name = patid+' ('+fst_channel.Type+')'
 				if patdata.Color: visual_obj.color.set_hex(patdata.Color)
 				else: visual_obj.color.set_int(defualt_pattern_color)
-				parse_notes(nle_obj.notelist, patdata.Notes, fst_channel.Type, NoteLength, project_obj.Arpeggios, fxchan)
+				parse_notes(nle_obj.notelist, patdata.Notes, fst_channel.Type, NoteLength, project_obj.Arpeggios, fxchan, arpeggiochord)
 
 				if patid in modpatbpm:
 					pattemps = modpatbpm[patid]
@@ -504,7 +506,7 @@ class input_famistudio(plugins.base):
 						nle_obj.visual.name = patid+' ('+fst_channel.Type+')'
 						if patdata.Color: nle_obj.visual.color.set_hex(patdata.Color)
 						else: nle_obj.visual.color.set_int(defualt_pattern_color)
-						parse_notes(nle_obj.notelist, patdata.Notes, fst_channel.Type, NoteLength*notemul, project_obj.Arpeggios, fxchan)
+						parse_notes(nle_obj.notelist, patdata.Notes, fst_channel.Type, NoteLength*notemul, project_obj.Arpeggios, fxchan, arpeggiochord)
 
 			for patinsid in fst_channel.PatternInstances:
 				patid = patinsid.Pattern

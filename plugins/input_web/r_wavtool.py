@@ -23,6 +23,15 @@ def extract_audio(audioname):
 				break
 	return audio_filename
 
+def do_visual_track(visual_obj, wavtool_track):
+	visual_obj.name = wavtool_track.name
+	visual_obj.color.set_hex(wavtool_track.color)
+
+def do_track_params(params_obj, wavtool_track):
+	params_obj.add('vol', wavtool_track.gain, 'float')
+	params_obj.add('pan', wavtool_track.balance, 'float')
+	params_obj.add('enabled', int(not wavtool_track.mute), 'bool')
+
 def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 	from objects.inst_params import fx_delay
 	if trackid in devices_obj.tracks:
@@ -485,15 +494,8 @@ class input_wavtool(plugins.base):
 			logger_input.info(''+wavtool_track.type+' Track: '+wavtool_track.name)
 			if wavtool_track.type == 'MIDI':
 				track_obj = cvpj_tracks.add(trackid, 'instrument', 1, False)
-
-				# visual
-				track_obj.visual.name = wavtool_track.name
-				track_obj.visual.color.set_hex(wavtool_track.color)
-
-				# params
-				track_obj.params.add('vol', wavtool_track.gain, 'float')
-				track_obj.params.add('pan', wavtool_track.balance, 'float')
-				track_obj.params.add('enabled', int(not wavtool_track.mute), 'bool')
+				do_visual_track(track_obj.visual, wavtool_track)
+				do_track_params(track_obj.params, wavtool_track)
 
 				# clip
 				for wavtool_clip in wavtool_track.clips:
@@ -518,15 +520,8 @@ class input_wavtool(plugins.base):
 
 			if wavtool_track.type == 'Audio':
 				track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
-
-				# visual
-				track_obj.visual.name = wavtool_track.name
-				track_obj.visual.color.set_hex(wavtool_track.color)
-
-				# params
-				track_obj.params.add('vol', wavtool_track.gain, 'float')
-				track_obj.params.add('pan', wavtool_track.balance, 'float')
-				track_obj.params.add('enabled', int(not wavtool_track.mute), 'bool')
+				do_visual_track(track_obj.visual, wavtool_track)
+				do_track_params(track_obj.params, wavtool_track)
 
 				# clip
 				for wavtool_clip in wavtool_track.clips:

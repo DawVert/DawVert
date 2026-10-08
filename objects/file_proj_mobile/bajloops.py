@@ -4,8 +4,14 @@ from external.easybinrw import easybinrw
 DEBUGTXT = 0
 
 class bajloop_pattern:
+	__slots__ = ['name','events','color','unk1','unk2']
+
 	def __init__(self):
 		self.name = ''
+		self.unk1 = 0
+		self.unk2 = 0
+		self.color = None
+		self.events = []
 
 	def read_events(self, ebrw_readstr):
 		self.events = []
@@ -34,9 +40,24 @@ class bajloop_pattern:
 		if DEBUGTXT: print('')
 
 class bajloop_sample:
+	__slots__ = [
+		'name','data','bits','channels','unk1','freq',
+		'num_samples','loop_1','loop_2','unk3','data_size'
+	]
+
 	def __init__(self):
 		self.name = ''
 		self.data = b''
+
+		self.bits = 8
+		self.channels = 1
+		self.unk1 = 0
+		self.freq = 0
+		self.num_samples = 0
+		self.loop_1 = 0
+		self.loop_2 = 0
+		self.unk3 = 0
+		self.data_size = 0
 
 	def read(self, ebrw_readstr):
 		assert(ebrw_readstr.int_u8()==6)
