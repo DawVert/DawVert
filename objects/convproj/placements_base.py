@@ -12,6 +12,7 @@ def internal_addloops(pldata, eq_connect, loopcompat):
 
 	prev = None
 	for pl in old_data:
+
 		if not eq_connect(pl, prev, loopcompat):
 			new_data.append(pl)
 		else:
@@ -152,6 +153,9 @@ class cvpj_placement_fade:
 		self.shapetype = ''
 		self.skew = 0
 		self.slope = 0
+
+	def __bool__(self):
+		return bool(self.dur)
 
 	def clear(self):
 		self.dur = 0

@@ -330,6 +330,22 @@ class midi_modernize:
 			self.visstore_data.proc__fx_to_track()
 			self.visstore_data.proc__inst_to_track()
 	
+	def r__instrument_visual(self, convproj_obj):
+		self.used_inst = self.notes_data.get_used_inst()
+		self.visstore_data.set_used_inst(self.used_inst)
+		self.visstore_data.set_cust_inst(convproj_obj.midi_cust_inst)
+	
+		if self.num_miditracks==1:
+			self.visstore_data.proc__inst_to_fx()
+	
+		if self.num_miditracks>1:
+			self.visstore_data.proc__track_to_fx__track()
+			self.visstore_data.proc__track_to_fx__inst()
+			#self.visstore_data.proc__track_to_inst()
+			self.visstore_data.proc__inst_to_fx()
+			self.visstore_data.proc__fx_to_track()
+			self.visstore_data.proc__inst_to_track()
+	
 	# ====================================== Regular ======================================
 
 	def r__output_tracks(self, convproj_obj):
@@ -352,23 +368,38 @@ class midi_modernize:
 
 			chanport = int(inst['chanport'])
 			portnum, channum = gfunc.split_channum(chanport, self.num_channels)
+
+			if track_obj.visual.name:
+				track_obj.visual.name += ' (Channel #%s)' % str(channum+1)
+			else:
+				track_obj.visual.name = 'Channel #%s' % str(channum+1)
+
 			self.visstore_data.vis_inst[instnum].to_cvpj_visual(track_obj.visual)
 
-			track_obj.visual.name += ' (Channel #%s)' % str(channum+1)
-
+			trackused = False
 			org_trackid, org_track = org_tracks[int(inst['track'])]
 			if not org_track.uses_placements:
 				tracknotes = self.notes_data.filter_instexact(inst)
-				self.midinotes_to_cvpjnotes(tracknotes, track_obj.placements.notelist, 0)
+				if len(tracknotes):
+					trackused = True
+					self.midinotes_to_cvpjnotes(tracknotes, track_obj.placements.notelist, 0)
 			else:
 				for plnum, pl_midi in enumerate(org_track.placements.pl_midi):
-					pl_notes = track_obj.placements.pl_notes.make_base_from_midi(pl_midi)
 					pl_tracknotes = self.notes_data.filter_instexact_section(inst, plnum+1)
-					self.midinotes_to_cvpjnotes(pl_tracknotes, pl_notes.notelist, pl_notes.time.get_pos())
+					if len(pl_tracknotes):
+						trackused = True
+						pl_notes = track_obj.placements.pl_notes.make_base_from_midi(pl_midi)
+						self.midinotes_to_cvpjnotes(pl_tracknotes, pl_notes.notelist, pl_notes.time.get_pos())
+
+			groupreturnsmaker.inst_track_used.append(trackused)
 
 		for x in org_order:
 			del cvpj_tracks.data[x]
 			cvpj_tracks.order.remove(x)
+
+		for n, x in enumerate(groupreturnsmaker.inst_track_used):
+			if not n:
+				cvpj_tracks.order.remove(groupreturnsmaker.inst_track_id[x])
 
 	def r__do_fx_ctrls(self, convproj_obj):
 		logger_compat.info('midi_modernize: Controls and FX')

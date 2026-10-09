@@ -79,8 +79,8 @@ def convert_non_midi(convproj_obj, dawvert_intent):
 	modernize_obj.do_instruments()
 	modernize_obj.do_tempo(convproj_obj)
 	modernize_obj.do_timesig(convproj_obj)
-	modernize_obj.instrument_visual(convproj_obj)
-
+	
+	modernize_obj.r__instrument_visual(convproj_obj)
 	modernize_obj.r__output_tracks(convproj_obj)
 	modernize_obj.r__do_fx_ctrls(convproj_obj)
 	modernize_obj.r__output_groups(convproj_obj)

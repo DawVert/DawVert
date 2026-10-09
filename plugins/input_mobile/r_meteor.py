@@ -93,6 +93,7 @@ class input_meteor(plugins.base):
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']
 		traits_obj.audio_stretch = ['rate']
+		traits_obj.placement_loop = []
 
 		# ---------- metadata ----------
 		about = project_obj.about

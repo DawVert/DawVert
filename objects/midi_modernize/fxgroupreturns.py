@@ -15,6 +15,7 @@ class fxgroupreturns_maker(fxchans_base.fx_maker_base):
 		super().__init__(num_ports, num_channels)
 		self.inst_track_id = []
 		self.inst_track_obj = []
+		self.inst_track_used = []
 		self.autolocstart = {}
 		self.chanport_groups = {}
 
@@ -34,18 +35,21 @@ class fxgroupreturns_maker(fxchans_base.fx_maker_base):
 			chanport = int(inst['chanport'])
 			portnum, channum = self.split_channum(chanport)
 			track_obj = self.inst_track_obj[instnum]
-			if chanport not in self.chanport_groups: self.chanport_groups[chanport] = []
-			self.chanport_groups[chanport].append(instnum)
-			self.out_params_cc(portnum, channum, track_obj.params)
+			if self.inst_track_used[instnum]:
+				if chanport not in self.chanport_groups: self.chanport_groups[chanport] = []
+				self.chanport_groups[chanport].append([instnum, inst['track']])
+				self.out_params_cc(portnum, channum, track_obj.params)
 
 		for chanport, insts in self.chanport_groups.items():
 			portnum, channum = self.split_channum(chanport)
 			if len(insts)==1: 
-				trackid = self.inst_track_id[insts[0]]
-				track_obj = self.inst_track_obj[insts[0]]
+				firstinst, firsttrack = insts[0]
+				trackid = self.inst_track_id[firstinst]
+				track_obj = self.inst_track_obj[firstinst]
 				self.autolocstart[chanport] = ['track', trackid]
 				params_obj = track_obj.params
 				self.add_obj_chan(portnum, channum, ['track', trackid], track_obj)
+				visstore_data.vis_track[firsttrack].to_cvpj_visual(track_obj.visual)
 			else: 
 				groupid = str(chanport)
 				group_obj = cvpj_groups.add(groupid)
@@ -53,6 +57,10 @@ class fxgroupreturns_maker(fxchans_base.fx_maker_base):
 				params_obj = group_obj.params
 				self.add_obj_chan(portnum, channum, ['group', groupid], group_obj)
 				visstore_data.vis_fxchan[portnum][channum].to_cvpj_visual(group_obj.visual)
+
+				for inst, miditrack in insts:
+					track_obj = self.inst_track_obj[inst]
+					track_obj.group = groupid
 			self.out_params_std(portnum, channum, params_obj)
 
 		for p in range(self.num_ports):

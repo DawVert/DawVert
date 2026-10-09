@@ -119,6 +119,14 @@ class cvpj_placements_audio(placements_base.cvpj_placements_multi_base):
 		#
 		#self.data = new_data
 
+	def eq_content(self, pl, prev):
+		if prev:
+			isvalid_a = placements_base.internal_eq_content(pl, prev)
+			isvalid_b = pl.sample==prev.sample
+			return isvalid_a & isvalid_b
+		else:
+			return False
+
 	def eq_connect(self, pl, prev, loopcompat):
 		if prev:
 			isvalid_a = self.eq_content(pl, prev)
