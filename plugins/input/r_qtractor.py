@@ -71,6 +71,8 @@ class input_midi(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
 
 		# ---------- convproj params ----------
 		swap_bg_fg = dawvert_intent.input_get_param('swap_bg_fg', False)
@@ -105,10 +107,9 @@ class input_midi(plugins.base):
 		for device_obj in project_obj.devices:
 			if isinstance(device_obj, proj_qtractor.qtractor_audio_engine):
 				audio_bus = device_obj.audio_bus
-				track_obj = convproj_obj.track_master
-				track_obj.params.add('vol', audio_bus.output_gain, 'float')
-				track_obj.params.add('pan', audio_bus.output_panning, 'float')
-				do_plugins(convproj_obj, audio_bus.output_plugins, track_obj)
+				cvpj_master.params.add('vol', audio_bus.output_gain, 'float')
+				cvpj_master.params.add('pan', audio_bus.output_panning, 'float')
+				do_plugins(convproj_obj, audio_bus.output_plugins, cvpj_master)
 
 		# ---------- tracks ----------
 		for tracknum, qtrack in enumerate(project_obj.tracks):

@@ -75,6 +75,8 @@ class input_hydrogen(plugins.base):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = convproj_obj.automation
 		cvpj_timemarkers = convproj_obj.timemarkers
+		cvpj_metadata = convproj_obj.metadata
+		cvpj_master = convproj_obj.track_master
 		
 		# ---------- convproj params ----------
 		pb_track = dawvert_intent.input_get_param('pb_track', True)
@@ -90,10 +92,10 @@ class input_hydrogen(plugins.base):
 		traits_obj.auto_types = ['nopl_points']
 
 		# ---------- metadata ----------
-		convproj_obj.metadata.name = project_obj.name
-		convproj_obj.metadata.author = project_obj.author
-		convproj_obj.metadata.comment_text = project_obj.notes
-		convproj_obj.metadata.data['license'] = project_obj.license
+		cvpj_metadata.name = project_obj.name
+		cvpj_metadata.author = project_obj.author
+		cvpj_metadata.comment_text = project_obj.notes
+		cvpj_metadata.data['license'] = project_obj.license
 
 		# ---------- transport ----------
 		bpm = project_obj.bpm
@@ -107,8 +109,8 @@ class input_hydrogen(plugins.base):
 		convproj_obj.params.add('bpm', bpm , 'float')
 
 		# ---------- bpm master track ----------
-		convproj_obj.track_master.params.add('vol', project_obj.volume, 'float')
-		convproj_obj.track_master.params.add('enabled', not project_obj.isMuted, 'float')
+		cvpj_master.params.add('vol', project_obj.volume, 'float')
+		cvpj_master.params.add('enabled', not project_obj.isMuted, 'float')
 
 		# ---------- bpm playback track ----------
 		plnum = 0
@@ -252,4 +254,4 @@ class input_hydrogen(plugins.base):
 
 		#for sendnum in range(4):
 		#	returnid = 'return__'+str(sendnum)
-		#	track_obj = convproj_obj.track_master.fx__return__add(returnid)
+		#	track_obj = cvpj_master.fx__return__add(returnid)

@@ -632,6 +632,8 @@ class input_tracktion_edit(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
 		cvpj_timemarkers = convproj_obj.timemarkers
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
@@ -697,17 +699,17 @@ class input_tracktion_edit(plugins.base):
 
 		# ---------- master plugin ----------
 		for wf_plugin in project_obj.masterplugins:
-			do_plugin(convproj_obj, wf_plugin, convproj_obj.track_master, software_mode)
+			do_plugin(convproj_obj, wf_plugin, cvpj_master, software_mode)
 
 		# ---------- transport ----------
 		transport_obj = project_obj.transport
 
-		convproj_obj.transport.loop_active = bool(transport_obj.looping)
-		convproj_obj.transport.loop_start = max(0, transport_obj.loopPoint1)
-		convproj_obj.transport.loop_end = max(0, transport_obj.loopPoint2)
-		#convproj_obj.transport.start_pos = max(0, transport_obj.start)
-		convproj_obj.transport.current_pos = transport_obj.position
-		convproj_obj.transport.is_seconds = True
+		cvpj_transport.loop_active = bool(transport_obj.looping)
+		cvpj_transport.loop_start = max(0, transport_obj.loopPoint1)
+		cvpj_transport.loop_end = max(0, transport_obj.loopPoint2)
+		#cvpj_transport.start_pos = max(0, transport_obj.start)
+		cvpj_transport.current_pos = transport_obj.position
+		cvpj_transport.is_seconds = True
 		
 		# ---------- tracks ----------
 		tracknum = 0
@@ -751,7 +753,7 @@ class input_tracktion_edit(plugins.base):
 
 		if store_obj.gr_valid:
 			for busNum, returnid, track_obj in gr_returns:
-				return_obj = convproj_obj.track_master.fx__return__add(returnid)
+				return_obj = cvpj_master.fx__return__add(returnid)
 				return_obj.visual = track_obj.visual
 				return_obj.params = track_obj.params
 				return_obj.plugslots = track_obj.plugslots

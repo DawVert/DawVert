@@ -68,6 +68,7 @@ class input_soundclub2(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_metadata = convproj_obj.metadata
 		
 		# ---------- convproj params ----------
 		panlvl = dawvert_intent.input_get_param('panlvl', 1.0)
@@ -81,7 +82,7 @@ class input_soundclub2(plugins.base):
 		traits_obj.audio_filetypes = ['wav']
 
 		# ---------- metadata ----------
-		convproj_obj.metadata.comment_text = project_obj.comment
+		cvpj_metadata.comment_text = project_obj.comment
 		
 		# ---------- instruments ----------
 		for instnum, sn2_inst_obj in enumerate(project_obj.instruments):

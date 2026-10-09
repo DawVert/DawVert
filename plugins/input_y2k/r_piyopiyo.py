@@ -110,6 +110,8 @@ class input_piyopiyo(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_metadata = convproj_obj.metadata
+		cvpj_transport = convproj_obj.transport
 
 		# ---------- convproj params ----------
 		use_samples = dawvert_intent.input_get_param('use_samples', True)
@@ -127,9 +129,9 @@ class input_piyopiyo(plugins.base):
 
 		# ---------- transport ----------
 		convproj_obj.params.add('bpm', (120/project_obj.musicwait)*120, 'float')
-		convproj_obj.transport.loop_active = True
-		convproj_obj.transport.loop_start = project_obj.loopstart
-		convproj_obj.transport.loop_end = project_obj.loopend
+		cvpj_transport.loop_active = True
+		cvpj_transport.loop_start = project_obj.loopstart
+		cvpj_transport.loop_end = project_obj.loopend
 
 		# ---------- melody tracks ----------
 		for tracknum in range(3):

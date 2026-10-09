@@ -47,6 +47,7 @@ class input_bandlab(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_master = convproj_obj.track_master
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -69,9 +70,9 @@ class input_bandlab(plugins.base):
 		tempomul = 120/bpm
 
 		# ---------- master track ----------
-		convproj_obj.track_master.params.add('vol', project_obj.volume, 'float')
+		cvpj_master.params.add('vol', project_obj.volume, 'float')
 		for blx_auxChannel in project_obj.auxChannels:
-			track_obj = convproj_obj.track_master.fx__return__add(blx_auxChannel.id)
+			track_obj = cvpj_master.fx__return__add(blx_auxChannel.id)
 			track_obj.params.add('vol', blx_auxChannel.returnLevel, 'float')
 
 		# ---------- samples ----------

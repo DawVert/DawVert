@@ -451,6 +451,9 @@ class input_wavtool(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_metadata = convproj_obj.metadata
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'route'
@@ -474,14 +477,14 @@ class input_wavtool(plugins.base):
 		convproj_obj.timesig = [wavtool_obj.beatNumerator, wavtool_obj.beatDenominator]
 		convproj_obj.params.add('bpm', wavtool_obj.bpm, 'float')
 
-		convproj_obj.transport.loop_active = wavtool_obj.loopEnabled
-		convproj_obj.transport.loop_start = wavtool_obj.loopStart
-		convproj_obj.transport.loop_end = wavtool_obj.loopEnd
+		cvpj_transport.loop_active = wavtool_obj.loopEnabled
+		cvpj_transport.loop_start = wavtool_obj.loopStart
+		cvpj_transport.loop_end = wavtool_obj.loopEnd
 
 		# ---------- master track ----------
-		convproj_obj.track_master.visual.name = 'Master'
-		convproj_obj.track_master.visual.color.set_float([0.14, 0.14, 0.14])
-		convproj_obj.track_master.params.add('vol', 1, 'float')
+		cvpj_master.visual.name = 'Master'
+		cvpj_master.visual.color.set_float([0.14, 0.14, 0.14])
+		cvpj_master.params.add('vol', 1, 'float')
 
 		# ---------- bpm automation ----------
 		for x in wavtool_obj.bpmAutomation:

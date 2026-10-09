@@ -81,6 +81,8 @@ class input_meteor(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_metadata = convproj_obj.metadata
+		cvpj_master = convproj_obj.track_master
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
@@ -94,9 +96,9 @@ class input_meteor(plugins.base):
 
 		# ---------- metadata ----------
 		about = project_obj.about
-		convproj_obj.metadata.name = about.title
-		convproj_obj.metadata.author = about.author
-		convproj_obj.metadata.comment_text = about.information
+		cvpj_metadata.name = about.title
+		cvpj_metadata.author = about.author
+		cvpj_metadata.comment_text = about.information
 		
 		# ---------- transport ----------
 		tempo = project_obj.editinfo.tempo
@@ -106,7 +108,7 @@ class input_meteor(plugins.base):
 		outsamples = {}
 
 		for n, retu in enumerate(project_obj.aux_returns):
-			return_obj = convproj_obj.track_master.fx__return__add(str(n))
+			return_obj = cvpj_master.fx__return__add(str(n))
 			return_obj.params.add('vol', retu.volume/64, 'float')
 			fxid = 'return%i_fx' % (n)
 			do_effect(convproj_obj, fxid, return_obj.plugslots, retu.effect)

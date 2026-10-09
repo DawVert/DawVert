@@ -89,6 +89,7 @@
 | R-I | ```mobile``` | ```midsequer``` | Midsequer | ```.mdsq``` | ✔️ |  |
 | R-I | ```mobile``` | ```xewton_music``` | Xewton Music Studio | ```.xms``` | ✔️ |  |
 | M-I | ```mobile``` | ```zquence``` | Zquence Studio 2016 | ```.zssong``` | ✔️ |  |
+| R | ```mobile``` | ```meteor``` | MeTeoR | ```.mtproj``` | ✔️ |  |
 
 ## Audio Editors
 | DataType | PluginSet | Short Name | Name | Ext | Autodetect | Info | 

@@ -199,6 +199,9 @@ class input_reaper(plugins.base):
 		cvpj_groups = convproj_obj.groups
 		cvpj_automation = convproj_obj.automation
 		cvpj_timemarkers = convproj_obj.timemarkers
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
+		cvpj_metadata = convproj_obj.metadata
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -234,12 +237,12 @@ class input_reaper(plugins.base):
 		loop_size = rpp_project.selection['end']
 
 		if loop_active and loop_size:
-			convproj_obj.transport.loop_active = loop_active
-			convproj_obj.transport.loop_start = loop_start
-			convproj_obj.transport.loop_end = loop_size
+			cvpj_transport.loop_active = loop_active
+			cvpj_transport.loop_start = loop_start
+			cvpj_transport.loop_end = loop_size
 
-		convproj_obj.transport.is_seconds = True
-		convproj_obj.transport.current_pos = rpp_project.cursor.get()
+		cvpj_transport.is_seconds = True
+		cvpj_transport.current_pos = rpp_project.cursor.get()
 
 		convproj_obj.freq = rpp_project.samplerate.get()
 
@@ -279,16 +282,15 @@ class input_reaper(plugins.base):
 				if marker[3]: timemarker_obj.visual.color.set_int(reaper_color_to_cvpj_color(marker[3], True))
 
 		# ---------- master track ----------
-		track_obj = convproj_obj.track_master
-		track_obj.params.add('vol', rpp_project.master_volume['vol'], 'float')
-		track_obj.params.add('pan', rpp_project.master_volume['pan'], 'float')
+		cvpj_master.params.add('vol', rpp_project.master_volume['vol'], 'float')
+		cvpj_master.params.add('pan', rpp_project.master_volume['pan'], 'float')
 		panmode = rpp_project.master_panmode.get()
-		if panmode == 3: track_obj.datavals.add('pan_mode', 'mono')
-		if panmode == 5: track_obj.datavals.add('pan_mode', 'stereo')
+		if panmode == 3: cvpj_master.datavals.add('pan_mode', 'mono')
+		if panmode == 5: cvpj_master.datavals.add('pan_mode', 'stereo')
 		if panmode == 6: 
-			track_obj.datavals.add('pan_mode', 'split')
-			track_obj.params.add('splitpan_left', rpp_project.master_volume['left'], 'float')
-			track_obj.params.add('splitpan_right', rpp_project.master_volume['right'], 'float')
+			cvpj_master.datavals.add('pan_mode', 'split')
+			cvpj_master.params.add('splitpan_left', rpp_project.master_volume['left'], 'float')
+			cvpj_master.params.add('splitpan_right', rpp_project.master_volume['right'], 'float')
 
 		# ---------- tracks ----------
 		used_trackids = []
@@ -857,7 +859,7 @@ class input_reaper(plugins.base):
 			convproj_obj.fxtype = 'groupreturn'
 			for n, d in groups_returns.items():
 				returnid, track_obj = d
-				return_obj = convproj_obj.track_master.fx__return__add(returnid)
+				return_obj = cvpj_master.fx__return__add(returnid)
 				return_obj.visual = track_obj.visual
 				return_obj.params = track_obj.params
 				return_obj.plugslots = track_obj.plugslots

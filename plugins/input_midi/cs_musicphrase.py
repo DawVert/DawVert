@@ -33,6 +33,8 @@ class input_musicphrase(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_metadata = convproj_obj.metadata
+		cvpj_transport = convproj_obj.transport
 		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(96)
@@ -43,17 +45,16 @@ class input_musicphrase(plugins.base):
 		traits_obj.auto_types = ['nopl_ticks']
 
 		# ---------- metadata ----------
-		metadata_obj = convproj_obj.metadata
-		metadata_obj.name = project_obj.name 
-		metadata_obj.copyright = project_obj.copyright
-		metadata_obj.author = project_obj.author
-		metadata_obj.comment_text = project_obj.comment
+		cvpj_metadata.name = project_obj.name 
+		cvpj_metadata.copyright = project_obj.copyright
+		cvpj_metadata.author = project_obj.author
+		cvpj_metadata.comment_text = project_obj.comment
 
 		# ---------- transport ----------
-		convproj_obj.transport.current_pos = project_obj.curpos/256
-		convproj_obj.transport.loop_active = bool(project_obj.loop_on)
-		convproj_obj.transport.loop_start = project_obj.loop_start/256
-		convproj_obj.transport.loop_end = project_obj.loop_end/256
+		cvpj_transport.current_pos = project_obj.curpos/256
+		cvpj_transport.loop_active = bool(project_obj.loop_on)
+		cvpj_transport.loop_start = project_obj.loop_start/256
+		cvpj_transport.loop_end = project_obj.loop_end/256
 
 		convproj_obj.params.add('bpm', (project_obj.tempo/3072000)*120, 'float')
 

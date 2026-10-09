@@ -41,6 +41,7 @@ class input_domino(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_metadata = convproj_obj.metadata
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'cs'
@@ -54,8 +55,8 @@ class input_domino(plugins.base):
 		traits_obj.track_nopl = True
 
 		# ---------- metadata ----------
-		convproj_obj.metadata.name = project_obj.name
-		convproj_obj.metadata.copyright = project_obj.copyright
+		cvpj_metadata.name = project_obj.name
+		cvpj_metadata.copyright = project_obj.copyright
 
 		# ---------- tracks ----------
 		for n, track in enumerate(project_obj.tracks):

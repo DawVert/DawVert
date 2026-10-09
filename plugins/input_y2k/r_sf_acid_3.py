@@ -540,23 +540,25 @@ class input_acid_3(plugins.base):
 
 						timemarker_obj = cvpj_timemarkers.add()
 						timemarker_obj.time.set_posdur(marker.pos, marker.end)
-						timemarker_obj.visual.name = marker.name if marker.name else '[%i]' % marker.id
+						visual_obj = timemarker_obj.visual
+						visual_obj.name = marker.name if marker.name else '[%i]' % marker.id
 						if marker.type == 1: 
 							timemarker_obj.type = 'region'
-							timemarker_obj.visual.color.set_int([84,158,101])
+							visual_obj.color.set_int([84,158,101])
 						else:
-							timemarker_obj.visual.color.set_int([219,142,87])
-						timemarker_obj.visual.color.fx_allowed = ['brighter']
+							visual_obj.color.set_int([219,142,87])
+						visual_obj.color.fx_allowed = ['brighter']
 
 			elif root_name == 'Group:MetaData':
 				for regs_chunk, regs_name in root_chunk.iter_wtypes():
 					if regs_name == 'MetaData':
 						metadata = regs_chunk.content.metadata
-						if b'INAM' in metadata: convproj_obj.metadata.name = metadata[b'INAM']
-						if b'IENG' in metadata: convproj_obj.metadata.author = metadata[b'IENG']
-						if b'IART' in metadata: convproj_obj.metadata.original_author = metadata[b'IART']
-						if b'ICMT' in metadata: convproj_obj.metadata.comment_text = metadata[b'ICMT']
-						if b'ICOP' in metadata: convproj_obj.metadata.copyright = metadata[b'ICOP']
+						cvpj_metadata = convproj_obj.metadata
+						if b'INAM' in metadata: cvpj_metadata.name = metadata[b'INAM']
+						if b'IENG' in metadata: cvpj_metadata.author = metadata[b'IENG']
+						if b'IART' in metadata: cvpj_metadata.original_author = metadata[b'IART']
+						if b'ICMT' in metadata: cvpj_metadata.comment_text = metadata[b'ICMT']
+						if b'ICOP' in metadata: cvpj_metadata.copyright = metadata[b'ICOP']
 
 			elif root_name == 'Group:Arranger':
 				arrcolordata = colors.colorset.from_datapack('sony_acid', 'track', 'arranger')

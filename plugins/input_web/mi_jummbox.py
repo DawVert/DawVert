@@ -67,7 +67,7 @@ class jummbox_autotype():
 			if self.param == 0:  return ['main', 'bpm'], 180, 1
 		elif self.tracknum == -1:
 			if self.param == 0:  return ['main', 'bpm'], 30, 1
-			elif self.param == 2:    return ['master', 'vol'], 0, 0.01
+			elif self.param == 2:  return ['master', 'vol'], 0, 0.01
 			elif self.param == 1:  return ['main', 'bpm'], 30, 1
 			elif self.param == 3:  return ['slot', 'main_reverb', 'wet'], 0, 1/32
 			elif self.param == 17: return ['main', 'pitch'], 250, 0.01
@@ -269,6 +269,8 @@ class input_jummbox(plugins.base):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = convproj_obj.automation
 		cvpj_timemarkers = convproj_obj.timemarkers
+		#cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
 		
 		# ---------- convproj params ----------
 		transpose_ignore = dawvert_intent.input_get_param('transpose_ignore', False)
@@ -292,7 +294,7 @@ class input_jummbox(plugins.base):
 		
 		# ---------- transport ----------
 		convproj_obj.params.add('bpm', jummbox_obj.beatsPerMinute, 'float')
-		convproj_obj.track_master.params.add('vol', jummbox_obj.masterGain, 'float')
+		cvpj_master.params.add('vol', jummbox_obj.masterGain, 'float')
 
 		convproj_obj.timesig = [4,8]
 		convproj_obj.timemarker__from_patlenlist(durpos, jummbox_obj.introBars)
@@ -536,8 +538,8 @@ class input_jummbox(plugins.base):
 		#if 'introBars' in jummbox_json and 'loopBars' in jummbox_json:
 		#	introbars = sum(patlentable[0:jummbox_json['introBars']])
 		#	loopbars = (sum(patlentable[0:jummbox_json['loopBars']]) + introbars)
-		#	convproj_obj.transport.loop_active = True
-		#	convproj_obj.transport.loop_start = introbars
-		#	convproj_obj.transport.loop_end = loopbars if loopbars else patlentable[-1]
+		#	cvpj_transport.loop_active = True
+		#	cvpj_transport.loop_start = introbars
+		#	cvpj_transport.loop_end = loopbars if loopbars else patlentable[-1]
 
 		#cvpj_automation.sort()

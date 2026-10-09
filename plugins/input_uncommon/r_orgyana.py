@@ -195,6 +195,7 @@ class input_orgyana(plugins.base):
 			convproj_obj.fxtype = 'groupreturn'
 
 			track_obj = cvpj_groups.add('drums')
+			track_obj.visual_track.group_expanded = True
 			track_obj.visual.name = 'Drums/SFX'
 			
 			for track_obj in drum_tracks:

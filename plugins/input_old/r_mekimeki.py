@@ -58,6 +58,7 @@ class input_cvpj_f(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_master = convproj_obj.track_master
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -80,9 +81,9 @@ class input_cvpj_f(plugins.base):
 		convproj_obj.params.add('bpm', mmc_bpm, 'float')
 
 		# ---------- master track ----------
-		convproj_obj.track_master.visual.name = 'MAS'
-		convproj_obj.track_master.visual.color.set_float(maincolor)
-		convproj_obj.track_master.params.add('vol', getvalue(mmc_main, 'MasterVolume', 0.5)*1.5, 'float')
+		cvpj_master.visual.name = 'MAS'
+		cvpj_master.visual.color.set_float(maincolor)
+		cvpj_master.params.add('vol', getvalue(mmc_main, 'MasterVolume', 0.5)*1.5, 'float')
 
 		# ---------- tracks ----------
 		mmc_tracks = mmc_main["Tracks"]

@@ -107,6 +107,8 @@ class input_ceol(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = convproj_obj.automation
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
 		
 		# ---------- convproj params ----------
 		no_swing = dawvert_intent.input_get_param('no_swing', False)
@@ -122,13 +124,13 @@ class input_ceol(plugins.base):
 		# ---------- transport ----------
 		convproj_obj.add_timesig_lengthbeat(project_obj.pattern_length, project_obj.bar_length)
 		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
-		convproj_obj.transport.loop_active = True
-		convproj_obj.transport.loop_start = project_obj.pattern_length*project_obj.loopstart
-		convproj_obj.transport.loop_end = project_obj.pattern_length*project_obj.loopend
+		cvpj_transport.loop_active = True
+		cvpj_transport.loop_start = project_obj.pattern_length*project_obj.loopstart
+		cvpj_transport.loop_end = project_obj.pattern_length*project_obj.loopend
 
 		# ---------- fx master ----------
-		convproj_obj.track_master.params.add('vol', 1, 'float')
-		convproj_obj.track_master.visual.from_datapack('boscaceoil', 'main', 'masterfx', False)
+		cvpj_master.params.add('vol', 1, 'float')
+		cvpj_master.visual.from_datapack('boscaceoil', 'main', 'masterfx', False)
 
 		add_master_fx(convproj_obj, project_obj.effect_type, project_obj.effect_value)
 

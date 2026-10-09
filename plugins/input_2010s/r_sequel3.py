@@ -221,6 +221,8 @@ class input_sequel3(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -243,10 +245,10 @@ class input_sequel3(plugins.base):
 			Transport = obj_devices['Transport']
 			if 'Cycle Left' in Transport:
 				if 'Time' in Transport['Cycle Left']:
-					convproj_obj.transport.loop_start = Transport['Cycle Left']['Time']
+					cvpj_transport.loop_start = Transport['Cycle Left']['Time']
 			if 'Cycle Right' in Transport:
 				if 'Time' in Transport['Cycle Right']:
-					convproj_obj.transport.loop_end = Transport['Cycle Right']['Time']
+					cvpj_transport.loop_end = Transport['Cycle Right']['Time']
 
 		# ---------- tempo track ----------
 		tempoid = data_root.tempo_track.idnum
@@ -287,7 +289,7 @@ class input_sequel3(plugins.base):
 							busuid = OwnInputBus['Bus UID']
 
 				if busuid:
-					return_obj = convproj_obj.track_master.fx__return__add('return_'+str(busuid))
+					return_obj = cvpj_master.fx__return__add('return_'+str(busuid))
 					do_visual(return_obj, track, track_node, colorset)
 					do_params(return_obj, track_device)
 

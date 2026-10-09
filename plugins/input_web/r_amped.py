@@ -393,6 +393,8 @@ class input_amped(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -412,14 +414,14 @@ class input_amped(plugins.base):
 		convproj_obj.params.add('bpm', amped_obj.tempo, 'float')
 		convproj_obj.timesig = [amped_obj.timesig_num, amped_obj.timesig_den]
 
-		convproj_obj.transport.loop_active = amped_obj.loop_active
-		convproj_obj.transport.loop_start = amped_obj.loop_start
-		convproj_obj.transport.loop_end = amped_obj.loop_end
-		convproj_obj.transport.current_pos = amped_obj.playheadPosition
+		cvpj_transport.loop_active = amped_obj.loop_active
+		cvpj_transport.loop_start = amped_obj.loop_start
+		cvpj_transport.loop_end = amped_obj.loop_end
+		cvpj_transport.current_pos = amped_obj.playheadPosition
 
 		# ---------- master track ----------
-		convproj_obj.track_master.params.add('vol', amped_obj.masterTrack.volume, 'float')
-		encode_devices(convproj_obj, amped_obj.masterTrack.devices, convproj_obj.track_master, None)
+		cvpj_master.params.add('vol', amped_obj.masterTrack.volume, 'float')
+		encode_devices(convproj_obj, amped_obj.masterTrack.devices, cvpj_master, None)
 
 		# ---------- tracks ----------
 		for amped_track in amped_obj.tracks:

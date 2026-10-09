@@ -48,6 +48,17 @@ def placement_to_cvpj(part, placement_obj):
 	else:
 		time_obj.set_posdur(part.start, part.length)
 
+def do_track_params(zm_track, track_obj, is_any_headphones, cvpj_automation, cvpj_trackid):
+	track_obj.visual.name = zm_track.name
+
+	params_obj = track_obj.params
+	params_obj.add('vol', zm_track.volume/100, 'float')
+	params_obj.add('pan', (zm_track.pan-50)/50, 'float')
+	params_obj.add('enabled', True if not is_any_headphones else (zm_track.headphones), 'bool')
+
+	do_automation(cvpj_automation, cvpj_trackid, 'vol', zm_track.volumetimeline, zm_track.usevolumetimeline)
+	do_automation(cvpj_automation, cvpj_trackid, 'pan', zm_track.pantimeline, zm_track.usepantimeline)
+
 class input_zmaestro(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -87,6 +98,8 @@ class input_zmaestro(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
 		cvpj_timemarkers = convproj_obj.timemarkers
+		cvpj_metadata = convproj_obj.metadata
+		cvpj_transport = convproj_obj.transport
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -99,15 +112,15 @@ class input_zmaestro(plugins.base):
 		traits_obj.placement_loop = ['loop']
 
 		# ---------- metadata ----------
-		convproj_obj.metadata.name = project_obj.name
-		convproj_obj.metadata.author = project_obj.author
-		convproj_obj.metadata.comment_text = project_obj.comments
+		cvpj_metadata.name = project_obj.name
+		cvpj_metadata.author = project_obj.author
+		cvpj_metadata.comment_text = project_obj.comments
 
 		# ---------- transport ----------
 		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
-		convproj_obj.transport.loop_start = project_obj.loopstart
-		convproj_obj.transport.loop_end = project_obj.loopstart+project_obj.looplength
-		convproj_obj.transport.loop_active = project_obj.loopenabled
+		cvpj_transport.loop_start = project_obj.loopstart
+		cvpj_transport.loop_end = project_obj.loopstart+project_obj.looplength
+		cvpj_transport.loop_active = project_obj.loopenabled
 
 		# ---------- key marker ----------
 		if project_obj.key in keynums:
@@ -126,9 +139,7 @@ class input_zmaestro(plugins.base):
 
 			if tracktype in ['MIDITrack', 'MIDIDrumTrack']:
 				track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
-				track_obj.params.add('vol', zm_track.volume/100, 'float')
-				track_obj.params.add('pan', (zm_track.pan-50)/50, 'float')
-				track_obj.params.add('enabled', True if not is_any_headphones else (zm_track.headphones), 'bool')
+				do_track_params(zm_track, track_obj, is_any_headphones, cvpj_automation, cvpj_trackid)
 				if not zm_track.soundfont:
 					track_obj.midi.out_inst.patch = zm_track.instrumentcode
 					track_obj.midi.out_inst.bank = zm_track.instrumentbank
@@ -143,14 +154,10 @@ class input_zmaestro(plugins.base):
 					plugin_obj.filerefs['file'] = sf2_path
 					fileref_obj.search_local(dawvert_intent.input_folder)
 					plugin_obj.midi.from_sf2(zm_track.instrumentbank, zm_track.instrumentcode)
-				track_obj.visual.name = zm_track.name
 
 				if tracktype == 'MIDIDrumTrack': 
 					track_obj.is_drum = True
 					track_obj.is_multinote_drum = True
-
-				do_automation(cvpj_automation, cvpj_trackid, 'vol', zm_track.volumetimeline, zm_track.usevolumetimeline)
-				do_automation(cvpj_automation, cvpj_trackid, 'pan', zm_track.pantimeline, zm_track.usepantimeline)
 
 				for part in zm_track.parts:
 					placement_obj = track_obj.placements.add_notes()
@@ -162,12 +169,8 @@ class input_zmaestro(plugins.base):
 
 			if tracktype == 'AudioTrack':
 				track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
-				track_obj.params.add('vol', zm_track.volume/100, 'float')
-				track_obj.params.add('pan', (zm_track.pan-50)/50, 'float')
-				track_obj.params.add('enabled', True if not is_any_headphones else (zm_track.headphones), 'bool')
 				track_obj.visual.from_datapack('z_maestro', 'track', 'AudioTrack', True)
-				track_obj.visual.name = zm_track.name
-
+				do_track_params(zm_track, track_obj, is_any_headphones, cvpj_automation, cvpj_trackid)
 				for n, fx in enumerate(zm_track.fx):
 					fxid = cvpj_trackid+'_fx_'+str(n)
 					fxtype = fx.type
@@ -215,8 +218,6 @@ class input_zmaestro(plugins.base):
 					plugin_obj.role = 'fx'
 					track_obj.plugin_autoplace(plugin_obj, fxid)
 
-				do_automation(cvpj_automation, cvpj_trackid, 'vol', zm_track.volumetimeline, zm_track.usevolumetimeline)
-				do_automation(cvpj_automation, cvpj_trackid, 'pan', zm_track.pantimeline, zm_track.usepantimeline)
 
 				for num, part in enumerate(zm_track.parts):
 					placement_obj = track_obj.placements.add_audio()

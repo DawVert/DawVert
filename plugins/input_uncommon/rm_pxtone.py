@@ -90,6 +90,7 @@ class input_pxtone(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_transport = convproj_obj.transport
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'rm'
@@ -114,9 +115,9 @@ class input_pxtone(plugins.base):
 		convproj_obj.params.add('bpm', project_obj.master.beattempo, 'float')
 
 		if project_obj.master.repeat != 0: 
-			convproj_obj.transport.loop_active = True
-			convproj_obj.transport.loop_start = project_obj.master.repeat
-			convproj_obj.transport.loop_end = project_obj.master.last
+			cvpj_transport.loop_active = True
+			cvpj_transport.loop_start = project_obj.master.repeat
+			cvpj_transport.loop_end = project_obj.master.last
 
 		# ---------- voices ----------
 		for voicenum, voice_obj in project_obj.voices.items():

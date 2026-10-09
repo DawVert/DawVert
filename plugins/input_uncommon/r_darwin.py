@@ -44,6 +44,7 @@ class input_darwin(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_master = convproj_obj.track_master
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -64,9 +65,8 @@ class input_darwin(plugins.base):
 		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
 
 		# ---------- master track ----------
-		track_master = convproj_obj.track_master
-		do_track_params(project_obj.masterTrack, track_master.params)
-		do_track_visual(project_obj.masterTrack, track_master.visual)
+		do_track_params(project_obj.masterTrack, cvpj_master.params)
+		do_track_visual(project_obj.masterTrack, cvpj_master.visual)
 
 		# ---------- tracks ----------
 		for dw_track in project_obj.tracks:

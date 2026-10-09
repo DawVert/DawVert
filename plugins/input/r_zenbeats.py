@@ -513,7 +513,9 @@ class input_zenbeats(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
 		cvpj_automation = convproj_obj.automation
-		
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
+
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
 		convproj_obj.type = 'r'
@@ -533,10 +535,10 @@ class input_zenbeats(plugins.base):
 		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
 		convproj_obj.timesig = [project_obj.time_signature_numerator, project_obj.time_signature_denominator]
 
-		convproj_obj.transport.loop_active = bool(project_obj.loop)
-		convproj_obj.transport.loop_start = project_obj.loop_start
-		convproj_obj.transport.loop_end = project_obj.loop_end
-		convproj_obj.transport.current_pos = project_obj.play_start_marker
+		cvpj_transport.loop_active = bool(project_obj.loop)
+		cvpj_transport.loop_start = project_obj.loop_start
+		cvpj_transport.loop_end = project_obj.loop_end
+		cvpj_transport.current_pos = project_obj.play_start_marker
 
 		# ---------- tracks init ----------
 		added_samples = []
@@ -557,14 +559,14 @@ class input_zenbeats(plugins.base):
 				do_visual(track_obj.visual, zb_track.visual, zb_track.color_index, colordata)
 
 			if zb_track.type == 130: 
-				return_obj = convproj_obj.track_master.fx__return__add(zb_track.uid)
+				return_obj = cvpj_master.fx__return__add(zb_track.uid)
 				do_rack(convproj_obj, project_obj, return_obj, zb_track, ['return', zb_track.uid], dawvert_intent)
 				do_visual(return_obj.visual, zb_track.visual, zb_track.color_index, colordata)
 
 			if zb_track.type == 18: 
 				master_id = zb_track.uid
-				do_rack(convproj_obj, project_obj, convproj_obj.track_master, zb_track, ['master'], dawvert_intent)
-				do_visual(convproj_obj.track_master.visual, zb_track.visual, zb_track.color_index, colordata)
+				do_rack(convproj_obj, project_obj, cvpj_master, zb_track, ['master'], dawvert_intent)
+				do_visual(cvpj_master.visual, zb_track.visual, zb_track.color_index, colordata)
 
 		# ---------- tracks ----------
 		for zb_track in project_obj.tracks:

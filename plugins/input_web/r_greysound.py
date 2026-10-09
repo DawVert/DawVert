@@ -94,6 +94,8 @@ class input_greysound(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
 		cvpj_timemarkers = convproj_obj.timemarkers
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -108,20 +110,20 @@ class input_greysound(plugins.base):
 		traits_obj.auto_types = ['nopl_points']
 
 		# ---------- transport ----------
-		convproj_obj.transport.loop_active = session_obj.loopEnabled
+		cvpj_transport.loop_active = session_obj.loopEnabled
 
 		loopRange = session_obj.loopRange
 		if loopRange is not None:
 			if 'start' in loopRange:
 				if 'ticks' in loopRange['start']:
-					convproj_obj.transport.loop_start = loopRange['start']['ticks']
+					cvpj_transport.loop_start = loopRange['start']['ticks']
 			if 'end' in loopRange:
 				if 'ticks' in loopRange['end']:
-					convproj_obj.transport.loop_end = loopRange['end']['ticks']
+					cvpj_transport.loop_end = loopRange['end']['ticks']
 
 		playheadPosition = session_obj.playheadPosition
 		if 'ticks' in playheadPosition:
-			convproj_obj.transport.current_pos = playheadPosition['ticks']
+			cvpj_transport.current_pos = playheadPosition['ticks']
 
 		convproj_obj.params.add('bpm', session_obj.tempo, 'float')
 
@@ -137,7 +139,7 @@ class input_greysound(plugins.base):
 		for gs_track in session_obj.tracks:
 			if gs_track.type == 'MASTER':
 				autoloc = ['master']
-				track_obj = convproj_obj.track_master
+				track_obj = cvpj_master
 				do_track_visual(gs_track, track_obj)
 				do_track_params(gs_track, track_obj)
 			else:

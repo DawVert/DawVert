@@ -83,7 +83,7 @@ def convert_non_midi(convproj_obj, dawvert_intent):
 	
 	modernize_obj.fxrack__do_fx_ctrls(convproj_obj)
 	modernize_obj.do_automation(convproj_obj)
-	modernize_obj.fxrack__do_pitch_automation(convproj_obj)
+	modernize_obj.do_pitch_automation(convproj_obj)
 	modernize_obj.rm__add_instruments(convproj_obj)
 	modernize_obj.rm__output_tracks(convproj_obj)
 

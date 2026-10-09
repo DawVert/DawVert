@@ -70,6 +70,9 @@ class input_acid_old(plugins.base):
 		cvpj_groups = convproj_obj.groups
 		cvpj_automation = convproj_obj.automation
 		cvpj_timemarkers = convproj_obj.timemarkers
+		cvpj_metadata = convproj_obj.metadata
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
 
 		# ---------- convproj params ----------
 		groupby = dawvert_intent.input_get_param('groupby', 'none')
@@ -88,20 +91,20 @@ class input_acid_old(plugins.base):
 		traits_obj.auto_types = ['pl_points','nopl_ticks']
 
 		# ---------- metadata ----------
-		convproj_obj.metadata.name = project_obj.name
-		convproj_obj.metadata.author = project_obj.artist
-		convproj_obj.metadata.original_author = project_obj.createdBy
-		convproj_obj.metadata.comment_text = project_obj.comments
-		convproj_obj.metadata.copyright = project_obj.copyright
+		cvpj_metadata.name = project_obj.name
+		cvpj_metadata.author = project_obj.artist
+		cvpj_metadata.original_author = project_obj.createdBy
+		cvpj_metadata.comment_text = project_obj.comments
+		cvpj_metadata.copyright = project_obj.copyright
 		
 		# ---------- transport ----------
 		ppq = project_obj.ppq
 		convproj_obj.set_timings(ppq)
 
 		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
-		convproj_obj.transport.loop_active = bool(project_obj.loop_enable)
-		convproj_obj.transport.loop_start = project_obj.loop_start
-		convproj_obj.transport.loop_end = project_obj.loop_end
+		cvpj_transport.loop_active = bool(project_obj.loop_enable)
+		cvpj_transport.loop_start = project_obj.loop_start
+		cvpj_transport.loop_end = project_obj.loop_end
 
 		# ---------- tempo/keys ----------
 		songroot = project_obj.root_note
@@ -328,7 +331,7 @@ class input_acid_old(plugins.base):
 
 		for x in used_sends:
 			returnid = 'return__'+str(x)
-			track_obj = convproj_obj.track_master.fx__return__add(returnid)
+			track_obj = cvpj_master.fx__return__add(returnid)
 			track_obj.visual.name = 'FX '+str(x+1)
 			if x in send_fx:
 				for fx in send_fx[x]:

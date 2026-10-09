@@ -106,6 +106,7 @@ class input_kristal(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_metadata = convproj_obj.metadata
 
 		# ---------- convproj params ----------
 		unused_tracks = dawvert_intent.input_get_param('unused_tracks', True)
@@ -134,10 +135,10 @@ class input_kristal(plugins.base):
 		# ---------- metadata ----------
 		if project_obj.infodata:
 			for n, t in enumerate(project_obj.infodata.data):
-				if n == 0: convproj_obj.metadata.name = t
-				if n == 1: convproj_obj.metadata.author = t
-				if n == 2: convproj_obj.metadata.comment_text = t+'\n\n'
-				if n == 3: convproj_obj.metadata.comment_text += t
+				if n == 0: cvpj_metadata.name = t
+				if n == 1: cvpj_metadata.author = t
+				if n == 2: cvpj_metadata.comment_text = t+'\n\n'
+				if n == 3: cvpj_metadata.comment_text += t
 
 		# ---------- clips ----------
 		tracknum = 0

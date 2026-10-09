@@ -55,6 +55,7 @@ class input_sop(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = convproj_obj.automation
+		cvpj_metadata = convproj_obj.metadata
 		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(project_obj.tickBeat)
@@ -67,8 +68,8 @@ class input_sop(plugins.base):
 		traits_obj.track_nopl = True
 
 		# ---------- metadata ----------
-		convproj_obj.metadata.name = project_obj.title
-		convproj_obj.metadata.comment_text = project_obj.comment
+		cvpj_metadata.name = project_obj.title
+		cvpj_metadata.comment_text = project_obj.comment
 
 		# ---------- transport ----------
 		convproj_obj.params.add('bpm', project_obj.basicTempo, 'float')
@@ -125,6 +126,9 @@ class input_sop(plugins.base):
 
 				elif event[1] == 'NOTE': 
 					cvpj_notelist.add_m(None, curtick, event[3], event[2]-60, 1, None)
+
+				elif event[1] == 'PITCH': 
+					cvpj_automation.add_autotick(['track', cvpj_trackid, 'pitch'], 'float', curtick, (event[2]-100)/100)
 
 				#else:
 				#	print(event)

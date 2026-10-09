@@ -71,6 +71,7 @@ class input_coolbeat(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_master = convproj_obj.track_master
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'none'
@@ -87,8 +88,8 @@ class input_coolbeat(plugins.base):
 		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
 
 		# ---------- master track ----------
-		convproj_obj.track_master.params.add('vol', project_obj.masterVolume, 'float')
-		convproj_obj.track_master.params.add('pan', calc_pan(project_obj.masterPan), 'float')
+		cvpj_master.params.add('vol', project_obj.masterVolume, 'float')
+		cvpj_master.params.add('pan', calc_pan(project_obj.masterPan), 'float')
 
 		# ---------- automation: master ----------
 		for an, masterAuto in enumerate(project_obj.masterAutos):

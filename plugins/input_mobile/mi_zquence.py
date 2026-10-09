@@ -69,6 +69,7 @@ class input_zquence(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
+		cvpj_transport = convproj_obj.transport
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -102,9 +103,9 @@ class input_zquence(plugins.base):
 			if 'BPM' in zglobals:
 				convproj_obj.params.add('bpm', int(zglobals['BPM']), 'float')
 			if 'CycleStartPosition' in zglobals:
-				convproj_obj.transport.loop_start = int(zglobals['CycleStartPosition'])
+				cvpj_transport.loop_start = int(zglobals['CycleStartPosition'])
 			if 'CycleEndPosition' in zglobals:
-				convproj_obj.transport.loop_end = int(zglobals['CycleEndPosition'])
+				cvpj_transport.loop_end = int(zglobals['CycleEndPosition'])
 			if 'TimeSignatureDenominator' in zglobals:
 				convproj_obj.timesig[0] = int(zglobals['TimeSignatureDenominator'])
 			if 'TimeSignatureNumerator' in zglobals:

@@ -77,13 +77,6 @@ class input_mariopaint_msq(plugins.base):
 			msq_name, fmf_val = line.rstrip().split('=', 1)
 			msq_values[msq_name] = fmf_val
 
-		# ---------- convproj init ----------
-		convproj_obj.fxtype = 'rack'
-		convproj_obj.type = 'rm'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.track_nopl = True
-
 		# ---------- song ----------
 
 		mariopaint_obj = mariopaint.mariopaint_song()

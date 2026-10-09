@@ -43,6 +43,7 @@ class input_fl_mobile_old(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = convproj_obj.automation
+		cvpj_metadata = convproj_obj.metadata
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'mi'
@@ -56,8 +57,8 @@ class input_fl_mobile_old(plugins.base):
 		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
 
 		# ---------- metadata ----------
-		convproj_obj.metadata.name = project_obj.name
-		convproj_obj.metadata.comment_text = project_obj.info
+		cvpj_metadata.name = project_obj.name
+		cvpj_metadata.comment_text = project_obj.info
 		
 		# ---------- samples ----------
 		samplefolder = dawvert_intent.path_samples['extracted']

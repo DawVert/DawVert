@@ -42,6 +42,8 @@ class input_old_magix_maker(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
 
 		# ---------- convproj params ----------
 		swap_bg_fg = dawvert_intent.input_get_param('swap_bg_fg', False)
@@ -284,9 +286,9 @@ class input_old_magix_maker(plugins.base):
 					if aux2_track_used: aux2_used = True
 
 		if aux1_used:
-			return_obj = convproj_obj.track_master.fx__return__add('aux1')
+			return_obj = cvpj_master.fx__return__add('aux1')
 			return_obj.visual.name = 'FX '+str(1)
 
 		if aux2_used:
-			return_obj = convproj_obj.track_master.fx__return__add('aux2')
+			return_obj = cvpj_master.fx__return__add('aux2')
 			return_obj.visual.name = 'FX '+str(2)

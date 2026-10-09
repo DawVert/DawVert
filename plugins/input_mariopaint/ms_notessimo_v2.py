@@ -42,6 +42,7 @@ class input_notessimo_v2(plugins.base):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_metadata = convproj_obj.metadata
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -53,18 +54,18 @@ class input_notessimo_v2(plugins.base):
 		traits_obj.auto_types = ['pl_points']
 
 		# ---------- metadata ----------
-		convproj_obj.metadata.name = project_obj.name
-		convproj_obj.metadata.author = project_obj.author
+		cvpj_metadata.name = project_obj.name
+		cvpj_metadata.author = project_obj.author
 
 		try:
 			t_date, t_time = project_obj.date1.split(', ')
 			t_month, t_day, t_year = t_date.split('/')
 			t_hours, t_min = t_time.split(':')
-			convproj_obj.metadata.t_hours = int(t_hours)
-			convproj_obj.metadata.t_minutes = int(t_min)
-			convproj_obj.metadata.t_day = int(t_day)
-			convproj_obj.metadata.t_month = int(t_month)
-			convproj_obj.metadata.t_year = int(t_year)
+			cvpj_metadata.t_hours = int(t_hours)
+			cvpj_metadata.t_minutes = int(t_min)
+			cvpj_metadata.t_day = int(t_day)
+			cvpj_metadata.t_month = int(t_month)
+			cvpj_metadata.t_year = int(t_year)
 		except: pass
 
 		# ---------- tracks ----------

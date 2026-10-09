@@ -467,6 +467,16 @@ def decodefxchain(convproj_obj, fxchain_obj):
 
 # ------- Main -------
 
+def do_track_params(convproj_obj, lmms_track, track_obj, cvpj_trackid, isbb):
+	cvpj_enabled = doparam(lmms_track.muted, 'bool', [-1, -1], ['track', cvpj_trackid, 'enabled'])
+	cvpj_solo = doparam(lmms_track.solo, 'bool', None, ['track', cvpj_trackid, 'solo'])
+	track_obj.params.add('enabled', cvpj_enabled, 'bool')
+	track_obj.params.add('solo', cvpj_solo, 'bool')
+	track_obj.visual.name = lmms_track.name
+	track_obj.visual_ui.height = lmms_track.height/32
+	if isbb: track_obj.visual.name += ' [BB]'
+	if lmms_track.color: track_obj.visual.color.set_hex(lmms_track.color)
+
 def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 	global bbpld
 
@@ -484,13 +494,7 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 			bbpld[cvpj_trackid] = []
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 			tracks[cvpj_trackid] = track_obj
-			cvpj_enabled = doparam(lmms_track.muted, 'bool', [-1, -1], ['track', cvpj_trackid, 'enabled'])
-			cvpj_solo = doparam(lmms_track.solo, 'bool', None, ['track', cvpj_trackid, 'solo'])
-			track_obj.params.add('enabled', cvpj_enabled, 'bool')
-			track_obj.params.add('solo', cvpj_solo, 'bool')
-			track_obj.visual.name = lmms_track.name
-			track_obj.visual_ui.height = lmms_track.height/32
-			if isbb: track_obj.visual.name += ' [BB]'
+			do_track_params(convproj_obj, lmms_track, track_obj, cvpj_trackid, isbb)
 
 			insttr_obj = lmms_track.instrumenttrack
 
@@ -508,7 +512,6 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 			insttr_obj = lmms_track.instrumenttrack
 			plug_color, instpluginid, plugin_obj = decodeplugin(convproj_obj, insttr_obj.instrument.plugin, pluginname, isbb)
 
-			if lmms_track.color: track_obj.visual.color.set_hex(lmms_track.color)
 			if plug_color: track_obj.visual_inst.color = plug_color.copy()
 
 			track_obj.plugslots.set_synth(instpluginid)
@@ -645,14 +648,7 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 			bbpld[cvpj_trackid] = []
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
 			tracks[cvpj_trackid] = track_obj
-			cvpj_enabled = doparam(lmms_track.muted, 'bool', [-1, -1], ['track', cvpj_trackid, 'enabled'])
-			cvpj_solo = doparam(lmms_track.solo, 'bool', None, ['track', cvpj_trackid, 'solo'])
-			track_obj.params.add('enabled', cvpj_enabled, 'bool')
-			track_obj.params.add('solo', cvpj_solo, 'bool')
-			track_obj.visual.name = lmms_track.name
-			track_obj.visual_ui.height = lmms_track.height/32
-			if isbb: track_obj.visual.name += ' [BB]'
-			if lmms_track.color: track_obj.visual.color.set_hex(lmms_track.color)
+			do_track_params(convproj_obj, lmms_track, track_obj, cvpj_trackid, isbb)
 
 			samptr_obj = lmms_track.sampletrack
 			cvpj_pan = doparam(samptr_obj.pan, 'float', [0, 0.01], ['track', cvpj_trackid, 'pan'])

@@ -143,6 +143,8 @@ class input_soundation(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'route'
@@ -164,9 +166,9 @@ class input_soundation(plugins.base):
 		convproj_obj.timesig = [int(timeSignaturesplit[0]), int(timeSignaturesplit[1])]
 		convproj_obj.params.add('bpm', soundation_obj.bpm, 'float')
 
-		convproj_obj.transport.loop_active = soundation_obj.looping
-		convproj_obj.transport.loop_start = soundation_obj.loopStart
-		convproj_obj.transport.loop_end = soundation_obj.loopEnd
+		cvpj_transport.loop_active = soundation_obj.looping
+		cvpj_transport.loop_start = soundation_obj.loopStart
+		cvpj_transport.loop_end = soundation_obj.loopEnd
 
 		# ---------- tracks ----------
 		tracknum = 0
@@ -177,8 +179,8 @@ class input_soundation(plugins.base):
 			cvpj_trackid = 'soundation'+str(tracknum)
 
 			if sound_chan_type == 'master':
-				track_obj = convproj_obj.track_master
-				do_track_data(convproj_obj, convproj_obj.track_master, soundation_channel, ['master'])
+				track_obj = cvpj_master
+				do_track_data(convproj_obj, cvpj_master, soundation_channel, ['master'])
 
 			if sound_chan_type in ['instrument', 'effect', 'audio']:
 				if sound_chan_type == 'instrument': track_type = 'instrument'

@@ -62,13 +62,6 @@ class input_mariopaint_mss(plugins.base):
 
 		from objects.songinput import mariopaint
 
-		# ---------- convproj init ----------
-		convproj_obj.fxtype = 'rack'
-		convproj_obj.type = 'rm'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.track_nopl = True
-
 		# ---------- song ----------
 		mariopaint_obj = mariopaint.mariopaint_song()
 

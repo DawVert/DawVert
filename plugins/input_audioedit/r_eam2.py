@@ -42,6 +42,8 @@ class input_eam2(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_metadata = convproj_obj.metadata
+		cvpj_master = convproj_obj.track_master
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -58,14 +60,13 @@ class input_eam2(plugins.base):
 
 			# ---------- metadata ----------
 			ExportTagSettings = eamproj.ExportTagSettings
-			cvpj_meta = convproj_obj.metadata
-			if 'tagTitle' in ExportTagSettings: cvpj_meta.name = ExportTagSettings['tagTitle']
-			if 'tagArtist' in ExportTagSettings: cvpj_meta.author = ExportTagSettings['tagArtist']
-			if 'tagComment' in ExportTagSettings: cvpj_meta.comment_text = ExportTagSettings['tagComment']
-			if 'tagAlbum' in ExportTagSettings: cvpj_meta.album = ExportTagSettings['tagAlbum']
-			if 'tagGenre' in ExportTagSettings: cvpj_meta.genre = ExportTagSettings['tagGenre']
+			if 'tagTitle' in ExportTagSettings: cvpj_metadata.name = ExportTagSettings['tagTitle']
+			if 'tagArtist' in ExportTagSettings: cvpj_metadata.author = ExportTagSettings['tagArtist']
+			if 'tagComment' in ExportTagSettings: cvpj_metadata.comment_text = ExportTagSettings['tagComment']
+			if 'tagAlbum' in ExportTagSettings: cvpj_metadata.album = ExportTagSettings['tagAlbum']
+			if 'tagGenre' in ExportTagSettings: cvpj_metadata.genre = ExportTagSettings['tagGenre']
 			if 'tagYear' in ExportTagSettings: 
-				try: cvpj_meta.t_year = int(ExportTagSettings['tagYear'])
+				try: cvpj_metadata.t_year = int(ExportTagSettings['tagYear'])
 				except: pass
 
 			convproj_obj.params.add('bpm', eamproj.BPM, 'float')
@@ -79,17 +80,21 @@ class input_eam2(plugins.base):
 					track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
 				else:
 					autoloc_s = ['master']
-					track_obj = convproj_obj.track_master
+					track_obj = cvpj_master
 
-				track_obj.visual.name = track.Name
+				# visual
+				visual_obj = track_obj.visual
+				visual_obj.name = track.Name
 				if track.EventsColorRGB is not None:
 					color = conv_color(struct.unpack('I', struct.pack('i', track.EventsColorRGB))[0])
-					track_obj.visual.color.set_int(color)
+					visual_obj.color.set_int(color)
 
-				track_obj.params.add('vol', xtramath.from_db(track.Volume), 'float')
-				track_obj.params.add('pan', track.Pan, 'float')
-				track_obj.params.add('enabled', not track.Muted, 'bool')
-				track_obj.params.add('solo', track.Solo, 'bool')
+				# params
+				params_obj = track_obj.params
+				params_obj.add('vol', xtramath.from_db(track.Volume), 'float')
+				params_obj.add('pan', track.Pan, 'float')
+				params_obj.add('enabled', not track.Muted, 'bool')
+				params_obj.add('solo', track.Solo, 'bool')
 
 				for autop in track.AutomationList:
 					autoloc_e = None

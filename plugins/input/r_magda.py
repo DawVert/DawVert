@@ -61,6 +61,9 @@ class input_magda(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
 		cvpj_automation = convproj_obj.automation
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
+		cvpj_metadata = convproj_obj.metadata
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -81,14 +84,14 @@ class input_magda(plugins.base):
 		# ---------- transport ----------
 		tempo = projprop.tempo
 		timesig = projprop.timeSignature
-		convproj_obj.metadata.name = projprop.name
+		cvpj_metadata.name = projprop.name
 		convproj_obj.params.add('bpm', tempo, 'float')
 		convproj_obj.timesig = timesig
 
 		loopd = projprop.loop
-		convproj_obj.transport.loop_active = loopd.enabled
-		convproj_obj.transport.loop_start = loopd.startBeats
-		convproj_obj.transport.loop_end = loopd.endBeats
+		cvpj_transport.loop_active = loopd.enabled
+		cvpj_transport.loop_start = loopd.startBeats
+		cvpj_transport.loop_end = loopd.endBeats
 
 		# ---------- tracks ----------
 		sends_all = [] # send > [src, target, level, tomaster, sendautoid, native, prefader]
@@ -165,7 +168,7 @@ class input_magda(plugins.base):
 
 				elif x.type==4:
 					route_on = False
-					track_obj = convproj_obj.track_master.fx__return__add(cvpj_trackid)
+					track_obj = cvpj_master.fx__return__add(cvpj_trackid)
 					do_track_base(x, track_obj)
 					numassoc_all[trackid] = ['return', cvpj_trackid]
 					numassoc_sendsrc[trackid] = track_obj.sends

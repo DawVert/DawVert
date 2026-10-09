@@ -57,6 +57,8 @@ class input_fl_mobile(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
 		cvpj_transport = convproj_obj.transport
+		cvpj_metadata = convproj_obj.metadata
+		cvpj_master = convproj_obj.track_master
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -81,8 +83,8 @@ class input_fl_mobile(plugins.base):
 				cvpj_transport.loop_end = project_obj.space_end
 
 		# ---------- metadata ----------
-		convproj_obj.metadata.name = project_obj.meta_title
-		convproj_obj.metadata.author = project_obj.meta_artist
+		cvpj_metadata.name = project_obj.meta_title
+		cvpj_metadata.author = project_obj.meta_artist
 
 		# ---------- tracks ----------
 		sorttracks = {}
@@ -108,9 +110,9 @@ class input_fl_mobile(plugins.base):
 
 			if tracktype == 'master':
 				trackid = 'master'
-				add_visual(convproj_obj.track_master.visual, flm_channel)
-				add_params(convproj_obj.track_master.params, flm_rack)
-				do_devices(devices_order, convproj_obj, flm_rack.devices, convproj_obj.track_master.plugslots, dawvert_intent.input_file, project_obj.zipfile, trackid)
+				add_visual(cvpj_master.visual, flm_channel)
+				add_params(cvpj_master.params, flm_rack)
+				do_devices(devices_order, convproj_obj, flm_rack.devices, cvpj_master.plugslots, dawvert_intent.input_file, project_obj.zipfile, trackid)
 
 			if tracktype == 'fx':
 				trackid = 'flm_track_'+str(flm_rack.fx_id)

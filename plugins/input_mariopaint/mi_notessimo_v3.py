@@ -279,6 +279,7 @@ class input_notessimo_v3(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_automation = convproj_obj.automation
+		cvpj_metadata = convproj_obj.metadata
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -289,8 +290,8 @@ class input_notessimo_v3(plugins.base):
 		traits_obj.auto_types = ['pl_points']
 
 		# ---------- metadata ----------
-		if notet_cursong_data.name: convproj_obj.metadata.name = notet_cursong_data.name
-		if notet_cursong_data.comments: convproj_obj.metadata.comment_text = notet_cursong_data.comments
+		if notet_cursong_data.name: cvpj_metadata.name = notet_cursong_data.name
+		if notet_cursong_data.comments: cvpj_metadata.comment_text = notet_cursong_data.comments
 		
 		# ---------- sheets ----------
 		used_insts = []

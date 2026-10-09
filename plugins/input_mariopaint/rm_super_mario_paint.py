@@ -6,7 +6,40 @@ import plugins
 
 from objects.exceptions import ProjectFileParserException
 
-smpnames = {'MARIO': "mario", 'MUSHROOM': "toad", 'YOSHI': "yoshi", 'STAR': "star", 'FLOWER': "flower", 'GAMEBOY': "gameboy", 'DOG': "dog", 'CAT': "cat", 'PIG': "pig", 'SWAN': "swan", 'FACE': "face", 'PLANE': "plane", 'BOAT': "boat", 'CAR': "car", 'HEART': "heart", 'PIRANHA': "plant", 'COIN': "coin", 'SHYGUY': "shyguy", 'BOO': "ghost", 'LUIGI': "luigi", 'PEACH': "peach", 'FEATHER': "feather", 'BULLETBILL': "bulletbill", 'GOOMBA': "goomba", 'BOBOMB': "bobomb", 'SPINY': "spiny", 'FRUIT': "fruit", 'ONEUP': "oneup", 'MOON': "moon", 'EGG': "egg", 'GNOME': "gnome"}
+smpnames = {
+	'MARIO': "mario", 
+	'MUSHROOM': "toad", 
+	'YOSHI': "yoshi", 
+	'STAR': "star", 
+	'FLOWER': "flower", 
+	'GAMEBOY': "gameboy", 
+	'DOG': "dog", 
+	'CAT': "cat", 
+	'PIG': "pig", 
+	'SWAN': "swan", 
+	'FACE': "face", 
+	'PLANE': "plane", 
+	'BOAT': "boat", 
+	'CAR': "car", 
+	'HEART': "heart", 
+	'PIRANHA': "plant", 
+	'COIN': "coin", 
+	'SHYGUY': "shyguy", 
+	'BOO': "ghost", 
+	'LUIGI': "luigi", 
+	'PEACH': "peach", 
+	'FEATHER': "feather", 
+	'BULLETBILL': "bulletbill", 
+	'GOOMBA': "goomba", 
+	'BOBOMB': "bobomb", 
+	'SPINY': "spiny", 
+	'FRUIT': "fruit", 
+	'ONEUP': "oneup", 
+	'MOON': "moon", 
+	'EGG': "egg", 
+	'GNOME': "gnome"
+}
+
 keytable = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
 
 def get_namval(tin): 
@@ -44,13 +77,6 @@ class input_mariopaint_smp(plugins.base):
 		lines_smp = conversion_state.project
 
 		from objects.songinput import mariopaint
-
-		# ---------- convproj init ----------
-		convproj_obj.fxtype = 'rack'
-		convproj_obj.type = 'rm'
-
-		traits_obj = convproj_obj.traits
-		traits_obj.track_nopl = True
 
 		# ---------- song ----------
 		mariopaint_obj = mariopaint.mariopaint_song()

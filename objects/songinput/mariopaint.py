@@ -52,6 +52,12 @@ class mariopaint_song():
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_timemarkers = convproj_obj.timemarkers
 	
+		convproj_obj.fxtype = 'rack'
+		convproj_obj.type = 'rm'
+
+		traits_obj = convproj_obj.traits
+		traits_obj.track_nopl = True
+	
 		convproj_obj.set_timings(4)
 		convproj_obj.do_actions.append('do_addloop')
 		convproj_obj.do_actions.append('do_singlenotelistcut')

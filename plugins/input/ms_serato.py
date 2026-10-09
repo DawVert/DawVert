@@ -147,6 +147,9 @@ class input_serato(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
 		cvpj_insts = convproj_obj.instruments
+		cvpj_transport = convproj_obj.transport
+		cvpj_master = convproj_obj.track_master
+		cvpj_metadata = convproj_obj.metadata
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'ms'
@@ -161,10 +164,10 @@ class input_serato(plugins.base):
 		traits_obj.auto_types = ['pl_points']
 
 		# ---------- metadata ----------
-		if 'name' in project_obj.metadata: convproj_obj.metadata.name = project_obj.metadata['name']
-		if 'artist' in project_obj.metadata: convproj_obj.metadata.author = project_obj.metadata['artist']
-		if 'genre' in project_obj.metadata: convproj_obj.metadata.genre = project_obj.metadata['genre']
-		if 'label' in project_obj.metadata: convproj_obj.metadata.comment_text = project_obj.metadata['label']
+		if 'name' in project_obj.metadata: cvpj_metadata.name = project_obj.metadata['name']
+		if 'artist' in project_obj.metadata: cvpj_metadata.author = project_obj.metadata['artist']
+		if 'genre' in project_obj.metadata: cvpj_metadata.genre = project_obj.metadata['genre']
+		if 'label' in project_obj.metadata: cvpj_metadata.comment_text = project_obj.metadata['label']
 
 		# ---------- scene_decks ----------
 		for num, scene_deck in enumerate(project_obj.scene_decks):
@@ -576,9 +579,9 @@ class input_serato(plugins.base):
 											if 'reverse' in cuedata: samplepart_copy.reverse = cuedata['reverse']
 
 		# ---------- transport ----------
-		convproj_obj.transport.loop_active = project_obj.arrangement.loop_active
-		convproj_obj.transport.loop_start = project_obj.arrangement.loop_start
-		convproj_obj.transport.loop_end = project_obj.arrangement.loop_end
+		cvpj_transport.loop_active = project_obj.arrangement.loop_active
+		cvpj_transport.loop_start = project_obj.arrangement.loop_start
+		cvpj_transport.loop_end = project_obj.arrangement.loop_end
 		
 		convproj_obj.params.add('bpm', project_obj.bpm, 'float')
 		
@@ -593,14 +596,13 @@ class input_serato(plugins.base):
 				break
 			if arrangement.type == 'master':
 				master_strip = arrangement.channel_strip
-				master_obj = convproj_obj.track_master
-				if arrangement.name: master_obj.visual.name = arrangement.name
+				if arrangement.name: cvpj_master.visual.name = arrangement.name
 				m_vol = (master_strip.gain if master_strip.gain is not None else 1)
 				m_vol *= (master_strip.volume if master_strip.volume is not None else 1)
-				master_obj.params.add('vol', 0.7*m_vol, 'float')
-				master_obj.params.add('pan', master_strip.pan if master_strip.pan is not None else 0, 'float')
-				master_obj.datavals.add('pan_mode', 'stereo')
-				do_chan_strip(eq_defined, convproj_obj, 'master', master_strip, master_obj.plugslots.slots_audio)
+				cvpj_master.params.add('vol', 0.7*m_vol, 'float')
+				cvpj_master.params.add('pan', master_strip.pan if master_strip.pan is not None else 0, 'float')
+				cvpj_master.datavals.add('pan_mode', 'stereo')
+				do_chan_strip(eq_defined, convproj_obj, 'master', master_strip, cvpj_master.plugslots.slots_audio)
 
 		#for trackid, track_obj in cvpj_tracks.iter():
 		#	print(track_obj.plugslots.slots_audio)

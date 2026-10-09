@@ -7,11 +7,21 @@ from functions import xtramath
 from objects import globalstore
 from external.easybinrw import easybinrw
 
-def do_auto(cvpj_automation, hz, autopoints, autoloc, valtype, minval, maxval):
+def do_auto(addauto_obj):
+	cvpj_automation = addauto_obj.cvpj_automation
+	hz = addauto_obj.hz
+	autopoints = addauto_obj.autopoints
+	autoloc = addauto_obj.autoloc
+	valtype = addauto_obj.valtype
+	minval = addauto_obj.minval
+	maxval = addauto_obj.maxval
+
 	auto_obj = cvpj_automation.create(autoloc, valtype, True)
 	auto_obj.is_seconds = True
 	for a in autopoints:
-		auto_obj.add_autopoint(a['Position']/(hz/2), xtramath.between_from_one(minval, maxval, a['Value']), None)
+		pos = a['Position']/(hz/2)
+		val = xtramath.between_from_one(minval, maxval, a['Value'])
+		auto_obj.add_autopoint(pos, val, None)
 
 def do_fx(convproj_obj, fxdata):
 	StateParams = fxdata.StateParams
@@ -68,6 +78,16 @@ def do_fx(convproj_obj, fxdata):
 					extmanu_obj.vst2__set_param(n, v)
 				extmanu_obj.vst2__params_output()
 
+class addauto_data():
+	def __init__(self):
+		self.cvpj_automation = None
+		self.hz = None
+		self.autopoints = None
+		self.autoloc = None
+		self.valtype = None
+		self.minval = None
+		self.maxval = None
+
 class input_soundop(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -110,6 +130,7 @@ class input_soundop(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_master = convproj_obj.track_master
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -142,7 +163,7 @@ class input_soundop(plugins.base):
 				track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
 			elif track.Type == 1:
 				autoloc_s = ['master']
-				track_obj = convproj_obj.track_master
+				track_obj = cvpj_master
 
 			if track_obj is not None:
 				# visual
@@ -155,31 +176,40 @@ class input_soundop(plugins.base):
 						track_obj.visual_ui.height = track.Height/track.HeightOrg
 
 				# params
+				addauto_obj = addauto_data()
+				addauto_obj.cvpj_automation = cvpj_automation
+				addauto_obj.hz = samplerate
+
+				params_obj = track_obj.params
 				for x in track.EffectData.FixedEffects:
 					StateParams = x.StateParams
 					Envelops = x.Envelops
 
 					if x.Name == 'Volume':
-						if StateParams: track_obj.params.add('vol', StateParams[0], 'float')
+						if StateParams: params_obj.add('vol', StateParams[0], 'float')
 						if Envelops:
 							if 'Points' in Envelops[0]:
-								do_auto(
-									cvpj_automation, samplerate, Envelops[0]['Points'], 
-									autoloc_s+['vol'], 'float', 0, 1
-									)
+								addauto_obj.autopoints = Envelops[0]['Points']
+								addauto_obj.autoloc = autoloc_s+['vol']
+								addauto_obj.valtype = 'float'
+								addauto_obj.minval = 0
+								addauto_obj.maxval = 1
+								do_auto(addauto_obj)
 					if x.Name == 'Pan':
-						if StateParams: track_obj.params.add('pan', (StateParams[0]-0.5)*2, 'float')
+						if StateParams: params_obj.add('pan', (StateParams[0]-0.5)*2, 'float')
 						auto_obj = cvpj_automation.create(['track', cvpj_trackid, 'vol'], 'float', True)
 						if Envelops:
 							if 'Points' in Envelops[0]:
-								do_auto(
-									cvpj_automation, samplerate, Envelops[0]['Points'], 
-									autoloc_s+['pan'], 'float', -1, 1
-									)
+								addauto_obj.autopoints = Envelops[0]['Points']
+								addauto_obj.autoloc = autoloc_s+['pan']
+								addauto_obj.valtype = 'float'
+								addauto_obj.minval = -1
+								addauto_obj.maxval = 1
+								do_auto(addauto_obj)
 					if x.Name == 'Mute':
-						if StateParams: track_obj.params.add('enabled', not int(StateParams[0]), 'bool')
+						if StateParams: params_obj.add('enabled', not int(StateParams[0]), 'bool')
 
-				if track.Solo is not None: track_obj.params.add('solo', track.Solo, 'bool')
+				if track.Solo is not None: params_obj.add('solo', track.Solo, 'bool')
 				
 				# effects
 				for x in track.EffectData.Effects:
@@ -208,10 +238,11 @@ class input_soundop(plugins.base):
 					sp_obj.sampleref = str(clip.FileID)
 
 					# visual
-					placement_obj.visual.name = clip.Title
+					visual_obj = placement_obj.visual
+					visual_obj.name = clip.Title
 					if clip.Hue is not None and clip.UseHue: 
-						placement_obj.visual.color.set_hsv(clip.Hue/360, 0.8, 1)
-						placement_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+						visual_obj.color.set_hsv(clip.Hue/360, 0.8, 1)
+						visual_obj.color.fx_allowed = ['saturate', 'brighter']
 
 					# fx
 					sp_obj.vol = clip.Gain/0.6527777777777778

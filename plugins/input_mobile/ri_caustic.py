@@ -131,6 +131,7 @@ class input_cvpj_r(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = cvpj_automation
+		cvpj_master = convproj_obj.track_master
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
@@ -527,7 +528,7 @@ class input_cvpj_r(plugins.base):
 
 		# ---------- automation: master fx ----------
 		master_fxchaindata = []
-		add_caustic_fx(convproj_obj, convproj_obj.track_master, project_obj.mstr.fxslots, 'master_slot')
+		add_caustic_fx(convproj_obj, cvpj_master, project_obj.mstr.fxslots, 'master_slot')
 
 		master_controls_data = project_obj.mstr.controls.data
 
@@ -537,12 +538,12 @@ class input_cvpj_r(plugins.base):
 			plugin_obj.visual.from_datapack('caustic', 'plugin_master_fx', fxid, True)
 
 			if fxid in ['master_delay','master_reverb']:
-				return_obj = convproj_obj.track_master.fx__return__add(fxid)
+				return_obj = cvpj_master.fx__return__add(fxid)
 				return_obj.visual.name = plugin_obj.visual.name
 				return_obj.visual.color = plugin_obj.visual.color.copy()
 				return_obj.plugslots.slots_audio.append(fxid)
 			else:
-				convproj_obj.track_master.plugslots.slots_audio.append(fxid)
+				cvpj_master.plugslots.slots_audio.append(fxid)
 
 			if fxid == 'master_delay': plugin_obj.fxdata_add(not bool(master_controls_data[40]), 1)
 			if fxid == 'master_reverb': plugin_obj.fxdata_add(not bool(master_controls_data[41]), 1)
@@ -579,6 +580,6 @@ class input_cvpj_r(plugins.base):
 			if autoloc: cvpj_automation.add_autopoints_twopoints(autoloc, 'float', twopoints)
 
 		# ---------- master track ----------
-		convproj_obj.track_master.params.add('vol', master_controls_data[39], 'float')
-		convproj_obj.track_master.visual.name = 'Master'
-		convproj_obj.track_master.visual.color.set_float([0.52, 0.52, 0.52])
+		cvpj_master.params.add('vol', master_controls_data[39], 'float')
+		cvpj_master.visual.name = 'Master'
+		cvpj_master.visual.color.set_float([0.52, 0.52, 0.52])

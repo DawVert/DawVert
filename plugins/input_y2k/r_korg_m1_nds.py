@@ -48,6 +48,7 @@ class input_korg_m1_nds(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
+		cvpj_metadata = convproj_obj.metadata
 
 		# ---------- convproj params ----------
 		no_swing = dawvert_intent.input_get_param('no_swing', False)
@@ -62,7 +63,7 @@ class input_korg_m1_nds(plugins.base):
 		traits_obj.auto_types = ['pl_ticks']
 
 		# ---------- metadata ----------
-		convproj_obj.metadata.name = projsong_obj.name
+		cvpj_metadata.name = projsong_obj.name
 
 		# ---------- tempoblocks ----------
 		tempoblocks = regions.posdurblocks(99, projsong_obj.steps, projsong_obj.tempo)

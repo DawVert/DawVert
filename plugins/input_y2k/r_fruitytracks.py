@@ -108,6 +108,8 @@ class input_fruitytracks(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_metadata = convproj_obj.metadata
+		cvpj_transport = convproj_obj.transport
 
 		# ---------- convproj params ----------
 		pan_auto = dawvert_intent.input_get_param('pan_auto', 'auto')
@@ -124,12 +126,12 @@ class input_fruitytracks(plugins.base):
 		traits_obj.auto_types = ['pl_points']
 
 		# ---------- metadata ----------
-		if project_obj.title: convproj_obj.metadata.name = project_obj.title
-		if project_obj.url: convproj_obj.metadata.url = project_obj.url
+		if project_obj.title: cvpj_metadata.name = project_obj.title
+		if project_obj.url: cvpj_metadata.url = project_obj.url
 		if project_obj.comment:
-			convproj_obj.metadata.comment_text = project_obj.comment
-			convproj_obj.metadata.comment_datatype = 'rtf'
-		convproj_obj.metadata.show = project_obj.showinfo
+			cvpj_metadata.comment_text = project_obj.comment
+			cvpj_metadata.comment_datatype = 'rtf'
+		cvpj_metadata.show = project_obj.showinfo
 
 		# ---------- transport ----------
 		bpmdiv = 120/project_obj.bpm
@@ -139,9 +141,9 @@ class input_fruitytracks(plugins.base):
 		convproj_obj.track_master.params.add('vol', project_obj.vol/128, 'float')
 
 		if project_obj.loopend:
-			convproj_obj.transport.loop_active = True
-			convproj_obj.transport.loop_start = calc_tick_val(bpmdiv, project_obj.loopstart)
-			convproj_obj.transport.loop_end = calc_tick_val(bpmdiv, project_obj.loopstart+project_obj.loopend)
+			cvpj_transport.loop_active = True
+			cvpj_transport.loop_start = calc_tick_val(bpmdiv, project_obj.loopstart)
+			cvpj_transport.loop_end = calc_tick_val(bpmdiv, project_obj.loopstart+project_obj.loopend)
 
 		# ---------- tracks ----------
 		for tracknum, ftr_track in enumerate(project_obj.tracks):

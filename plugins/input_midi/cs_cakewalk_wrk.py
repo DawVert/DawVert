@@ -51,6 +51,7 @@ class input_cvpj_f(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
 		cvpj_timemarkers = convproj_obj.timemarkers
+		cvpj_metadata = convproj_obj.metadata
 		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(96)
@@ -59,8 +60,6 @@ class input_cvpj_f(plugins.base):
 		traits_obj.auto_types = ['nopl_ticks']
 		traits_obj.audio_filetypes = ['wav']
 		traits_obj.track_hybrid = True
-
-		metadata_obj = convproj_obj.metadata
 
 		# ---------- data ----------
 		trackchannel = 0
@@ -105,6 +104,7 @@ class input_cvpj_f(plugins.base):
 							trackchannel = 0
 						events_obj = track_obj.placements.midievents
 						events_obj.has_duration = True
+						events_obj.ppq = int(convproj_obj.time_ppq)
 						
 					elif chunk.id == 24: #Gen1:Track:Name
 						track_obj.visual.name = parseddata.name.decode()
@@ -131,15 +131,15 @@ class input_cvpj_f(plugins.base):
 						vname = parseddata.name
 						vvalue = parseddata.value
 
-						if vname=="Title": metadata_obj.name = vvalue.decode("windows-1252")
-						if vname=="Subtitle": metadata_obj.subname = vvalue.decode("windows-1252")
-						if vname=="Instructions": metadata_obj.data['instructions'] = vvalue.decode("windows-1252")
-						if vname=="Author": metadata_obj.author = vvalue.decode("windows-1252")
-						if vname=="Copyright": metadata_obj.copyright = vvalue.decode("windows-1252")
+						if vname=="Title": cvpj_metadata.name = vvalue.decode("windows-1252")
+						if vname=="Subtitle": cvpj_metadata.subname = vvalue.decode("windows-1252")
+						if vname=="Instructions": cvpj_metadata.data['instructions'] = vvalue.decode("windows-1252")
+						if vname=="Author": cvpj_metadata.author = vvalue.decode("windows-1252")
+						if vname=="Copyright": cvpj_metadata.copyright = vvalue.decode("windows-1252")
 
 					elif chunk.id == 8: #Gen1:Global:Comment
 						if len(parseddata.data)>1:
-							metadata_obj.comment_text = parseddata.data[1:].decode("windows-1252")
+							cvpj_metadata.comment_text = parseddata.data[1:].decode("windows-1252")
 
 			for sysex_point in sysex_points:
 				sysex_point[0].add_sysex(sysex_point[1], sysex_data[sysex_point[2]])
@@ -270,15 +270,15 @@ class input_cvpj_f(plugins.base):
 						vname = parseddata.name
 						vvalue = parseddata.value
 
-						if vname=="Title": metadata_obj.name = vvalue.decode("windows-1252")
-						if vname=="Subtitle": metadata_obj.subname = vvalue.decode("windows-1252")
-						if vname=="Instructions": metadata_obj.data['instructions'] = vvalue.decode("windows-1252")
-						if vname=="Author": metadata_obj.author = vvalue.decode("windows-1252")
-						if vname=="Copyright": metadata_obj.copyright = vvalue.decode("windows-1252")
+						if vname=="Title": cvpj_metadata.name = vvalue.decode("windows-1252")
+						if vname=="Subtitle": cvpj_metadata.subname = vvalue.decode("windows-1252")
+						if vname=="Instructions": cvpj_metadata.data['instructions'] = vvalue.decode("windows-1252")
+						if vname=="Author": cvpj_metadata.author = vvalue.decode("windows-1252")
+						if vname=="Copyright": cvpj_metadata.copyright = vvalue.decode("windows-1252")
 
 					elif chunk.id == 8: #Gen1:Global:Comment
 						if len(parseddata.data)>1:
-							metadata_obj.comment_text = parseddata.data[1:].decode("windows-1252")
+							cvpj_metadata.comment_text = parseddata.data[1:].decode("windows-1252")
 
 					#elif chunk.id == 89: #Gen3:Track:RegionInfo
 					#	isallaudio = all([(x.cmdnum == 0 and x.channum == 4) for x in parseddata.parts])

@@ -273,4 +273,5 @@ class input_onlinesequencer(plugins.base):
 				if len(v)>groupmin:
 					group_obj = cvpj_groups.add(k)
 					group_obj.visual.name = k
+					group_obj.visual_track.group_expanded = True
 					for x in v: x.group = str(k)

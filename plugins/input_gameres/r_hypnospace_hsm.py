@@ -47,6 +47,7 @@ class input_hypnospace_hsm(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_metadata = convproj_obj.metadata
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'ms'
@@ -59,8 +60,8 @@ class input_hypnospace_hsm(plugins.base):
 		convproj_obj.params.add('bpm', project_obj.patterns[0].header[0], 'float')
 
 		# ---------- metadata ----------
-		if project_obj.title: convproj_obj.metadata.name = project_obj.title
-		if project_obj.artist: convproj_obj.metadata.author = project_obj.artist
+		if project_obj.title: cvpj_metadata.name = project_obj.title
+		if project_obj.artist: cvpj_metadata.author = project_obj.artist
 
 		# ---------- tracks ----------
 		for tracknum in range(5):
