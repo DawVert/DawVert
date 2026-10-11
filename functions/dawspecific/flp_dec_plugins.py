@@ -146,13 +146,15 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 
 	plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'flstudio', flplugin.name)
 
+	plugchunkdata = flplugin.chunk
+
 	windata_obj = convproj_obj.viswindow__add(['plugin',pluginid])
-	windata_obj.pos_x = flplugin.window_p_x
-	windata_obj.pos_y = flplugin.window_p_y
-	windata_obj.size_x = flplugin.window_s_x
-	windata_obj.size_y = flplugin.window_s_y
-	windata_obj.open = bool(flplugin.visible)
-	windata_obj.detatched = bool(flplugin.detached)
+	windata_obj.pos_x = plugchunkdata.window_p_x
+	windata_obj.pos_y = plugchunkdata.window_p_y
+	windata_obj.size_x = plugchunkdata.window_s_x
+	windata_obj.size_y = plugchunkdata.window_s_y
+	windata_obj.open = bool(plugchunkdata.visible)
+	windata_obj.detatched = bool(plugchunkdata.detached)
 
 	# ------------------------------------------------------------------------------------------- VST
 	if flplugin.name == 'fruity wrapper':

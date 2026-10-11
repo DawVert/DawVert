@@ -550,34 +550,35 @@ class input_flp(plugins.base):
 
 			if fl_pattern.notes:
 				slidenotes = []
-				for fl_note in fl_pattern.notes:
-					note_inst = id_inst[str(fl_note.rack)] if str(fl_note.rack) in id_inst else ''
-					note_pos = fl_note.pos
-					note_dur = fl_note.dur
-					note_key = fl_note.key-60
-					note_vol = fl_note.velocity/127
-					note_rel = fl_note.rel/127
 
-					if not note_dur: oneshotnotenum_chans[fl_note.rack] += 1
-					numnotenum_chans[fl_note.rack] += 1
+				for fl_note in fl_pattern.notes.data:
+					note_inst = id_inst[str(fl_note['rack'])] if str(fl_note['rack']) in id_inst else ''
+					note_pos = int(fl_note['pos'])
+					note_dur = int(fl_note['dur'])
+					note_key = int(fl_note['key'])-60
+					note_vol = int(fl_note['velocity'])/127
+					note_rel = int(fl_note['rel'])/127
+
+					if not note_dur: oneshotnotenum_chans[fl_note['rack']] += 1
+					numnotenum_chans[fl_note['rack']] += 1
 
 					note_extra = {}
-					if fl_note.mod_x != 128: note_extra['mod_x'] = fl_note.mod_x/255
-					if fl_note.mod_y != 128: note_extra['mod_y'] = fl_note.mod_y/255
-					flagc, notechan = data_bytes.splitbyte(fl_note.midich)
+					if fl_note['mod_x'] != 128: note_extra['mod_x'] = fl_note['mod_x']/255
+					if fl_note['mod_y'] != 128: note_extra['mod_y'] = fl_note['mod_y']/255
+					flagc, notechan = data_bytes.splitbyte(fl_note['midich'])
 
-					is_slide = bool(fl_note.flags & 0b000000000001000)
+					is_slide = bool(fl_note['flags'] & 0b000000000001000)
 
 					if is_slide == True: 
-						if fl_note.finep != 120: note_extra['finepitch'] = (fl_note.finep-120)*10
-						if fl_note.pan != 64: note_extra['pan'] = (fl_note.pan-64)/64
+						if fl_note['finep'] != 120: note_extra['finepitch'] = (fl_note['finep']-120)*10
+						if fl_note['pan'] != 64: note_extra['pan'] = (fl_note['pan']-64)/64
 						slidenotes.append([note_inst, note_pos, note_dur, note_key, note_vol, note_extra if note_extra else None])
 					else: 
 						cvpj_notelist.add_m(note_inst, note_pos, note_dur, note_key, note_vol, note_extra if note_extra else None)
 						cvpj_notelist.last_add_channel(notechan)
 						cvpj_notelist.last_add_vol_off(note_rel)
-						if fl_note.finep != 120: cvpj_notelist.last_add_finepitch((fl_note.finep-120)*10)
-						if fl_note.pan != 64: cvpj_notelist.last_add_pan((fl_note.pan-64)/64)
+						if fl_note['finep'] != 120: cvpj_notelist.last_add_finepitch((fl_note['finep']-120)*10)
+						if fl_note['pan'] != 64: cvpj_notelist.last_add_pan((fl_note['pan']-64)/64)
 						if flagc&0b10: cvpj_notelist.last_flag('disabled')
 
 				for sn in slidenotes: 
@@ -633,31 +634,33 @@ class input_flp(plugins.base):
 
 			#print('INPUT')
 
-			for item in fl_arrangement.items:
-				playlistline = item.trackindex
-				if playlistline not in used_tracks: used_tracks.append(playlistline)
+			for item in fl_arrangement.items.data:
 
-				if playlistline not in temp_pl_track:
-					if playlistline in fl_arrangement.tracks: 
-						playlist_obj = convproj_obj.playlist__add(playlistline-1, 1, True)
-						color = fl_arrangement.tracks[playlistline].color.to_bytes(4, "little")
+
+				tracknum = item['real_tracknum']
+				if tracknum not in used_tracks: used_tracks.append(tracknum)
+
+				if tracknum not in temp_pl_track:
+					if tracknum in fl_arrangement.tracks: 
+						playlist_obj = convproj_obj.playlist__add(tracknum, 1, True)
+						color = fl_arrangement.tracks[tracknum].color.to_bytes(4, "little")
 						if color != b'HQV\x00': playlist_obj.visual.color.set_int([color[0],color[1],color[2]])
-						playlist_obj.visual_ui.height = fl_arrangement.tracks[playlistline].height
-						temp_pl_track[playlistline] = playlist_obj
+						playlist_obj.visual_ui.height = fl_arrangement.tracks[tracknum].height
+						temp_pl_track[tracknum] = playlist_obj
 
-				if item.itemindex > item.patternbase and playlistline in temp_pl_track:
-					placement_obj = temp_pl_track[playlistline].placements.add_notes_indexed()
+				if item['real_isaudio']==0 and tracknum in temp_pl_track:
+					placement_obj = temp_pl_track[tracknum].placements.add_notes_indexed()
 					time_obj = placement_obj.time
-					time_obj.set_posdur(item.position, item.length)
-					placement_obj.muted = bool(item.flags & 0b0001000000000000)
-					patnum = item.itemindex - item.patternbase
+					time_obj.set_posdur(int(item['position']), int(item['length']))
+					placement_obj.muted = bool(item['flags'] & 0b0001000000000000)
+					patnum = int(item['real_patnum'])-1
 					placement_obj.fromindex = 'FLPat' + str(patnum)
-					if item.startoffset not in [4294967295, 3212836864]: 
-						time_obj.set_offset(item.startoffset)
+					if item['startoffset'] not in [4294967295, 3212836864]: 
+						time_obj.set_offset(item['startoffset'])
 
 					if patnum in autoticks_pat:
 						tickdata = autoticks_pat[patnum]
-						autodata = [time_obj.position, time_obj.duration, item.startoffset]
+						autodata = [time_obj.position, time_obj.duration, item['startoffset']]
 						autod = autoticks_pat
 
 						for autoid, autodata in tickdata.items():
@@ -687,10 +690,11 @@ class input_flp(plugins.base):
 
 
 				else:
-					if item.itemindex in id_auto and item.itemindex in flp_obj.remote_assoc:
-						fl_autopoints = id_auto[item.itemindex]
+					itemindex = item['real_patnum']
+					if itemindex in id_auto and itemindex in flp_obj.remote_assoc:
+						fl_autopoints = id_auto[itemindex]
 
-						for fl_remotectrl in flp_obj.remote_assoc[item.itemindex]:
+						for fl_remotectrl in flp_obj.remote_assoc[itemindex]:
 
 							autoloc = fl_remotectrl.autoloc
 							autotxt = autoloc.to_loctxt()
@@ -699,16 +703,16 @@ class input_flp(plugins.base):
 							if autoloc: 
 								autopl_obj = cvpj_automation.add_pl_points(autoloc, 'float')
 								time_obj = autopl_obj.time
-								time_obj.set_posdur(item.position, item.length)
-								if item.itemindex in flp_obj.channels:
-									fl_channel_obj = flp_obj.channels[item.itemindex]
+								time_obj.set_posdur(item['position'], item['length'])
+								if itemindex in flp_obj.channels:
+									fl_channel_obj = flp_obj.channels[itemindex]
 									autopl_obj.visual.name = fl_channel_obj.name if fl_channel_obj.name else ''
 									if (fl_channel_obj.color not in commoncolors):
 										autopl_obj.visual.color.set_int(conv_color(fl_channel_obj.color))
 
-								if item.startoffset not in [4294967295, 3212836864]: 
-									if item.startoffset > 0:
-										posdata = item.startoffset
+								if item['startoffset'] not in [4294967295, 3212836864]: 
+									if item['startoffset'] > 0:
+										posdata = int(item['startoffset'])
 										posdata = posdata/0.008
 										time_obj.set_offset(posdata*flp_obj.ppq)
 
@@ -728,31 +732,31 @@ class input_flp(plugins.base):
 	
 									#print(auto_pos, auto_val)
 
-					if playlistline in temp_pl_track:
-						placement_obj = temp_pl_track[playlistline].placements.add_audio_indexed()
+					if tracknum in temp_pl_track:
+						placement_obj = temp_pl_track[tracknum].placements.add_audio_indexed()
 						time_obj = placement_obj.time
-						time_obj.set_posdur(item.position, item.length)
+						time_obj.set_posdur(float(item['position']), float(item['length']))
 
-						placement_obj.fade_in.set_dur(item.f_in_dur/1000, 'seconds')
-						placement_obj.fade_out.set_dur(item.f_out_dur/1000, 'seconds')
-						if item.fade_flags&(1<<8): placement_obj.fade_in.shapetype = 'scurve'
-						if item.fade_flags&(1<<12): placement_obj.fade_out.shapetype = 'scurve'
+						placement_obj.fade_in.set_dur(item['f_in_dur']/1000, 'seconds')
+						placement_obj.fade_out.set_dur(item['f_out_dur']/1000, 'seconds')
+						if item['fade_flags']&(1<<8): placement_obj.fade_in.shapetype = 'scurve'
+						if item['fade_flags']&(1<<12): placement_obj.fade_out.shapetype = 'scurve'
 
-						placement_obj.muted = bool(item.flags & 0b0001000000000000)
-						placement_obj.fromindex = 'FLSample' + str(item.itemindex)
+						placement_obj.muted = bool(item['flags'] & 0b0001000000000000)
+						placement_obj.fromindex = 'FLSample' + str(itemindex)
 
-						placement_obj.vol = item.vol
+						placement_obj.vol = item['vol']
 
 						#print(''.join([str(max(0, x))[0:12].ljust(14) for x in 
-						#	[item.position, item.position, item.position, item.length, item.startoffset, item.endoffset]
+						#	[item['position'], item['position'], item['position'], item['length'], item['startoffset'], item['endoffset']]
 						#	]))
 
-						if item.itemindex in samplestretch:
-							stretch_obj, sampleref_obj, stretchbeats = samplestretch[item.itemindex]
+						if item['itemindex'] in samplestretch:
+							stretch_obj, sampleref_obj, stretchbeats = samplestretch[item['itemindex']]
 
 							out_rate = 1/stretch_obj.timing.get__speed_real(sampleref_obj, flp_obj.tempo)
 
-							startoffset = max(0, item.startoffset)
+							startoffset = max(0, item['startoffset'])
 
 							if startoffset not in [4294967295, 3212836864]:  
 								posdata = startoffset/4
@@ -788,8 +792,10 @@ class input_flp(plugins.base):
 		fxrack_obj = convproj_obj.fxrack
 		
 		for mixer_id, mixer_obj in flp_obj.mixer.items():
+			fx_chunk = mixer_obj.chunk
+
 			fxchannel_obj = fxrack_obj.add(mixer_id)
-			fxchannel_obj.latency_offset = mixer_obj.latency
+			fxchannel_obj.latency_offset = fx_chunk.latency
 			if mixer_obj.name: fxchannel_obj.visual.name = mixer_obj.name
 			if mixer_obj.color: 
 				if mixer_obj.color not in [9801863, 8814968]:
@@ -797,8 +803,8 @@ class input_flp(plugins.base):
 
 			#print(mixer_obj.color)
 
-			if mixer_obj.docked_center: dockedpos = 0
-			else: dockedpos = -1 if not mixer_obj.docked_pos else 1
+			if fx_chunk.docked_center: dockedpos = 0
+			else: dockedpos = -1 if not fx_chunk.docked_pos else 1
 			fxchannel_obj.visual_ui.other['docked'] = dockedpos
 
 			autoloctxt_vol = 'fx/'+str(mixer_id)+'/param/vol'
@@ -808,10 +814,10 @@ class input_flp(plugins.base):
 
 			fxchannel_obj.params.add('vol', fx_vol**2, 'float')
 			fxchannel_obj.params.add('pan', fx_pan, 'float')
-			fxchannel_obj.params.add('enabled', bool(mixer_obj.enabled), 'bool')
-			fxchannel_obj.params.add('solo', bool(mixer_obj.solo), 'bool')
+			fxchannel_obj.params.add('enabled', bool(fx_chunk.enabled), 'bool')
+			fxchannel_obj.params.add('solo', bool(fx_chunk.solo), 'bool')
 
-			fxchannel_obj.plugslots.slots_audio_enabled = int(mixer_obj.fx_enabled)
+			fxchannel_obj.plugslots.slots_audio_enabled = int(fx_chunk.fx_enabled)
 
 			fxchannel_obj.sends.to_master_active = False
 
@@ -883,12 +889,12 @@ class input_flp(plugins.base):
 					filter_obj.gain = eq_level
 				fxchannel_obj.plugslots.slots_mixer.append(eq_fxid)
 
-			if mixer_obj.reversepolarity:
+			if fx_chunk.reversepolarity:
 				rp_fxid = 'FLPlug_ME_RP_'+str(mixer_id)
 				plugin_obj = convproj_obj.plugin__add(rp_fxid, 'universal', 'invert', None)
 				fxchannel_obj.plugslots.slots_mixer.append(rp_fxid)
 
-			if mixer_obj.swap_lr:
+			if fx_chunk.swap_lr:
 				rp_fxid = 'FLPlug_ME_LR_'+str(mixer_id)
 				plugin_obj = convproj_obj.plugin__add(rp_fxid, 'universal', 'swap_lr', None)
 				fxchannel_obj.plugslots.slots_mixer.append(rp_fxid)

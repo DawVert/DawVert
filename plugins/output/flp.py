@@ -142,6 +142,7 @@ class output_cvpjs(plugins.base):
 		from objects.file_proj._flp import channel
 		from objects.file_proj._flp import arrangement
 		from objects.file_proj._flp import fx
+		from objects.file_proj._flp import chunks
 
 		cvpj_insts = convproj_obj.instruments
 
@@ -216,13 +217,14 @@ class output_cvpjs(plugins.base):
 
 			fl_channel_obj.type = 0
 			fl_channel_obj.plugin.name = ''
+			chanplugin = fl_channel_obj.plugin.chunk
 
 			plugin_found, plugin_obj = convproj_obj.plugin__get(inst_obj.plugslots.synth)
 			if plugin_found:
 				if plugin_obj.check_match('universal', 'sampler', 'single'):
 					fl_channel_obj.type = 0
 					fl_channel_obj.plugin.name = ''
-					fl_channel_obj.plugin.generator = True
+					chanplugin.generator = True
 					fl_channel_obj.params.unkflag1 = 1
 
 					sp_obj = plugin_obj.samplepart_get('sample')
@@ -235,14 +237,14 @@ class output_cvpjs(plugins.base):
 					fl_channel_obj.plugin.name = fl_plugin
 					fl_channel_obj.plugin.params = fl_pluginparams
 					fl_channel_obj.params.unkflag1 = 1
-					fl_channel_obj.plugin.generator = True
+					chanplugin.generator = True
 					windowdata_obj = convproj_obj.viswindow__get(['plugin', inst_obj.plugslots.synth])
 					if windowdata_obj:
-						if windowdata_obj.pos_x != -1: fl_channel_obj.plugin.window_p_x = windowdata_obj.pos_x
-						if windowdata_obj.pos_y != -1: fl_channel_obj.plugin.window_p_y = windowdata_obj.pos_y
-						if windowdata_obj.size_x != -1: fl_channel_obj.plugin.window_s_x = windowdata_obj.size_x
-						if windowdata_obj.size_y != -1: fl_channel_obj.plugin.window_s_y = windowdata_obj.size_y
-						if windowdata_obj.open != -1: fl_channel_obj.plugin.visible = windowdata_obj.open
+						if windowdata_obj.pos_x != -1: chanplugin.window_p_x = windowdata_obj.pos_x
+						if windowdata_obj.pos_y != -1: chanplugin.window_p_y = windowdata_obj.pos_y
+						if windowdata_obj.size_x != -1: chanplugin.window_s_x = windowdata_obj.size_x
+						if windowdata_obj.size_y != -1: chanplugin.window_s_y = windowdata_obj.size_y
+						if windowdata_obj.open != -1: chanplugin.visible = windowdata_obj.open
 
 					poly_obj = plugin_obj.state.poly
 
@@ -256,7 +258,7 @@ class output_cvpjs(plugins.base):
 				fl_channel_obj.tracking.append(t)
 						
 			for n in range(5):
-				t = channel.flp_env_lfo()
+				t = chunks.flp_env_lfo()
 
 				if n == 1: 
 					t.envlfo_flags = 4
@@ -570,31 +572,33 @@ class output_cvpjs(plugins.base):
 
 		if 0 not in fxrack_obj:
 			fl_fxchan = flp_obj.mixer[0]
-			fl_fxchan.docked_center, fl_fxchan.docked_pos = False, False
+			fx_chunk.docked_center, fx_chunk.docked_pos = False, False
 
 		for fx_num, fxchannel_obj in fxrack_obj.iter():
 			if fx_num in flp_obj.mixer:
+				fx_chunk = fl_fxchan.chunk
+
 				fl_fxchan = flp_obj.mixer[fx_num]
-				fl_fxchan.latency = fxchannel_obj.latency_offset
+				fx_chunk.latency = fxchannel_obj.latency_offset
 				if fxchannel_obj.visual.name: fl_fxchan.name = fxchannel_obj.visual.name
 				if fxchannel_obj.visual.color: fl_fxchan.color = decode_color(fxchannel_obj.visual.color)
-				fl_fxchan.fx_enabled = bool(fxchannel_obj.plugslots.slots_audio_enabled)
+				fx_chunk.fx_enabled = bool(fxchannel_obj.plugslots.slots_audio_enabled)
 
 				if 'docked' in fxchannel_obj.visual_ui.other:
 					dockedpos = fxchannel_obj.visual_ui.other['docked']
-					if dockedpos == 1: fl_fxchan.docked_center, fl_fxchan.docked_pos = False, True
-					if dockedpos == 0: fl_fxchan.docked_center, fl_fxchan.docked_pos = True, False
-					if dockedpos == -1: fl_fxchan.docked_center, fl_fxchan.docked_pos = False, False
+					if dockedpos == 1: fx_chunk.docked_center, fx_chunk.docked_pos = False, True
+					if dockedpos == 0: fx_chunk.docked_center, fx_chunk.docked_pos = True, False
+					if dockedpos == -1: fx_chunk.docked_center, fx_chunk.docked_pos = False, False
 				else:
-					if fx_num == 0: fl_fxchan.docked_center, fl_fxchan.docked_pos = False, False
+					if fx_num == 0: fx_chunk.docked_center, fx_chunk.docked_pos = False, False
 
 				fxptxt = 'fx/'+str(fx_num)+'/param/'
 				vol = fxchannel_obj.params.get('vol', 1.0).value**0.5
 				if vol>1.25: vol = 1.25
 				flp_obj.initfxvals.initvals[fxptxt+'vol'] = int(12800*vol)
 				flp_obj.initfxvals.initvals[fxptxt+'pan'] = int(6400*fxchannel_obj.params.get('pan', 0).value)
-				fl_fxchan.enabled = int(fxchannel_obj.params.get('enabled', True).value)
-				fl_fxchan.solo = int(fxchannel_obj.params.get('solo', False).value)
+				fx_chunk.enabled = int(fxchannel_obj.params.get('enabled', True).value)
+				fx_chunk.solo = int(fxchannel_obj.params.get('solo', False).value)
 
 				if fx_num != 0:
 					if fxchannel_obj.sends.to_master_active:
@@ -619,9 +623,9 @@ class output_cvpjs(plugins.base):
 					plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
 					if plugin_found:
 						if plugin_obj.check_match('universal', 'invert', None):
-							fl_fxchan.reversepolarity, _ = plugin_obj.fxdata_get()
+							fx_chunk.reversepolarity, _ = plugin_obj.fxdata_get()
 						if plugin_obj.check_match('universal', 'swap_lr', None):
-							fl_fxchan.swap_lr, _ = plugin_obj.fxdata_get()
+							fx_chunk.swap_lr, _ = plugin_obj.fxdata_get()
 
 				slotnum = 0
 				for pluginid in fxchannel_obj.plugslots.slots_audio:
@@ -629,11 +633,13 @@ class output_cvpjs(plugins.base):
 					if plugin_found: 
 						fl_plugin, fl_pluginparams = flp_enc_plugins.setparams(convproj_obj, plugin_obj)
 						if fl_plugin != None:
+							chanplugin = slotdata.plugin.chunk
+							
 							slotdata = fx.flp_fxslot(fx_num)
 							slotdata.used = True
 							slotdata.plugin.name = fl_plugin
 							slotdata.plugin.params = fl_pluginparams
-							slotdata.plugin.slotnum = slotnum
+							chanplugin.slotnum = slotnum
 							if plugin_obj.visual.name: slotdata.name = plugin_obj.visual.name
 							if plugin_obj.visual.color: slotdata.color = decode_color(plugin_obj.visual.color)
 							fl_fxchan.slots[slotnum] = slotdata

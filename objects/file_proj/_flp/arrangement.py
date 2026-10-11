@@ -4,6 +4,7 @@
 import struct
 from io import BytesIO
 from external.easybinrw import easybinrw
+from objects.file_proj._flp import chunks
 
 def calcaudiopos(i_value):
 	i_out = (i_value)/125
@@ -186,9 +187,9 @@ class flp_arrangement_clip:
 		return ebrw_writestr.getvalue()
 
 class flp_arrangement:
-	def __init__(self):
+	def __init__(self, num_tracks):
 		self.tracks = {}
-		self.items = []
+		self.items = chunks.arrdata(num_tracks)
 		self.timemarkers = []
 		self.name = None
 

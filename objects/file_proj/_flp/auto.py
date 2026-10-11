@@ -332,7 +332,8 @@ class flp_autopoints:
 class flp_remotecontrol:
 	def __init__(self):
 		self.channel = 0
-		self.autoloc = flp_autoloc()
+		#self.autoloc = flp_autoloc()
+		self.autoloc = 0
 		self.flags = 8
 		self.smooth = 469
 		self.formula = ''
@@ -343,20 +344,34 @@ class flp_remotecontrol:
 		ebrw_readstr.skip(2)
 		self.channel = ebrw_readstr.int_u32()
 		ebrw_readstr.skip(2)
-		self.autoloc.decode(ebrw_readstr.int_u32())
+		self.autoloc = ebrw_readstr.int_u32()
+		#self.autoloc.decode(ebrw_readstr.int_u32())
 		self.flags = ebrw_readstr.int_u32()
-		self.smooth = ebrw_readstr.int_u32()
+		if ebrw_readstr.remaining():
+			self.smooth = ebrw_readstr.int_u32()
 
 	def write(self):
-		autohex, isvalid = self.autoloc.encode()
+		ebrw_writestr = easybinrw.binwrite()
+		#autohex, isvalid = self.autoloc.encode()
+		ebrw_writestr.raw(b'\x00\x00')
+		ebrw_writestr.int_u32(self.channel)
+		ebrw_writestr.raw(b'\x04\x00')
+		#bytes_remote += autohex
+		ebrw_writestr.int_u32(self.autoloc)
+		ebrw_writestr.int_u32(self.flags)
+		ebrw_writestr.int_u32(self.smooth)
+		return ebrw_writestr.getvalue()
 
-		bytes_remote = b'\x00\x00'
-		bytes_remote += self.channel.to_bytes(4, "little")
-		bytes_remote += b'\x00\x00'
-		bytes_remote += autohex
-		bytes_remote += self.flags.to_bytes(4, "little")
-		bytes_remote += self.smooth.to_bytes(4, "little")
-		return bytes_remote, isvalid
+	def write_old(self):
+		ebrw_writestr = easybinrw.binwrite()
+		#autohex, isvalid = self.autoloc.encode()
+		ebrw_writestr.raw(b'\x00\x00')
+		ebrw_writestr.int_u32(self.channel)
+		ebrw_writestr.raw(b'\x00\x00')
+		#bytes_remote += autohex
+		ebrw_writestr.int_u32(self.autoloc)
+		ebrw_writestr.int_u32(self.flags)
+		return ebrw_writestr.getvalue()
 
 class flp_initvals:
 	def __init__(self):
@@ -369,18 +384,19 @@ class flp_initvals:
 			icrc_dummy = ebrw_readstr.read(4)
 			icrc_loc = ebrw_readstr.int_s32()
 			icrc_value = ebrw_readstr.int_s32()
-			autoloc_obj = flp_autoloc()
-			autoloc_obj.decode(icrc_loc)
-			self.initvals[autoloc_obj.to_loctxt()] = icrc_value
+			#autoloc_obj = flp_autoloc()
+			#autoloc_obj.decode(icrc_loc)
+			#self.initvals[autoloc_obj.to_loctxt()] = icrc_value
+			self.initvals[icrc_loc] = icrc_value
 
 	def write(self):
 		bytes_initfxvals = b''
-		for autoloc, autoval in self.initvals.items():
-			autoloc_obj = flp_autoloc()
-			autoloc_obj.loc = autoloc.split('/')
-			autohex, isvalid = autoloc_obj.encode()
-			if isvalid:
-				bytes_initfxvals += b'\x00\x00\x00\x00'
-				bytes_initfxvals += autohex
-				bytes_initfxvals += autoval.to_bytes(4, 'little', signed=True)
+		for icrc_loc, autoval in self.initvals.items():
+			#autoloc_obj = flp_autoloc()
+			#autoloc_obj.loc = autoloc.split('/')
+			#autohex, isvalid = autoloc_obj.encode()
+			#if isvalid:
+			bytes_initfxvals += b'\x00\x00\x00\x00'
+			bytes_initfxvals += icrc_loc.to_bytes(4, 'little', signed=True)
+			bytes_initfxvals += autoval.to_bytes(4, 'little', signed=True)
 		return bytes_initfxvals
