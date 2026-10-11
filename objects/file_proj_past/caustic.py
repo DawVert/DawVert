@@ -168,7 +168,6 @@ class caustic_machine_BBOX:
 			self.solo = ebrw_readstr.int_u8()
 			self.mutegroup = ebrw_readstr.int_u8()
 		self.presetname = ebrw_readstr.string(32)
-		self.presetpath = ebrw_readstr.string_i32()
 
 class caustic_machine_VCDR_sample:
 	def __init__(self, ebrw_readstr):

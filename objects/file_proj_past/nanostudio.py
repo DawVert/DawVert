@@ -30,7 +30,7 @@ class nanostudio_fxslot:
 			if x_part.tag == 'Patch': self.patch = x_part.attrib.copy()
 
 class nanostudio_insertfx:
-	__slots__ = ['node_in', 'node_slot1', 'node_slot2', 'node_slot3', 'node_slot4', 'node_out']
+	__slots__ = ['node_in', 'node_slot1', 'node_slot2', 'node_slot3', 'node_slot4', 'node_out', 'vol', 'pan']
 
 	def __init__(self, xmldata):
 		self.node_in = None
@@ -39,6 +39,8 @@ class nanostudio_insertfx:
 		self.node_slot3 = nanostudio_fxslot(None)
 		self.node_slot4 = nanostudio_fxslot(None)
 		self.node_out = None
+		self.vol = 1
+		self.pan = 0
 		if xmldata is not None: self.read(xmldata)
 
 	def read(self, xmldata):
@@ -53,11 +55,11 @@ class nanostudio_insertfx:
 					if x_inpart.tag == 'SLOT4': self.node_slot4.read(x_inpart)
 
 class nanostudio_mixerchannel:
-	__slots__ = ['vol', 'Pan', 'insertfx']
+	__slots__ = ['vol', 'pan', 'insertfx']
 	
 	def __init__(self, xmldata):
 		self.vol = 1
-		self.Pan = 0.5
+		self.pan = 0.5
 		self.insertfx = nanostudio_insertfx(None)
 		if xmldata is not None: self.read(xmldata)
 

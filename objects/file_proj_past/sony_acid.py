@@ -37,7 +37,8 @@ class sdml_region:
 		'unk6', 
 		'pitch', 
 		'unk8', 
-		'envs'
+		'envs',
+		'unknowndata'
 	]
 
 	def __init__(self):
@@ -190,9 +191,10 @@ class sdml_track:
 							pass
 
 class sdml_port:
-	__slots__ = ['type', 'points', 'vol_left', 'vol_right', 'num']
+	__slots__ = ['type', 'points', 'vol_left', 'vol_right', 'num', 'name']
 
 	def __init__(self):
+		self.name = ''
 		self.type = 0
 		self.points = []
 		self.vol_left = 1

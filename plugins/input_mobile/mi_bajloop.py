@@ -7,7 +7,7 @@ import os
 import logging
 logger_input = logging.getLogger('input')
 
-class input_fl_mobile_old(plugins.base):
+class input_bajloop(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
 	

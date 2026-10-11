@@ -136,9 +136,9 @@ class input_kristal(plugins.base):
 		if project_obj.infodata:
 			for n, t in enumerate(project_obj.infodata.data):
 				if n == 0: cvpj_metadata.name = t
-				if n == 1: cvpj_metadata.author = t
-				if n == 2: cvpj_metadata.comment_text = t+'\n\n'
-				if n == 3: cvpj_metadata.comment_text += t
+				elif n == 1: cvpj_metadata.author = t
+				elif n == 2: cvpj_metadata.comment_text = t+'\n\n'
+				elif n == 3: cvpj_metadata.comment_text += t
 
 		# ---------- clips ----------
 		tracknum = 0

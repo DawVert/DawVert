@@ -81,6 +81,7 @@ class input_pxtone(plugins.base):
 
 		from objects import colors
 		from objects import audio_data
+		from objects.file_proj_uncommon import pxtone as proj_pxtone
 		
 		globalstore.datapack.load('pxtone', './data/datapack/app/pxtone.xml')
 		colordata = colors.colorset.from_datapack('pxtone', 'track', 'main')

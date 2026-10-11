@@ -55,7 +55,7 @@ def add_caustic_fx(convproj_obj, track_obj, caustic_fx, start_plugid):
 			for param_id, dset_param in globalstore.datapack.get_params('caustic', 'plugin_fx', fxtype):
 				if param_id != '5':
 					outval = controls_data[int(param_id)] if int(param_id) in controls_data else None
-					plugin_obj.dset_param__add(param_id, outval, dset_param)
+					plugin_obj.datapack_param__add(param_id, outval, dset_param)
 
 			track_obj.plugslots.slots_audio.append(fx_pluginid)
 
@@ -64,7 +64,7 @@ def add_controls(plugin_obj, mach_id, controls):
 	if fldso:
 		for param_id, dset_param in fldso.params.iter():
 			outval = controls.data[int(param_id)] if int(param_id) in controls.data else None
-			plugin_obj.dset_param__add(param_id, outval, dset_param)
+			plugin_obj.datapack_param__add(param_id, outval, dset_param)
 
 def loopmode_cvpj(wavdata, sp_obj): 
 	lm = wavdata.mode
@@ -130,7 +130,7 @@ class input_cvpj_r(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
-		cvpj_automation = cvpj_automation
+		cvpj_automation = convproj_obj.automation
 		cvpj_master = convproj_obj.track_master
 		
 		# ---------- convproj init ----------
@@ -172,7 +172,7 @@ class input_cvpj_r(plugins.base):
 			mixer_tracks[paramnum].solo = bool(project_obj.mixr.solo_mute[(paramnum*2)+1])
 
 		# ---------- tracks/machines ----------
-		cvpj_tracks = []
+		trackstore = []
 
 		for machnum, machine in enumerate(project_obj.machines):
 			machid = str(machnum)
@@ -183,7 +183,7 @@ class input_cvpj_r(plugins.base):
 			track_obj.visual.from_datapack('caustic', 'plugin_inst', machine.mach_id, True)
 			if machine.name: track_obj.visual.name = machine.name
 			track_obj.plugslots.set_synth(pluginid)
-			cvpj_tracks.append(track_obj)
+			trackstore.append(track_obj)
 
 			machdata = machine.data
 
@@ -321,11 +321,11 @@ class input_cvpj_r(plugins.base):
 				add_controls(plugin_obj, 'SSYN', machdata.controls)
 				if 'Select preset' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 
-				if machdata.customwaveform1: 
+				if len(machdata.customwaveform1): 
 					wave_obj = plugin_obj.wave_add('customwaveform1')
 					wave_obj.set_all_range(machdata.customwaveform1, -157, 157)
 
-				if machdata.customwaveform2: 
+				if len(machdata.customwaveform2): 
 					wave_obj = plugin_obj.wave_add('customwaveform2')
 					wave_obj.set_all_range(machdata.customwaveform2, -157, 157)
 
@@ -335,7 +335,7 @@ class input_cvpj_r(plugins.base):
 				add_controls(plugin_obj, 'BLNE', machdata.controls)
 				if 'Select preset' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 
-				if machdata.customwaveform1: 
+				if len(machdata.customwaveform1): 
 					wave_obj = plugin_obj.wave_add('customwaveform1')
 					wave_obj.set_all_range(machdata.customwaveform1, -157, 157)
 
@@ -461,7 +461,7 @@ class input_cvpj_r(plugins.base):
 			if patmeasures == 0: patmeasures = 16
 			patid = patids[x['key']]
 
-			placement_obj = cvpj_tracks[x['mach']].placements.add_notes_indexed()
+			placement_obj = trackstore[x['mach']].placements.add_notes_indexed()
 			time_obj = placement_obj.time
 			time_obj.set_posdur(float(x['pos']), float(x['dur']))
 			time_obj.set_loop_data(0, 0, float(patmeasures/4))
@@ -554,7 +554,7 @@ class input_cvpj_r(plugins.base):
 			if fldso:
 				for param_id, dset_param in fldso.params.iter():
 					outval = master_controls_data[int(param_id)] if int(param_id) in master_controls_data else None
-					plugin_obj.dset_param__add(param_id, outval, dset_param)
+					plugin_obj.datapack_param__add(param_id, outval, dset_param)
 
 		for ctrlid, s_machauto in project_obj.seqn.auto_master.data.items():
 

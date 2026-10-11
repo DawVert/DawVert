@@ -50,6 +50,7 @@ class input_orgyana(plugins.base):
 		project_obj = conversion_state.project
 		from objects import colors
 		from objects import audio_data
+		from objects.file_proj_uncommon import orgyana as proj_orgyana
 
 		# ---------- load file: orgsamp ----------
 		orgsamp_filename = os.path.join(dawvert_intent.path_external_data, 'orgyana', 'orgsamp.dat')

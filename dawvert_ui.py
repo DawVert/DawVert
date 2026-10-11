@@ -44,6 +44,7 @@ class converterstate():
 
 dawvert_intent = dv_core.dawvert_intent()
 dawvert_intent.config_load('./__config/config.ini')
+dawvert_intent.splitter_mode = "num"
 
 dawvert_core = dv_core.core()
 
@@ -232,7 +233,9 @@ class ConversionWorker(QtCore.QObject):
 			file_name = os.path.splitext(os.path.basename(dawvert_intent.input_file))[0]
 
 			dawvert_intent.flags_compat = []
-			if 'output_unused_nle' in dawvert_config.conversion: dawvert_intent.flags_compat.append('mi2m-output-unused-nle')
+			if 'output_unused_nle' in dawvert_config.conversion: 
+				if dawvert_config.conversion['output_unused_nle']:
+					dawvert_intent.flags_compat.append('mi2m-output-unused-nle')
 			if 'cm2rm_split' in dawvert_config.conversion: 
 				dawvert_intent.convert_params['cm2rm_split'] = dawvert_config.conversion['cm2rm_split']
 			dawvert_intent.splitter_mode = dawvert_config.conversion['splitter_mode']
