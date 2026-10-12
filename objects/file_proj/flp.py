@@ -340,7 +340,7 @@ class flp_project:
 		tlvw = tlv_writer(ebrw_writestr)
 		tlvw.str8( 199, '3.5.6')
 		tlvw.out(  200, b'')
-		tlvw.out(   93, self.tempofine)
+		if self.tempofine: tlvw.out(   93, self.tempofine)
 		tlvw.out(   66, self.tempo)
 		tlvw.out(   67, self.nonsong_patnum)
 		tlvw.out(    9, self.loop_active)

@@ -91,7 +91,7 @@ class tlv_reader:
 			eeval = data
 		if event_id <= 224 and event_id >= 192: 
 			out += 'TEXT,  '
-			eeval = 'HEX '+data.hex()
+			eeval = 'HEX '+data.hex() if event_id!=199 else data.decode()
 		if event_id <= 255 and event_id >= 225: 
 			out += 'RAW,   '
 			eeval = 'HEX '+data.hex()
