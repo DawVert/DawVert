@@ -82,11 +82,13 @@ class input_korg_m1_nds(plugins.base):
 
 		sendfxid = 'trackfx'
 		if projsong_obj.fx_type:
+			# reverb
 			return_obj.params.add('vol', projsong_obj.reverb_level/127, 'float')
 			plugin_obj = cvpj_plugins.add_native('korg_m1', 'reverb', sendfxid)
 			param_obj = plugin_obj.params.add('time', projsong_obj.reverb_time, 'int')
 			param_obj.add_range(0, 127)
 		else:
+			# delay
 			return_obj.params.add('vol', projsong_obj.delay_level/127, 'float')
 			plugin_obj = cvpj_plugins.add_native('korg_m1', 'delay', sendfxid)
 
@@ -115,20 +117,25 @@ class input_korg_m1_nds(plugins.base):
 
 		for num, channel_obj in enumerate(projsong_obj.channels):
 			cvpj_trackid = 'channel_'+str(num)
-			cvpj_pluginid = 'plugin_'+str(num)
+
+			# params
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 			track_obj.params.add('vol', channel_obj.volume/127, 'float')
 			track_obj.params.add('pan', channel_obj.pan/5, 'float')
 			track_obj.params.add('enabled', 1 not in channel_obj.flags, 'bool')
 			track_obj.params.add('solo', 2 in channel_obj.flags, 'bool')
+
+			# sends
 			if 0 in channel_obj.flags: track_obj.sends.add('trackfx', None, 1)
 
+			# plugin
 			if channel_obj.mode<3:
 				instset = ['m1','m1w','ex'][channel_obj.mode]
 				dset_cat_obj = globalstore.datapack.get_cat('korg_m1d', instset)
 				if dset_cat_obj:
 					if 'numstarts' in dset_cat_obj.data:
 						try:
+							cvpj_pluginid = 'plugin_'+str(num)
 							numstart = [int(x) for x in dset_cat_obj.data['numstarts'].split('|')][channel_obj.cat]
 							realpatch = numstart+channel_obj.patch
 							dset_obj = dset_cat_obj.objects.get(str(realpatch))
@@ -154,6 +161,7 @@ class input_korg_m1_nds(plugins.base):
 						except:
 							pass
 
+			# blocks
 			curpos = 0
 			for n, block_obj in enumerate(channel_obj.blocks):
 				placement_obj = track_obj.placements.add_notes()

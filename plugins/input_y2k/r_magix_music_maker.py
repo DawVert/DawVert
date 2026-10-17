@@ -6,6 +6,13 @@ from objects import globalstore
 from functions import xtramath
 import os
 
+class sample_speedtemp:
+	def __init__(self):
+		self.sample_speed = 1
+		self.sample_pitch = 0
+		self.resample = False
+		self.fx_found = False
+
 class input_old_magix_maker(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -168,13 +175,6 @@ class input_old_magix_maker(plugins.base):
 								sample_obj = placement_obj.sample
 								sample_obj.sampleref = 'sample_'+str(data_objc.fileid)
 								sample_obj.vol = data_objc.vol/65535
-
-								class sample_speedtemp:
-									def __init__(self):
-										self.sample_speed = 1
-										self.sample_pitch = 0
-										self.resample = False
-										self.fx_found = False
 
 								sample_stretch = sample_speedtemp()
 

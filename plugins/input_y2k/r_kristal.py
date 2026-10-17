@@ -214,10 +214,11 @@ class input_kristal(plugins.base):
 			for num, data in enumerate(project_obj.mixer[1]):
 				if num in tracknums:
 					track_obj = tracknums[num]
+					plugslots = track_obj.plugslots
 					fx_eq, fx_slots = data
 					for fx_num, fx_slot in enumerate(fx_slots):
 						fxid = 'track_'+str(tracknum)+'_fx_'+str(fx_num)
 						chunkdata = fx_slot.bindata
-						do_plugchunk(fx_slot, fxid, chunkdata, convproj_obj, track_obj.plugslots)
+						do_plugchunk(fx_slot, fxid, chunkdata, convproj_obj, plugslots)
 					fxid = 'track_'+str(tracknum)+'_fx_eq'
-					do_plugchunk(fx_eq, fxid, chunkdata, convproj_obj, track_obj.plugslots)
+					do_plugchunk(fx_eq, fxid, chunkdata, convproj_obj, plugslots)
