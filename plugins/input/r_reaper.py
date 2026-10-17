@@ -202,6 +202,7 @@ class input_reaper(plugins.base):
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
 		cvpj_metadata = convproj_obj.metadata
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -326,7 +327,7 @@ class input_reaper(plugins.base):
 			iphase = rpp_track.iphase.get()
 			if bool(iphase):
 				inverse_fxid = cvpj_trackid+'_inverse'
-				plugin_obj = convproj_obj.plugin__add(inverse_fxid, 'universal', 'invert', None)
+				plugin_obj = cvpj_plugins.add_uni('invert', None, inverse_fxid)
 				track_obj.plugslots.slots_mixer.append(inverse_fxid)
 
 			do_auto(pooledenvs, convproj_obj, rpp_track.volenv2, ['track', cvpj_trackid, 'vol'], False, 'float', False)
@@ -402,7 +403,7 @@ class input_reaper(plugins.base):
 
 							else:
 								pluginfo_obj = globalstore.extplug.get('vst2', 'id', fourid, None, [64, 32])
-								plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst2', None)
+								plugin_obj = cvpj_plugins.add_external('vst2', None, pluginid)
 								plugin_obj.fxdata_add(not rpp_plugin.bypass['bypass'], rpp_plugin.wet['wet'])
 								extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 								if uses_chunk:
@@ -423,7 +424,7 @@ class input_reaper(plugins.base):
 								else: track_obj.plugin_autoplace(plugin_obj, pluginid)
 
 						else:
-							plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst3', None)
+							plugin_obj = cvpj_plugins.add_external('vst3', None, pluginid)
 							plugin_obj.fxdata_add(not rpp_plugin.bypass['bypass'], rpp_plugin.wet['wet'])
 							if len(rpp_extplug.data_chunk)>8:
 								try:
@@ -447,7 +448,7 @@ class input_reaper(plugins.base):
 							plugin_obj.current_program = programnum
 
 					if rpp_plugin.type == 'CLAP':
-						plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'clap', None)
+						plugin_obj = cvpj_plugins.add_external('clap', None, pluginid)
 	
 						extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 						extmanu_obj.clap__replace_data('id', rpp_extplug.clap_id, rpp_extplug.data_chunk, None)
@@ -460,7 +461,7 @@ class input_reaper(plugins.base):
 								do_auto(pooledenvs, convproj_obj, parmenv, ['plugin', pluginid, 'ext_param_'+str(parmenv.param_id)], False, 'float', False)
 
 					if rpp_plugin.type == 'JS':
-						plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'jesusonic', rpp_extplug.js_id)
+						plugin_obj = cvpj_plugins.add_external('jesusonic', rpp_extplug.js_id, pluginid)
 						plugin_obj.role = 'fx'
 						plugin_obj.fxdata_add(not rpp_plugin.bypass['bypass'], rpp_plugin.wet['wet'])
 						for n, v in enumerate(rpp_extplug.data):
@@ -468,7 +469,7 @@ class input_reaper(plugins.base):
 						track_obj.plugin_autoplace(plugin_obj, pluginid)
 
 					if rpp_plugin.type == 'DX':
-						plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'directx', None)
+						plugin_obj = cvpj_plugins.add_external('directx', None, pluginid)
 						plugin_obj.role = 'fx'
 						external_info = plugin_obj.external_info
 						dx_name = rpp_extplug.dx_name
@@ -490,7 +491,7 @@ class input_reaper(plugins.base):
 							pass
 
 					if rpp_plugin.type == 'AU':
-						plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'au', None)
+						plugin_obj = cvpj_plugins.add_external('au', None, pluginid)
 						plugin_obj.role = 'fx'
 						external_info = plugin_obj.external_info
 						name = rpp_extplug.name
@@ -533,7 +534,7 @@ class input_reaper(plugins.base):
 
 				if len(outsamplers) == 1:
 					filename, samplerj = outsamplers[0]
-					plugin_obj, sampleref_obj, sp_obj = convproj_obj.plugin__addspec__sampler(sampler_id, filename, 'win')
+					plugin_obj, sampleref_obj, sp_obj = cvpj_plugins.addspec_sampler(filename, 'win', sampler_id)
 
 					if sampleref_obj:
 						do_samplepart_loop(samplerj, sp_obj, sampleref_obj)
@@ -541,7 +542,7 @@ class input_reaper(plugins.base):
 						track_obj.plugslots.plugin_autoplace(plugin_obj, sampler_id)
 
 				if len(outsamplers) > 1:
-					plugin_obj = convproj_obj.plugin__add(sampler_id, 'universal', 'sampler', 'multi')
+					plugin_obj = cvpj_plugins.add_uni('sampler', 'multi', sampler_id)
 					plugin_obj.role = 'synth'
 					track_obj.plugslots.plugin_autoplace(plugin_obj, sampler_id)
 

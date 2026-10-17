@@ -56,6 +56,7 @@ class output_bandlab(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- project ----------
 		creatorId = str(uuid.uuid4())
@@ -210,11 +211,12 @@ class output_bandlab(plugins.base):
 					blx_track.type = 'piano'
 					blx_track.soundbank = 'studio-grand-v2-v4'
 
-					pluginid = track_obj.plugslots.synth
-					plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
-
 					inst_supported = 0
-					if plugin_found:
+
+					pluginid = track_obj.plugslots.synth
+
+					if pluginid in cvpj_plugins:
+						plugin_obj = cvpj_plugins[pluginid]
 						if plugin_obj.check_match('external', 'bandlab', 'instrument'):
 							in_inst = track_obj.datavals.get('instrument', '')
 							if in_inst:
@@ -307,11 +309,12 @@ def do_automation(cvpj_automation, autoloc, blx_auto, tempomul):
 def make_plugins_fx(convproj_obj, autoPitch, effects, fxslots_audio, tempomul):
 	from objects.file_proj import bandlab as proj_bandlab
 
+	cvpj_plugins = convproj_obj.plugins
 	cvpj_automation = convproj_obj.automation
 
 	for pluginid in fxslots_audio:
-		plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
-		if plugin_found: 
+		if pluginid in cvpj_plugins:
+			plugin_obj = cvpj_plugins[pluginid]
 			if plugin_obj.check_wildmatch('native', 'bandlab', 'autoPitch'):
 				fx_on, fx_wet = plugin_obj.fxdata_get()
 				if autoPitch:

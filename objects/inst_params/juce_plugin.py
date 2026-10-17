@@ -38,19 +38,16 @@ class juce_plugin:
 			self.filename = plugin_obj.getpath_fileref(convproj_obj, 'file', None, True)
 			self.memoryblock = juce_memoryblock.toJuceBase64Encoding(chunkdata)
 
-	def to_cvpj(self, convproj_obj, pluginid):
+	def to_cvpj(self, convproj_obj, pluginid=None):
 		if not self.plugtype:
 			if self.filename.endswith('.vst3'): self.plugtype = 'vst3'
 			else: self.plugtype = 'vst2'
 
 		chunkdata = juce_memoryblock.fromJuceBase64Encoding(self.memoryblock) if self.memoryblock else self.rawdata
 
-		if not pluginid:
-			plugin_obj, pluginid = convproj_obj.plugin__add__genid('external', self.plugtype, None)
-			plugin_obj.role = 'effect'
-		else:
-			plugin_obj = convproj_obj.plugin__add(pluginid, 'external', self.plugtype, None)
-			plugin_obj.role = 'effect'
+		plugin_obj = convproj_obj.plugins.add_external(self.plugtype, None, pluginid)
+		plugin_obj.role = 'effect'
+		if pluginid == None: pluginid = cvpj_plugins.get_lastid()
 
 		extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 

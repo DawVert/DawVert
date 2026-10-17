@@ -69,6 +69,9 @@ class input_xm(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 		
+		# ---------- convproj objects ----------
+		cvpj_plugins = convproj_obj.plugins
+
 		# ---------- convproj init ----------
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']
@@ -173,8 +176,8 @@ class input_xm(plugins.base):
 				sampleref_obj.set_fileformat('wav')
 
 				# plugin
-				plugin_obj, synthid, sp_obj = convproj_obj.plugin__addspec__sampler__genid__s_obj(sampleref_obj, filename)
-				inst_obj.plugslots.set_synth(synthid)
+				plugin_obj, sp_obj = cvpj_plugins.addspec_sampler__sampleref(filename)
+				inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 
 				# sample region
 				sp_obj.loop_active, sp_obj.loop_mode, sp_obj.loop_start, sp_obj.loop_end = trsamp.get_loop()
@@ -184,8 +187,8 @@ class input_xm(plugins.base):
 			else:
 				inst_used = True
 				inst_obj.params.add('vol', 0.3, 'float')
-				plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'sampler', 'multi')
-				inst_obj.plugslots.set_synth(synthid)
+				plugin_obj = cvpj_plugins.add_uni('sampler', 'multi')
+				inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 				for instnum, r_start, e_end in sampleregions:
 					trsamp = xm_inst.samp_head[instnum]
 

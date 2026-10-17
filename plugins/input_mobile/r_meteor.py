@@ -7,13 +7,13 @@ from objects.convproj import fileref
 from objects import globalstore
 import os
 
-def do_effect(convproj_obj, fxid, plugslots, m_fx):
+def do_effect(cvpj_plugins, fxid, plugslots, m_fx):
 	typeid = m_fx.typeid
 	wetlvl = m_fx.mix/64
 	fxparams = m_fx.params
 	if typeid!=0:
 		strtype = str(typeid)
-		plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'meteor', strtype)
+		plugin_obj = cvpj_plugins.add_native('meteor', strtype, fxid)
 		plugin_obj.fxdata_add(True, wetlvl)
 		for param_id, datapack_param in globalstore.datapack.get_params('native', 'plugin', strtype):
 			paramval = m_fx.params[param_id] if param_id in m_fx.params else None
@@ -83,6 +83,7 @@ class input_meteor(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_master = convproj_obj.track_master
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
@@ -112,7 +113,7 @@ class input_meteor(plugins.base):
 			return_obj = cvpj_master.fx__return__add(str(n))
 			return_obj.params.add('vol', retu.volume/64, 'float')
 			fxid = 'return%i_fx' % (n)
-			do_effect(convproj_obj, fxid, return_obj.plugslots, retu.effect)
+			do_effect(cvpj_plugins, fxid, return_obj.plugslots, retu.effect)
 			fxtypeid = retu.effect.typeid
 			if fxtypeid!=0: return_obj.visual.name = returnnames[fxtypeid]
 
@@ -141,7 +142,7 @@ class input_meteor(plugins.base):
 			effects = track.effects
 			for fn, effect in effects.items():
 				fxid = 'track%i_fx%i' % (n, fn)
-				do_effect(convproj_obj, fxid, track_obj.plugslots, effect)
+				do_effect(cvpj_plugins, fxid, track_obj.plugslots, effect)
 
 			# clips
 			for clip in track.clips:

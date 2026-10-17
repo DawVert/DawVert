@@ -44,6 +44,7 @@ class input_bajloop(plugins.base):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = convproj_obj.automation
 		cvpj_metadata = convproj_obj.metadata
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'mi'
@@ -95,9 +96,9 @@ class input_bajloop(plugins.base):
 			visual_obj.name = binst.name
 
 			# plugin
-			plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'single')
+			plugin_obj = cvpj_plugins.add_uni('sampler', 'single', instid)
 			plugin_obj.role = 'synth'
-			inst_obj.plugslots.set_synth(pluginid)
+			inst_obj.plugslots.set_synth(instid)
 
 			# sample
 			samp = project_obj.samples[samplenum]

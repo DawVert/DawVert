@@ -73,6 +73,7 @@ class input_acid_old(plugins.base):
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- convproj params ----------
 		groupby = dawvert_intent.input_get_param('groupby', 'none')
@@ -335,8 +336,9 @@ class input_acid_old(plugins.base):
 			track_obj.visual.name = 'FX '+str(x+1)
 			if x in send_fx:
 				for fx in send_fx[x]:
-					plugin_obj, pluginid = convproj_obj.plugin__add__genid('external', 'directx', None)
+					plugin_obj = cvpj_plugins.add_external('directx', None)
 					plugin_obj.role = 'fx'
+					pluginid = cvpj_plugins.get_lastid()
 					track_obj.plugin_autoplace(plugin_obj, pluginid)
 					external_info = plugin_obj.external_info
 					external_info.name = fx.name

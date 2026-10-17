@@ -110,6 +110,7 @@ class input_fruitytracks(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_transport = convproj_obj.transport
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- convproj params ----------
 		pan_auto = dawvert_intent.input_get_param('pan_auto', 'auto')
@@ -161,7 +162,7 @@ class input_fruitytracks(plugins.base):
 				fxid = trackid+'_'+str(pid)
 				splitfile = flplug.name.split('.')
 
-				plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'fruitytracks', splitfile[0].lower())
+				plugin_obj = cvpj_plugins.add_native('fruitytracks', splitfile[0].lower(), fxid)
 				plugin_obj.visual.name = splitfile[0]
 				plugin_obj.datavals.add('file', flplug.name)
 				plugin_obj.role = 'fx'

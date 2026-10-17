@@ -70,6 +70,7 @@ class input_gt_mnbs(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'rm'
@@ -119,13 +120,14 @@ class input_gt_mnbs(plugins.base):
 		# ---------- insts ----------
 		for instnum in used_inst:
 			instid = 'NoteBlock'+str(instnum)
+			pluginid = 'Plugin'+str(instnum)
 			inst_obj = cvpj_insts.add(instid)
 			dpobj = globalstore.datapack.get_obj('noteblockstudio', 'inst', str(instnum))
 			if dpobj:
 				inst_obj.visual.from_datapack_obj(dpobj, True)
 
 				# plugin
-				plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'single')
+				plugin_obj = cvpj_plugins.add_uni('sampler', 'single', pluginid)
 				plugin_obj.role = 'synth'
 				plugin_obj.midi_incompat_synth_on = True
 				plugin_obj.midi_incompat_synth.from_datapack_obj(dpobj)
@@ -148,13 +150,15 @@ class input_gt_mnbs(plugins.base):
 		# ---------- custom insts ----------
 		custominstid = 16
 		for custominstid, custom_obj in enumerate(project_obj.custom):
-			instid = 'NoteBlock'+str(custominstid+16)
+			natinstid = custominstid+16
+			instid = 'NoteBlock'+str(natinstid)
+			pluginid = 'Plugin'+str(natinstid)
 			inst_obj = cvpj_insts.add(instid)
 			inst_obj.visual.name = custom_obj.name
 			inst_obj.visual.color.set_hsv(custominstid*0.2, 1, 0.5)
 			inst_obj.datavals.add('middlenote', -(custom_obj.key-51))
-			plugin_obj, sampleref_obj, samplepart_obj = convproj_obj.plugin__addspec__sampler(instid, custom_obj.file, None)
+			plugin_obj, sampleref_obj, samplepart_obj = cvpj_plugins.addspec_sampler(custom_obj.file, None, pluginid)
 			if sampleref_obj: 
 				sampleref_obj.search_local(dawvert_intent.input_folder)
 			plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, 10, 1)
-			inst_obj.plugslots.set_synth(instid)
+			inst_obj.plugslots.set_synth(pluginid)

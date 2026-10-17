@@ -288,12 +288,11 @@ def encode_effectslot(effect_obj, plugin_obj, pluginid):
 
 def encode_fxchain(lmms_fxchain, track_obj, trackname, autoloc):
 	from objects.file_proj import lmms as proj_lmms
-
+	cvpj_plugins = cvpj_obj.plugins
 	lmms_fxchain.enabled.value = int(track_obj.plugslots.slots_audio_enabled)
-
 	for pluginid in track_obj.plugslots.slots_audio:
-		plugin_found, plugin_obj = cvpj_obj.plugin__get(pluginid)
-		if plugin_found: 
+		if pluginid in cvpj_plugins:
+			plugin_obj = cvpj_plugins[pluginid]
 			effect_obj = proj_lmms.lmms_effect()
 			encode_effectslot(effect_obj, plugin_obj, pluginid)
 			lmms_fxchain.effects.append(effect_obj)
@@ -383,6 +382,7 @@ class output_lmms(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = cvpj_obj.tracks
 		cvpj_metadata = cvpj_obj.metadata
+		cvpj_plugins = cvpj_obj.plugins
 
 		# ---------- project ----------
 		project_obj = proj_lmms.lmms_project()
@@ -436,8 +436,8 @@ class output_lmms(plugins.base):
 					paramauto(insttrack_obj.pitch, track_obj.params, 'pitch', 0, [0, 100], autoloc, trackname, 'Pitch')
 
 					for pluginid in track_obj.plugslots.slots_notes:
-						plugin_found, plugin_obj = cvpj_obj.plugin__get(pluginid)
-						if plugin_found:
+						if pluginid in cvpj_plugins:
+							plugin_obj = cvpj_plugins[pluginid]
 							if plugin_obj.check_match('universal', 'arpeggiator', None):
 								arp_obj = insttrack_obj.arpeggiator
 								paramauto(arp_obj.arp_enabled, plugin_obj.params_slot, 'enabled', False, None, ['slot', pluginid], 'Arp', 'On')
@@ -468,8 +468,11 @@ class output_lmms(plugins.base):
 
 					middlenotefix = 0
 
-					plugin_found, plugin_obj = cvpj_obj.plugin__get(track_obj.plugslots.synth)
-					if plugin_found:
+					synth_pluginid = track_obj.plugslots.synth
+
+					if synth_pluginid in cvpj_plugins:
+						plugin_obj = cvpj_plugins[synth_pluginid]
+
 						if plugin_obj.check_match('universal', 'sampler', 'single') or plugin_obj.check_match('universal', 'sampler', 'drumsynth'):
 							lmms_inst_obj.name = 'audiofileprocessor'
 							lmms_plug_obj.name = 'audiofileprocessor'

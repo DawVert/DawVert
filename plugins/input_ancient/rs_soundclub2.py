@@ -69,6 +69,7 @@ class input_soundclub2(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
 		cvpj_metadata = convproj_obj.metadata
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj params ----------
 		panlvl = dawvert_intent.input_get_param('panlvl', 1.0)
@@ -102,10 +103,10 @@ class input_soundclub2(plugins.base):
 				if sn2_inst_obj.loopstart != -1: audio_obj.loop = [sn2_inst_obj.loopstart, sn2_inst_obj.samplesize]
 				audio_obj.to_file_wav(wave_path)
 
-				plugin_obj, synthid, sampleref_obj, sp_obj = convproj_obj.plugin__addspec__sampler__genid(wave_path, None)
+				plugin_obj, sampleref_obj, sp_obj = cvpj_plugins.addspec_sampler(wave_path, None)
 				sampleref_obj.set_fileformat('wav')
 				audio_obj.to_sampleref_obj(sampleref_obj)
-				track_obj.plugslots.set_synth(synthid)
+				track_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 
 				plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, 0, 1)
 				sp_obj.point_value_type = "samples"

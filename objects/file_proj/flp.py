@@ -53,16 +53,13 @@ total_num_fx_routing = {
 
 class flp_project:
 	def __init__(self):
-		self.main = {}
-		self.channels = {}
-		self.patterns = {}
-		self.patterns[0] = objs.flp_pattern()
-		self.mixer = {}
-		#for fxnum in range(127): self.mixer[fxnum] = flp_fxchan(fxnum)
+		self.channels = objs.flp_channels()
+		self.patterns = objs.flp_patterns()
+		self.mixer = objs.flp_mixer()
+		self.arrangements = objs.flp_arrangements()
+
 		self.initfxvals = auto.flp_initvals()
 		self.startvals = auto.flp_initvals()
-		self.arrangements = {}
-		self.arrangements[0] = arrangement.flp_arrangement(500)
 		self.timemarkers = []
 		self.changroupname = []
 		self.nonsong_patnum = 1
@@ -76,17 +73,11 @@ class flp_project:
 		self.num_steps_shown = 32
 		self.current_filternum = 4294967295
 		self.remotectrl_midi = []
+		self.metadata = objs.flp_metadata()
 
-		self.fx_color = None
-		self.fx_icon = None
-		self.fxcreationmode = 0
-		self.def_pluginname = ''
 		self.delayline = None
 
-		self.current_ctrl = None
-
-		self.slotstore = None
-
+		self.projectdatapath = ''
 		self.tempo = 120
 		self.tempofine = 0
 
@@ -94,25 +85,13 @@ class flp_project:
 		self.numerator = 4
 		self.denominator = 4
 		self.shuffle = 0
-		self.title = ''
-		self.genre = ''
-		self.author = ''
-		self.projectdatapath = ''
-		self.comment = ''
-		self.comment_rtf = ''
-		self.url = ''
-		self.projecttime = None
-		self.showinfo = 0
 		self.version = ''
 		self.version_split = [0]
 
 		self.remote_assoc = {}
-		self.fx_name = ''
 
 		self.zipped = False
 		self.zipfile = None
-		#with open('flp_eventname.txt') as f:
-		#	self.lines = f.readlines()
 
 		self.playlistblock = {}
 		self.playlistblock_looppos = 0
@@ -125,8 +104,8 @@ class flp_project:
 		self.num_fx = total_num_fx[self.version_split[0]]
 		self.num_fx_routing = total_num_fx_routing[self.version_split[0]]
 		self.num_tracks = total_num_tracks[self.version_split[0]]
-		for fxnum in range(self.num_fx): self.mixer[fxnum] = flp_fxchan(fxnum)
-		self.arrangements[0] = arrangement.flp_arrangement(self.num_tracks)
+		self.mixer.setup_num(self.num_fx)
+		self.arrangements = objs.flp_arrangements()
 		cur_state.set_version(self.version_split)
 
 	def add_old_playlistblock(self, event_data):
@@ -142,7 +121,7 @@ class flp_project:
 			logger_projparse.info('FL: Version: ' + FLVersion)
 			self.init_set_version(FLVersion, cur_state)
 		elif event_id ==   9: self.loop_active = event_data
-		elif event_id ==  10: self.showinfo = event_data
+		elif event_id ==  10: self.metadata.showinfo = event_data
 		elif event_id ==  11: self.shuffle = event_data
 		elif event_id ==  17: self.numerator = event_data
 		elif event_id ==  18: self.denominator = event_data
@@ -151,15 +130,15 @@ class flp_project:
 		elif event_id ==  44: self.automatic_crossfades = event_data
 		elif event_id ==  67: self.nonsong_patnum = event_data
 		elif event_id ==  80: self.mainpitch = struct.unpack('h', struct.pack('H', event_data))[0]
-		elif event_id == 194: self.title = decodetext(self.version_split, event_data)
-		elif event_id == 195: self.comment = decodetext(self.version_split, event_data)
-		elif event_id == 198: self.comment_rtf = decodetext(self.version_split, event_data)
-		elif event_id == 197: self.url = decodetext(self.version_split, event_data)
+		elif event_id == 194: self.metadata.title = decodetext(self.version_split, event_data)
+		elif event_id == 195: self.metadata.comment = decodetext(self.version_split, event_data)
+		elif event_id == 198: self.metadata.comment_rtf = decodetext(self.version_split, event_data)
+		elif event_id == 197: self.metadata.url = decodetext(self.version_split, event_data)
 		elif event_id == 202: self.projectdatapath = decodetext(self.version_split, event_data)
-		elif event_id == 206: self.genre = decodetext(self.version_split, event_data)
-		elif event_id == 207: self.author = decodetext(self.version_split, event_data)
+		elif event_id == 206: self.metadata.genre = decodetext(self.version_split, event_data)
+		elif event_id == 207: self.metadata.author = decodetext(self.version_split, event_data)
 		elif event_id == 231: self.changroupname.append(decodetext(self.version_split, event_data))
-		elif event_id == 237: self.projecttime = event_data
+		elif event_id == 237: self.metadata.projecttime = event_data
 		elif event_id == 216: self.startvals.read(event_data)
 		elif event_id == 225: self.initfxvals.read(event_data)
 		elif event_id ==  12: self.main_vol = event_data
@@ -288,7 +267,21 @@ class flp_project:
 			if chunk_obj.id == b'FLdt':
 				tlvr = tlv_reader(ebrw_readstr)
 				tlvr.debug_load()
-				while ebrw_readstr.remaining(): f.write(tlvr.debugtxt_event())
+				while ebrw_readstr.remaining():
+					value, data = tlvr.read_event()
+					outtxt = tlvr.debugtxt_event_cus(value, data)
+					f.write(outtxt+'\n')
+					if value==212:
+						plugin_obj = objs.flp_plugin()
+						plugin_obj.chunk.read(data)
+						outtxtnew = 'PLUGININFO'
+						outtxtnew += ' GEN='
+						outtxtnew += str(int(plugin_obj.chunk.generator))
+						outtxtnew += ' FX='
+						outtxtnew += str(int(plugin_obj.chunk.fxnum))
+						outtxtnew += ' SLOT='
+						outtxtnew += str(int(plugin_obj.chunk.slotnum))
+						f.write(outtxtnew+'\n')
 
 	def read_chunk_FLhd(self, ebrw_readstr):
 		ebrw_readstr.skip(2)
@@ -335,12 +328,12 @@ class flp_project:
 			shutil.copy(inputfile, 'debug_in.flp')
 			self.to_flp_debtxt('debug_in.flp', 'debug_in.flps')
 
-
 	def make_fl3(self, ebrw_writestr):
 		tlvw = tlv_writer(ebrw_writestr)
 		tlvw.str8( 199, '3.5.6')
 		tlvw.out(  200, b'')
-		if self.tempofine: tlvw.out(   93, self.tempofine)
+		#if self.tempofine: tlvw.out(   93, self.tempofine)
+		tlvw.out(   93, self.tempofine)
 		tlvw.out(   66, self.tempo)
 		tlvw.out(   67, self.nonsong_patnum)
 		tlvw.out(    9, self.loop_active)
@@ -359,17 +352,25 @@ class flp_project:
 		tlvw.str8( 197, self.url)
 		tlvw.out(  146, self.current_filternum)
 		tlvw.out(  216, self.startvals.write())
-		for patnum, patdat in self.patterns.items(): patdat.make_tlv(tlvw, patnum)
+		for patnum, patdat in self.patterns.iter(): patdat.make_tlv(tlvw, patnum)
 		for x in self.remotectrl_midi: tlvw.out(226, x)
 
+		for channum, chandata in self.mixer.iter():
+			for slot in chandata.slots:
+				slot.plugin.make_tlv(tlvw)
+		#for channum, chandata in self.channels.iter():
+		#	chandata.plugin.make_tlv(tlvw)
 		#for renum, redat in self.remote_assoc.items():
 		#	for x in redat: 
 		#		tlvw.out(227, x.write())
 		#		if x.formula: tlvw.str8(230, x.formula)
 
-		for channum, chandata in self.channels.items():
+		for channum, chandata in self.channels.iter():
 			chandata.make_tlv(tlvw, channum, self.version_split)
-			for patnum, patdat in self.patterns.items():
+			if channum==0:
+				for patnum, patdat in self.patterns.iter():
+					patdat.make_tlv_name(tlvw, patnum)
+			for patnum, patdat in self.patterns.iter():
 				patdat.make_tlv_dots(tlvw, patnum, channum)
 
 		for pos, patnum in self.playlistblock.items():
@@ -378,7 +379,7 @@ class flp_project:
 		tlvw.out(84, self.playlistblock_looppos)
 		tlvw.out(225, self.initfxvals.write())
 
-		for num, mixchan in self.mixer.items():
+		for num, mixchan in self.mixer.iter():
 			tlvw.str8(204, mixchan.name)
 			tlvw.out(147, mixchan.outchannum)
 
@@ -396,12 +397,13 @@ class flp_project:
 		ebrw_writestr.raw(self.ppq.to_bytes(2, 'little'))
 		return ebrw_writestr.getvalue()
 
-	def make_chunk_FLdt(self, FL_OUTPUT_MODE):
+	def make_chunk_FLdt(self, outputversion):
 		ebrw_writestr = easybinrw.binwrite()
-		if FL_OUTPUT_MODE==3: self.make_fl3(ebrw_writestr)
+		firstversion = outputversion[0]
+		if firstversion==3: self.make_fl3(ebrw_writestr, outputversion[1:])
 		return ebrw_writestr.getvalue()
 
-	def make(self, outputfile, FL_OUTPUT_MODE):
+	def make(self, outputfile, outputversion):
 		num_fx = total_num_fx[FL_OUTPUT_MODE]
 		num_fx_routing = total_num_fx_routing[FL_OUTPUT_MODE]
 		num_tracks = total_num_tracks[FL_OUTPUT_MODE]
@@ -409,7 +411,7 @@ class flp_project:
 		flpout = open(outputfile, 'wb')
 		ebrw_writestr = easybinrw.binwrite()
 		self.make_chunk_header(ebrw_writestr, b'FLhd', self.make_chunk_FLhd())
-		self.make_chunk_header(ebrw_writestr, b'FLdt', self.make_chunk_FLdt(FL_OUTPUT_MODE))
+		self.make_chunk_header(ebrw_writestr, b'FLdt', self.make_chunk_FLdt(outputversion))
 		flpout.write(ebrw_writestr.getvalue())
 		flpout.close()
 
@@ -418,20 +420,48 @@ class flp_project:
 			shutil.copy(outputfile, 'debug_out.flp')
 			self.to_flp_debtxt('debug_out.flp', 'debug_out.flps')
 
+	def tlv_clone(self, inputfile, outputfile):
+
+		# input
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(inputfile)
+
+		# output
+		flpout = open(outputfile, 'wb')
+		ebrw_writestr = easybinrw.binwrite()
+		FLdt_writestr = easybinrw.binwrite()
+		tlvw = tlv_writer(FLdt_writestr)
+
+		# input/output
+		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
+			if chunk_obj.id == b'FLhd': 
+				self.read_chunk_FLhd(ebrw_readstr)
+				self.make_chunk_header(ebrw_writestr, b'FLhd', self.make_chunk_FLhd())
+			if chunk_obj.id == b'FLdt':
+				tlvr = tlv_reader(ebrw_readstr)
+				tlvr.debug_load()
+				while ebrw_readstr.remaining(): 
+					event_id, event_data = tlvr.read_event()
+					tlvw.out(event_id, event_data)
+				self.make_chunk_header(ebrw_writestr, b'FLdt', FLdt_writestr.getvalue() )
+
+		# output
+		flpout.write(ebrw_writestr.getvalue())
+		flpout.close()
 
 
 
+	def get_version(self, inputfile):
+		# input
+		ebrw_readstr = easybinrw.binread()
+		ebrw_readstr.load_file(inputfile)
 
-
-
-
-
-
-
-
-
-
-
-
-
+		# input/output
+		for chunk_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, None):
+			if chunk_obj.id == b'FLdt':
+				tlvr = tlv_reader(ebrw_readstr)
+				tlvr.debug_load()
+				while ebrw_readstr.remaining(): 
+					event_id, event_data = tlvr.read_event()
+					if event_id==199: return event_data.decode().rstrip('\x00')
 

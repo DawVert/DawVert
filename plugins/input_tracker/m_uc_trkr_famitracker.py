@@ -51,6 +51,7 @@ class input_famitracker_txt(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -155,9 +156,9 @@ class input_famitracker_txt(plugins.base):
 						if insttype == 'dpcm':
 							inst_obj.is_drum = True
 							inst_obj.is_multinote_drum = True
-							plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'sampler', 'multi')
+							plugin_obj = cvpj_plugins.add_uni('sampler', 'multi')
 							plugin_obj.role = 'synth'
-							inst_obj.plugslots.set_synth(synthid)
+							inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 							for _, dpcm_key in ft_inst.dpcm_keys.items():
 								if dpcm_key.id in project_obj.dpcm:
 									filename = samplefolder+'dpcmg_'+str(dpcm_key.id)+'_'+str(dpcm_key.pitch)+'.wav'
@@ -175,9 +176,9 @@ class input_famitracker_txt(plugins.base):
 									sp_obj.sampleref = filename
 
 						else:
-							plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
+							plugin_obj = cvpj_plugins.add_uni('synth-osc', None)
 							plugin_obj.role = 'synth'
-							inst_obj.plugslots.set_synth(synthid)
+							inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 							osc_data = plugin_obj.osc_add()
 							if insttype in ['square1', 'square2']:
 								osc_data.prop.shape = 'square'
@@ -205,25 +206,25 @@ class input_famitracker_txt(plugins.base):
 					elif ft_inst.chip == 'VRC6':
 
 						if insttype == 'vrc6_square':
-							plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
+							plugin_obj = cvpj_plugins.add_uni('synth-osc', None)
 							plugin_obj.role = 'synth'
-							inst_obj.plugslots.set_synth(synthid)
+							inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 							osc_data = plugin_obj.osc_add()
 							osc_data.prop.shape = 'square'
 							plugin_obj.midi_fallback__add_inst(80)
 
 						if insttype == 'vrc6_saw':
-							plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
+							plugin_obj = cvpj_plugins.add_uni('synth-osc', None)
 							plugin_obj.role = 'synth'
-							inst_obj.plugslots.set_synth(synthid)
+							inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 							osc_data = plugin_obj.osc_add()
 							osc_data.prop.shape = 'saw'
 							plugin_obj.midi_fallback__add_inst(81)
 
 					elif ft_inst.chip == 'FDS' and insttype == 'fds':
-						plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
+						plugin_obj = cvpj_plugins.add_uni('synth-osc', None)
 						plugin_obj.role = 'synth'
-						inst_obj.plugslots.set_synth(synthid)
+						inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 						osc_data = plugin_obj.osc_add()
 						osc_data.prop.type = 'wave'
 						osc_data.prop.nameid = 'main'

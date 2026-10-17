@@ -287,6 +287,7 @@ class input_flp(plugins.base):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = convproj_obj.automation
 		cvpj_timemarkers = convproj_obj.timemarkers
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -377,7 +378,7 @@ class input_flp(plugins.base):
 
 					smapleid, sampleref_obj = flp_dec_plugins.make_sample_ref(convproj_obj, fl_channel_obj.samplefilename, dawvert_intent, None)
 
-					plugin_obj = convproj_obj.plugin__add(instplugid, 'universal', 'sampler', 'single')
+					plugin_obj = cvpj_plugins.add_uni('sampler', 'single', instplugid)
 					plugin_obj.role = 'synth'
 					sp_obj = plugin_obj.samplepart_add('sample')
 					sp_obj.from_sampleref(convproj_obj, smapleid)
@@ -491,7 +492,7 @@ class input_flp(plugins.base):
 					plugin_obj.role = 'synth'
 
 				notefx_pluginid = 'FLPlug_GA_'+str(channelnum)
-				plugin_obj = convproj_obj.plugin__add(notefx_pluginid, 'universal', 'arpeggiator', None)
+				plugin_obj = cvpj_plugins.add_uni('arpeggiator', None, notefx_pluginid)
 				plugin_obj.fxdata_add(fl_channel_obj.params.arpdirection, None)
 				plugin_obj.role = 'notefx'
 				inst_obj.plugslots.slots_notes.append(notefx_pluginid)
@@ -874,7 +875,7 @@ class input_flp(plugins.base):
 			if mixer_eq != [[0, 0], [0, 0], [0, 0]]: eq_used = False
 
 			if eq_used:
-				plugin_obj = convproj_obj.plugin__add(eq_fxid, 'universal', 'eq', '3band_channel')
+				plugin_obj = cvpj_plugins.add_uni('eq', '3band_channel', eq_fxid)
 				for n, e in enumerate(mixer_eq):
 					eq_freq, eq_level = e
 					eq_level /= 65536
@@ -891,12 +892,12 @@ class input_flp(plugins.base):
 
 			if fx_chunk.reversepolarity:
 				rp_fxid = 'FLPlug_ME_RP_'+str(mixer_id)
-				plugin_obj = convproj_obj.plugin__add(rp_fxid, 'universal', 'invert', None)
+				plugin_obj = cvpj_plugins.add_uni('invert', None, rp_fxid)
 				fxchannel_obj.plugslots.slots_mixer.append(rp_fxid)
 
 			if fx_chunk.swap_lr:
 				rp_fxid = 'FLPlug_ME_LR_'+str(mixer_id)
-				plugin_obj = convproj_obj.plugin__add(rp_fxid, 'universal', 'swap_lr', None)
+				plugin_obj = cvpj_plugins.add_uni('swap_lr', None, rp_fxid)
 				fxchannel_obj.plugslots.slots_mixer.append(rp_fxid)
 
 		#if len(flp_obj.arrangements) == 0 and len(FL_Patterns) == 1 and len(FL_Channels) == 0:

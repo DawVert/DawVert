@@ -42,6 +42,7 @@ class input_deflemask(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -142,14 +143,14 @@ class input_deflemask(plugins.base):
 					#print(dmf_inst.mode, insttype, instnum, channum)
 
 					if dmf_inst.mode == 1 and insttype == 'opn2':
-						plugin_obj, synthid = dmf_inst.fm_data.to_cvpj_genid(convproj_obj)
-						inst_obj.plugslots.set_synth(synthid)
+						plugin_obj = dmf_inst.fm_data.to_cvpj(convproj_obj)
+						inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 
 					if dmf_inst.mode == 0:
 						# plugin
-						plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
+						plugin_obj = plugin_obj.add_uni('synth-osc', None)
 						plugin_obj.role = 'synth'
-						inst_obj.plugslots.set_synth(synthid)
+						inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 						osc_data = plugin_obj.osc_add()
 						if insttype == 'square':
 							osc_data.prop.shape = 'square'
@@ -187,9 +188,9 @@ class input_deflemask(plugins.base):
 						inst_obj.datavals.add('middlenote', -int(sample_pitch))
 
 						# plugin
-						plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'sampler', 'single')
+						plugin_obj = plugin_obj.add_uni('sampler', 'single')
 						plugin_obj.role = 'synth'
-						inst_obj.plugslots.set_synth(synthid)
+						inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 						samplepart_obj = plugin_obj.samplepart_add('sample')
 						samplepart_obj.sampleref = sampleid
 						samplepart_obj.visual.name = sample_obj.name

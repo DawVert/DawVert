@@ -67,6 +67,7 @@ class input_orgyana(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
 		cvpj_automation = convproj_obj.automation
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- convproj params ----------
 		use_groups = dawvert_intent.input_get_param('use_groups', True)
@@ -98,6 +99,7 @@ class input_orgyana(plugins.base):
 		for tracknum, orgtrack_obj in enumerate(project_obj.tracks):
 			if len(orgtrack_obj.notes) != 0:
 				idval = 'org_'+str(tracknum)
+				pluginid = 'plugin_'+str(tracknum)
 				track_obj = cvpj_tracks.add(idval, 'instrument', 0, False)
 				if tracknum > 7: # drums
 					drum_tracks.append(track_obj)
@@ -121,7 +123,7 @@ class input_orgyana(plugins.base):
 							audio_obj.to_sampleref_obj(sampleref_obj)
 							orgdrum_sob[orgtrack_obj.instrument] = sampleref_obj
 
-						plugin_obj, pluginid, sp_obj = convproj_obj.plugin__addspec__sampler__genid__s_obj(orgdrum_sob[orgtrack_obj.instrument], drum_filename)
+						plugin_obj, sp_obj = cvpj_plugins.addspec_sampler__sampleref(drum_filename, pluginid)
 						sp_obj.trigger = 'oneshot'
 						track_obj.plugslots.set_synth(pluginid)
 				else: # melody
@@ -130,8 +132,7 @@ class input_orgyana(plugins.base):
 
 					# plugin
 					if orgsamp_obj.loaded:
-						plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
-						track_obj.plugslots.set_synth(pluginid)
+						plugin_obj = cvpj_plugins.add_uni('synth-osc', None, pluginid)
 						osc_data = plugin_obj.osc_add()
 						osc_data.prop.type = 'wave'
 						osc_data.prop.nameid = 'main'

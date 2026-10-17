@@ -72,6 +72,7 @@ class input_coolbeat(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
 		cvpj_master = convproj_obj.track_master
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'none'
@@ -104,7 +105,9 @@ class input_coolbeat(plugins.base):
 		for n, track in enumerate(project_obj.tracks):
 			trackid = 'track_'+str(n)
 			tracktype = track.type
+
 			if tracktype in [0, 1, 3]:
+				pluginid = trackid
 				track_obj = cvpj_tracks.add(trackid, 'instrument', 1, False)
 
 				# visual
@@ -122,8 +125,9 @@ class input_coolbeat(plugins.base):
 						track_obj.visual_inst.name = track.fileName
 				
 				elif tracktype == 1: # drums
-					plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'drums')
+					plugin_obj = cvpj_plugins.add_uni('sampler', 'drums', pluginid)
 					plugin_obj.role = 'synth'
+					track_obj.plugslots.set_synth(pluginid)
 					for cn, channel in enumerate(track.channels):
 						sampleid = do_sample(convproj_obj, channel.soundPack, channel.fileName, dawvert_intent)
 
@@ -136,11 +140,9 @@ class input_coolbeat(plugins.base):
 						layer_obj.samplepartid = 'drum_%i' % cn
 						sp_obj = plugin_obj.samplepart_add(layer_obj.samplepartid)
 						sp_obj.sampleref = sampleid
-						
-					track_obj.plugslots.set_synth(pluginid)
 
 				elif tracktype == 3: # soundfont2
-					plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'soundfont2', None)
+					plugin_obj = cvpj_plugins.add_uni('soundfont2', None, pluginid)
 					plugin_obj.role = 'synth'
 					track_obj.plugslots.set_synth(pluginid)
 					fileref_obj = convproj_obj.fileref__add(trackid, track.filePath, None)

@@ -69,6 +69,7 @@ class input_eam2(plugins.base):
 				try: cvpj_metadata.t_year = int(ExportTagSettings['tagYear'])
 				except: pass
 
+			# ---------- tracks ----------
 			convproj_obj.params.add('bpm', eamproj.BPM, 'float')
 			tempomul = 120/eamproj.BPM
 

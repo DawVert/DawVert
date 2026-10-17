@@ -109,6 +109,9 @@ class tlv_reader:
 		value, data = read_tlv(self.ebrw_readstr)
 		return self.printpart_event(value, data)
 
+	def debugtxt_event_cus(self, value, data):
+		return self.printpart_event(value, data)
+
 	def read_event(self):
 		return read_tlv(self.ebrw_readstr)
 

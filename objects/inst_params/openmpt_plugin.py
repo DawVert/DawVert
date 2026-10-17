@@ -39,21 +39,22 @@ class openmpt_plugin:
 			self.data = ebrw_readstr.raw(datalen)
 
 	def to_cvpj(self, fxnum, convproj_obj):
+		cvpj_plugins = convproj_obj.plugins
 		pluginid = 'FX'+str(fxnum)
 		if self.type == b'OMXD':
-			plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'directx', self.libname)
+			plugin_obj = cvpj_plugins.add_external('directx', self.libname, pluginid)
 			plugin_obj.from_bytes(self.data, 'directx', 'directx', 'plugin', self.libname.lower(), None)
 		#elif self.type == b'PtsV':
-		#	plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst2', None)
+		#	plugin_obj = cvpj_plugins.add_external('vst2', None, pluginid)
 		#	plugin_vst2.replace_data(convproj_obj, plugin_obj, 'id', 'win', self.id, 'chunk', self.data, 0)
 		elif self.type == b'DBM0':
-			plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'digibooster', 'pro_echo')
+			plugin_obj = cvpj_plugins.add_native('digibooster', 'pro_echo', pluginid)
 			plugin_obj.params.add('delay', self.params[0], 'int')
 			plugin_obj.params.add('fb', self.params[1], 'int')
 			plugin_obj.params.add('wet', self.params[2], 'int')
 			plugin_obj.params.add('cross_echo', self.params[3], 'int')
 		elif self.type == b'SymM':
-			plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'symmod', 'echo')
+			plugin_obj = cvpj_plugins.add_native('symmod', 'echo', pluginid)
 			plugin_obj.params.add('type', self.params[0], 'int')
 			plugin_obj.params.add('delay', self.params[1], 'int')
 			plugin_obj.params.add('fb', self.params[2], 'int')

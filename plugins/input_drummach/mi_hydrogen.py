@@ -77,6 +77,7 @@ class input_hydrogen(plugins.base):
 		cvpj_timemarkers = convproj_obj.timemarkers
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_master = convproj_obj.track_master
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj params ----------
 		pb_track = dawvert_intent.input_get_param('pb_track', True)
@@ -167,9 +168,10 @@ class input_hydrogen(plugins.base):
 			inst_obj.params.add('solo', bool(instrument.isSoloed), 'float')
 
 			# sampler
-			plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'sampler', 'multi')
+			sampler_id = str(instrument.id)+'_sampler'
+			plugin_obj = cvpj_plugins.add_uni('sampler', 'multi', sampler_id)
 			plugin_obj.role = 'synth'
-			inst_obj.plugslots.set_synth(synthid)
+			inst_obj.plugslots.set_synth(sampler_id)
 
 			inst_obj.datavals.add('middlenote', -int(instrument.pitchOffset))
 			inst_obj.datavals.add('random_pitch', instrument.randomPitchFactor)
@@ -177,7 +179,7 @@ class input_hydrogen(plugins.base):
 			# filter
 			if instrument.filterActive:
 				filter_id = str(instrument.id)+'_filter'
-				filtplug_obj = convproj_obj.plugin__add(filter_id, 'universal', 'filter', None)
+				filtplug_obj = cvpj_plugins.add_uni('filter', None, filter_id)
 				filtplug_obj.filter.on = True
 				filtplug_obj.filter.type.set('low_pass', None)
 				filtplug_obj.filter.freq = xtramath.midi_filter(instrument.filterCutoff)*2.3

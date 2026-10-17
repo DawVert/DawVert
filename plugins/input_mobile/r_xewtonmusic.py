@@ -52,6 +52,7 @@ class input_xewton(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj params ----------
 		INST_ENABLED = dawvert_intent.input_get_param('inst_on', True)
@@ -92,7 +93,7 @@ class input_xewton(plugins.base):
 			if INST_ENABLED:
 				if xe_tr.instnum not in instplugs:
 					instplug = 'inst'+str(xe_tr.instnum)
-					plugin_obj = convproj_obj.plugin__add(instplug, 'universal', 'sampler', 'multi')
+					plugin_obj = cvpj_plugins.add_uni('sampler', 'multi', instplug)
 					instplugs[xe_tr.instnum] = [plugin_obj, [track_obj]]
 				else:
 					instplugs[xe_tr.instnum][1].append(track_obj)

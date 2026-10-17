@@ -92,15 +92,15 @@ def text_patternid(channum, patnum):
 def text_instid(channum, instnum):
 	return 'bb_ch'+str(channum)+'_inst'+str(instnum)
 
-def addfx(convproj_obj, inst_obj, fxgroupname, cvpj_instid, fxname, fxsubname):
+def addfx(cvpj_plugins, inst_obj, fxgroupname, cvpj_instid, fxname, fxsubname):
 	fx_pluginid = cvpj_instid+'_'+fxname
-	plugin_obj = convproj_obj.plugin__add(fx_pluginid, fxgroupname, fxname, fxsubname)
+	plugin_obj = cvpj_plugins.add(fxgroupname, fxname, fxsubname, fx_pluginid)
 	plugin_obj.role = 'fx'
 	inst_obj.plugslots.slots_audio.append(fx_pluginid)
 	return plugin_obj
 
 def add_eq_data(inst_obj, cvpj_instid, eqfiltbands):
-	plugin_obj = addfx(convproj_obj, inst_obj, 'universal', cvpj_instid, 'eq', 'bands')
+	plugin_obj = addfx(cvpj_plugins, inst_obj, 'universal', cvpj_instid, 'eq', 'bands')
 	plugin_obj.role = 'fx'
 	plugin_obj.visual.name = 'EQ'
 	for eqfiltdata in eqfiltbands:
@@ -171,15 +171,16 @@ def parse_notes(cvpj_notelist, channum, bb_notes, bb_instruments):
 					cvpj_notelist.last_add_auto('pitch', auto_pos, point['pitchBend'])
 
 def add_inst_fx(convproj_obj, inst_obj, bb_fx, cvpj_instid):
+	cvpj_plugins = convproj_obj.plugins
 
 	if 'chord type' in bb_fx.used:
 		if bb_fx.chord == 'arpeggio' and bb_fx.arpeggioSpeed:
-			nfx_plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'arpeggiator', None)
+			nfx_plugin_obj = cvpj_plugins.add_uni('arpeggiator', None)
 			nfx_plugin_obj.role = 'notefx'
 			nfx_plugin_obj.datavals.add('mode', 'sort')
 			timing_obj = nfx_plugin_obj.timing_add('main')
 			timing_obj.set_steps((1/4)/(bb_fx.arpeggioSpeed/12), convproj_obj)
-			inst_obj.plugslots.slots_notes.append(pluginid)
+			inst_obj.plugslots.slots_notes.append(cvpj_plugins.get_lastid())
 
 	if 'echo' in bb_fx.used:
 		from objects.inst_params import fx_delay
@@ -195,24 +196,24 @@ def add_inst_fx(convproj_obj, inst_obj, bb_fx, cvpj_instid):
 		inst_obj.plugslots.slots_audio.append(fx_pluginid)
 		
 	if 'distortion' in bb_fx.used:
-		fxplugin_obj = addfx(convproj_obj, inst_obj, 'simple', cvpj_instid, 'distortion', None)
+		fxplugin_obj = addfx(cvpj_plugins, inst_obj, 'simple', cvpj_instid, 'distortion', None)
 		fxplugin_obj.visual.name = 'Distortion'
 		fxplugin_obj.params.add_named('amount', bb_fx.distortion/100, 'float', 'Amount')
 	
 	if 'bitcrusher' in bb_fx.used:
-		fxplugin_obj = addfx(convproj_obj, inst_obj, 'universal', cvpj_instid, 'bitcrush', None)
+		fxplugin_obj = addfx(cvpj_plugins, inst_obj, 'universal', cvpj_instid, 'bitcrush', None)
 		fxplugin_obj.visual.name = 'Bitcrusher'
 		t_bits_val = round(xtramath.between_from_one(7, 0, bb_fx.bitcrusherQuantization/100))
 		fxplugin_obj.params.add('bits', 2**t_bits_val, 'float')
 		fxplugin_obj.params.add('freq', (bb_fx.bitcrusherOctave+1)*523.25, 'float')
 		
 	if 'chorus' in bb_fx.used:
-		fxplugin_obj = addfx(convproj_obj, inst_obj, 'simple', cvpj_instid, 'chorus', None)
+		fxplugin_obj = addfx(cvpj_plugins, inst_obj, 'simple', cvpj_instid, 'chorus', None)
 		fxplugin_obj.visual.name = 'Chorus'
 		fxplugin_obj.params.add_named('amount', bb_fx.chorus/100, 'float', 'Amount')
 		
 	if 'reverb' in bb_fx.used:
-		fxplugin_obj = addfx(convproj_obj, inst_obj, 'simple', cvpj_instid, 'reverb', None)
+		fxplugin_obj = addfx(cvpj_plugins, inst_obj, 'simple', cvpj_instid, 'reverb', None)
 		fxplugin_obj.visual.name = 'Reverb'
 		fxplugin_obj.fxdata_add(1, bb_fx.reverb/100)
 						
@@ -271,6 +272,7 @@ class input_jummbox(plugins.base):
 		cvpj_timemarkers = convproj_obj.timemarkers
 		#cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj params ----------
 		transpose_ignore = dawvert_intent.input_get_param('transpose_ignore', False)
@@ -319,7 +321,7 @@ class input_jummbox(plugins.base):
 					midifound = False
 
 					if preset:
-						plugin_obj = convproj_obj.plugin__addspec__midi_from_datapack(cvpj_instid, 'beepbox', 'preset', preset)
+						plugin_obj = cvpj_plugins.addspec_midi__datapack('beepbox', 'preset', preset, cvpj_instid)
 						if plugin_obj:
 							inst_obj.plugslots.set_synth(cvpj_instid)
 							plugin_obj.midi.to_visual(inst_obj.visual, False)
@@ -328,7 +330,7 @@ class input_jummbox(plugins.base):
 
 					if not midifound:
 						inst_obj.plugslots.set_synth(cvpj_instid)
-						plugin_obj = convproj_obj.plugin__add(cvpj_instid, 'native', 'jummbox', bb_inst.type)
+						plugin_obj = cvpj_plugins.add_native('jummbox', bb_inst.type, cvpj_instid)
 
 						bb_data = bb_inst.data
 

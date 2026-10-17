@@ -53,6 +53,7 @@ class input_onlinesequencer(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
 		cvpj_automation = convproj_obj.automation
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- convproj params ----------
 		groupby = dawvert_intent.input_get_param('groupby', 'instset')
@@ -138,7 +139,7 @@ class input_onlinesequencer(plugins.base):
 			track_obj.visual_inst = track_obj.visual.copy()
 
 			if trueinstid in [13,14,15,16]: 
-				plugin_obj = convproj_obj.plugin__add(trackid, 'universal', 'synth-osc', None)
+				plugin_obj = cvpj_plugins.add_uni('synth-osc', None, trackid)
 				plugin_obj.role = 'synth'
 				track_obj.plugslots.set_synth(trackid)
 				osc_data = plugin_obj.osc_add()
@@ -157,7 +158,7 @@ class input_onlinesequencer(plugins.base):
 			
 			elif trueinstid == 55:
 				s_synthdata = synthdata[instid]
-				plugin_obj = convproj_obj.plugin__add(trackid, 'universal', 'synth-osc', None)
+				plugin_obj = cvpj_plugins.add_uni('synth-osc', None, trackid)
 				plugin_obj.role = 'synth'
 				filter_obj = plugin_obj.filter
 				track_obj.plugslots.set_synth(trackid)
@@ -185,7 +186,7 @@ class input_onlinesequencer(plugins.base):
 				filter_obj.type.set(['low_pass','band_pass','high_pass'][s_synthdata.filter_type], None)
 
 			else:
-				plugin_obj = convproj_obj.plugin__add(trackid, 'native', 'onlineseq', 'instrument')
+				plugin_obj = cvpj_plugins.add_native('onlineseq', 'instrument', trackid)
 				plugin_obj.datavals.add('instrument', trueinstid)
 				plugin_obj.role = 'synth'
 				plugin_obj.midi_fallback__add_from_datapack('onlineseq', 'inst', str(trueinstid))
@@ -199,7 +200,7 @@ class input_onlinesequencer(plugins.base):
 	
 				if 'bitcrush' in s_used_fx:
 					pluginid = trackid+'_bitcrush'
-					plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'bitcrush', None)
+					plugin_obj = cvpj_plugins.add_uni('bitcrush', None, pluginid)
 					plugin_obj.role = 'fx'
 					plugin_obj.params.add('bits', i_params.bitcrush_depth, 'float')
 					track_obj.plugslots.slots_audio.append(pluginid)
@@ -216,7 +217,7 @@ class input_onlinesequencer(plugins.base):
 	
 				if 'distort' in s_used_fx:
 					pluginid = trackid+'_distort'
-					plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'onlineseq', 'distort')
+					plugin_obj = cvpj_plugins.add_native('onlineseq', 'distort', pluginid)
 					plugin_obj.role = 'fx'
 					plugin_obj.fxdata_add(True, i_params.distort_wet)
 					plugin_obj.params.add('distort_type', i_params.distort_type, 'int')
@@ -225,7 +226,7 @@ class input_onlinesequencer(plugins.base):
 	
 				if 'reverb' in s_used_fx:
 					pluginid = trackid+'_reverb'
-					plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'onlineseq', 'reverb')
+					plugin_obj = cvpj_plugins.add_native('onlineseq', 'reverb', pluginid)
 					plugin_obj.role = 'fx'
 					plugin_obj.fxdata_add(bool(i_params.reverb_on), i_params.reverb_wet)
 					plugin_obj.params.add('reverb_type', i_params.reverb_type, 'int')
@@ -234,7 +235,7 @@ class input_onlinesequencer(plugins.base):
 	
 				if 'eq' in s_used_fx:
 					pluginid = trackid+'_eq'
-					plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'onlineseq', 'eq')
+					plugin_obj = cvpj_plugins.add_native('onlineseq', 'eq', pluginid)
 					plugin_obj.role = 'fx'
 					plugin_obj.fxdata_add(bool(i_params.enable_eq), 1)
 					plugin_obj.params.add('eq_high', i_params.eq_high, 'float')

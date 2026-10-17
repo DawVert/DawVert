@@ -4,7 +4,6 @@
 from objects import colors
 from objects import globalstore
 import plugins
-import zipfile
 import os
 import logging
 
@@ -68,7 +67,7 @@ def add_sample(convproj_obj, as_cell, as_channum, num, samplefolder):
 		sampleref_obj = convproj_obj.sampleref__add(full_filename, full_filename, None)
 		return full_filename
 
-class input_audiosanua(plugins.base):
+class input_audiosauna(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
 	
@@ -108,6 +107,7 @@ class input_audiosanua(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
@@ -137,7 +137,7 @@ class input_audiosanua(plugins.base):
 		return_obj.visual.name = 'Tape Delay'
 		return_obj.params.add('vol', project_obj.dlyLevel/100, 'float')
 
-		plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'audiosauna', 'tape_delay')
+		plugin_obj = cvpj_plugins.add_native('audiosauna', 'tape_delay')
 		plugin_obj.role = 'effect'
 		plugin_obj.visual.name = 'Tape Delay'
 		timing_obj = plugin_obj.timing_add('main')
@@ -151,14 +151,14 @@ class input_audiosanua(plugins.base):
 		params_obj.add_named("feedback", project_obj.dlyFeed/100, 'float', "Feedback")
 		params_obj.add_named("width", project_obj.dlyWidth/100, 'float', "Width")
 		params_obj.add_named("sync", project_obj.dlySync, 'bool', "Sync")
-		return_obj.plugslots.slots_audio.append(pluginid)
+		return_obj.plugslots.slots_audio.append(cvpj_plugins.get_lastid())
 
 		# Reverb
 		return_obj = cvpj_master.fx__return__add('audiosauna_send_reverb')
 		return_obj.visual.name = 'Reverb'
 		return_obj.params.add('vol', project_obj.rvbLevel/100, 'float')
 
-		plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'audiosauna', 'reverb')
+		plugin_obj = cvpj_plugins.add_native('audiosauna', 'reverb')
 		plugin_obj.role = 'effect'
 		plugin_obj.visual.name = 'Reverb'
 		params_obj = plugin_obj.params
@@ -168,7 +168,7 @@ class input_audiosanua(plugins.base):
 		params_obj.add_named("tankmix", project_obj.rvbTankMix/100, 'float', 'TankMix')
 		params_obj.add_named("damp", project_obj.rvbDamp/100, 'float', 'Damp')
 		params_obj.add_named("lines", project_obj.rvbLines, 'float', 'Lines')
-		return_obj.plugslots.slots_audio.append(pluginid)
+		return_obj.plugslots.slots_audio.append(cvpj_plugins.get_lastid())
 
 		# ---------- tracks ----------
 		for as_channum, as_chan in project_obj.channels.items():
@@ -233,9 +233,9 @@ class input_audiosanua(plugins.base):
 
 					# plugin
 					if deviceType in [0, 1, 3, 4]:
-						plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'audiosauna', audiosanua_device_id[deviceType])
+						plugin_obj = cvpj_plugins.add_native('audiosauna', audiosanua_device_id[deviceType])
 						plugin_obj.role = 'synth'
-						track_obj.plugslots.set_synth(pluginid)
+						track_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 
 						if deviceType==3: deviceType = 1
 						if deviceType==4: deviceType = 2
@@ -279,9 +279,9 @@ class input_audiosanua(plugins.base):
 						cond3 = as_device.params['masterSustain']==0 if 'masterSustain' in as_device.params else False
 
 						if cond1 and cond2 and cond3:
-							plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'multi')
+							plugin_obj = cvpj_plugins.add_uni('sampler', 'multi')
 							plugin_obj.role = 'synth'
-							track_obj.plugslots.set_synth(pluginid)
+							track_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 		
 							for num, as_cell in as_device.samples.items():
 								sp_obj = plugin_obj.sampleregion_add(as_cell.loKey-60, as_cell.hiKey-60, as_cell.rootKey-60, None)
@@ -307,12 +307,12 @@ class input_audiosanua(plugins.base):
 
 							setasdr(plugin_obj, 'vol', as_device.params, False, 'masterAttack', 'masterDecay', 'masterRelease', 'masterSustain')
 						else:
-							plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'drums')
+							plugin_obj = cvpj_plugins.add_uni('sampler', 'drums')
 							plugin_obj.role = 'synth'
 							track_obj.is_drum = True
 							track_obj.is_multinote_drum = True
 
-							track_obj.plugslots.set_synth(pluginid)
+							track_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 
 							for num, as_cell in as_device.samples.items():
 								drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
@@ -328,27 +328,27 @@ class input_audiosanua(plugins.base):
 					modulate = float(getvalue(as_device.params, 'driveModul' if deviceType in [0,1] else 'modulate'))/100
 					overdrive = float(getvalue(as_device.params, 'overdrive'))/100
 					if modulate == overdrive == 0:
-						fx_plugin_obj, fx_pluginid = convproj_obj.plugin__add__genid('native', 'audiosauna', 'distortion')
+						fx_plugin_obj = cvpj_plugins.add_native('audiosauna', 'distortion')
 						fx_plugin_obj.role = 'effect'
 						fx_plugin_obj.visual.name = 'Distortion'
 						fx_plugin_obj.params.add_named("overdrive", overdrive, 'float', 'Overdrive')
 						fx_plugin_obj.params.add_named("modulate", modulate, 'float', 'Modulate')
-						track_obj.plugslots.slots_audio.append(fx_pluginid)
+						track_obj.plugslots.slots_audio.append(cvpj_plugins.get_lastid())
 
 					# bitcrush
 					bitrateval = float(getvalue(as_device.params, 'bitrate'))
 					if bitrateval != 0.0: 
-						fx_plugin_obj, fx_pluginid = convproj_obj.plugin__add__genid('universal', 'bitcrush', None)
+						fx_plugin_obj = cvpj_plugins.add_uni('bitcrush', None)
 						fx_plugin_obj.role = 'effect'
 						fx_plugin_obj.visual.name = 'Bitcrush'
 						fx_plugin_obj.params.add("bits", 16, 'float')
 						fx_plugin_obj.params.add("freq", 22050/bitrateval, 'float')
-						track_obj.plugslots.slots_audio.append(fx_pluginid)
+						track_obj.plugslots.slots_audio.append(cvpj_plugins.get_lastid())
 
 					# chorus
 					chorus_wet = float(getvalue(as_device.params, 'chorusMix' if as_device in [0,1] else 'chorusDryWet'))/100
 					if chorus_wet != 0:
-						fx_plugin_obj, fx_pluginid = convproj_obj.plugin__add__genid('native', 'audiosauna', 'chorus')
+						fx_plugin_obj = cvpj_plugins.add_native('audiosauna', 'chorus')
 						fx_plugin_obj.role = 'effect'
 						fx_plugin_obj.visual.name = 'Chorus'
 						chorus_size = float(getvalue(as_device.params, 'chorusLevel' if as_device in [0,1] else 'chorusSize'))/100
@@ -356,16 +356,17 @@ class input_audiosanua(plugins.base):
 						fx_plugin_obj.fxdata_add(True, chorus_wet)
 						fx_plugin_obj.params.add_named("speed", chorus_speed, 'float', 'Speed')
 						fx_plugin_obj.params.add_named("size", chorus_size, 'float', 'Size')
-						track_obj.plugslots.slots_audio.append(fx_pluginid)
+						track_obj.plugslots.slots_audio.append(cvpj_plugins.get_lastid())
 			
 					# amp
 					ampval = float(getvalue(as_device.params, 'masterAmp'))/100
 					if ampval != 1.0: 
-						fx_plugin_obj, fx_pluginid = convproj_obj.plugin__add__genid('universal', 'volpan', None)
+						fx_plugin_obj = cvpj_plugins.add_uni('volpan', None)
 						fx_plugin_obj.role = 'effect'
 						fx_plugin_obj.visual.name = 'Amp'
 						fx_plugin_obj.params.add_named("vol", ampval, 'float', 'Level')
 						fx_plugin_obj.fxdata_add(True, 1)
+						track_obj.plugslots.slots_audio.append(cvpj_plugins.get_lastid())
 			
 					plugin_obj.datavals.add('middlenote', int(getvalue(as_device.params, 'masterTranspose'))*-1)
 

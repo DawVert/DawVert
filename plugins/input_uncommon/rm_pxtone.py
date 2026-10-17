@@ -92,6 +92,7 @@ class input_pxtone(plugins.base):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_transport = convproj_obj.transport
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'rm'
@@ -123,6 +124,8 @@ class input_pxtone(plugins.base):
 		# ---------- voices ----------
 		for voicenum, voice_obj in project_obj.voices.items():
 			cvpj_instid = 'ptcop_'+str(voicenum)
+			cvpj_pluginid = 'plugin_'+str(voicenum)
+
 			inst_obj = cvpj_insts.add(cvpj_instid)
 			inst_obj.visual.name = voice_obj.name
 			#inst_obj.visual.color.set_int([0.14, 0.00, 0.29])
@@ -136,10 +139,10 @@ class input_pxtone(plugins.base):
 				if not os.path.exists(samplefolder): os.makedirs(samplefolder)
 				ogg_fileobj = open(ogg_path, 'wb')
 				ogg_fileobj.write(voice_obj.data)
-				plugin_obj, pluginid, sampleref_obj, samplepart_obj = convproj_obj.plugin__addspec__sampler__genid(ogg_path, None)
+				plugin_obj, sampleref_obj, samplepart_obj = cvpj_plugins.addspec_sampler(ogg_path, None, cvpj_pluginid)
 				plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, 0, 1)
 				samplepart_obj.interpolation = "linear" if 1 in voice_obj.sps2 else "none"
-				inst_obj.plugslots.set_synth(pluginid)
+				inst_obj.plugslots.set_synth(cvpj_pluginid)
 				inst_obj.datavals.add('middlenote', voice_obj.basic_key_field-60)
 
 			if isinstance(voice_obj, proj_pxtone.ptcop_voice_matePCM):
@@ -152,7 +155,7 @@ class input_pxtone(plugins.base):
 				audio_obj.pcm_from_bytes(voice_obj.data)
 				audio_obj.to_file_wav(wave_path)
 
-				plugin_obj, pluginid, sampleref_obj, samplepart_obj = convproj_obj.plugin__addspec__sampler__genid(wave_path, None)
+				plugin_obj, sampleref_obj, samplepart_obj = cvpj_plugins.addspec_sampler(wave_path, None, cvpj_pluginid)
 				sampleref_obj.set_fileformat('wav')
 				audio_obj.to_sampleref_obj(sampleref_obj)
 
@@ -162,7 +165,7 @@ class input_pxtone(plugins.base):
 					samplepart_obj.loop_start = 0
 					samplepart_obj.loop_end = len(voice_obj.data)
 					samplepart_obj.loop_active = True
-				inst_obj.plugslots.set_synth(pluginid)
+				inst_obj.plugslots.set_synth(cvpj_pluginid)
 				inst_obj.datavals.add('middlenote', voice_obj.basic_key_field-60)
 
 			if isinstance(voice_obj, proj_pxtone.ptcop_voice_matePTN):

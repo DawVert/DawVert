@@ -109,6 +109,7 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 	from objects.file_proj._waveform import sampler
 
 	cvpj_automation = convproj_obj.automation
+	cvpj_plugins = convproj_obj.plugins
 
 	pitch = None
 
@@ -133,7 +134,8 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 						if len(soundlayers) == 1:
 							firstlayer = soundlayers[0]
 							layerparams = firstlayer.soundparameters
-							plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'single')
+							plugin_obj = cvpj_plugins.add_uni('sampler', 'single')
+							pluginid = cvpj_plugins.get_lastid()
 							track_obj.plugslots.set_synth(pluginid)
 							sp_obj = plugin_obj.samplepart_add('sample')
 							if sp_obj.visual.name: track_obj.visual_inst.name = sp_obj.visual.name
@@ -150,7 +152,8 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 							track_obj.params.add('pitch', tune, 'float')
 	
 						elif len(soundlayers) > 1:
-							plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'multi')
+							plugin_obj = cvpj_plugins.add_uni('sampler', 'multi')
+							pluginid = cvpj_plugins.get_lastid()
 							playMode = program.playMode
 							if playMode == 0: plugin_obj.datavals.add('multi_mode', 'all')
 							if playMode == 1: plugin_obj.datavals.add('multi_mode', 'round_robin')
@@ -175,7 +178,8 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 				internal_vst = True
 				from objects import colors
 	
-				plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'drums')
+				plugin_obj = cvpj_plugins.add_uni('sampler', 'drums')
+				pluginid = cvpj_plugins.get_lastid()
 				track_obj.plugslots.set_synth(pluginid)
 	
 				if "state" in wf_plugin.params:
@@ -209,9 +213,10 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 			if vstname == 'SoundSynth':
 				try:
 					chunkdata = decodevst3_chunk(str(wf_plugin.params['state']))
-					plugin_obj, pluginid = convproj_obj.plugin__add__genid('external', 'vst3', None)
+					plugin_obj = cvpj_plugins.add_external('vst3', None)
 					plugin_obj.role = 'synth'
 					plugin_obj.fxdata_add(bool(wf_plugin.enabled), None)
+					pluginid = cvpj_plugins.get_lastid()
 					extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 					extmanu_obj.vst3__replace_data('name', 'Surge XT', chunkdata, None)
 					track_obj.plugin_autoplace(plugin_obj, pluginid)
@@ -232,6 +237,7 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 				juceobj.memoryblock = wf_plugin.params['state']
 				plugin_obj, pluginid = juceobj.to_cvpj(convproj_obj, None)
 				plugin_obj.fxdata_add(bool(wf_plugin.enabled), None)
+				pluginid = cvpj_plugins.get_lastid()
 				track_obj.plugin_autoplace(plugin_obj, pluginid)
 				if pluginid:
 					if wf_plugin.windowX and wf_plugin.windowY:
@@ -259,10 +265,11 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 						pass
 
 		elif plugtype not in ['volume', 'level'] and plugtype != '':
-			plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'tracktion', plugtype)
+			plugin_obj = cvpj_plugins.add_native('tracktion', plugtype)
 			plugin_obj.role = 'effect'
 			plugin_obj.fxdata_add(wf_plugin.enabled, None)
-	
+			pluginid = cvpj_plugins.get_lastid()
+
 			if wf_plugin.windowX and wf_plugin.windowY:
 				windata_obj = convproj_obj.viswindow__add(['plugin',pluginid])
 				windata_obj.pos_x = wf_plugin.windowX

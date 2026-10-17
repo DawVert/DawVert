@@ -65,13 +65,16 @@ def idsamp_spobj(it_samp, sp_obj):
 	if name: sp_obj.visual.name = name
 
 def add_single_sampler(convproj_obj, it_samp, sampleidnum):
+	cvpj_plugins = convproj_obj.plugins
+
 	filename = samplefolder+str(sampleidnum)+'.wav'
 
 	sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
 	sampleref_obj.set_dur_samples(it_samp.length)
 	sampleref_obj.set_hz(it_samp.C5_speed)
 	sampleref_obj.set_fileformat('wav')
-	plugin_obj, pluginid, sp_obj = convproj_obj.plugin__addspec__sampler__genid__s_obj(sampleref_obj, filename)
+	plugin_obj, sp_obj = cvpj_plugins.addspec_sampler__sampleref(filename)
+	pluginid = cvpj_plugins.get_lastid()
 
 	idsamp_spobj(it_samp, sp_obj)
 	sample_vibrato(it_samp, plugin_obj)
@@ -144,6 +147,9 @@ class input_it(plugins.base):
 				wave_path = samplefolder+str(n+1)+'.wav'
 				logger_input.info("IT: Ripping/Decompressing Sample #" + str(n))
 				sample.rip_sample(samplefolder, wave_path)
+
+		# ---------- convproj objects ----------
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- convproj init ----------
 		traits_obj = convproj_obj.traits
@@ -259,20 +265,20 @@ class input_it(plugins.base):
 								inst_obj.visual.name = project_obj.samples[int(bn_s_t_f[1])-1].dosfilename
 
 				if it_inst.pitch_pan_separation:
-					plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'pitch_pan_separation', None)
+					plugin_obj = cvpj_plugins.add_uni('pitch_pan_separation', None)
 					plugin_obj.params.add('range', 1/(it_inst.pitch_pan_separation/32), 'float')
 					plugin_obj.datavals.add('center_note', it_inst.pitch_pan_center)
-					inst_obj.plugslots.slots_notes.append(pluginid)
+					inst_obj.plugslots.slots_notes.append(cvpj_plugins.get_lastid())
 
 				if it_inst.randomvariation_volume:
-					plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'random_variation', 'vol')
+					plugin_obj = cvpj_plugins.add_uni('random_variation', 'vol')
 					plugin_obj.params.add('amount', it_inst.randomvariation_volume, 'float')
-					inst_obj.plugslots.slots_notes.append(pluginid)
+					inst_obj.plugslots.slots_notes.append(cvpj_plugins.get_lastid())
 
 				if it_inst.randomvariation_pan:
-					plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'random_variation', 'pan')
+					plugin_obj = cvpj_plugins.add_uni('random_variation', 'pan')
 					plugin_obj.params.add('amount', it_inst.randomvariation_pan, 'float')
-					inst_obj.plugslots.slots_notes.append(pluginid)
+					inst_obj.plugslots.slots_notes.append(cvpj_plugins.get_lastid())
 
 				inst_used = False
 				if bn_s_t_ifsame == True:
@@ -287,10 +293,10 @@ class input_it(plugins.base):
 					inst_used = True
 					sampleregions = data_values.list__to_reigons(bn_s_t, 60)
 
-					plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'sampler', 'multi')
+					plugin_obj = cvpj_plugins.add_uni('sampler', 'multi')
 					inst_obj.visual.color *= 1.25
 					plugin_obj.datavals.add('point_value_type', "samples")
-					inst_obj.plugslots.set_synth(synthid)
+					inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 
 					global_vol = it_inst.global_vol/128
 					track_volume = 0.3*global_vol

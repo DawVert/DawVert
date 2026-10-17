@@ -122,9 +122,10 @@ def add_auto(rpp_env, autopoints_obj):
 		rpp_env.points.append([x.pos, x.value])
 
 def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj, cvpj_automation):
-	plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
+	cvpj_plugins = convproj_obj.plugins
+	if pluginid in cvpj_plugins:
+		plugin_obj = cvpj_plugins[pluginid]
 
-	if plugin_found:
 		fx_on, fx_wet = plugin_obj.fxdata_get()
 
 		pitch = track_obj.params.get('pitch',0).value
@@ -426,6 +427,7 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 	from objects.file_proj._rpp import source as rpp_source
 
 	cvpj_automation = convproj_obj.automation
+	cvpj_plugins = convproj_obj.plugins
 
 	rpp_track_obj = rpp_project.add_track()
 	rpp_track_obj.trackid.set(track_uuid)
@@ -439,8 +441,8 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 	do_track_params(rpp_project, convproj_obj, rpp_track_obj, track_obj.params, track_obj.datavals, startauto)
 
 	for pluginid in track_obj.plugslots.slots_mixer:
-		plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
-		if plugin_found:
+		if pluginid in cvpj_plugins:
+			plugin_obj = cvpj_plugins[pluginid]
 			if plugin_obj.check_match('universal', 'invert', None):
 				inverse_on, _ = plugin_obj.fxdata_get()
 				rpp_track_obj.iphase.set(int(inverse_on))
@@ -449,8 +451,10 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 
 	middlenote = track_obj.datavals.get('middlenote', 0)
 
-	plugin_found, plugin_obj = convproj_obj.plugin__get(track_obj.plugslots.synth)
-	if plugin_found: middlenote += plugin_obj.datavals_global.get('middlenotefix', 0)
+	synth_plugid = track_obj.plugslots.synth
+	if synth_plugid in cvpj_plugins:
+		plugin_obj = cvpj_plugins[synth_plugid]
+		middlenote += plugin_obj.datavals_global.get('middlenotefix', 0)
 
 	rpp_track_obj.fxchain = rpp_fxchain.rpp_fxchain()
 

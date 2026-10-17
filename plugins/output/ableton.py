@@ -471,21 +471,21 @@ def add_plugindevice_native(als_track, convproj_obj, plugin_obj, pluginid):
 
 def do_effects(convproj_obj, als_track, fxslots_audio):
 	if not DEBUG_IGNORE_FX:
-		for plugid in fxslots_audio:
-
-			plugin_found, plugin_obj = convproj_obj.plugin__get(plugid)
-			if plugin_found:
+		cvpj_plugins = convproj_obj.plugins
+		for pluginid in fxslots_audio:
+			if pluginid in cvpj_plugins:
+				plugin_obj = cvpj_plugins[pluginid]
 
 				als_device = None
 
 				if plugin_obj.check_wildmatch('native', 'ableton', None):
-					als_device = add_plugindevice_native(als_track, convproj_obj, plugin_obj, plugid)
+					als_device = add_plugindevice_native(als_track, convproj_obj, plugin_obj, pluginid)
 
 				if plugin_obj.check_match('external', 'vst2', 'win'):
-					als_device = add_plugindevice_vst2(als_track, convproj_obj, plugin_obj, plugid)
+					als_device = add_plugindevice_vst2(als_track, convproj_obj, plugin_obj, pluginid)
 	
 				if plugin_obj.check_match('external', 'vst3', 'win'):
-					als_device = add_plugindevice_vst3(als_track, convproj_obj, plugin_obj, plugid)
+					als_device = add_plugindevice_vst3(als_track, convproj_obj, plugin_obj, pluginid)
 
 TIMESIGVALS = [1,2,4,8,16]
 
@@ -757,6 +757,7 @@ def add_track(convproj_obj, project_obj, trackid, track_obj):
 	track_color = track_obj.visual.color.closest_color_index_int(colordata, NOCOLORNUM)
 
 	cvpj_groups = convproj_obj.groups
+	cvpj_plugins = convproj_obj.plugins
 
 	groupnumid = None
 	if track_obj.group:
@@ -787,8 +788,9 @@ def add_track(convproj_obj, project_obj, trackid, track_obj):
 
 		#print('NEW TRACK', tracknumid, trackid, groupnumid)
 
-		plugin_found, plugin_obj = convproj_obj.plugin__get(track_obj.plugslots.synth)
-		if plugin_found:
+		synth_plugid = track_obj.plugslots.synth
+		if synth_plugid in cvpj_plugins:
+			plugin_obj = cvpj_plugins[synth_plugid]
 			issampler = plugin_obj.check_wildmatch('universal', 'sampler', None)
 		else:
 			issampler = False
@@ -938,19 +940,19 @@ def add_track(convproj_obj, project_obj, trackid, track_obj):
 				if middlenote != 0:
 					als_device_pitch = als_track.DeviceChain.add_device('MidiPitcher')
 					pitchparamkeys['Pitch'] = ableton_parampart.as_param('Pitch', 'int', -middlenote)
-				add_plugindevice_native(als_track, convproj_obj, plugin_obj, track_obj.plugslots.synth)
+				add_plugindevice_native(als_track, convproj_obj, plugin_obj, synth_plugid)
 
 			if plugin_obj.check_match('external', 'vst2', 'win'):
 				if middlenote != 0:
 					als_device_pitch = als_track.DeviceChain.add_device('MidiPitcher')
 					pitchparamkeys['Pitch'] = ableton_parampart.as_param('Pitch', 'int', -middlenote)
-				add_plugindevice_vst2(als_track, convproj_obj, plugin_obj, track_obj.plugslots.synth)
+				add_plugindevice_vst2(als_track, convproj_obj, plugin_obj, synth_plugid)
 
 			if plugin_obj.check_match('external', 'vst3', 'win'):
 				if middlenote != 0:
 					als_device_pitch = als_track.DeviceChain.add_device('MidiPitcher')
 					pitchparamkeys['Pitch'] = ableton_parampart.as_param('Pitch', 'int', -middlenote)
-				add_plugindevice_vst3(als_track, convproj_obj, plugin_obj, track_obj.plugslots.synth)
+				add_plugindevice_vst3(als_track, convproj_obj, plugin_obj, synth_plugid)
 
 			if plugin_obj.check_match('universal', 'sampler', 'drums'):
 				is_sampler = True

@@ -32,6 +32,9 @@ def addroute_audio(project_obj, in_source, in_dest):
 def maketrack_synth(project_obj, convproj_obj, track_obj, portnum):
 	global tracknum
 	global synthidnum
+
+	cvpj_plugins = convproj_obj.plugins
+
 	logger_output.info('MusE: Synth Track '+str(tracknum)+(': '+track_obj.visual.name if track_obj.visual.name else ''))
 	addroute_audio(project_obj, tracknum, 0)
 
@@ -52,8 +55,8 @@ def maketrack_synth(project_obj, convproj_obj, track_obj, portnum):
 
 	pluginsupported = False
 
-	plugin_found, plugin_obj = convproj_obj.plugin__get(track_obj.plugslots.synth)
-	if plugin_found: 
+	if pluginid in cvpj_plugins:
+		plugin_obj = cvpj_plugins[pluginid]
 		if plugin_obj.check_match('external', 'vst2', 'win'):
 			vstname = plugin_obj.external_info.name
 			vstbasename = plugin_obj.external_info.basename

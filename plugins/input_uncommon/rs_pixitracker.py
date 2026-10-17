@@ -48,6 +48,7 @@ class input_cvpj_f(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_plugins = convproj_obj.plugins
 
 		globalstore.datapack.load('pixitracker', './data/datapack/app/pixitracker.xml')
 		colordata = colors.colorset.from_datapack('pixitracker', 'inst', 'main')
@@ -57,6 +58,7 @@ class input_cvpj_f(plugins.base):
 
 		for instnum, pixi_sound in enumerate(project_obj.sounds):
 			cvpj_instid = 'pixi_'+str(instnum)
+			cvpj_pluginid = 'plug_'+str(instnum)
 
 			track_obj = cvpj_tracks.add(cvpj_instid, 'instrument', 1, False)
 			track_obj.visual.name = 'Inst #'+str(instnum+1)
@@ -74,10 +76,10 @@ class input_cvpj_f(plugins.base):
 			audio_obj.pcm_from_bytes(pixi_sound.data)
 			audio_obj.to_file_wav(wave_path)
 
-			plugin_obj, synthid, sampleref_obj, samplepart_obj = convproj_obj.plugin__addspec__sampler__genid(wave_path, None)
+			plugin_obj, sampleref_obj, samplepart_obj = cvpj_plugins.addspec_sampler(wave_path, None, cvpj_pluginid)
 			sampleref_obj.set_fileformat('wav')
 			audio_obj.to_sampleref_obj(sampleref_obj)
-			track_obj.plugslots.set_synth(synthid)
+			track_obj.plugslots.set_synth(cvpj_pluginid)
 
 			plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, 0, 1)
 			samplepart_obj.point_value_type = "samples"

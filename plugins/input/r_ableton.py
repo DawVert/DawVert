@@ -96,6 +96,8 @@ def do_automation(convproj_obj, AutomationEnvelopes):
 def do_devices(x_trackdevices, track_id, track_obj, convproj_obj, dawvert_intent, DEBUG_DISABLE_SAMPLER):
 	global vector_shapesdata
 
+	cvpj_plugins = convproj_obj.plugins
+
 	middlenote = 0
 	issampler = False
 
@@ -128,7 +130,7 @@ def do_devices(x_trackdevices, track_id, track_obj, convproj_obj, dawvert_intent
 					SamplePart = SampleParts.value[next(iter(SampleParts.value))]
 					smiddlenote = int(SamplePart.RootKey)-60
 					middlenote += smiddlenote
-					plugin_obj, sampleref_obj, sp_obj = convproj_obj.plugin__addspec__sampler(pluginid, None, None)
+					plugin_obj, sampleref_obj, sp_obj = cvpj_plugins.addspec_sampler(None, None, pluginid)
 					do_samplepart(convproj_obj, sp_obj, SamplePart, dawvert_intent)
 					if 'Player/Reverse' in parampaths: sp_obj.reverse = int(parampaths['Player/Reverse'])
 					sp_obj.vol = float(SamplePart.Volume)
@@ -136,7 +138,7 @@ def do_devices(x_trackdevices, track_id, track_obj, convproj_obj, dawvert_intent
 					sp_obj.scale = float(SamplePart.TuneScale)/100
 	
 				elif numzones>1:
-					plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'sampler', 'multi')
+					plugin_obj = cvpj_plugins.add_uni('sampler', 'multi', pluginid)
 					plugin_obj.role = 'synth'
 					for num, SamplePart in SampleParts.value.items():
 						key_r = [int(SamplePart.KeyRange.Min), int(SamplePart.KeyRange.Max)]
@@ -183,7 +185,7 @@ def do_devices(x_trackdevices, track_id, track_obj, convproj_obj, dawvert_intent
 				vst_flags = int(VstPluginInfo['Flags'])
 				binflags = data_bytes.get_bitnums_int(vst_flags)
 
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst2', 'win')
+				plugin_obj = cvpj_plugins.add_external('vst2', 'win', pluginid)
 				windata_obj = convproj_obj.viswindow__add(['plugin',pluginid])
 				windata_obj.pos_x = int(VstPluginInfo['WinPosX'])
 				windata_obj.pos_y = int(VstPluginInfo['WinPosY'])
@@ -263,7 +265,7 @@ def do_devices(x_trackdevices, track_id, track_obj, convproj_obj, dawvert_intent
 				vst_WinPosX = int(VstPluginInfo['WinPosX'])
 				vst_WinPosY = int(VstPluginInfo['WinPosY'])
 
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst3', 'win')
+				plugin_obj = cvpj_plugins.add_external('vst3', 'win', pluginid)
 				windata_obj = convproj_obj.viswindow__add(['plugin',pluginid])
 				windata_obj.pos_x = vst_WinPosX
 				windata_obj.pos_y = vst_WinPosY
@@ -308,7 +310,7 @@ def do_devices(x_trackdevices, track_id, track_obj, convproj_obj, dawvert_intent
 		else:
 			fldso = globalstore.datapack.get_obj('ableton', 'plugin', device.name)
 
-			plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'ableton', device.name)
+			plugin_obj = cvpj_plugins.add_native('ableton', device.name, pluginid)
 			plugin_obj.role = 'fx'
 
 			if fldso:

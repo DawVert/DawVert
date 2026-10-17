@@ -16,6 +16,61 @@ def utf16encode(text):
 	out_text = text if text != None else ''
 	return out_text.encode('utf-16le') + b'\x00\x00'
 
+class flp_patterns:
+	def __init__(self):
+		self.data = {}
+		self.data[0] = objs.flp_pattern()
+
+	def __getitem__(self, k): return self.data.__getitem__(k)
+
+	def iter(self):
+		for num in range(len(self.data)):
+			if num in self.data: yield num, self.data[num]
+
+class flp_channels:
+	def __init__(self): self.data = {}
+
+	def __getitem__(self, k): return self.data.__getitem__(k)
+
+	def iter(self):
+		for num in range(len(self.data)):
+			if num in self.data: yield num, self.data[num]
+
+class flp_mixer:
+	def __init__(self): self.data = {}
+
+	def __getitem__(self, k): return self.data.__getitem__(k)
+
+	def setup_num(self, n): 
+		self.data = {}
+		for fxnum in range(n): self.data[fxnum] = flp_fxchan(fxnum)
+
+	def iter(self):
+		for num in range(len(self.data)):
+			if num in self.data: yield num, self.data[num]
+
+class flp_arrangements:
+	def __init__(self):
+		self.data = {}
+		self.data[0] = arrangement.flp_arrangement(500)
+
+	def __getitem__(self, k): return self.data.__getitem__(k)
+
+	def iter(self):
+		for num in range(len(self.data)):
+			if num in self.data: yield num, self.data[num]
+
+class flp_metadata:
+	def __init__(self):
+		self.title = ''
+		self.genre = ''
+		self.author = ''
+		self.comment = ''
+		self.comment_rtf = ''
+		self.url = ''
+		self.showinfo = 0
+		self.projecttime = None
+
 class flp_channel:
 	def __init__(self):
 		self.type = 0
@@ -62,8 +117,6 @@ class flp_channel:
 		tlvw.out(  64, channum)
 		tlvw.out(  21, self.type)
 		self.plugin.make_tlv(tlvw)
-		tlvw.str8(192, plugin.name)
-		tlvw.out( 128, plugin.color)
 		tlvw.out(   0, self.enabled)
 		tlvw.out( 209, self.delay.write() )
 		if self.ts404params: tlvw.out( 210, self.ts404params )
@@ -98,6 +151,8 @@ class flp_channel:
 		tlvw.out(  20, self.looptype)
 		if self.middlenote!=60: tlvw.out( 135, self.middlenote)
 		if self.samplefilename: tlvw.str8(196, self.samplefilename)
+		tlvw.str8(192, plugin.name)
+		tlvw.out( 128, plugin.color)
 
 class flp_plugin:
 	__slots__ = ['plugname', 'params', 'chunk', 'icon', 'color', 'name']
@@ -191,8 +246,7 @@ class flp_current_state:
 		self.fx_icon = None
 		self.fx_name = None
 	def fxchan_inchannum(self, event_data): self.fx_obj.inchannum = event_data
-	def fxchan_outchannum(self, event_data): 
-		print(self.fx_num)
+	def fxchan_outchannum(self, event_data):
 		if self.fx_make_mode==0:
 			self.fxchan_create()
 			self.fx_obj.name = self.fx_name
@@ -404,11 +458,15 @@ class flp_pattern:
 	def make_tlv(self, tlvw, patnum):
 		outauto = self.automation.make()
 		outnotes = self.notes.make_old()
-		if outauto or outnotes or self.name:
+		if outauto or outnotes:
 			tlvw.out(65, patnum)
-			if self.name: tlvw.str8(193, self.name)
 			if outauto: tlvw.out(223, outauto)
 			if outnotes: tlvw.out(224, outnotes)
+
+	def make_tlv_name(self, tlvw, patnum):
+		if self.name:
+			tlvw.out(65, patnum)
+			tlvw.str8(193, self.name)
 
 	def make_tlv_dots(self, tlvw, patnum, channum):
 		if channum in self.dots:

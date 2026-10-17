@@ -127,6 +127,7 @@ class inst_manager():
 
 	def add_inst(convproj_obj, instid, project_obj, maindata_obj):
 		cvpj_insts = convproj_obj.instruments
+		cvpj_plugins = convproj_obj.plugins
 
 		inst_obj = cvpj_insts.add(instid)
 		inst_obj.visual.from_datapack('notessimo_v3', 'inst', instid, True)
@@ -156,14 +157,14 @@ class inst_manager():
 			sampleids = [d.sample_1 for _, d in notet_inst.sets.items() if d.sample_1]
 
 			if sampleids:
-				plugin_obj = convproj_obj.plugin__add(instid, 'universal', 'sampler', 'multi')
+				plugin_obj = cvpj_plugins.add_uni('sampler', 'multi', instid)
 				plugin_obj.role = 'synth'
 
 				for setnum, set_data in notet_inst.sets.items():
 					inst_manager.proc_inst(convproj_obj, plugin_obj, instid, set_data, notet_data, notet_inst)
 
 			elif notet_inst.sample:
-				plugin_obj = convproj_obj.plugin__add(instid, 'universal', 'sampler', 'single')
+				plugin_obj = cvpj_plugins.add_uni('sampler', 'single', instid)
 				plugin_obj.role = 'synth'
 
 				sampleid, notet_sample, samplekey, sampleref_obj = sample_manager.add_sample(notet_data, convproj_obj, notet_inst.sample)
@@ -189,7 +190,7 @@ class inst_manager():
 						inst_obj.params.add('pan', notet_sample.pan, 'float')
 
 			else:
-				plugin_obj = convproj_obj.plugin__add(instid, 'universal', 'midi', None)
+				plugin_obj = cvpj_plugins.add_uni('midi', None, instid)
 				plugin_obj.midi.from_datapack('notessimo_v3', 'inst', instid)
 				plugin_obj.midi.to_visual(inst_obj.visual, False)
 
@@ -202,7 +203,7 @@ class inst_manager():
 
 			if notet_inst.biquad_active != '0':
 				fx_id = instid+'_filter'
-				plugin_obj = convproj_obj.plugin__add(fx_id, 'universal', 'filter', 'single')
+				plugin_obj = cvpj_plugins.add_uni('filter', 'single', fx_id)
 				plugin_obj.role = 'fx'
 				plugin_obj.filter.on = True
 				if notet_inst.biquad=='Low Pass': plugin_obj.filter.type.set('low_pass', None)

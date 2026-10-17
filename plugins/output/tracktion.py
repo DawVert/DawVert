@@ -149,10 +149,11 @@ def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, 
 	from functions.juce import juce_memoryblock
 
 	cvpj_automation = convproj_obj.automation
+	cvpj_plugins = convproj_obj.plugins
 	
-	plugin_found, plugin_obj = convproj_obj.plugin__get(cvpj_fxid)
+	if cvpj_fxid in cvpj_plugins: 
+		plugin_obj = cvpj_plugins[cvpj_fxid]
 
-	if plugin_found: 
 		fx_on, fx_wet = plugin_obj.fxdata_get()
 
 		if plugin_obj.check_wildmatch('universal', 'sampler', None):
@@ -478,6 +479,7 @@ class output_tracktion_edit(plugins.base):
 		cvpj_groups = convproj_obj.groups
 		cvpj_automation = convproj_obj.automation
 		cvpj_transport = convproj_obj.transport
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- project ----------
 		mainp_obj = proj_tracktion_project.tracktion_project()
@@ -609,8 +611,10 @@ class output_tracktion_edit(plugins.base):
 			
 			middlenote = track_obj.datavals.get('middlenote', 0)
 
-			plugin_found, plugin_obj = convproj_obj.plugin__get(track_obj.plugslots.synth)
-			if plugin_found: middlenote += plugin_obj.datavals_global.get('middlenotefix', 0)
+			synth_plugid = track_obj.plugslots.synth
+			if synth_plugid in cvpj_plugins: 
+				plugin_obj = cvpj_plugins[synth_plugid]
+				middlenote += plugin_obj.datavals_global.get('middlenotefix', 0)
 
 			if middlenote != 0:
 				wf_plugin = proj_tracktion_edit.tracktion_plugin()

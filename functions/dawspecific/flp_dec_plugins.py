@@ -144,7 +144,9 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 	ebrw_readstr.load_data(flplugin.params if flplugin.params else b'')
 	flplugin.name = flplugin.name.lower()
 
-	plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'flstudio', flplugin.name)
+	cvpj_plugins = convproj_obj.plugins
+
+	plugin_obj = cvpj_plugins.add_native('flstudio', flplugin.name, pluginid)
 
 	plugchunkdata = flplugin.chunk
 

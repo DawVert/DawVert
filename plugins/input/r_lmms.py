@@ -201,13 +201,16 @@ def asdflfo(plugin_obj, elenv, asdrtype):
 	lfo_obj.retrigger = False
 
 def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
+	cvpj_plugins = convproj_obj.plugins
+
 	out_color = None
 	pluginid = ''
 
 	plugin_obj = None
 
 	if pluginname == "sf2player":
-		plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'soundfont2', None)
+		plugin_obj = cvpj_plugins.add_uni('soundfont2', None)
+		pluginid = cvpj_plugins.get_lastid()
 		plugin_obj.role = 'synth'
 		bank = int(lmms_plugin.get_param('bank', 0))
 		patch = int(lmms_plugin.get_param('patch', 0))
@@ -227,7 +230,8 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 
 	elif pluginname == "audiofileprocessor":
 		filepath = get_sample(str(lmms_plugin.get_param('src', '')))
-		plugin_obj, pluginid, sampleref_obj, sp_obj = convproj_obj.plugin__addspec__sampler__genid(filepath, None)
+		plugin_obj, sampleref_obj, sp_obj = cvpj_plugins.addspec_sampler(filepath, None)
+		pluginid = cvpj_plugins.get_lastid()
 		lmms_interpolation = int(lmms_plugin.get_param('interp', 0))
 
 		looped = int(lmms_plugin.get_param('looped', 0))
@@ -249,12 +253,14 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 		if lmms_interpolation == 2: sp_obj.interpolation = "sinc"
 
 	elif pluginname == "vestige":
-		plugin_obj, pluginid = convproj_obj.plugin__add__genid('external', 'vst2', 'win')
+		plugin_obj = cvpj_plugins.add_external('vst2', 'win')
+		pluginid = cvpj_plugins.get_lastid()
 		plugin_obj.role = 'synth'
 		getvstparams(convproj_obj, plugin_obj, pluginid, lmms_plugin)
 
 	elif pluginname == "sid":
-		plugin_obj, pluginid = convproj_obj.plugin__add__genid(None, None, None)
+		plugin_obj = cvpj_plugins.add(None, None, None)
+		pluginid = cvpj_plugins.get_lastid()
 		sid_obj = chip_sid.sid_inst()
 
 		sid_obj.filter_cutoff = int(lmms_plugin.get_param('filterFC', 0))
@@ -308,13 +314,15 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 			op_obj.vibrato = bool(lmms_plugin.get_param(optxt+'vib', 0))
 			op_obj.waveform = lmms_plugin.get_param(optxt+'waveform', 0)
 
-		plugin_obj = opl_obj.to_cvpj(convproj_obj, pluginid)
+		plugin_obj = opl_obj.to_cvpj(convproj_obj, None)
+		pluginid = cvpj_plugins.get_lastid()
 
 	else:
 		if pluginname == 'freeboy': pluginname = 'papu'
 
-		plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'lmms', pluginname)
+		plugin_obj = cvpj_plugins.add_native('lmms', pluginname)
 		plugin_obj.role = 'synth'
+		pluginid = cvpj_plugins.get_lastid()
 		dset_plugparams(pluginname, pluginid, lmms_plugin, plugin_obj)
 
 		if pluginname == "papu":
@@ -376,8 +384,9 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 					sp_obj.sampleid = sampleid
 
 		if pluginname == "slicert":
-			plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'slicer')
+			plugin_obj = cvpj_plugins.add_uni('sampler', 'slicer')
 			plugin_obj.role = 'synth'
+			pluginid = cvpj_plugins.get_lastid()
 
 			filepath = lmms_plugin.get_param('src', '').value
 			sampleref_obj = convproj_obj.sampleref__add(filepath, filepath, None)
@@ -414,17 +423,20 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 	return plugin_obj.visual.color, pluginid, plugin_obj
 
 def lmms_decode_effectslot(convproj_obj, lmms_effect):
+	cvpj_plugins = convproj_obj.plugins
 
 	lmms_plugin = lmms_effect.plugin
 
 	if lmms_effect.name == 'vsteffect':
-		plugin_obj, pluginid = convproj_obj.plugin__add__genid('external', 'vst2', 'win')
+		plugin_obj = cvpj_plugins.add_external('vst2', 'win')
 		plugin_obj.role = 'effect'
+		pluginid = cvpj_plugins.get_lastid()
 		getvstparams(convproj_obj, plugin_obj, pluginid, lmms_plugin)
 
 	elif lmms_effect.name == 'ladspaeffect':
-		plugin_obj, pluginid = convproj_obj.plugin__add__genid('external', 'ladspa', None)
+		plugin_obj = cvpj_plugins.add_external('ladspa', None)
 		plugin_obj.role = 'effect'
+		pluginid = cvpj_plugins.get_lastid()
 		external_info = plugin_obj.external_info
 		external_info.plugtype = 'ladspa'
 		external_info.datatype = 'param'
@@ -450,8 +462,9 @@ def lmms_decode_effectslot(convproj_obj, lmms_effect):
 				plugin_obj.params.add(paramid, paramval, 'float')
 
 	else:
-		plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'lmms', lmms_effect.name)
+		plugin_obj = cvpj_plugins.add_native('lmms', lmms_effect.name)
 		plugin_obj.role = 'effect'
+		pluginid = cvpj_plugins.get_lastid()
 		dset_plugparams(lmms_effect.name, pluginid, lmms_plugin, plugin_obj)
 
 	fxenabled = doparam(lmms_effect.on, 'bool', None, ['slot', pluginid, 'enabled'])
@@ -482,6 +495,7 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 
 	cvpj_tracks = convproj_obj.tracks
 	cvpj_automation = convproj_obj.automation
+	cvpj_plugins = convproj_obj.plugins
 
 	numbb = 0
 
@@ -574,9 +588,10 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 
 			# ------------------------------- arpeggiator -------------------------------
 			arpeggiator_obj = insttr_obj.arpeggiator
-			nfx_plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'arpeggiator', None)
+			nfx_plugin_obj = cvpj_plugins.add_uni('arpeggiator', None)
 			nfx_plugin_obj.role = 'notefx'
 			nfx_plugin_obj.fxdata_add(bool(arpeggiator_obj.arp_enabled), None)
+			pluginid = cvpj_plugins.get_lastid()
 			doparam(arpeggiator_obj.arp_enabled, 'bool', None, ['slot', pluginid, 'enabled'])
 
 			is_steps, timeval = get_timedata(arpeggiator_obj.arptime)
@@ -602,9 +617,10 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 			# ------------------------------- chordcreator -------------------------------
 			chordcreator_obj = insttr_obj.chordcreator
 	
-			nfx_plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'chord_creator', None)
+			nfx_plugin_obj = cvpj_plugins.add_uni('chord_creator', None)
 			nfx_plugin_obj.role = 'notefx'
 			nfx_plugin_obj.fxdata_add(bool(chordcreator_obj.chord_enabled), None)
+			pluginid = cvpj_plugins.get_lastid()
 			doparam(chordcreator_obj.chord_enabled, 'bool', None, ['slot', pluginid, 'enabled'])
 
 			chord_obj = nfx_plugin_obj.chord_add('main')

@@ -51,6 +51,7 @@ class mariopaint_song():
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_timemarkers = convproj_obj.timemarkers
+		cvpj_plugins = convproj_obj.plugins
 	
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'rm'
@@ -106,7 +107,7 @@ class mariopaint_song():
 			inst_obj.fxrack_channel = instnum+1
 			inst_obj.plugslots.set_synth(instname)
 
-			plugin_obj = convproj_obj.plugin__add(instname, 'universal', 'mariopaint', None)
+			plugin_obj = cvpj_plugins.add_native('mariopaint', None, instname)
 			plugin_obj.midi_fallback__add_from_datapack('mariopaint', 'inst', instname)
 
 			fxchan_data = fxrack_obj.add(instnum+1)

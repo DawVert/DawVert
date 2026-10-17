@@ -96,6 +96,7 @@ class input_greysound(plugins.base):
 		cvpj_timemarkers = convproj_obj.timemarkers
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -250,7 +251,7 @@ class input_greysound(plugins.base):
 				fxdata = slots[slotnum]
 				fxid = 'fx_%i_%s' % (trackid, slotnum)
 				pluginname = fxdata.pluginType.lower()
-				plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'greysound', fxdata.pluginType.lower())
+				plugin_obj = cvpj_plugins.add_native('greysound', fxdata.pluginType.lower(), fxid)
 				plugin_obj.fxdata_add(not fxdata.bypassed, 1)
 				plugin_obj.role = 'effect'
 

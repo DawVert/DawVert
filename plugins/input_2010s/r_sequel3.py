@@ -99,6 +99,7 @@ native_names['E97A6873690F40E986F3EE1007B5C8FC'] = 'tremolo'
 native_names['FDD7243578EF434A833705ECC4E4CE46'] = 'flanger'
 
 def do_plugin(plugslots, slot, convproj_obj, issynth):
+	cvpj_plugins = convproj_obj.plugins
 	if 'State' in slot:
 		if slot['State']:
 			PluginisA = str(slot['Plugin isA'])
@@ -114,7 +115,7 @@ def do_plugin(plugslots, slot, convproj_obj, issynth):
 						if guid in native_names:
 							plugname = native_names[guid]
 
-							plugin_obj = convproj_obj.plugin__add(IDString, 'native', 'sequel', plugname)
+							plugin_obj = cvpj_plugins.add_native('sequel', plugname, IDString)
 
 							ebrw_readstr = easybinrw.binread()
 							ebrw_readstr.load_data(plugin['audioComponent'])
@@ -134,7 +135,7 @@ def do_plugin(plugslots, slot, convproj_obj, issynth):
 								plugin_obj.params.add(param_id, paramval, 'float')
 
 						else:
-							plugin_obj = convproj_obj.plugin__add(IDString, 'external', 'vst3', None)
+							plugin_obj = cvpj_plugins.add_external('vst3', None, IDString)
 							extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, IDString)
 							plugin_obj.external_info.name = plugin['Plugin Name']
 							extmanu_obj.vst3__replace_data('id', guid, plugin['audioComponent'], None)
@@ -223,6 +224,7 @@ class input_sequel3(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'

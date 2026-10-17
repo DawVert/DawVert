@@ -471,11 +471,12 @@ def add_device_param_from_paramobj(convproj_obj, lane_obj, plugin_obj, pluginid,
 		from_cvpj_auto(convproj_obj.automation, lane_obj.points, ['plugin', pluginid, name], 'float', dp_param_id, None)
 
 def do_device(convproj_obj, dp_channel, lane_obj, pluginid, role):
-	plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
-
 	cvpj_automation = convproj_obj.automation
+	cvpj_plugins = convproj_obj.plugins
 
-	if plugin_found:
+	if pluginid in cvpj_plugins:
+		plugin_obj = cvpj_plugins[pluginid]
+
 		dp_device = None
 
 		if plugin_obj.check_match('universal', 'compressor', None):

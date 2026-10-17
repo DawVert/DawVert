@@ -56,6 +56,7 @@ class input_sop(plugins.base):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = convproj_obj.automation
 		cvpj_metadata = convproj_obj.metadata
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(project_obj.tickBeat)

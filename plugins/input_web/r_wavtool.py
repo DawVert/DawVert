@@ -34,6 +34,8 @@ def do_track_params(params_obj, wavtool_track):
 
 def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 	from objects.inst_params import fx_delay
+	cvpj_plugins = convproj_obj.plugins
+
 	if trackid in devices_obj.tracks:
 		device_track = devices_obj.tracks[trackid]
 
@@ -60,7 +62,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 
 				# wavetable
 				if devicedata.sourceId == 'df142a04-31c6-4495-a8a4-c49f8429d557':
-					plugin_obj = convproj_obj.plugin__add(deviceid, 'native', 'wavtool', 'wavetable')
+					plugin_obj = cvpj_plugins.add_native('wavtool', 'wavetable', deviceid)
 					instrument_dev = deviceid
 					instrument_dev_data = devicedata
 					wavetableA = base64.b64decode(constantsdata["wavetableA"]) if "wavetableA" in constantsdata else None
@@ -115,7 +117,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					inst_fallback = deviceid
 
 				elif devicedata.sourceId == 'd694ef91-e624-404d-8e34-829d9c1c04b3':
-					plugin_obj = convproj_obj.plugin__add(deviceid, 'universal', 'synth-osc', None)
+					plugin_obj = cvpj_plugins.add_uni('synth-osc', None, deviceid)
 					inst_fallback = deviceid
 					instrument_dev = deviceid
 					instrument_dev_data = devicedata
@@ -131,7 +133,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					plugin_obj.env_asdr_add('vol', 0, attack, 0, decay, sustain, release, 1)
 
 				elif devicedata.sourceId == 'c2fc1730-9cc9-4643-bb54-9435a920c927':
-					plugin_obj = convproj_obj.plugin__add(deviceid, 'universal', 'sampler', 'drums')
+					plugin_obj = cvpj_plugins.add_uni('sampler', 'drums', deviceid)
 					inst_fallback = deviceid
 					plugin_obj.role = 'synth'
 					instrument_dev = deviceid
@@ -173,7 +175,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					if 'sample1All' in constantsdata:
 						bufferid = constantsdata['sample1All']
 						wave_path = extract_audio(bufferid)
-						plugin_obj, sampleref_obj, sp_obj = convproj_obj.plugin__addspec__sampler(deviceid, wave_path, None, sampleid=bufferid)
+						plugin_obj, sampleref_obj, sp_obj = cvpj_plugins.addspec_sampler(wave_path, None, deviceid, sampleid=bufferid)
 						instrument_dev = deviceid
 						instrument_dev_data = devicedata
 
@@ -187,7 +189,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 						track_obj.datavals.add('middlenote', constantsdata["sample1Pitch"]-60 if "sample1Pitch" in constantsdata else 0)
 						
 				elif devicedata.sourceId == '84345e98-f3a7-43b2-b2f2-61bf7c475248':
-					plugin_obj = convproj_obj.plugin__add(deviceid, 'universal', 'sampler', 'multi')
+					plugin_obj = cvpj_plugins.add_uni('sampler', 'multi', deviceid)
 					inst_fallback = deviceid
 
 					attack = inputdata["attack"]/48000 if "attack" in inputdata else 0.001
@@ -230,7 +232,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 									sp_obj.sampleref = bufferid
 
 				elif devicedata.sourceId == 'bc24f717-88d0-4a99-b0ac-b61d4281c7c3':
-					plugin_obj = convproj_obj.plugin__add(deviceid, 'universal', 'limiter', None)
+					plugin_obj = cvpj_plugins.add_uni('limiter', None, deviceid)
 					plugin_obj.role = 'effect'
 					plugin_obj.params.add('attack', 0.05, 'float')
 					plugin_obj.params.add('release', inputdata['release']/48000 if 'release' in inputdata else 0.3, 'float')
@@ -238,13 +240,13 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					effects.append(deviceid)
 
 				elif devicedata.sourceId == '50413fcd-de89-4db3-a308-095102c24f81':
-					plugin_obj = convproj_obj.plugin__add(deviceid, 'universal', 'clipper', None)
+					plugin_obj = cvpj_plugins.add_uni('clipper', None, deviceid)
 					plugin_obj.role = 'effect'
 					plugin_obj.params.add('pregain', inputdata['gain'] if 'gain' in inputdata else 0, 'float')
 					effects.append(deviceid)
 
 				elif devicedata.sourceId == 'ad949dc9-c921-429d-b08e-c62eaae5e382':
-					plugin_obj = convproj_obj.plugin__add(deviceid, 'universal', 'compressor', None)
+					plugin_obj = cvpj_plugins.add_uni('compressor', None, deviceid)
 					plugin_obj.role = 'effect'
 					plugin_obj.params.add('attack', inputdata['attack']/48000 if 'attack' in inputdata else 0.001, 'float')
 					plugin_obj.params.add('release', inputdata['release']/48000 if 'release' in inputdata else 0.03, 'float')
@@ -254,7 +256,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					effects.append(deviceid)
 
 				elif devicedata.sourceId == 'e0665a05-221d-42c6-9ff6-2ece5c20f80c':
-					plugin_obj = convproj_obj.plugin__add(deviceid, 'universal', 'gate', None)
+					plugin_obj = cvpj_plugins.add_uni('gate', None, deviceid)
 					plugin_obj.role = 'effect'
 					plugin_obj.params.add('attack', inputdata['attack']/48000 if 'attack' in inputdata else 0.0001, 'float')
 					plugin_obj.params.add('release', inputdata['release']/48000 if 'release' in inputdata else 0.015, 'float')
@@ -264,7 +266,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					effects.append(deviceid)
 
 				elif devicedata.sourceId == 'c70556bf-0ba7-4283-a3cc-f2722ee390ec':
-					plugin_obj = convproj_obj.plugin__add(deviceid, 'universal', 'reverb', None)
+					plugin_obj = cvpj_plugins.add_uni('reverb', None, deviceid)
 					plugin_obj.role = 'effect'
 					plugin_obj.fxdata_add(1, inputdata['mix'] if 'mix' in inputdata else 1)
 					plugin_obj.params.add('wet', 1, 'float')
@@ -272,7 +274,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					effects.append(deviceid)
 
 				elif devicedata.sourceId == '3e2e3ece-476a-42f9-b740-7da8f5e37cc8':
-					plugin_obj = convproj_obj.plugin__add(deviceid, 'universal', 'convolver', None)
+					plugin_obj = cvpj_plugins.add_uni('convolver', None, deviceid)
 					plugin_obj.role = 'effect'
 					plugin_obj.fxdata_add(1, inputdata['mix'] if 'mix' in inputdata else 1)
 					bufferid = constantsdata['impulseResponse'] if 'impulseResponse' in constantsdata else None
@@ -304,21 +306,21 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					effects.append(deviceid)
 
 				elif devicedata.sourceId == '833b0ed8-575a-4dec-baa0-8d8ef7910aca':
-					plugin_obj = convproj_obj.plugin__add(deviceid, 'native', 'wavtool', 'Overdrive125')
+					plugin_obj = cvpj_plugins.add_native('wavtool', 'Overdrive125', deviceid)
 					plugin_obj.role = 'effect'
 					plugin_obj.params.add('pre', inputdata['pre'] if 'pre' in inputdata else 0, 'float')
 					plugin_obj.params.add('post', inputdata['post'] if 'post' in inputdata else 0, 'float')
 					effects.append(deviceid)
 
 				elif devicedata.sourceId == 'b64cf1c9-db3b-4031-9325-2a933f9893c2':
-					plugin_obj = convproj_obj.plugin__add(deviceid, 'universal', 'bitcrush', None)
+					plugin_obj = cvpj_plugins.add_uni('bitcrush', None, deviceid)
 					plugin_obj.role = 'effect'
 					plugin_obj.params.add('bits', inputdata['bitDepth'] if 'bitDepth' in inputdata else 6, 'float')
 					plugin_obj.params.add('freq', inputdata['targetSampleRate'] if 'targetSampleRate' in inputdata else 8000, 'float')
 					effects.append(deviceid)
 
 				elif devicedata.sourceId == '95c16c68-cd38-4459-8616-d0c1364650ac':
-					plugin_obj = convproj_obj.plugin__add(deviceid, 'universal', 'flanger', None)
+					plugin_obj = cvpj_plugins.add_uni('flanger', None, deviceid)
 					plugin_obj.role = 'effect'
 
 					lfoAmount = inputdata['lfoAmount'] if 'lfoAmount' in inputdata else 7.5

@@ -8,6 +8,9 @@ import plugins
 FX_NAMES = ['delay','chorus','reverb','distortion','low_boost','compressor','high_pass']
 
 def add_master_fx(convproj_obj, fx_type, fx_value):
+	fx_id = 'master-effect'
+	cvpj_plugins = convproj_obj.plugins
+
 	if fx_type == 0: #delay
 		from objects.inst_params import fx_delay
 		delay_obj = fx_delay.fx_delay()
@@ -15,27 +18,27 @@ def add_master_fx(convproj_obj, fx_type, fx_value):
 		delay_obj.feedback[0] = 0.1
 		timing_obj = delay_obj.timing_add(0)
 		timing_obj.set_seconds(((300*fx_value)/100)/1000)
-		plugin_obj, pluginid = delay_obj.to_cvpj(convproj_obj, 'master-effect')
+		plugin_obj, pluginid = delay_obj.to_cvpj(convproj_obj, fx_id)
 		plugin_obj.fxdata_add(1, 0.5)
 
 	elif fx_type == 1: #chorus
-		plugin_obj = convproj_obj.plugin__add('master-effect', 'simple', 'chorus', None)
+		plugin_obj = cvpj_plugins.add_simple('chorus', None, fx_id)
 		plugin_obj.params.add('amount', fx_value/100, 'float')
 
 	elif fx_type == 2: #reverb
-		plugin_obj = convproj_obj.plugin__add('master-effect', 'simple', 'reverb', None)
+		plugin_obj = cvpj_plugins.add_simple('reverb', None, fx_id)
 		plugin_obj.fxdata_add(1, (0.3)*(fx_value/100))
 
 	elif fx_type == 3: #distortion
-		plugin_obj = convproj_obj.plugin__add('master-effect', 'simple', 'distortion', None)
+		plugin_obj = cvpj_plugins.add_simple('distortion', None, fx_id)
 		plugin_obj.params.add('amount', fx_value/100, 'float')
 
 	elif fx_type == 4: #low_boost
-		plugin_obj = convproj_obj.plugin__add('master-effect', 'simple', 'bassboost', None)
+		plugin_obj = cvpj_plugins.add_simple('bassboost', None, fx_id)
 		plugin_obj.fxdata_add(1, fx_value/100)
 
 	elif fx_type == 5: #compressor
-		plugin_obj = convproj_obj.plugin__add('master-effect', 'universal', 'compressor', None)
+		plugin_obj = cvpj_plugins.add_uni('compressor', None, fx_id)
 		plugin_obj.params.add('attack', 0.1, 'float')
 		plugin_obj.params.add('pregain', 0, 'float')
 		plugin_obj.params.add('knee', 6, 'float')
@@ -45,7 +48,7 @@ def add_master_fx(convproj_obj, fx_type, fx_value):
 		plugin_obj.params.add('threshold', -20, 'float')
 
 	elif fx_type == 6: #high_pass
-		plugin_obj = convproj_obj.plugin__add('master-effect', 'universal', 'filter', None)
+		plugin_obj = cvpj_plugins.add_uni('filter', None, fx_id)
 		plugin_obj.filter.on = True
 		plugin_obj.filter.type.set('high_pass', None)
 		plugin_obj.filter.freq = xtramath.midi_filter(fx_value/100)
@@ -55,10 +58,10 @@ def add_master_fx(convproj_obj, fx_type, fx_value):
 	plugin_obj.visual.from_datapack('boscaceoil', 'fx', FX_NAMES[fx_type], True)
 	convproj_obj.track_master.plugslots.slots_audio.append('master-effect')
 
-def add_filter(convproj_obj, instnum, cutoff, resonance):
+def add_filter(cvpj_plugins, instnum, cutoff, resonance):
 	cvpj_instid = 'ceol_'+str(instnum).zfill(2)
 	fx_id = cvpj_instid+'_filter'
-	plugin_obj = convproj_obj.plugin__add(fx_id, 'universal', 'filter', None)
+	plugin_obj = cvpj_plugins.add_uni('filter', None, fx_id)
 	plugin_obj.filter.on = True
 	plugin_obj.filter.type.set('low_pass', None)
 	plugin_obj.filter.freq = xtramath.midi_filter(cutoff/100)
@@ -109,6 +112,7 @@ class input_ceol(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj params ----------
 		no_swing = dawvert_intent.input_get_param('no_swing', False)
@@ -165,8 +169,8 @@ class input_ceol(plugins.base):
 						valsoundid = inst_ds_obj.data['valsoundid']
 						opm_obj = fm_opm.opm_inst()
 						opm_obj.from_valsound(valsoundid)
-						plugin_obj, synthid = opm_obj.to_cvpj_genid(convproj_obj)
-						inst_obj.plugslots.set_synth(synthid)
+						plugin_obj = opm_obj.to_cvpj(convproj_obj)
+						inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 
 			# key offset
 			inst_objs[ceol_inst_obj.inst] = inst_obj
@@ -177,7 +181,7 @@ class input_ceol(plugins.base):
 
 			# cutoff
 			if ceol_inst_obj.cutoff < 110:
-				inst_filters[instnum] = add_filter(convproj_obj, instnum, ceol_inst_obj.cutoff, ceol_inst_obj.resonance)
+				inst_filters[instnum] = add_filter(cvpj_plugins, instnum, ceol_inst_obj.cutoff, ceol_inst_obj.resonance)
 				inst_obj.plugslots.slots_audio.append(inst_filters[instnum])
 
 		# ---------- patterns ----------
@@ -249,7 +253,7 @@ class input_ceol(plugins.base):
 						after_filter[plnum][0] = plpos
 						after_filter[plnum][1] = ceol_pat_obj.inst
 						if ceol_pat_obj.inst not in inst_filters: 
-							inst_filters[ceol_pat_obj.inst] = add_filter(convproj_obj, ceol_pat_obj.inst, ceol_inst_obj.cutoff, ceol_inst_obj.resonance)
+							inst_filters[ceol_pat_obj.inst] = add_filter(cvpj_plugins, ceol_pat_obj.inst, ceol_inst_obj.cutoff, ceol_inst_obj.resonance)
 							inst_objs[ceol_pat_obj.inst].plugslots.slots_audio.append(inst_filters[ceol_pat_obj.inst])
 
 						patinstid = 'ceol_'+str(ceol_pat_obj.inst).zfill(2)

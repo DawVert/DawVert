@@ -48,6 +48,7 @@ class input_bandlab(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_master = convproj_obj.track_master
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -109,7 +110,7 @@ class input_bandlab(plugins.base):
 			if blx_track.autoPitch:
 				autoPitch = blx_track.autoPitch
 				fxid = blx_track.id+'_autopitch'
-				plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'bandlab', 'autoPitch')
+				plugin_obj = cvpj_plugins.add_native('bandlab', 'autoPitch', fxid)
 				plugin_obj.role = 'fx'
 				plugin_obj.params.add('responseTime', autoPitch.responseTime, 'float')
 				plugin_obj.datavals.add('algorithm', autoPitch.algorithm)
@@ -171,7 +172,7 @@ class input_bandlab(plugins.base):
 								sampleids = samplerkit['sampleIds'] if 'sampleIds' in samplerkit else None
 
 								if not use_drum:
-									plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'multi')
+									plugin_obj = cvpj_plugins.add_uni('sampler', 'multi')
 									for laynum, layer in enumerate(layers_list):
 										pitch = layer['pitch'] if 'pitch' in layer else 60
 										minKeyRange = layer['minKeyRange'] if 'minKeyRange' in layer else pitch
@@ -185,7 +186,7 @@ class input_bandlab(plugins.base):
 										sp_obj.visual.color.set_int(colorint)
 										sp_obj.sampleref = layer['sampleId']
 								else:
-									plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'drums')
+									plugin_obj = cvpj_plugins.add_uni('sampler', 'drums')
 
 									for laynum, layer in enumerate(layers_list):
 										minKeyRange = layer['minKeyRange'] if 'minKeyRange' in layer else pitch
@@ -199,10 +200,10 @@ class input_bandlab(plugins.base):
 										layer_obj.samplepartid = 'drum_%i' % minKeyRange
 										sp_obj = plugin_obj.samplepart_add(layer_obj.samplepartid)
 										sp_obj.sampleref = layer['sampleId']
-								track_obj.plugslots.set_synth(pluginid)
+								track_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 				else:
 					if blx_track.soundbank:
-						plugin_obj = convproj_obj.plugin__add(blx_track.id, 'native', 'bandlab', 'instrument')
+						plugin_obj = cvpj_plugins.add_native('bandlab', 'instrument', blx_track.id)
 						plugin_obj.datavals.add('instrument', blx_track.soundbank)
 						plugin_obj.role = 'synth'
 						plugin_obj.midi_fallback__add_from_datapack('bandlab', 'inst', blx_track.soundbank)
@@ -248,6 +249,7 @@ def do_automation(cvpj_automation, blx_auto, autoloc, tempomul):
 
 def do_track_common(convproj_obj, track_obj, blx_track, tempomul):
 	cvpj_automation = convproj_obj.automation
+	cvpj_plugins = convproj_obj.plugins
 
 	track_obj.visual.name = blx_track.name
 	track_obj.visual.color.set_hex(blx_track.color)
@@ -268,7 +270,7 @@ def do_track_common(convproj_obj, track_obj, blx_track, tempomul):
 	for n, blx_effect in enumerate(blx_track.effects):
 		fxid = blx_track.id+'_'+str(n)
 
-		plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'bandlab', blx_effect.slug)
+		plugin_obj = cvpj_plugins.add_native('bandlab', blx_effect.slug, fxid)
 		plugin_obj.role = 'fx'
 		plugin_obj.fxdata_add(not blx_effect.bypass, 1)
 

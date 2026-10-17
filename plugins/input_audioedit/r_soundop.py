@@ -24,6 +24,8 @@ def do_auto(addauto_obj):
 		auto_obj.add_autopoint(pos, val, None)
 
 def do_fx(convproj_obj, fxdata):
+	cvpj_plugins = convproj_obj.plugins
+
 	StateParams = fxdata.StateParams
 	StateChunk = fxdata.StateChunk
 	Envelops = fxdata.Envelops
@@ -55,19 +57,16 @@ def do_fx(convproj_obj, fxdata):
 			unk2 = ebrw_readstr.int_u32()
 			numparams = ebrw_readstr.int_u32()
 			fxparams = dict([[ebrw_readstr.int_u32(), ebrw_readstr.double()] for _ in range(numparams)])
-
-			plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'soundop', fxname)
-
+			plugin_obj = cvpj_plugins.add_native('soundop', fxname)
 			for param_id, dset_param in globalstore.datapack.get_params('soundop', 'plugin', fxname):
 				paramval = fxparams[dset_param.num] if dset_param.num in fxparams else None
 				plugin_obj.dset_param__add(param_id, paramval, dset_param)
-	
-			return pluginid
+			return cvpj_plugins.get_lastid()
 
 	elif fxtype == 'vst2':
 		if len(fxdata) == 4:
 			vstid = int(fxdata[1])
-			plugin_obj, pluginid = convproj_obj.plugin__add__genid('external', 'vst2', None)
+			plugin_obj = cvpj_plugins.add_external('vst2', None)
 			extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 			if StateChunk: 
 				extmanu_obj.vst2__replace_data('id', vstid, StateChunk, None, False)
@@ -77,6 +76,7 @@ def do_fx(convproj_obj, fxdata):
 					extmanu_obj.vst2__set_program(0)
 					extmanu_obj.vst2__set_param(n, v)
 				extmanu_obj.vst2__params_output()
+			return cvpj_plugins.get_lastid()
 
 class addauto_data():
 	def __init__(self):

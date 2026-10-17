@@ -70,11 +70,13 @@ def do_idparams(amped_track, convproj_obj, plugin_obj, pluginid, amped_device, a
 	return paramout
 
 def amped_parse_effects(amped_track, convproj_obj, fxchain_audio, amped_auto):
+	cvpj_plugins = convproj_obj.plugins
+
 	outdata = []
 	for pluginid in fxchain_audio:
 		out_auto = []
-		plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
-		if plugin_found: 
+		if pluginid in cvpj_plugins:
+			plugin_obj = cvpj_plugins[pluginid]
 			fx_on, fx_wet = plugin_obj.fxdata_get()
 			fx_on = not fx_on
 			#if plugin_obj.check_match('universal', 'delay-c'):
@@ -164,6 +166,7 @@ class output_amped(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- setup ----------
 		counter_id = counter.counter(10000, '')
@@ -227,8 +230,11 @@ class output_amped(plugins.base):
 
 			# plugin
 			inst_supported = False
-			plugin_found, plugin_obj = convproj_obj.plugin__get(track_obj.plugslots.synth)
-			if plugin_found:
+
+			synth_plugid = track_obj.plugslots.synth
+
+			if synth_plugid in cvpj_plugins:
+				plugin_obj = cvpj_plugins[synth_plugid]
 
 				if plugin_obj.check_match('external', 'discodsp', 'obxd'):
 					inst_supported = True
@@ -268,7 +274,7 @@ class output_amped(plugins.base):
 					if plugin_obj.type.subtype == "Volt": amped_device = amped_track.add_device('Volt', 'VOLT', counter_devid.get())
 					if plugin_obj.type.subtype == "VoltMini": amped_device = amped_track.add_device('VoltMini', 'VOLT Mini', counter_devid.get())
 					if plugin_obj.type.subtype == "Granny": amped_device = amped_track.add_device('Granny', 'Granny', counter_devid.get())
-					do_idparams(amped_track, convproj_obj, plugin_obj, track_obj.plugslots.synth, amped_device, amped_track.automations)
+					do_idparams(amped_track, convproj_obj, plugin_obj, synth_plugid, amped_device, amped_track.automations)
 					amped_device.bypass = False
 
 				elif plugin_obj.check_match('user', 'reasonstudios', 'europa'):

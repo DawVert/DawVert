@@ -45,6 +45,9 @@ class input_s3m(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 		
+		# ---------- convproj objects ----------
+		cvpj_plugins = convproj_obj.plugins
+
 		# ---------- convproj init ----------
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']
@@ -88,7 +91,7 @@ class input_s3m(plugins.base):
 				sampleref_obj.set_fileformat('wav')
 
 				s3m_inst.rip_sample(samplefolder, project_obj.samptype, wave_path)
-				plugin_obj, pluginid, sp_obj = convproj_obj.plugin__addspec__sampler__genid__s_obj(sampleref_obj, wave_path)
+				plugin_obj, sp_obj = cvpj_plugins.addspec_sampler__sampleref(wave_path)
 				sp_obj.point_value_type = "samples"
 
 				if s3m_inst.sampleloc != 0 and s3m_inst.length != 0:

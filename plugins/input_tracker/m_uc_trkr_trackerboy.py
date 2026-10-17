@@ -75,7 +75,8 @@ class input_trackerboy(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
-		
+		cvpj_plugins = convproj_obj.plugins
+
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 
@@ -129,9 +130,9 @@ class input_trackerboy(plugins.base):
 				insttype = patterndata_obj.get_channel_insttype(channum)
 				inst_obj.visual.from_datapack('trackerboy', 'chip', insttype, False)
 
-				plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
+				plugin_obj = cvpj_plugins.add_uni('synth-osc', None)
 				plugin_obj.role = 'synth'
-				inst_obj.plugslots.set_synth(synthid)
+				inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 
 				osc_data = plugin_obj.osc_add()
 				if instname == 'pulse': 

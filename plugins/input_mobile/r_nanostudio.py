@@ -44,6 +44,7 @@ class input_nanostudio_v1(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -69,7 +70,7 @@ class input_nanostudio_v1(plugins.base):
 				track_obj.visual.name = ns_inst.name
 
 				if ns_inst.type == 'TRG':
-					plugin_obj = convproj_obj.plugin__add(cvpj_trackid, 'universal', 'sampler', 'drums')
+					plugin_obj = cvpj_plugins.add_uni('sampler', 'drums', cvpj_trackid)
 					track_obj.is_drum = True
 					track_obj.is_multinote_drum = True
 					for key, val in ns_inst.am.items():
@@ -96,7 +97,7 @@ class input_nanostudio_v1(plugins.base):
 											sp_obj = plugin_obj.samplepart_add(layer_obj.samplepartid)
 											sp_obj.sampleref = sampname
 				else:
-					plugin_obj = convproj_obj.plugin__add(cvpj_trackid, 'native', 'nanostudio_v1', ns_inst.type)
+					plugin_obj = cvpj_plugins.add_native('nanostudio_v1', ns_inst.type, cvpj_trackid)
 
 				plugin_obj.role = 'synth'
 				track_obj.plugin_autoplace(plugin_obj, cvpj_trackid)
@@ -113,7 +114,7 @@ class input_nanostudio_v1(plugins.base):
 							patch_data = fx.patch
 							fxid = cvpj_trackid+'_fx_'+str(n)
 							if fx.type == 'TCE-1':
-								plugin_obj = convproj_obj.plugin__add(fxid, 'universal', 'compressor', None)
+								plugin_obj = cvpj_plugins.add_uni('compressor', None, fxid)
 								plugin_obj.role = 'fx'
 								if 'Enable' in patch_data: plugin_obj.fxdata_add(patch_data['Enable']=='1', None)
 								if 'Attack' in patch_data: plugin_obj.params.add('attack', float(patch_data['Attack'])/10, 'float')
@@ -124,7 +125,7 @@ class input_nanostudio_v1(plugins.base):
 									ratio = float(patch_data['Ratio'])
 									plugin_obj.params.add('ratio', 1/(1-ratio), 'float')
 							else:
-								plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'nanostudio_v1', fx.type)
+								plugin_obj = cvpj_plugins.add_native('nanostudio_v1', fx.type, fxid)
 								plugin_obj.role = 'fx'
 								if 'Enable' in patch_data: 
 									plugin_obj.fxdata_add(patch_data['Enable']=='1', None)

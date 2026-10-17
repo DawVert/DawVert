@@ -145,6 +145,7 @@ class output_cvpjs(plugins.base):
 		from objects.file_proj._flp import chunks
 
 		cvpj_insts = convproj_obj.instruments
+		cvpj_plugins = convproj_obj.plugins
 
 		flversion = 20
 
@@ -219,8 +220,10 @@ class output_cvpjs(plugins.base):
 			fl_channel_obj.plugin.name = ''
 			chanplugin = fl_channel_obj.plugin.chunk
 
-			plugin_found, plugin_obj = convproj_obj.plugin__get(inst_obj.plugslots.synth)
-			if plugin_found:
+			synth_plugid = inst_obj.plugslots.synth
+			if synth_plugid in cvpj_plugins:
+				plugin_obj = cvpj_plugins[synth_plugid]
+
 				if plugin_obj.check_match('universal', 'sampler', 'single'):
 					fl_channel_obj.type = 0
 					fl_channel_obj.plugin.name = ''
@@ -620,8 +623,8 @@ class output_cvpjs(plugins.base):
 				if fx_num == 0: fl_fxchan.outchannum = 1
 
 				for pluginid in fxchannel_obj.plugslots.slots_mixer:
-					plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
-					if plugin_found:
+					if pluginid in cvpj_plugins:
+						plugin_obj = cvpj_plugins[pluginid]
 						if plugin_obj.check_match('universal', 'invert', None):
 							fx_chunk.reversepolarity, _ = plugin_obj.fxdata_get()
 						if plugin_obj.check_match('universal', 'swap_lr', None):
@@ -629,8 +632,8 @@ class output_cvpjs(plugins.base):
 
 				slotnum = 0
 				for pluginid in fxchannel_obj.plugslots.slots_audio:
-					plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
-					if plugin_found: 
+					if pluginid in cvpj_plugins:
+						plugin_obj = cvpj_plugins[pluginid]
 						fl_plugin, fl_pluginparams = flp_enc_plugins.setparams(convproj_obj, plugin_obj)
 						if fl_plugin != None:
 							chanplugin = slotdata.plugin.chunk

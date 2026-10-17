@@ -297,7 +297,7 @@ class cvpj_instrument:
 		indict['drum'] = midi_obj.drum
 		indict['device'] = midi_obj.device
 
-		plugin_obj = convproj_obj.plugin__addspec__midi(plug_id, indict)
+		plugin_obj = convproj_obj.plugins.addspec_midi__prop(indict, plug_id)
 		plugin_obj.role = 'synth'
 		self.plugslots.synth = plug_id
 		self.params.add('usemasterpitch', not m_drum, 'bool')
@@ -516,7 +516,7 @@ class cvpj_track:
 		indict['patch'] = midi_obj.patch
 		indict['drum'] = midi_obj.drum
 		indict['device'] = midi_obj.device
-		plugin_obj = convproj_obj.plugin__addspec__midi(plug_id, indict)
+		plugin_obj = convproj_obj.plugins.addspec_midi__prop(indict, plug_id)
 		plugin_obj.role = 'synth'
 		self.plugslots.synth = plug_id
 		self.params.add('usemasterpitch', not m_drum, 'bool')
@@ -535,8 +535,10 @@ class cvpj_track:
 		return self.scenes[i_id][i_lane]
 
 	def get_midi(self, convproj_obj):
-		plugin_found, plugin_obj = convproj_obj.plugin__get(self.plugslots.synth)
-		if plugin_found:
+		cvpj_plugins = convproj_obj.plugins
+		pluginid = self.plugslots.synth
+		if pluginid in cvpj_plugins:
+			plugin_obj = cvpj_plugins[pluginid]
 			if plugin_obj.midi_incompat_synth_on: return plugin_obj.midi_incompat_synth
 			else: return plugin_obj.midi
 		else:
@@ -700,7 +702,7 @@ class cvpj_project_tracks:
 		return len(self.order)
 
 	def addspec__midi(self, track_id, uses_placements, is_indexed, indict):
-		plugin_obj = self.convproj_obj.plugin__addspec__midi(track_id, indict)
+		plugin_obj = self.convproj_obj.plugins.addspec_midi__prop(indict, track_id)
 		plugin_obj.role = 'synth'
 
 		track_obj = self.add(track_id, 'instrument', uses_placements, is_indexed)

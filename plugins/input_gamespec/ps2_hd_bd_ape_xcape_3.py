@@ -200,6 +200,9 @@ class input_petaporon(plugins.base):
 			path_bd = os.path.splitext(dawvert_intent.input_file)[0]+'.bd' if not in_bd else in_bd
 			sample_obj.load_from_file(path_bd)
 
+		# ---------- convproj objects ----------
+		cvpj_plugins = convproj_obj.plugins
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'cm'
@@ -222,7 +225,8 @@ class input_petaporon(plugins.base):
 		offset_points = {}
 
 		for instnum, vaginst in enumerate(apeinst_obj.insts):
-			plugin_obj = convproj_obj.plugin__add('voice_'+str(instnum), 'universal', 'sampler', 'multi')
+			pluginid = 'voice_'+str(instnum)
+			plugin_obj = cvpj_plugins.add_uni('sampler', 'multi', pluginid)
 			plugin_obj.role = 'synth'
 			plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, 0, 1)
 

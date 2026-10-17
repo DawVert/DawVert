@@ -60,6 +60,7 @@ class input_adlib_rol(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = convproj_obj.automation
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj params ----------
 		convproj_obj.type = 'rm'
@@ -123,7 +124,7 @@ class input_adlib_rol(plugins.base):
 				plugin_obj.midi_fallback__add_from_datapack('adlib_rol', 'inst', instname_upper)
 				plugin_obj.midi_fallback__to_vis(inst_obj.visual, False)
 			else:
-				plugin_obj = convproj_obj.plugin__add(instname_upper, 'universal', 'midi', None)
+				plugin_obj = cvpj_plugins.addspec_midi(instname_upper)
 				plugin_obj.midi.from_datapack('adlib_rol', 'inst', instname_upper)
 				plugin_obj.midi.to_visual(inst_obj.visual, False)
 			inst_obj.plugslots.set_synth(instname_upper)

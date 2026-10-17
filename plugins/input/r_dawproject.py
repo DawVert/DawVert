@@ -50,6 +50,7 @@ def do_sends(convproj_obj, track_obj, dp_channel):
 
 def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 	cvpj_automation = convproj_obj.automation
+	cvpj_plugins = convproj_obj.plugins
 
 	for device in dp_devices:
 		plugin_obj = None
@@ -58,7 +59,7 @@ def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 
 		if device.plugintype == 'Equalizer':
 			pprms = device.params
-			plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'eq', 'bands')
+			plugin_obj = cvpj_plugins.add_uni('eq', 'bands', pluginid)
 
 			for band in device.bands:
 				filter_obj, filter_id = plugin_obj.eq_add()
@@ -91,7 +92,7 @@ def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 
 		if device.plugintype == 'Compressor':
 			pprms = device.params
-			plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'compressor', None)
+			plugin_obj = cvpj_plugins.add_uni('compressor', None, pluginid)
 			do_param(convproj_obj, plugin_obj.params_slot, device.enabled, 'enabled', None, 'bool', ['slot', pluginid, 'enabled'])
 			if 'Attack' in pprms: do_param(convproj_obj, plugin_obj.params, pprms['Attack'], 'attack', None, 'float', ['plugin', pluginid, 'attack'])
 			if 'AutoMakeup' in pprms: do_param(convproj_obj, plugin_obj.params, pprms['AutoMakeup'], 'automakeup', None, 'bool', ['plugin', pluginid, 'automakeup'])
@@ -103,7 +104,7 @@ def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 
 		if device.plugintype == 'Limiter':
 			pprms = device.params
-			plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'limiter', None)
+			plugin_obj = cvpj_plugins.add_uni('limiter', None, pluginid)
 			do_param(convproj_obj, plugin_obj.params_slot, device.enabled, 'enabled', None, 'bool', ['slot', pluginid, 'enabled'])
 			if 'InputGain' in pprms: do_param(convproj_obj, plugin_obj.params, pprms['InputGain'], 'pregain', None, 'float', ['plugin', pluginid, 'pregain'])
 			if 'Release' in pprms: do_param(convproj_obj, plugin_obj.params, pprms['Release'], 'release', None, 'float', ['plugin', pluginid, 'release'])
@@ -111,7 +112,7 @@ def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 
 		if device.plugintype == 'NoiseGate':
 			pprms = device.params
-			plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'noise_gate', None)
+			plugin_obj = cvpj_plugins.add_uni('noise_gate', None, pluginid)
 			do_param(convproj_obj, plugin_obj.params_slot, device.enabled, 'enabled', None, 'bool', ['slot', pluginid, 'enabled'])
 			if 'Attack' in pprms: do_param(convproj_obj, plugin_obj.params, pprms['Attack'], 'attack', None, 'float', ['plugin', pluginid, 'attack'])
 			if 'Range' in pprms: do_param(convproj_obj, plugin_obj.params, pprms['Range'], 'range', None, 'float', ['plugin', pluginid, 'range'])
@@ -119,7 +120,7 @@ def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 			if 'Threshold' in pprms: do_param(convproj_obj, plugin_obj.params, pprms['Threshold'], 'threshold', None, 'float', ['plugin', pluginid, 'threshold'])
 
 		if device.plugintype == 'Vst3Plugin':
-			plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst3', None)
+			plugin_obj = cvpj_plugins.add_external('vst3', None, pluginid)
 			do_param(convproj_obj, plugin_obj.params_slot, device.enabled, 'enabled', None, 'bool', ['slot', pluginid, 'enabled'])
 
 			extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
@@ -131,7 +132,7 @@ def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 				do_realparam(convproj_obj, plugin_obj.params, realparam, cvpj_paramid, None, 'float', ['plugin', pluginid, cvpj_paramid])
 
 		if device.plugintype == 'Vst2Plugin':
-			plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst2', None)
+			plugin_obj = cvpj_plugins.add_external('vst2', None, pluginid)
 			do_param(convproj_obj, plugin_obj.params_slot, device.enabled, 'enabled', None, 'bool', ['slot', pluginid, 'enabled'])
 
 			extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
@@ -143,7 +144,7 @@ def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 				do_realparam(convproj_obj, plugin_obj.params, realparam, cvpj_paramid, None, 'float', ['plugin', pluginid, cvpj_paramid])
 
 		if device.plugintype == 'ClapPlugin':
-			plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'clap', None)
+			plugin_obj = cvpj_plugins.add_external('clap', None, pluginid)
 			do_param(convproj_obj, plugin_obj.params_slot, device.enabled, 'enabled', None, 'bool', ['slot', pluginid, 'enabled'])
 
 			extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)

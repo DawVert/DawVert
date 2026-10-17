@@ -63,6 +63,7 @@ class input_petaporon(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -109,9 +110,9 @@ class input_petaporon(plugins.base):
 				track_obj.to_midi(convproj_obj, instid, True)
 
 			elif peta_instset == 'chiptune':
-				plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
+				plugin_obj = cvpj_plugins.add_uni('synth-osc', None)
 				plugin_obj.role = 'synth'
-				track_obj.plugslots.set_synth(pluginid)
+				track_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 	
 				osc_data = plugin_obj.osc_add()
 			

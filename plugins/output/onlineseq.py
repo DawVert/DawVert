@@ -49,6 +49,7 @@ class output_onlineseq(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- setup ----------
 		globalstore.idvals.load('onlineseq_midi_map', './data_main/idvals/onlineseq_map_midi.csv')
@@ -68,16 +69,15 @@ class output_onlineseq(plugins.base):
 
 			middlenote = track_obj.datavals.get('middlenote', 0)
 
-			plugin_found, plugin_obj = convproj_obj.plugin__get(track_obj.plugslots.synth)
-
 			midi_inst = track_obj.get_midi(convproj_obj)
 			if midi_inst:
-			
 				if not midi_inst.drum: midiinst = midi_inst.patch
 
-			if plugin_found: 
-				osc_data = plugin_obj.state.oscs
+			pluginid = track_obj.plugslots.synth
+			if pluginid in cvpj_plugins:
+				plugin_obj = cvpj_plugins[pluginid]
 				if plugin_obj.check_wildmatch('universal', 'synth-osc', None):
+					osc_data = plugin_obj.state.oscs
 					if len(osc_data) == 1:
 						s_osc = osc_data[0]
 						if s_osc.prop.shape == 'sine': onlineseqinst = 13

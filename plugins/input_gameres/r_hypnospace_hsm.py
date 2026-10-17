@@ -48,6 +48,7 @@ class input_hypnospace_hsm(plugins.base):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_metadata = convproj_obj.metadata
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'ms'
@@ -80,9 +81,10 @@ class input_hypnospace_hsm(plugins.base):
 
 			# sample
 			if sample.path:
-				sampleref_obj = convproj_obj.sampleref__add__prefix(sample.path, 'hypnospace_hsm', sample.path+'.ogg')
+				sampleref_id = sample.path
+				sampleref_obj = convproj_obj.sampleref__add__prefix(sampleref_id, 'hypnospace_hsm', sample.path+'.ogg')
 				sampleref_obj.fileref.resolve_prefix()
-				plugin_obj, samplepart_obj = convproj_obj.plugin__addspec__sampler__s_obj(instid, sampleref_obj, sample.path)
+				plugin_obj, samplepart_obj = cvpj_plugins.addspec_sampler__sampleref(sampleref_id, instid)
 				inst_obj.plugslots.set_synth(instid)
 
 			# adsr: a_predelay, a_attack, a_hold, a_decay, a_sustain, a_release, a_amount

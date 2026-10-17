@@ -32,18 +32,17 @@ class fx_delay:
 			else:
 				plugin_obj.datavals.add('c_'+dname, dvalues[0])
 
-	def to_cvpj(self, convproj_obj, pluginid):
-		if pluginid in convproj_obj.plugins: 
-			on, wet = convproj_obj.plugins[pluginid].fxdata_get()
-			plugin_obj = convproj_obj.plugins[pluginid]
+	def to_cvpj(self, convproj_obj, pluginid=None):
+		cvpj_plugins = convproj_obj.plugins
+		if pluginid in cvpj_plugins: 
+			plugin_obj = cvpj_plugins[pluginid]
+			on, wet = plugin_obj.fxdata_get()
 			plugin_obj.replace('universal', 'delay', None)
 		else:
 			on, wet = True, 1
-			if pluginid != None:
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'delay', None)
-			else:
-				plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'delay', None)
-			
+			plugin_obj = convproj_obj.plugins.add_uni('delay', None, pluginid)
+			if pluginid == None: pluginid = cvpj_plugins.get_lastid()
+
 		plugin_obj.role = 'fx'
 
 		plugin_obj.datavals.add('mode', self.mode)

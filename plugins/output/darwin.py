@@ -28,7 +28,7 @@ class output_darwin(plugins.base):
 		in_dict['file_ext'] = 'darwin'
 
 	def parse(self, convproj_obj, dawvert_intent):
-		from objects.file_proj import darwin as proj_darwin
+		from objects.file_proj_uncommon import darwin as proj_darwin
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks

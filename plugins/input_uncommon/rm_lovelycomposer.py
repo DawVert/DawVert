@@ -177,6 +177,7 @@ class input_lc(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'rm'
@@ -317,12 +318,12 @@ class input_lc(plugins.base):
 
 					cvpj_ninstid = '_'.join([str(tracknum),lc_instlist[used_instnum][1]])
 
-					plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
+					plugin_obj = cvpj_plugins.add_uni('synth-osc', None)
 					plugin_obj.role = 'synth'
 					osc_data = plugin_obj.osc_add()
 		
 					inst_obj = cvpj_insts.add(cvpj_ninstid)
-					inst_obj.plugslots.set_synth(pluginid)
+					inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 					inst_obj.visual.name = instdata[1]
 					inst_obj.visual.color.set_int(color)
 					inst_obj.is_drum = instdata[1] in ['Noise', 'FreqNoise']

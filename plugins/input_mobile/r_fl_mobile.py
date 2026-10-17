@@ -357,14 +357,14 @@ def do_devices(devices_order, convproj_obj, devices, plugslots, projfilepath, zi
 		plugslots.plugin_autoplace(plugin_obj, pluginid)
 
 def do_device(convproj_obj, device_obj, projfilepath, zipfile, pluginid, numberid):
+	cvpj_plugins = convproj_obj.plugins
 
 	pluginid = pluginid+'_'+str(device_obj.order)
-
 	plugin_obj = None
 
 	if device_obj.type == 1397567537:
 		if device_obj.drumsamples:
-			plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'sampler', 'drums')
+			plugin_obj = cvpj_plugins.add_uni('sampler', 'drums', pluginid)
 			plugin_obj.role = 'synth'
 
 			for keynum, flm_sample in enumerate(device_obj.drumsamples):
@@ -390,7 +390,7 @@ def do_device(convproj_obj, device_obj, projfilepath, zipfile, pluginid, numberi
 			cstm = device_obj.cstm
 			zones = cstm.zones
 			if zones:
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'sampler', 'multi')
+				plugin_obj = cvpj_plugins.add_uni('sampler', 'multi', pluginid)
 				plugin_obj.role = 'synth'
 				for x in zones:
 					sample_prefix, sample_path = get_path(x.name)
@@ -414,7 +414,7 @@ def do_device(convproj_obj, device_obj, projfilepath, zipfile, pluginid, numberi
 							pass
 
 	else:
-		plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'fl_mobile', str(device_obj.type))
+		plugin_obj = cvpj_plugins.add_native('fl_mobile', str(device_obj.type), pluginid)
 
 		fldso = globalstore.datapack.get_obj('fl_mobile', 'plugin', str(device_obj.type))
 		if fldso:

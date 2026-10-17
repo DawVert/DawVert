@@ -85,7 +85,9 @@ def add_dataval(datavals_obj, plugin_xml_data, cvpj_name, xml_name, attribname, 
 
 def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 	pluginid = strproc.uid
-	#plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', strproc.plugin.name)
+	cvpj_plugins = convproj_obj.plugins
+
+	#plugin_obj = cvpj_plugins.add_native('zenbeats', strproc.plugin.name, pluginid)
 	#if strproc.stream_processor_type == 4:
 	#	plugin_obj.role = 'synth'
 	#	track_obj.plugslots.set_synth(pluginid)
@@ -105,7 +107,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 
 			if strproc.plugin.name == 'ZC1':
 				if not disable_zc1:
-					plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'ZC1')
+					plugin_obj = cvpj_plugins.add_native('zenbeats', 'ZC1', pluginid)
 					plugin_obj.role = 'synth'
 					track_obj.plugslots.set_synth(pluginid)
 					attrib = plugin_xml_data.attrib
@@ -124,7 +126,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 									except: pass
 
 			elif strproc.plugin.name == 'Zenbeats Chorus':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'roland_chorus')
+				plugin_obj = cvpj_plugins.add_native('zenbeats', 'roland_chorus', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'RolandChorus')
@@ -134,7 +136,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 						set_param_attrib(plugin_obj.params, pname.lower(), pname, attribvals, 0, 1)
 
 			elif strproc.plugin.name == 'Zenbeats MultiVerb':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'roland_reverb')
+				plugin_obj = cvpj_plugins.add_native('zenbeats', 'roland_reverb', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'RolandReverb')
@@ -144,7 +146,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 						set_param_attrib(plugin_obj.params, pname.lower(), pname, attribvals, 0, 1)
 
 			elif strproc.plugin.name == 'Zenbeats SC-Comp':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'roland_sccomp')
+				plugin_obj = cvpj_plugins.add_native('zenbeats', 'roland_sccomp', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'RolandDynamics')
@@ -157,7 +159,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 						set_param_attrib(plugin_obj.params, pname.lower(), pname, attribvals, 0, 1)
 
 			elif strproc.plugin.name == 'Zenbeats SC-Pump':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'roland_scpump')
+				plugin_obj = cvpj_plugins.add_native('zenbeats', 'roland_scpump', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'ZenbeatsSCPump')
@@ -176,7 +178,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 						param_find(plugin_obj, pname.lower(), xmlparams, pname, 0, 1)
 
 			elif strproc.plugin.name == 'Zenbeats SC-Envelope':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'zenbeats_scenvelope')
+				plugin_obj = cvpj_plugins.add_native('zenbeats', 'zenbeats_scenvelope', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'ZenbeatsSCEnvelope')
@@ -195,7 +197,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 						param_find(plugin_obj, pname.lower(), xmlparams, pname, 0, 1)
 
 			elif strproc.plugin.name == 'AutoWah':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'autowah')
+				plugin_obj = cvpj_plugins.add_native('zenbeats', 'autowah', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'AutoWah')
@@ -214,7 +216,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 						param_find(plugin_obj, pname.lower(), xmlparams, pname, 0, 1)
 
 			elif strproc.plugin.name == 'Chorus':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'chorus')
+				plugin_obj = cvpj_plugins.add_native('zenbeats', 'chorus', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'Chorus')
@@ -227,7 +229,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 						param_find(plugin_obj, pname.lower(), xmlparams, pname, 0, 1)
 
 			elif strproc.plugin.name == 'BitCrusher':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'bitcrusher')
+				plugin_obj = cvpj_plugins.add_native('zenbeats', 'bitcrusher', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'BitCrusher')
@@ -236,7 +238,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 						param_find(plugin_obj, pname.lower(), xmlparams, pname, 0, 1)
 
 			elif strproc.plugin.name == 'Delay':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'delay')
+				plugin_obj = cvpj_plugins.add_native('zenbeats', 'delay', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				attrib = plugin_xml_data.attrib
@@ -250,7 +252,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 							param_find(plugin_obj, pname.lower(), xmlparams, pname, 0, 1)
 
 			elif strproc.plugin.name == 'Drive':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'drive')
+				plugin_obj = cvpj_plugins.add_native('zenbeats', 'drive', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'Drive')
@@ -259,7 +261,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 						param_find(plugin_obj, pname.lower(), xmlparams, pname, 0, 1)
 
 			elif strproc.plugin.name == 'Reverb':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'reverb')
+				plugin_obj = cvpj_plugins.add_native('zenbeats', 'reverb', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'Reverb')
@@ -268,7 +270,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 						param_find(plugin_obj, pname.lower(), xmlparams, pname, 0, 1)
 
 			elif strproc.plugin.name == 'Zenbeats EQ':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'zenbeats_eq')
+				plugin_obj = cvpj_plugins.add_native('zenbeats', 'zenbeats_eq', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'RolandEQ')
@@ -284,7 +286,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 							set_param_attrib(plugin_obj.params, pname, pname, attribvals, 0, 1)
 
 			elif strproc.plugin.name == 'AutoFilter':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'zenbeats', 'autofilter')
+				plugin_obj = cvpj_plugins.add_native('zenbeats', 'autofilter', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'AutoFilter')
@@ -301,7 +303,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 			elif strproc.plugin.name == 'Drums':
 				track_obj.is_drum = True
 				xmlparams = data_xml.find_first(plugin_xml_data, 'drumkit')
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'sampler', 'drums')
+				plugin_obj = cvpj_plugins.add_uni('sampler', 'drums', pluginid)
 				plugin_obj.role = 'synth'
 				track_obj.plugslots.set_synth(pluginid)
 
@@ -348,7 +350,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 							soundnum += 1
 
 			elif strproc.plugin.name == 'Zenbeats Limiter':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'limiter', None)
+				plugin_obj = cvpj_plugins.add_uni('limiter', None, pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'ZBLimiter')
@@ -360,7 +362,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 					set_param_attrib(plugin_obj.params, 'ceiling', 'Ceiling', attribvals, 0, 1)
 	
 			elif strproc.plugin.name == 'Equalizer':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'eq', '8limited')
+				plugin_obj = cvpj_plugins.add_uni('eq', '8limited', pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'Equalizer')
@@ -387,7 +389,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 								filter_obj.gain = get_value(dynamicfilter, 'Gain', 0)
 
 			elif strproc.plugin.name == 'Limiter':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'limiter', None)
+				plugin_obj = cvpj_plugins.add_uni('limiter', None, pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'Limiter')
@@ -397,7 +399,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 					param_find(plugin_obj, 'threshold', xmlparams, 'Threshold', 0, 1)
 
 			elif strproc.plugin.name == 'Compressor':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'compressor', None)
+				plugin_obj = cvpj_plugins.add_uni('compressor', None, pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'Compressor')
@@ -411,7 +413,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 					param_find(plugin_obj, 'knee', xmlparams, 'Knee', 0, 1)
 
 			elif strproc.plugin.name == 'Filter':
-				plugin_obj = convproj_obj.plugin__add(pluginid, 'universal', 'filter', None)
+				plugin_obj = cvpj_plugins.add_uni('filter', None, pluginid)
 				plugin_obj.role = 'effect'
 				track_obj.plugslots.slots_audio.append(pluginid)
 				xmlparams = data_xml.find_first(plugin_xml_data, 'Filter')
@@ -422,6 +424,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 					plugin_obj.filter.q = get_value(xmlparams, 'Res', 1)
 
 def do_rack(convproj_obj, project_obj, track_obj, zb_track, autoloc, dawvert_intent):
+	cvpj_plugins = convproj_obj.plugins
 
 	for rack in project_obj.bank.racks:
 
@@ -432,12 +435,12 @@ def do_rack(convproj_obj, project_obj, track_obj, zb_track, autoloc, dawvert_int
 
 			if bool(rack.phase_invert_audio_output):
 				inverse_fxid = rack.uid+'_inverse'
-				plugin_obj = convproj_obj.plugin__add(inverse_fxid, 'universal', 'invert', None)
+				plugin_obj = cvpj_plugins.add_uni('invert', None, inverse_fxid)
 				track_obj.plugslots.slots_mixer.append(inverse_fxid)
 
 			if bool(rack.force_mono):
 				inverse_fxid = rack.uid+'_force_mono'
-				plugin_obj = convproj_obj.plugin__add(inverse_fxid, 'universal', 'force_mono', None)
+				plugin_obj = cvpj_plugins.add_uni('force_mono', None, inverse_fxid)
 				track_obj.plugslots.slots_mixer.append(inverse_fxid)
 
 			for send_track in rack.send_tracks:

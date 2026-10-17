@@ -12,6 +12,7 @@ def text_float(c):
 	return float(c.replace(',', '.'))
 
 def do_mixer(convproj_obj, num, mixerchan):
+	cvpj_plugins = convproj_obj.plugins
 	fxrack_obj = convproj_obj.fxrack
 	fxchannel_obj = fxrack_obj.add(num)
 	mixerattrib = mixerchan.attrib
@@ -32,7 +33,7 @@ def do_mixer(convproj_obj, num, mixerchan):
 				dspid = fxattrib['DspID']
 				fxid = 'fx_'+dspid
 				fxname = fxattrib['DspName'].replace(' ', '_').lower()
-				plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'zquence', fxname)
+				plugin_obj = cvpj_plugins.add_native('zquence', fxname, fxid)
 				plugin_obj.role = 'fx'
 				for fxd in fxgroup.groups:
 					if fxd.name=='Parameters':
@@ -70,6 +71,7 @@ class input_zquence(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_transport = convproj_obj.transport
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -139,9 +141,9 @@ class input_zquence(plugins.base):
 						if 'DspName' in synthattrib:
 							dspname = synthattrib['DspName']
 							if dspname=='SamplerSynth':
-								plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'drums')
+								plugin_obj = cvpj_plugins.add_uni('sampler', 'drums')
 								plugin_obj.role = 'synth'
-								inst_obj.plugslots.plugin_autoplace(plugin_obj, pluginid)
+								inst_obj.plugslots.plugin_autoplace(plugin_obj, cvpj_plugins.get_lastid())
 
 								inst_obj.is_drum = True
 								inst_obj.is_multinote_drum = True

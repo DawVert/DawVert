@@ -112,6 +112,7 @@ class input_piyopiyo(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_transport = convproj_obj.transport
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- convproj params ----------
 		use_samples = dawvert_intent.input_get_param('use_samples', True)
@@ -138,13 +139,14 @@ class input_piyopiyo(plugins.base):
 			pmdtrack_obj = project_obj.tracks[tracknum]
 			keyoffset = (pmdtrack_obj.octave-2)*12
 
-			idval = str(tracknum)
-			track_obj = cvpj_tracks.add(idval, 'instrument', 0, False)
+			trackid = str(tracknum)
+			pluginid = str(tracknum)
+			track_obj = cvpj_tracks.add(trackid, 'instrument', 0, False)
 			track_obj.visual.name = 'Inst #'+str(tracknum+1)
 			track_obj.visual.color.set_int(colordata.getcolornum(tracknum))
 			track_obj.params.add('vol', pmdtrack_obj.volume/250, 'float')
 
-			plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'single')
+			plugin_obj = cvpj_plugins.add_uni('sampler', 'single', pluginid)
 			plugin_obj.role = 'synth'
 			osc_data = plugin_obj.osc_add()
 			osc_data.prop.type = 'wave'
@@ -154,17 +156,17 @@ class input_piyopiyo(plugins.base):
 			plugin_obj.env_blocks_add('vol', pmdtrack_obj.envelope, 1/64, 128, None, None)
 			plugin_obj.env_points_from_blocks('vol')
 			track_obj.plugslots.set_synth(pluginid)
-			parse_notes(convproj_obj, idval, project_obj.notes_data[tracknum], track_obj, keyoffset)
+			parse_notes(convproj_obj, trackid, project_obj.notes_data[tracknum], track_obj, keyoffset)
 
 		# ---------- drum track ----------
-		track_obj = cvpj_tracks.add("3", 'instrument', False, False)
+		track_obj = cvpj_tracks.add("track_drums", 'instrument', False, False)
 		track_obj.visual.name = 'Drums'
 		track_obj.visual.color.set_int(colordata.getcolornum(3))
 		track_obj.params.add('vol', (project_obj.perc_volume/250)/3, 'float')
-		plugin_obj, pluginid = convproj_obj.plugin__add__genid('universal', 'sampler', 'drums')
+		plugin_obj = cvpj_plugins.add_uni('sampler', 'drums', 'plugin_drums')
 		plugin_obj.role = 'synth'
 		track_obj.is_drum = True
-		track_obj.plugslots.set_synth(pluginid)
+		track_obj.plugslots.set_synth('plugin_drums')
 
 		if use_samples:
 			try:
@@ -249,7 +251,7 @@ class input_piyopiyo(plugins.base):
 			drumpad_obj.visual.name = 'Symbal'
 			layer_obj.samplepartid = 'PIYOPIYO_SYMBAL1'
 
-			parse_notes(convproj_obj, '3', project_obj.notes_data[3], track_obj, 0)
+			parse_notes(convproj_obj, 'track_drums', project_obj.notes_data[3], track_obj, 0)
 		else:
 			drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
 			drumpad_obj.key = 0
@@ -281,4 +283,4 @@ class input_piyopiyo(plugins.base):
 			drumpad_obj.visual.name = 'Symbal'
 			layer_obj.samplepartid = 'PIYOPIYO_SYMBAL1'
 			
-			parse_notes_drumalt(convproj_obj, '3', project_obj.notes_data[3], track_obj)
+			parse_notes_drumalt(convproj_obj, 'track_drums', project_obj.notes_data[3], track_obj)

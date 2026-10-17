@@ -30,9 +30,12 @@ def autopoints_get(autoloc, add, mul):
 
 def add_fx(convproj_obj, soundation_channel, fxchain_audio):
 	from objects.file_proj import soundation as proj_soundation
+
+	cvpj_plugins = convproj_obj.plugins
+
 	for pluginid in fxchain_audio:
-		plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
-		if plugin_found: 
+		if pluginid in cvpj_plugins:
+			plugin_obj = cvpj_plugins[pluginid]
 			if plugin_obj.check_wildmatch('native', 'soundation', None):
 				fx_on, fx_wet = plugin_obj.fxdata_get()
 
@@ -112,10 +115,11 @@ class output_soundation(plugins.base):
 		global audio_id
 
 		# ---------- convproj objects ----------
-		cvpj_tracks = convproj_obj.tracks
-		cvpj_automation = convproj_obj.automation
-		cvpj_transport = convproj_obj.transport
-		cvpj_master = convproj_obj.track_master
+		cvpj_tracks = i_convproj_obj.tracks
+		cvpj_automation = i_convproj_obj.automation
+		cvpj_transport = i_convproj_obj.transport
+		cvpj_master = i_convproj_obj.track_master
+		cvpj_plugins = i_convproj_obj.plugins
 		
 		# ---------- setup ----------
 		audio_id = {}
@@ -192,8 +196,9 @@ class output_soundation(plugins.base):
 				soundation_instrument.rackName = ''
 				soundation_instrument.identifier = ''
 				inst_supported = False
-				plugin_found, plugin_obj = convproj_obj.plugin__get(pluginid)
-				if plugin_found:
+
+				if pluginid in cvpj_plugins:
+					plugin_obj = cvpj_plugins[pluginid]
 					if plugin_obj.check_match('universal', 'sampler', 'single'):
 						inst_supported = True
 						soundation_instrument.identifier = 'com.soundation.simple-sampler'

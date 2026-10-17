@@ -100,6 +100,7 @@ class input_zmaestro(plugins.base):
 		cvpj_timemarkers = convproj_obj.timemarkers
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_transport = convproj_obj.transport
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -147,7 +148,7 @@ class input_zmaestro(plugins.base):
 					track_obj.visual_inst.color = track_obj.visual.color.copy()
 				else:
 					track_obj.visual.from_datapack('z_maestro', 'track', tracktype, True)
-					plugin_obj = convproj_obj.plugin__add(cvpj_trackid, 'universal', 'soundfont2', None)
+					plugin_obj = cvpj_plugins.add_uni('soundfont2', None, cvpj_trackid)
 					track_obj.plugslots.set_synth(cvpj_trackid)
 					sf2_path = os.path.join(dawvert_intent.input_folder, zm_track.soundfont)
 					fileref_obj = convproj_obj.fileref__add(sf2_path, sf2_path, None)
@@ -177,13 +178,13 @@ class input_zmaestro(plugins.base):
 					fxparams = fx.params
 
 					if fxtype == 'LowPassFilter':
-						plugin_obj = convproj_obj.plugin__add(fxid, 'universal', 'filter', None)
+						plugin_obj = cvpj_plugins.add_uni('filter', None, fxid)
 						if 'Frequency' in fxparams:
 							plugin_obj.filter.on = True
 							plugin_obj.filter.type.set('low_pass', None)
 							plugin_obj.filter.freq = int(fxparams['Frequency'])/2
 					elif fxtype == 'HighPassFilter':
-						plugin_obj = convproj_obj.plugin__add(fxid, 'universal', 'filter', None)
+						plugin_obj = cvpj_plugins.add_uni('filter', None, fxid)
 						if 'Frequency' in fxparams:
 							plugin_obj.filter.on = True
 							plugin_obj.filter.type.set('high_pass', None)
@@ -196,12 +197,12 @@ class input_zmaestro(plugins.base):
 						if 'Delay' in fxparams: timing_obj.set_seconds(float(fxparams['Delay']))
 						plugin_obj, pluginid = delay_obj.to_cvpj(convproj_obj, fxid)
 					elif fxtype == 'StereoWiden':	
-						plugin_obj = convproj_obj.plugin__add(fxid, 'universal', 'width', None)
+						plugin_obj = cvpj_plugins.add_uni('width', None, fxid)
 						if 'Amount' in fxparams: plugin_obj.params.add('width', float(fxparams['Amount'])-1, 'float')
 					elif fxtype == 'Invert':	
-						plugin_obj = convproj_obj.plugin__add(fxid, 'universal', 'invert', None)
+						plugin_obj = cvpj_plugins.add_uni('invert', None, fxid)
 					elif fxtype == 'Compressor':
-						plugin_obj = convproj_obj.plugin__add(fxid, 'universal', 'compressor', None)
+						plugin_obj = cvpj_plugins.add_uni('compressor', None, fxid)
 						if 'Attack' in fxparams: plugin_obj.params.add('attack', float(fxparams['Attack'])/1000, 'float')
 						plugin_obj.params.add('pregain', 0, 'float')
 						if 'Soft_Knee' in fxparams: plugin_obj.params.add('knee', float(fxparams['Soft_Knee']), 'float')
@@ -210,7 +211,7 @@ class input_zmaestro(plugins.base):
 						if 'Release' in fxparams: plugin_obj.params.add('release', float(fxparams['Release'])/1000, 'float')
 						if 'Threshold' in fxparams: plugin_obj.params.add('threshold', float(fxparams['Threshold']), 'float')
 					else:
-						plugin_obj = convproj_obj.plugin__add(fxid, 'native', 'z_maestro', fx.type)
+						plugin_obj = cvpj_plugins.add_native('z_maestro', fx.type, fxid)
 						for key, val in fx.params.items():
 							if val.replace('.', '').isnumeric(): plugin_obj.params.add(key, float(val), 'float')
 							elif val in ['true', 'false']: plugin_obj.params.add(key, val=='true', 'bool')

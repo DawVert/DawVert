@@ -80,6 +80,7 @@ cvpj_osc_wave_midi = {
 
 def create_inst(convproj_obj, vol, WaveType, fst_Instrument, fx_num):
 	cvpj_insts = convproj_obj.instruments
+	cvpj_plugins = convproj_obj.plugins
 
 	instname = fst_Instrument.Name
 
@@ -88,11 +89,10 @@ def create_inst(convproj_obj, vol, WaveType, fst_Instrument, fx_num):
 	inst_obj.fxrack_channel = fx_num
 	inst_obj.params.add('vol', 0.2*vol, 'float')
 
-	synthid = None
 	plugin_obj = None
 
 	if WaveType in cvpj_osc_wave:
-		plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'synth-osc', None)
+		plugin_obj = cvpj_plugins.add('universal', 'synth-osc', None)
 		osc_data = plugin_obj.osc_add()
 		osc_shape = osc_data.prop.shape = cvpj_osc_wave[WaveType]
 		if osc_shape in cvpj_osc_wave_midi: plugin_obj.midi_fallback__add_inst(cvpj_osc_wave_midi[osc_shape])
@@ -101,17 +101,17 @@ def create_inst(convproj_obj, vol, WaveType, fst_Instrument, fx_num):
 	elif WaveType == 'VRC7FM':
 		inst_obj.params.add('vol', 1, 'float')
 		opl2_obj = fst_Instrument.FM.to_opl2()
-		plugin_obj, synthid = opl2_obj.to_cvpj_genid(convproj_obj)
+		plugin_obj = opl2_obj.to_cvpj(convproj_obj)
 		add_envelopes(plugin_obj, fst_Instrument)
 
 	elif WaveType == 'FDS':
-		plugin_obj, synthid = convproj_obj.plugin__add__genid('chip', 'fds', None)
+		plugin_obj = cvpj_plugins.add('chip', 'fds', None)
 		add_envelopes(plugin_obj, fst_Instrument)
 		add_envelope(plugin_obj, fst_Instrument, 'wave', 'FDSWave')
 
 	elif WaveType == 'N163':
 		inst_obj.params.add('vol', 1, 'float')
-		plugin_obj, synthid = convproj_obj.plugin__add__genid('native', 'namco163_famistudio', None)
+		plugin_obj = cvpj_plugins.add('native', 'namco163_famistudio', None)
 		osc_obj = plugin_obj.osc_add()
 		osc_obj.prop.type = 'wavetable'
 		osc_obj.prop.nameid = 'main'
@@ -121,20 +121,21 @@ def create_inst(convproj_obj, vol, WaveType, fst_Instrument, fx_num):
 	elif WaveType == 'EPSMFM':
 		inst_obj.params.add('vol', 0.6, 'float')
 		opn2_obj = fst_Instrument.FM.to_opn2()
-		plugin_obj, synthid = opn2_obj.to_cvpj_genid(convproj_obj)
+		plugin_obj = opn2_obj.to_cvpj(convproj_obj)
 		instpan = 0
 		instpan += int(bool(fst_Instrument.Regs[1] & 0x80))*-1
 		instpan += int(bool(fst_Instrument.Regs[1] & 0x40))
 		inst_obj.params.add('pan', instpan, 'float')
 
-	elif WaveType == 'EPSM_Kick': plugin_obj, synthid = convproj_obj.plugin__add__genid('chip', 'epsm_rhythm', 'kick')
-	elif WaveType == 'EPSM_Snare': plugin_obj, synthid = convproj_obj.plugin__add__genid('chip', 'epsm_rhythm', 'snare')
-	elif WaveType == 'EPSM_Cymbal': plugin_obj, synthid = convproj_obj.plugin__add__genid('chip', 'epsm_rhythm', 'cymbal')
-	elif WaveType == 'EPSM_HiHat': plugin_obj, synthid = convproj_obj.plugin__add__genid('chip', 'epsm_rhythm', 'hihat')
-	elif WaveType == 'EPSM_Tom': plugin_obj, synthid = convproj_obj.plugin__add__genid('chip', 'epsm_rhythm', 'tom')
-	elif WaveType == 'EPSM_Rimshot': plugin_obj, synthid = convproj_obj.plugin__add__genid('chip', 'epsm_rhythm', 'rimshot')
+	elif WaveType == 'EPSM_Kick': plugin_obj = cvpj_plugins.add('chip', 'epsm_rhythm', 'kick')
+	elif WaveType == 'EPSM_Snare': plugin_obj = cvpj_plugins.add('chip', 'epsm_rhythm', 'snare')
+	elif WaveType == 'EPSM_Cymbal': plugin_obj = cvpj_plugins.add('chip', 'epsm_rhythm', 'cymbal')
+	elif WaveType == 'EPSM_HiHat': plugin_obj = cvpj_plugins.add('chip', 'epsm_rhythm', 'hihat')
+	elif WaveType == 'EPSM_Tom': plugin_obj = cvpj_plugins.add('chip', 'epsm_rhythm', 'tom')
+	elif WaveType == 'EPSM_Rimshot': plugin_obj = cvpj_plugins.add('chip', 'epsm_rhythm', 'rimshot')
 
-	if synthid and plugin_obj: 
+	if plugin_obj: 
+		synthid = cvpj_plugins.get_lastid()
 		plugin_obj.role = 'synth'
 		inst_obj.plugslots.set_synth(synthid)
 
@@ -146,6 +147,7 @@ def create_inst(convproj_obj, vol, WaveType, fst_Instrument, fx_num):
 
 def create_dpcm_inst(DPCMMappings, DPCMSamples, fst_instrument, fx_num, dpcm_freqlist):
 	cvpj_insts = convproj_obj.instruments
+	cvpj_plugins = convproj_obj.plugins
 	
 	from objects import audio_data
 	global samplefolder
@@ -160,8 +162,10 @@ def create_dpcm_inst(DPCMMappings, DPCMSamples, fst_instrument, fx_num, dpcm_fre
 	inst_obj.visual.from_datapack('famistudio', 'chip', 'DPCM', False)
 	inst_obj.fxrack_channel = fx_num
 	inst_obj.is_drum = True
-	plugin_obj, synthid = convproj_obj.plugin__add__genid('universal', 'sampler', 'drums')
+	plugin_obj = cvpj_plugins.add('universal', 'sampler', 'drums')
 	plugin_obj.role = 'synth'
+
+	synthid = cvpj_plugins.get_lastid()
 
 	inst_obj.plugslots.set_synth(synthid)
 
@@ -330,6 +334,7 @@ class input_famistudio(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_automation = convproj_obj.automation
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -409,7 +414,7 @@ class input_famistudio(plugins.base):
 
 			if TrebleRolloffHz != -1:
 				fx_id = str(n)+'_filter'
-				plugin_obj = convproj_obj.plugin__add(fx_id, 'universal', 'filter', 'single')
+				plugin_obj = cvpj_plugins.add_uni('filter', 'single', fx_id)
 				plugin_obj.role = 'fx'
 				plugin_obj.filter.on = True
 				plugin_obj.filter.type.set('high_shelf', None)

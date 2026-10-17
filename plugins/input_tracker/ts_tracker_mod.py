@@ -53,6 +53,9 @@ class input_mod(plugins.base):
 		
 		samplefolder = dawvert_intent.path_samples['extracted']
 
+		# ---------- convproj objects ----------
+		cvpj_plugins = convproj_obj.plugins
+
 		# ---------- convproj init ----------
 		traits_obj = convproj_obj.traits
 		traits_obj.audio_filetypes = ['wav']
@@ -98,7 +101,8 @@ class input_mod(plugins.base):
 				audio_obj.pcm_change_bits(16)
 				audio_obj.to_file_wav(wave_path)
 
-				plugin_obj, inst_obj.plugslots.synth, sampleref_obj, sp_obj = convproj_obj.plugin__addspec__sampler__genid(wave_path, None)
+				plugin_obj, sampleref_obj, sp_obj = cvpj_plugins.addspec_sampler(wave_path, None)
+				inst_obj.plugslots.synth = cvpj_plugins.get_lastid()
 				sampleref_obj.set_fileformat('wav')
 				audio_obj.to_sampleref_obj(sampleref_obj)
 

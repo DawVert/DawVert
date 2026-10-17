@@ -13,6 +13,7 @@ def calcsec(val, ppq):
 	return (val/ppq)/50
 
 def do_plugins(convproj_obj, plugins, track_obj):
+	cvpj_plugins = convproj_obj.plugins
 	for qplug in plugins:
 		if qplug.type == 'VST2':
 			plugfilename = qplug.filename
@@ -25,7 +26,7 @@ def do_plugins(convproj_obj, plugins, track_obj):
 
 			if plugfilename and chunkdata:
 				plugfilename = plugfilename.replace('/', '\\')
-				plugin_obj, pluginid = convproj_obj.plugin__add__genid('external', 'vst2', 'unix')
+				plugin_obj, pluginid = cvpj_plugins.add_external('vst2', 'unix')
 				extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 				extmanu_obj.vst2__replace_data('path_unix', plugfilename, None, None, False)
 				plugin_obj.external_info.datatype = 'chunk'

@@ -10,29 +10,32 @@ XTPM_valid = [b'...P',b'...R',b'..BM',b'..CM',b'..EP',b'..EV',b'..MF',b'..OF',b'
 STPM_valid = [b'...C',b'..MT',b'..PR',b'..TD',b'.APS',b'.BPR',b'.FSM',b'.MMP',b'.MPR',b'.VGD',b'.VWC',b'AMIM',b'AUTH',b'CCOL',b'CUES',b'DTFR',b'RSMP',b'SnhC',b'SWNG',b'VTSV',b'VWSL']
 
 def plugin__add(convproj_obj, omptp_num, omptp_type, omptp_id, omptp_name, omptp_libname, omptp_chunkdata, datadef, datapack):
+	cvpj_plugins = convproj_obj.plugins
+
 	pluginid = 'FX'+str(omptp_num)
 	if omptp_type == b'OMXD':
-		plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'directx', omptp_libname)
+		plugin_obj = cvpj_plugins.add_external('directx', omptp_libname, pluginid)
 		jsondecoded = datadef.parse(omptp_libname.lower(), omptp_chunkdata)
 		plugin_obj.param_dict_datapack_get(jsondecoded, datapack, 'plugin', omptp_libname.lower())
 	elif omptp_type == b'PtsV':
-		plugin_obj = convproj_obj.plugin__add(pluginid, 'external', 'vst2', None)
+		plugin_obj = cvpj_plugins.add_external('vst2', None, pluginid)
 		plugin_vst2.replace_data(convproj_obj, plugin_obj, 'id', 'win', omptp_id, 'chunk', omptp_chunkdata, 0)
 	elif omptp_type == b'DBM0':
 		paramdata = omptp_chunkdata[4:]
-		plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'digibooster', 'pro_echo')
+		plugin_obj = cvpj_plugins.add_native('digibooster', 'pro_echo', pluginid)
 		plugin_obj.params.add('delay', paramdata[0], 'int')
 		plugin_obj.params.add('fb', paramdata[1], 'int')
 		plugin_obj.params.add('wet', paramdata[2], 'int')
 		plugin_obj.params.add('cross_echo', paramdata[3], 'int')
 	elif omptp_type == b'SymM':
 		paramdata = omptp_chunkdata[4:]
-		plugin_obj = convproj_obj.plugin__add(pluginid, 'native', 'symmod', 'echo')
+		plugin_obj = cvpj_plugins.add_native('symmod', 'echo', pluginid)
 		plugin_obj.params.add('type', paramdata[0], 'int')
 		plugin_obj.params.add('delay', paramdata[1], 'int')
 		plugin_obj.params.add('fb', paramdata[2], 'int')
 
 def parse_start(filestream, convproj_obj):
+
 	datadef = dv_datadef.datadef('./data_main/datadef/openmpt.ddef')
 	datapack = dv_datapack.datapack('./data/datapack/app/openmpt.xml')
 

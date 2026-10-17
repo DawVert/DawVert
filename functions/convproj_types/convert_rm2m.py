@@ -14,8 +14,9 @@ def convert(convproj_obj, dawvert_intent):
 	fxrack_obj = convproj_obj.fxrack
 	cvpj_tracks = convproj_obj.tracks
 	cvpj_insts = convproj_obj.instruments
-	useable_plugins = convproj_obj.plugins
-	convproj_obj.plugins = {}
+	
+	useable_plugins = convproj_obj.plugins.data
+	convproj_obj.plugins.data = {}
 
 	used_plugins = []
 
@@ -82,7 +83,7 @@ def convert(convproj_obj, dawvert_intent):
 	for plugid in used_plugins:
 		if plugid:
 			for plugid in useable_plugins:
-				convproj_obj.plugins[plugid] = useable_plugins[plugid]
+				convproj_obj.plugins.data[plugid] = useable_plugins[plugid]
 
 	cvpj_tracks.data = {}
 	cvpj_tracks.order = []

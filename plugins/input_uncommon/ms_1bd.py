@@ -77,6 +77,7 @@ class input_1bitdragon(plugins.base):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_master = convproj_obj.track_master
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(4)
@@ -88,11 +89,13 @@ class input_1bitdragon(plugins.base):
 
 		# ---------- master track ----------
 		cvpj_master.params.add('vol', project_obj.volume, 'float')
-		plugin_obj = convproj_obj.plugin__add('master-reverb', 'simple', 'reverb', None)
+		
+		reverb_id = 'master-reverb'
+		plugin_obj = cvpj_plugins.add_simple('reverb', None, reverb_id)
 		plugin_obj.role = 'fx'
 		plugin_obj.visual.name = 'Reverb'
 		plugin_obj.fxdata_add(project_obj.reverb, 0.5)
-		cvpj_master.plugslots.slots_audio.append('master-reverb')
+		cvpj_master.plugslots.slots_audio.append(reverb_id)
 
 		# ---------- scale ----------
 		onebitd_scaleId = project_obj.scaleId

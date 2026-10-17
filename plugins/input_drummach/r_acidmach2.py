@@ -48,6 +48,7 @@ class input_petaporon(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'ri'
@@ -67,7 +68,7 @@ class input_petaporon(plugins.base):
 			machineName = instdata.machineName
 			track_obj = cvpj_tracks.add(instid, 'instrument', 1, True)
 			track_obj.visual.from_datapack('acid_machine_2', 'plugin_inst', machineName, True)
-			plugin_obj = convproj_obj.plugin__add(instid, 'native', 'acidmach2', machineName)
+			plugin_obj = cvpj_plugins.add_native('acidmach2', machineName, instid)
 			plugin_obj.visual.from_datapack('acid_machine_2', 'plugin_inst', machineName, True)
 			track_obj.plugslots.set_synth(instid)
 			tracks[instid] = track_obj
@@ -105,7 +106,8 @@ class input_petaporon(plugins.base):
 				slotnum = fxnum+1
 				if slotnum in fxUnits:
 					fxtype, fxdata = fxUnits[slotnum]
-					plugin_obj, fxid = convproj_obj.plugin__add__genid('native', 'acidmach2', 'fx_'+str(fxtype))
+					fxid = 'fx_%i_%i' % (instnum, fxnum)
+					plugin_obj = cvpj_plugins.add_native('acidmach2', 'fx_'+str(fxtype), fxid)
 					plugin_obj.role = 'fx'
 					plugin_obj.visual.from_datapack('acid_machine_2', 'plugin_fx', str(fxtype), True)
 					track_obj.plugin_autoplace(plugin_obj, fxid)

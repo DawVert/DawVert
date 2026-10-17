@@ -90,17 +90,19 @@ class fx_maker_base:
 		param_obj.add('legato', calcval(chan_cc[68], 68), 'float')
 
 	def add_chorus(self, p, c, convproj_obj, plugslots):
+		cvpj_plugins = convproj_obj.plugins
 		curd_channel = self.data_channel[p][c]
 		chan_cc = curd_channel['val_cc']
 		chorus_pluginid = '_'.join([str(p), str(c), 'chorus'])
-		plugin_obj = convproj_obj.plugin__add(chorus_pluginid, 'simple', 'chorus', None)
+		plugin_obj = cvpj_plugins.add('simple', 'chorus', None, chorus_pluginid)
 		plugin_obj.visual.name = 'Chorus'
 		plugin_obj.params.add('amount', calcval(chan_cc[93], 93), 'float')
 		plugslots.slots_audio.append(chorus_pluginid)
 
 	def add_reverb(self, p, convproj_obj, plugslots):
+		cvpj_plugins = convproj_obj.plugins
 		reverb_pluginid = str(p)+'_reverb'
-		plugin_obj = convproj_obj.plugin__add(reverb_pluginid, 'simple', 'reverb', None)
+		plugin_obj = cvpj_plugins.add('simple', 'reverb', None, reverb_pluginid)
 		plugin_obj.visual.name = 'Reverb'
 		plugin_obj.fxdata_add(1, 0.5)
 		plugslots.slots_audio.append(reverb_pluginid)

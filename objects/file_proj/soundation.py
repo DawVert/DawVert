@@ -7,12 +7,13 @@ logger_projparse = logging.getLogger('projparse')
 # ============================================= device ============================================= 
 
 class soundation_param:
-	__slots__ = ['value','automation','has_auto']
+	__slots__ = ['value','automation','has_auto','exists']
 
 	def __init__(self, indict=None):
 		self.value = 0
 		self.automation = []
 		self.has_auto = False
+		self.exists = False
 		if indict is not None: self.read(indict)
 
 	def read(self, indict):

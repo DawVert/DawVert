@@ -8,6 +8,8 @@ from objects import colors
 from external.easybinrw import easybinrw
 
 def do_plugchunk(fx_slot, fxid, chunkdata, convproj_obj, plugslots):
+	cvpj_plugins = convproj_obj.plugins
+
 	try:
 		if chunkdata:
 			if len(chunkdata)>12:
@@ -38,7 +40,7 @@ def do_plugchunk(fx_slot, fxid, chunkdata, convproj_obj, plugslots):
 							for _ in range(numparams): ebrw_writestr.float_b(ebrw_readstr.float())
 						else:
 							break
-				plugin_obj = convproj_obj.plugin__add(fxid, 'external', 'vst2', None)
+				plugin_obj = cvpj_plugins.add_external('vst2', None, fxid)
 				extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, fxid)
 				extmanu_obj.vst2__import_presetdata('raw', ebrw_writestr.getvalue(), None)
 				plugin_obj.role = 'fx'

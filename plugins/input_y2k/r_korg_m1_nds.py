@@ -49,6 +49,7 @@ class input_korg_m1_nds(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_groups = convproj_obj.groups
 		cvpj_metadata = convproj_obj.metadata
+		cvpj_plugins = convproj_obj.plugins
 
 		# ---------- convproj params ----------
 		no_swing = dawvert_intent.input_get_param('no_swing', False)
@@ -79,14 +80,15 @@ class input_korg_m1_nds(plugins.base):
 		return_obj = convproj_obj.track_master.fx__return__add('trackfx')
 		return_obj.visual.name = 'FX'
 
+		sendfxid = 'trackfx'
 		if projsong_obj.fx_type:
 			return_obj.params.add('vol', projsong_obj.reverb_level/127, 'float')
-			plugin_obj = convproj_obj.plugin__add('trackfx', 'native', 'korg_m1', 'reverb')
+			plugin_obj = cvpj_plugins.add_native('korg_m1', 'reverb', sendfxid)
 			param_obj = plugin_obj.params.add('time', projsong_obj.reverb_time, 'int')
 			param_obj.add_range(0, 127)
 		else:
 			return_obj.params.add('vol', projsong_obj.delay_level/127, 'float')
-			plugin_obj = convproj_obj.plugin__add('trackfx', 'native', 'korg_m1', 'delay')
+			plugin_obj = cvpj_plugins.add_native('korg_m1', 'delay', sendfxid)
 
 			param_obj = plugin_obj.params.add('tempo', bool(projsong_obj.delay_tempo), 'bool')
 			param_obj.visual.name = 'Tempo'
@@ -112,7 +114,8 @@ class input_korg_m1_nds(plugins.base):
 		if do_group_inst: grouptrks = {}
 
 		for num, channel_obj in enumerate(projsong_obj.channels):
-			cvpj_trackid = str(num)
+			cvpj_trackid = 'channel_'+str(num)
+			cvpj_pluginid = 'plugin_'+str(num)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 			track_obj.params.add('vol', channel_obj.volume/127, 'float')
 			track_obj.params.add('pan', channel_obj.pan/5, 'float')
@@ -135,8 +138,8 @@ class input_korg_m1_nds(plugins.base):
 									if groupname not in grouptrks: grouptrks[groupname] = []
 									grouptrks[groupname].append(track_obj)
 							if dset_obj: track_obj.visual.name = dset_obj.visual.name
-							plugin_obj, pluginid = convproj_obj.plugin__add__genid('native', 'korg_m1', instset)
-							track_obj.plugslots.set_synth(pluginid)
+							plugin_obj = cvpj_plugins.add_native('korg_m1', instset, cvpj_pluginid)
+							track_obj.plugslots.set_synth(cvpj_pluginid)
 
 							plugin_obj.datavals.add('set', instset)
 							plugin_obj.datavals.add('patch', realpatch)
