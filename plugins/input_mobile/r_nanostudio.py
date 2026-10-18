@@ -71,6 +71,7 @@ class input_nanostudio_v1(plugins.base):
 
 				if ns_inst.type == 'TRG':
 					plugin_obj = cvpj_plugins.add_uni('sampler', 'drums', cvpj_trackid)
+					plugin_obj.role = 'synth'
 					track_obj.is_drum = True
 					track_obj.is_multinote_drum = True
 					for key, val in ns_inst.am.items():
@@ -98,6 +99,7 @@ class input_nanostudio_v1(plugins.base):
 											sp_obj.sampleref = sampname
 				else:
 					plugin_obj = cvpj_plugins.add_native('nanostudio_v1', ns_inst.type, cvpj_trackid)
+					plugin_obj.role = 'synth'
 
 				plugin_obj.role = 'synth'
 				track_obj.plugin_autoplace(plugin_obj, cvpj_trackid)

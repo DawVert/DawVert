@@ -135,6 +135,7 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 							firstlayer = soundlayers[0]
 							layerparams = firstlayer.soundparameters
 							plugin_obj = cvpj_plugins.add_uni('sampler', 'single')
+							plugin_obj.role = 'synth'
 							pluginid = cvpj_plugins.get_lastid()
 							track_obj.plugslots.set_synth(pluginid)
 							sp_obj = plugin_obj.samplepart_add('sample')
@@ -153,6 +154,7 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 	
 						elif len(soundlayers) > 1:
 							plugin_obj = cvpj_plugins.add_uni('sampler', 'multi')
+							plugin_obj.role = 'synth'
 							pluginid = cvpj_plugins.get_lastid()
 							playMode = program.playMode
 							if playMode == 0: plugin_obj.datavals.add('multi_mode', 'all')
@@ -179,6 +181,7 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 				from objects import colors
 	
 				plugin_obj = cvpj_plugins.add_uni('sampler', 'drums')
+				plugin_obj.role = 'synth'
 				pluginid = cvpj_plugins.get_lastid()
 				track_obj.plugslots.set_synth(pluginid)
 	
@@ -266,7 +269,7 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 
 		elif plugtype not in ['volume', 'level'] and plugtype != '':
 			plugin_obj = cvpj_plugins.add_native('tracktion', plugtype)
-			plugin_obj.role = 'effect'
+			plugin_obj.role = 'fx'
 			plugin_obj.fxdata_add(wf_plugin.enabled, None)
 			pluginid = cvpj_plugins.get_lastid()
 

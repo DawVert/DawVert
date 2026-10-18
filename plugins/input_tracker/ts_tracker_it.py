@@ -266,17 +266,20 @@ class input_it(plugins.base):
 
 				if it_inst.pitch_pan_separation:
 					plugin_obj = cvpj_plugins.add_uni('pitch_pan_separation', None)
+					plugin_obj.role = 'notefx'
 					plugin_obj.params.add('range', 1/(it_inst.pitch_pan_separation/32), 'float')
 					plugin_obj.datavals.add('center_note', it_inst.pitch_pan_center)
 					inst_obj.plugslots.slots_notes.append(cvpj_plugins.get_lastid())
 
 				if it_inst.randomvariation_volume:
 					plugin_obj = cvpj_plugins.add_uni('random_variation', 'vol')
+					plugin_obj.role = 'notefx'
 					plugin_obj.params.add('amount', it_inst.randomvariation_volume, 'float')
 					inst_obj.plugslots.slots_notes.append(cvpj_plugins.get_lastid())
 
 				if it_inst.randomvariation_pan:
 					plugin_obj = cvpj_plugins.add_uni('random_variation', 'pan')
+					plugin_obj.role = 'notefx'
 					plugin_obj.params.add('amount', it_inst.randomvariation_pan, 'float')
 					inst_obj.plugslots.slots_notes.append(cvpj_plugins.get_lastid())
 
@@ -294,6 +297,7 @@ class input_it(plugins.base):
 					sampleregions = data_values.list__to_reigons(bn_s_t, 60)
 
 					plugin_obj = cvpj_plugins.add_uni('sampler', 'multi')
+					plugin_obj.role = 'synth'
 					inst_obj.visual.color *= 1.25
 					plugin_obj.datavals.add('point_value_type', "samples")
 					inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())

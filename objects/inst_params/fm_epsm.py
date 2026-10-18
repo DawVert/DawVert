@@ -96,6 +96,7 @@ class epsm_inst:
 
 	def to_cvpj(self, convproj_obj, pluginid=None):
 		plugin_obj = convproj_obj.plugins.add('chip', 'fm', 'epsm', pluginid)
+		plugin_obj.role = 'synth'
 		self.internal_add_params(plugin_obj)
 		return plugin_obj
 

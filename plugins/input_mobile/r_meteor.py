@@ -14,6 +14,7 @@ def do_effect(cvpj_plugins, fxid, plugslots, m_fx):
 	if typeid!=0:
 		strtype = str(typeid)
 		plugin_obj = cvpj_plugins.add_native('meteor', strtype, fxid)
+		plugin_obj.role = 'fx'
 		plugin_obj.fxdata_add(True, wetlvl)
 		for param_id, datapack_param in globalstore.datapack.get_params('native', 'plugin', strtype):
 			paramval = m_fx.params[param_id] if param_id in m_fx.params else None

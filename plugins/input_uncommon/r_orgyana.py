@@ -133,6 +133,7 @@ class input_orgyana(plugins.base):
 					# plugin
 					if orgsamp_obj.loaded:
 						plugin_obj = cvpj_plugins.add_uni('synth-osc', None, pluginid)
+						plugin_obj.role = 'synth'
 						osc_data = plugin_obj.osc_add()
 						osc_data.prop.type = 'wave'
 						osc_data.prop.nameid = 'main'

@@ -320,11 +320,12 @@ class cvpj_project_plugins:
 		return plugin_obj, samplepart_obj
 
 	def addspec_midi(self, plug_id=None):
-		return self.add('universal', 'midi', None, plug_id)
+		plugin_obj = self.add('universal', 'midi', None, plug_id)
+		plugin_obj.role = 'synth'
+		return plugin_obj
 
 	def addspec_midi__prop(self, indict, plug_id=None):
 		plugin_obj = self.addspec_midi(plug_id)
-		plugin_obj.role = 'synth'
 		plugin_obj.midi.from_dict(indict)
 		return plugin_obj
 
@@ -334,7 +335,6 @@ class cvpj_project_plugins:
 
 		if dso_midi:
 			plugin_obj = self.addspec_midi(plug_id)
-			plugin_obj.role = 'synth'
 			midi_obj = plugin_obj.midi
 			midi_obj.bank = dso_midi.bank
 			midi_obj.patch = dso_midi.patch

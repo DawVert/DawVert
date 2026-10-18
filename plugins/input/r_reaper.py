@@ -328,6 +328,7 @@ class input_reaper(plugins.base):
 			if bool(iphase):
 				inverse_fxid = cvpj_trackid+'_inverse'
 				plugin_obj = cvpj_plugins.add_uni('invert', None, inverse_fxid)
+				plugin_obj.role = 'fx'
 				track_obj.plugslots.slots_mixer.append(inverse_fxid)
 
 			do_auto(pooledenvs, convproj_obj, rpp_track.volenv2, ['track', cvpj_trackid, 'vol'], False, 'float', False)

@@ -188,6 +188,7 @@ class input_xm(plugins.base):
 				inst_used = True
 				inst_obj.params.add('vol', 0.3, 'float')
 				plugin_obj = cvpj_plugins.add_uni('sampler', 'multi')
+				plugin_obj.role = 'synth'
 				inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 				for instnum, r_start, e_end in sampleregions:
 					trsamp = xm_inst.samp_head[instnum]

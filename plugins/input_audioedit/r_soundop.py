@@ -58,6 +58,7 @@ def do_fx(convproj_obj, fxdata):
 			numparams = ebrw_readstr.int_u32()
 			fxparams = dict([[ebrw_readstr.int_u32(), ebrw_readstr.double()] for _ in range(numparams)])
 			plugin_obj = cvpj_plugins.add_native('soundop', fxname)
+			plugin_obj.role = 'fx'
 			for param_id, dset_param in globalstore.datapack.get_params('soundop', 'plugin', fxname):
 				paramval = fxparams[dset_param.num] if dset_param.num in fxparams else None
 				plugin_obj.dset_param__add(param_id, paramval, dset_param)
@@ -67,6 +68,7 @@ def do_fx(convproj_obj, fxdata):
 		if len(fxdata) == 4:
 			vstid = int(fxdata[1])
 			plugin_obj = cvpj_plugins.add_external('vst2', None)
+			plugin_obj.role = 'fx'
 			extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 			if StateChunk: 
 				extmanu_obj.vst2__replace_data('id', vstid, StateChunk, None, False)

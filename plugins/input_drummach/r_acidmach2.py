@@ -69,6 +69,7 @@ class input_petaporon(plugins.base):
 			track_obj = cvpj_tracks.add(instid, 'instrument', 1, True)
 			track_obj.visual.from_datapack('acid_machine_2', 'plugin_inst', machineName, True)
 			plugin_obj = cvpj_plugins.add_native('acidmach2', machineName, instid)
+			plugin_obj.role = 'synth'
 			plugin_obj.visual.from_datapack('acid_machine_2', 'plugin_inst', machineName, True)
 			track_obj.plugslots.set_synth(instid)
 			tracks[instid] = track_obj

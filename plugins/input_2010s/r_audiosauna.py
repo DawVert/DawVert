@@ -138,7 +138,7 @@ class input_audiosauna(plugins.base):
 		return_obj.params.add('vol', project_obj.dlyLevel/100, 'float')
 
 		plugin_obj = cvpj_plugins.add_native('audiosauna', 'tape_delay')
-		plugin_obj.role = 'effect'
+		plugin_obj.role = 'fx'
 		plugin_obj.visual.name = 'Tape Delay'
 		timing_obj = plugin_obj.timing_add('main')
 		if project_obj.dlySync: 
@@ -159,7 +159,7 @@ class input_audiosauna(plugins.base):
 		return_obj.params.add('vol', project_obj.rvbLevel/100, 'float')
 
 		plugin_obj = cvpj_plugins.add_native('audiosauna', 'reverb')
-		plugin_obj.role = 'effect'
+		plugin_obj.role = 'fx'
 		plugin_obj.visual.name = 'Reverb'
 		params_obj = plugin_obj.params
 		params_obj.add_named("time", project_obj.rvbTime, 'float', 'Time')
@@ -329,7 +329,7 @@ class input_audiosauna(plugins.base):
 					overdrive = float(getvalue(as_device.params, 'overdrive'))/100
 					if modulate == overdrive == 0:
 						fx_plugin_obj = cvpj_plugins.add_native('audiosauna', 'distortion')
-						fx_plugin_obj.role = 'effect'
+						fx_plugin_obj.role = 'fx'
 						fx_plugin_obj.visual.name = 'Distortion'
 						fx_plugin_obj.params.add_named("overdrive", overdrive, 'float', 'Overdrive')
 						fx_plugin_obj.params.add_named("modulate", modulate, 'float', 'Modulate')
@@ -339,7 +339,7 @@ class input_audiosauna(plugins.base):
 					bitrateval = float(getvalue(as_device.params, 'bitrate'))
 					if bitrateval != 0.0: 
 						fx_plugin_obj = cvpj_plugins.add_uni('bitcrush', None)
-						fx_plugin_obj.role = 'effect'
+						fx_plugin_obj.role = 'fx'
 						fx_plugin_obj.visual.name = 'Bitcrush'
 						fx_plugin_obj.params.add("bits", 16, 'float')
 						fx_plugin_obj.params.add("freq", 22050/bitrateval, 'float')
@@ -349,7 +349,7 @@ class input_audiosauna(plugins.base):
 					chorus_wet = float(getvalue(as_device.params, 'chorusMix' if as_device in [0,1] else 'chorusDryWet'))/100
 					if chorus_wet != 0:
 						fx_plugin_obj = cvpj_plugins.add_native('audiosauna', 'chorus')
-						fx_plugin_obj.role = 'effect'
+						fx_plugin_obj.role = 'fx'
 						fx_plugin_obj.visual.name = 'Chorus'
 						chorus_size = float(getvalue(as_device.params, 'chorusLevel' if as_device in [0,1] else 'chorusSize'))/100
 						chorus_speed = float(getvalue(as_device.params, 'chorusSpeed'))/100
@@ -362,7 +362,7 @@ class input_audiosauna(plugins.base):
 					ampval = float(getvalue(as_device.params, 'masterAmp'))/100
 					if ampval != 1.0: 
 						fx_plugin_obj = cvpj_plugins.add_uni('volpan', None)
-						fx_plugin_obj.role = 'effect'
+						fx_plugin_obj.role = 'fx'
 						fx_plugin_obj.visual.name = 'Amp'
 						fx_plugin_obj.params.add_named("vol", ampval, 'float', 'Level')
 						fx_plugin_obj.fxdata_add(True, 1)

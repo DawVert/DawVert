@@ -85,12 +85,14 @@ class input_korg_m1_nds(plugins.base):
 			# reverb
 			return_obj.params.add('vol', projsong_obj.reverb_level/127, 'float')
 			plugin_obj = cvpj_plugins.add_native('korg_m1', 'reverb', sendfxid)
+			plugin_obj.role = 'fx'
 			param_obj = plugin_obj.params.add('time', projsong_obj.reverb_time, 'int')
 			param_obj.add_range(0, 127)
 		else:
 			# delay
 			return_obj.params.add('vol', projsong_obj.delay_level/127, 'float')
 			plugin_obj = cvpj_plugins.add_native('korg_m1', 'delay', sendfxid)
+			plugin_obj.role = 'fx'
 
 			param_obj = plugin_obj.params.add('tempo', bool(projsong_obj.delay_tempo), 'bool')
 			param_obj.visual.name = 'Tempo'

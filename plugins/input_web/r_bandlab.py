@@ -173,6 +173,7 @@ class input_bandlab(plugins.base):
 
 								if not use_drum:
 									plugin_obj = cvpj_plugins.add_uni('sampler', 'multi')
+									plugin_obj.role = 'synth'
 									for laynum, layer in enumerate(layers_list):
 										pitch = layer['pitch'] if 'pitch' in layer else 60
 										minKeyRange = layer['minKeyRange'] if 'minKeyRange' in layer else pitch
@@ -187,6 +188,7 @@ class input_bandlab(plugins.base):
 										sp_obj.sampleref = layer['sampleId']
 								else:
 									plugin_obj = cvpj_plugins.add_uni('sampler', 'drums')
+									plugin_obj.role = 'synth'
 
 									for laynum, layer in enumerate(layers_list):
 										minKeyRange = layer['minKeyRange'] if 'minKeyRange' in layer else pitch

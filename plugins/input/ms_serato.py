@@ -79,6 +79,7 @@ def do_chan_strip(eq_defined, convproj_obj, trackid, channel_strip, fxslots_audi
 	#if not (channel_strip.low_eq == channel_strip.mid_eq == channel_strip.high_eq == None):
 	fxplugid = trackid+'_fx_eq'
 	fxplugin_obj = cvpj_plugins.add_native('serato', '3band', fxplugid)
+	fxplugin_obj.role = 'fx'
 	fxplugin_obj.params.add('low_gain', channel_strip.low_eq if channel_strip.low_eq is not None else 0, 'float')
 	fxplugin_obj.params.add('mid_gain', channel_strip.mid_eq if channel_strip.mid_eq is not None else 0, 'float')
 	fxplugin_obj.params.add('high_gain', channel_strip.high_eq if channel_strip.high_eq is not None else 0, 'float')
@@ -267,6 +268,7 @@ class input_serato(plugins.base):
 				inst_obj.visual.name = scene_deck.name
 				inst_obj.visual.color.set_float([0.48, 0.35, 0.84])
 				plugin_obj = cvpj_plugins.add_native('serato-inst', 'instrument')
+				plugin_obj.role = 'synth'
 				synthid = cvpj_plugins.get_lastid()
 				inst_obj.plugslots.set_synth(synthid)
 				instrument_file = parse_filepath(scene_deck.instrument_file)
@@ -291,6 +293,7 @@ class input_serato(plugins.base):
 				if useaudioclips == False:
 					inst_obj = cvpj_insts.add(cvpj_instid)
 					plugin_obj = cvpj_plugins.add_native('serato-inst', 'sampler')
+					plugin_obj.role = 'synth'
 					synthid = cvpj_plugins.get_lastid()
 					inst_obj.plugslots.set_synth(synthid)
 
@@ -443,6 +446,7 @@ class input_serato(plugins.base):
 									plugslotsaudio = eq_track[trackid]
 									fxplugid = trackid+'_fx_eq'
 									fxplugin_obj = cvpj_plugins.add_uni('eq', '3band', fxplugid)
+									fxplugin_obj.role = 'fx'
 									fxplugin_obj.params.add('lowmid_freq', 500, 'float')
 									fxplugin_obj.params.add('midhigh_freq', 5000, 'float')
 									plugslotsaudio.append(fxplugid)

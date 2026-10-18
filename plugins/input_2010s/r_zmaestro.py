@@ -149,6 +149,7 @@ class input_zmaestro(plugins.base):
 				else:
 					track_obj.visual.from_datapack('z_maestro', 'track', tracktype, True)
 					plugin_obj = cvpj_plugins.add_uni('soundfont2', None, cvpj_trackid)
+					plugin_obj.role = 'synth'
 					track_obj.plugslots.set_synth(cvpj_trackid)
 					sf2_path = os.path.join(dawvert_intent.input_folder, zm_track.soundfont)
 					fileref_obj = convproj_obj.fileref__add(sf2_path, sf2_path, None)

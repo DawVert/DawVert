@@ -184,7 +184,7 @@ class input_hydrogen(plugins.base):
 				filtplug_obj.filter.type.set('low_pass', None)
 				filtplug_obj.filter.freq = xtramath.midi_filter(instrument.filterCutoff)*2.3
 				filtplug_obj.filter.q = (instrument.filterResonance*10)+1
-				filtplug_obj.role = 'effect'
+				filtplug_obj.role = 'fx'
 				inst_obj.plugslots.slots_audio.append(filter_id)
 
 			# layers

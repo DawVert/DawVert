@@ -94,6 +94,7 @@ class input_xewton(plugins.base):
 				if xe_tr.instnum not in instplugs:
 					instplug = 'inst'+str(xe_tr.instnum)
 					plugin_obj = cvpj_plugins.add_uni('sampler', 'multi', instplug)
+					plugin_obj.role = 'synth'
 					instplugs[xe_tr.instnum] = [plugin_obj, [track_obj]]
 				else:
 					instplugs[xe_tr.instnum][1].append(track_obj)

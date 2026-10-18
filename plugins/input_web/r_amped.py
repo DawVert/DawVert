@@ -104,12 +104,14 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 
 			if amped_tr_device.label == 'OBXD': 
 				plugin_obj = cvpj_plugins.add('synth', 'discodsp', 'obxd', pluginid)
+				plugin_obj.role = 'synth'
 				wampreset = get_wampreset(amped_tr_device)
 				if 'data' in wampreset:
 					for n, v in enumerate(wampreset['data']): plugin_obj.params.add('obxd_'+str(n), v, 'float')
 
 			elif amped_tr_device.label == 'Augur': 
 				plugin_obj = cvpj_plugins.add('synth', 'smartelectronix', 'augur', pluginid)
+				plugin_obj.role = 'synth'
 				wampreset = get_wampreset(amped_tr_device)
 				if 'data' in wampreset:
 					for n, v in enumerate(wampreset['data']):
@@ -120,11 +122,13 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 
 			elif amped_tr_device.label == 'Dexed': 
 				plugin_obj = cvpj_plugins.add_native('amped', amped_tr_device.label, pluginid)
+				plugin_obj.role = 'synth'
 				plugin_obj.datavals.add('data', amped_tr_device.data['wamPreset'])
 				wampreset = get_wampreset(amped_tr_device)
 
 			elif amped_tr_device.label == 'Europa': 
 				plugin_obj = cvpj_plugins.add('user', 'reasonstudios', 'europa', pluginid)
+				plugin_obj.role = 'synth'
 
 				wampreset = get_wampreset(amped_tr_device)
 				europa_xml = ET.fromstring(wampreset['settings'])

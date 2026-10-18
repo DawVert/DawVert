@@ -66,7 +66,7 @@ def add_filter(cvpj_plugins, instnum, cutoff, resonance):
 	plugin_obj.filter.type.set('low_pass', None)
 	plugin_obj.filter.freq = xtramath.midi_filter(cutoff/100)
 	plugin_obj.filter.q = resonance+1
-	plugin_obj.role = 'effect'
+	plugin_obj.role = 'fx'
 	return fx_id
 
 class input_ceol(plugins.base):

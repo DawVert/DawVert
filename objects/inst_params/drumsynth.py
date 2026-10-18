@@ -211,4 +211,6 @@ class drumsynth_main:
 		plugin_obj.datavals.add('distortion_bits', self.Distortion.Bits)
 		plugin_obj.datavals.add('distortion_rate', self.Distortion.Rate)
 
+		plugin_obj.role = 'synth'
+
 		return plugin_obj

@@ -60,6 +60,7 @@ def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 		if device.plugintype == 'Equalizer':
 			pprms = device.params
 			plugin_obj = cvpj_plugins.add_uni('eq', 'bands', pluginid)
+			plugin_obj.role = 'fx'
 
 			for band in device.bands:
 				filter_obj, filter_id = plugin_obj.eq_add()
@@ -93,6 +94,7 @@ def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 		if device.plugintype == 'Compressor':
 			pprms = device.params
 			plugin_obj = cvpj_plugins.add_uni('compressor', None, pluginid)
+			plugin_obj.role = 'fx'
 			do_param(convproj_obj, plugin_obj.params_slot, device.enabled, 'enabled', None, 'bool', ['slot', pluginid, 'enabled'])
 			if 'Attack' in pprms: do_param(convproj_obj, plugin_obj.params, pprms['Attack'], 'attack', None, 'float', ['plugin', pluginid, 'attack'])
 			if 'AutoMakeup' in pprms: do_param(convproj_obj, plugin_obj.params, pprms['AutoMakeup'], 'automakeup', None, 'bool', ['plugin', pluginid, 'automakeup'])
@@ -105,6 +107,7 @@ def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 		if device.plugintype == 'Limiter':
 			pprms = device.params
 			plugin_obj = cvpj_plugins.add_uni('limiter', None, pluginid)
+			plugin_obj.role = 'fx'
 			do_param(convproj_obj, plugin_obj.params_slot, device.enabled, 'enabled', None, 'bool', ['slot', pluginid, 'enabled'])
 			if 'InputGain' in pprms: do_param(convproj_obj, plugin_obj.params, pprms['InputGain'], 'pregain', None, 'float', ['plugin', pluginid, 'pregain'])
 			if 'Release' in pprms: do_param(convproj_obj, plugin_obj.params, pprms['Release'], 'release', None, 'float', ['plugin', pluginid, 'release'])
@@ -113,6 +116,7 @@ def do_devices(convproj_obj, track_obj, ismaster, dp_devices):
 		if device.plugintype == 'NoiseGate':
 			pprms = device.params
 			plugin_obj = cvpj_plugins.add_uni('noise_gate', None, pluginid)
+			plugin_obj.role = 'fx'
 			do_param(convproj_obj, plugin_obj.params_slot, device.enabled, 'enabled', None, 'bool', ['slot', pluginid, 'enabled'])
 			if 'Attack' in pprms: do_param(convproj_obj, plugin_obj.params, pprms['Attack'], 'attack', None, 'float', ['plugin', pluginid, 'attack'])
 			if 'Range' in pprms: do_param(convproj_obj, plugin_obj.params, pprms['Range'], 'range', None, 'float', ['plugin', pluginid, 'range'])

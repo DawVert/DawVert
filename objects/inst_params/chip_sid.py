@@ -34,6 +34,7 @@ class sid_inst:
 
 	def to_cvpj(self, convproj_obj, pluginid):
 		plugin_obj = convproj_obj.plugins.add('chip', 'sid', None, pluginid)
+		plugin_obj.role = 'synth'
 
 		plugin_obj.params.add('filter_resonance', self.filter_resonance, 'int')
 		plugin_obj.params.add('filter_cutoff', self.filter_cutoff, 'int')

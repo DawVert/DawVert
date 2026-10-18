@@ -253,7 +253,7 @@ class input_greysound(plugins.base):
 				pluginname = fxdata.pluginType.lower()
 				plugin_obj = cvpj_plugins.add_native('greysound', fxdata.pluginType.lower(), fxid)
 				plugin_obj.fxdata_add(not fxdata.bypassed, 1)
-				plugin_obj.role = 'effect'
+				plugin_obj.role = 'fx'
 
 				fxparams = fxdata.parameters
 				dpackpluginname = fxdata.pluginType.upper()

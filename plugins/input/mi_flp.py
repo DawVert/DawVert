@@ -876,6 +876,7 @@ class input_flp(plugins.base):
 
 			if eq_used:
 				plugin_obj = cvpj_plugins.add_uni('eq', '3band_channel', eq_fxid)
+				plugin_obj.role = 'fx'
 				for n, e in enumerate(mixer_eq):
 					eq_freq, eq_level = e
 					eq_level /= 65536
@@ -893,11 +894,13 @@ class input_flp(plugins.base):
 			if fx_chunk.reversepolarity:
 				rp_fxid = 'FLPlug_ME_RP_'+str(mixer_id)
 				plugin_obj = cvpj_plugins.add_uni('invert', None, rp_fxid)
+				plugin_obj.role = 'fx'
 				fxchannel_obj.plugslots.slots_mixer.append(rp_fxid)
 
 			if fx_chunk.swap_lr:
 				rp_fxid = 'FLPlug_ME_LR_'+str(mixer_id)
 				plugin_obj = cvpj_plugins.add_uni('swap_lr', None, rp_fxid)
+				plugin_obj.role = 'fx'
 				fxchannel_obj.plugslots.slots_mixer.append(rp_fxid)
 
 		#if len(flp_obj.arrangements) == 0 and len(FL_Patterns) == 1 and len(FL_Channels) == 0:
