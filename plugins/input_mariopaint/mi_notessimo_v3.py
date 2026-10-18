@@ -89,8 +89,6 @@ class sample_manager():
 			return sample_id, notet_sample, samplekey, sampleref_obj
 		return None, None, 0, None
 
-DEBUGINSTNAMES = False
-
 from functions import note_data
 
 def do_key(pitch, octave, accidental):
@@ -98,6 +96,12 @@ def do_key(pitch, octave, accidental):
 	if accidental == '(#) Sharp': accidentald = '#'
 	outtxt = pitch+accidentald+str(octave)
 	return note_data.text_to_note(outtxt)+24
+
+def convert_samplepart(sp_obj, notet_sample):
+	sp_obj.loop_active = notet_sample.loop_type == 'Loop'
+	sp_obj.loop_start = notet_sample.start
+	sp_obj.loop_end = notet_sample.end
+	sp_obj.start = notet_sample.sample_start
 
 class inst_manager():
 	fxnum = 2
@@ -114,10 +118,7 @@ class inst_manager():
 				sp_obj = plugin_obj.sampleregion_add(start_pitch, end_pitch, samplekey, None)
 				sp_obj.sampleref = sampleid
 				sp_obj.point_value_type = "samples"
-				sp_obj.loop_active = notet_sample.loop_type == 'Loop'
-				sp_obj.loop_start = notet_sample.start
-				sp_obj.loop_end = notet_sample.end
-				sp_obj.start = notet_sample.sample_start
+				convert_samplepart(sp_obj, notet_sample)
 				sp_obj.end = dur_samples
 				sp_obj.pan = notet_sample.pan
 				sp_obj.vol = xtramath.from_db(notet_sample.volume/3)
@@ -125,13 +126,13 @@ class inst_manager():
 				sp_obj.pitch = notet_sample.cent/100
 				sp_obj.visual = sampleref_obj.visual.copy()
 
-	def add_inst(convproj_obj, instid, project_obj, maindata_obj):
+	def add_inst(convproj_obj, instid, project_obj, maindata_obj, debuginstnames):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_plugins = convproj_obj.plugins
 
 		inst_obj = cvpj_insts.add(instid)
 		inst_obj.visual.from_datapack('notessimo_v3', 'inst', instid, True)
-		if inst_obj.visual.name and DEBUGINSTNAMES: inst_obj.visual.name = '[DSET] '+inst_obj.visual.name
+		if inst_obj.visual.name and debuginstnames: inst_obj.visual.name = '[DSET] '+inst_obj.visual.name
 
 		notet_inst = None
 		notet_data = None
@@ -150,7 +151,7 @@ class inst_manager():
 			if notet_inst.name: inst_obj.visual.name = notet_inst.name
 			incolor(notet_inst.color, inst_obj.visual)
 			if notet_inst.comments: inst_obj.visual.comment = notet_inst.comments
-			if DEBUGINSTNAMES:
+			if debuginstnames:
 				if inst_obj.visual.name: inst_obj.visual.name = '['+dfrom+'] '+inst_obj.visual.name
 				else: inst_obj.visual.name = '['+dfrom+'] !!! NO NAME'
 
@@ -176,10 +177,7 @@ class inst_manager():
 						sp_obj = plugin_obj.samplepart_add('sample')
 						sp_obj.sampleref = sampleid
 						sp_obj.point_value_type = "samples"
-						sp_obj.loop_active = notet_sample.loop_type == 'Loop'
-						sp_obj.loop_start = notet_sample.start
-						sp_obj.loop_end = notet_sample.end
-						sp_obj.start = notet_sample.sample_start
+						convert_samplepart(sp_obj, notet_sample)
 						sp_obj.end = dur_samples
 						sp_obj.scale = notet_inst.scale_inst
 	
@@ -191,6 +189,7 @@ class inst_manager():
 
 			else:
 				plugin_obj = cvpj_plugins.add_uni('midi', None, instid)
+				plugin_obj.role = 'synth'
 				plugin_obj.midi.from_datapack('notessimo_v3', 'inst', instid)
 				plugin_obj.midi.to_visual(inst_obj.visual, False)
 
@@ -242,6 +241,8 @@ class input_notessimo_v3(plugins.base):
 		
 	def get_configdef(self, configdef):
 		configdef.add_bool('sharp_bug', True, 'Recreate Sharp/Flat Bug')
+		configdef.set_group('debug', 'Debug')
+		configdef.add_bool('debuginstnames', False, 'Show Inst Sources')
 
 	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_uncommon import notessimo_v3 as proj_notessimo_v3
@@ -277,6 +278,7 @@ class input_notessimo_v3(plugins.base):
 
 		# ---------- convproj params ----------
 		sharp_bug = dawvert_intent.input_get_param('sharp_bug', True)
+		debuginstnames = dawvert_intent.input_get_param('debuginstnames', False)
 
 		# ---------- convproj objects ----------
 		cvpj_automation = convproj_obj.automation
@@ -362,4 +364,4 @@ class input_notessimo_v3(plugins.base):
 
 		# ---------- inst ----------
 		for used_inst in used_insts:
-			inst_manager.add_inst(convproj_obj, used_inst, project_obj, maindata_obj)
+			inst_manager.add_inst(convproj_obj, used_inst, project_obj, maindata_obj, debuginstnames)
