@@ -164,10 +164,11 @@ class input_hydrogen(plugins.base):
 
 			# params
 			opan, ovol = xtramath.sep_pan_to_vol(instrument.pan_L, instrument.pan_R)
-			inst_obj.params.add('pan', opan, 'float')
-			inst_obj.params.add('vol', instrument.volume*instrument.gain*ovol, 'float')
-			inst_obj.params.add('enabled', not bool(instrument.isMuted), 'float')
-			inst_obj.params.add('solo', bool(instrument.isSoloed), 'float')
+			params_obj = inst_obj.params
+			params_obj.add('pan', opan, 'float')
+			params_obj.add('vol', instrument.volume*instrument.gain*ovol, 'float')
+			params_obj.add('enabled', not bool(instrument.isMuted), 'float')
+			params_obj.add('solo', bool(instrument.isSoloed), 'float')
 
 			# sampler
 			sampler_id = str(instrument.id)+'_sampler'
@@ -182,12 +183,14 @@ class input_hydrogen(plugins.base):
 			if instrument.filterActive:
 				filter_id = str(instrument.id)+'_filter'
 				filtplug_obj = cvpj_plugins.add_uni('filter', None, filter_id)
-				filtplug_obj.filter.on = True
-				filtplug_obj.filter.type.set('low_pass', None)
-				filtplug_obj.filter.freq = xtramath.midi_filter(instrument.filterCutoff)*2.3
-				filtplug_obj.filter.q = (instrument.filterResonance*10)+1
 				filtplug_obj.role = 'fx'
 				inst_obj.plugslots.slots_audio.append(filter_id)
+
+				filter_obj = filtplug_obj.filter
+				filter_obj.on = True
+				filter_obj.type.set('low_pass', None)
+				filter_obj.freq = xtramath.midi_filter(instrument.filterCutoff)*2.3
+				filter_obj.q = (instrument.filterResonance*10)+1
 
 			# layers
 			for layer in instrument.instrumentComponent.layers:
@@ -219,9 +222,10 @@ class input_hydrogen(plugins.base):
 			nle_obj.timesig_auto.add_point(0, [4, pattern.denominator])
 			
 			# visual
-			nle_obj.visual.name = pattern.name
-			nle_obj.visual.comment = pattern.info
-			nle_obj.visual.color.set_int(color_pattern.getcolornum(n))
+			visual_obj = nle_obj.visual
+			visual_obj.name = pattern.name
+			visual_obj.comment = pattern.info
+			visual_obj.color.set_int(color_pattern.getcolornum(n))
 
 			# notelist
 			cvpj_notelist = nle_obj.notelist

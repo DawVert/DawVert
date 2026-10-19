@@ -138,8 +138,7 @@ class input_eam2(plugins.base):
 
 					# sample
 					filepath = event.FilePath
-
-					sp_obj = placement_obj.sample
 					sampleref_obj = convproj_obj.sampleref__add(filepath, filepath, None)
 					sampleref_obj.search_local(dawvert_intent.input_folder)
+					sp_obj = placement_obj.sample
 					sp_obj.sampleref = filepath

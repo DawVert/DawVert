@@ -82,9 +82,10 @@ class sample_manager():
 					except: pass
 					realfilepath = os.path.join(samplefolder,zipfilepath)
 					sampleref_obj = convproj_obj.sampleref__add(sample_id, realfilepath, None)
-					sampleref_obj.visual.name = notet_sample.name
-					if notet_sample.comments: sampleref_obj.visual.comment = notet_sample.comments
-					incolor(notet_sample.color, sampleref_obj.visual)
+					visual_obj = sampleref_obj.visual
+					visual_obj.name = notet_sample.name
+					if notet_sample.comments: visual_obj.comment = notet_sample.comments
+					incolor(notet_sample.color, visual_obj)
 			samplekey = do_key(notet_sample.pitch, notet_sample.octave, notet_sample.accidental)
 			return sample_id, notet_sample, samplekey, sampleref_obj
 		return None, None, 0, None
@@ -204,12 +205,13 @@ class inst_manager():
 				fx_id = instid+'_filter'
 				plugin_obj = cvpj_plugins.add_uni('filter', 'single', fx_id)
 				plugin_obj.role = 'fx'
-				plugin_obj.filter.on = True
-				if notet_inst.biquad=='Low Pass': plugin_obj.filter.type.set('low_pass', None)
-				if notet_inst.biquad=='High Pass': plugin_obj.filter.type.set('high_pass', None)
-				if notet_inst.biquad=='Band Pass': plugin_obj.filter.type.set('band_pass', None)
-				plugin_obj.filter.freq = int(notet_inst.biquad_frequency)
-				plugin_obj.filter.q = notet_inst.biquad_q
+				filter_obj = plugin_obj.filter
+				filter_obj.on = True
+				if notet_inst.biquad=='Low Pass': filter_obj.type.set('low_pass', None)
+				if notet_inst.biquad=='High Pass': filter_obj.type.set('high_pass', None)
+				if notet_inst.biquad=='Band Pass': filter_obj.type.set('band_pass', None)
+				filter_obj.freq = int(notet_inst.biquad_frequency)
+				filter_obj.q = notet_inst.biquad_q
 				inst_obj.plugslots.plugin_autoplace(plugin_obj, fx_id)
 
 def incolor(value, visual_obj): 

@@ -129,25 +129,42 @@ class reader_midifile_class():
 		events_obj = track_obj.placements.midievents
 		events_obj.data.alloc(len(eventlist))
 
+		NoteOnEvent = MidiEvents.NoteOnEvent
+		NoteOffEvent = MidiEvents.NoteOffEvent
+		TrackNameEvent = MidiEvents.TrackNameEvent
+		CopyrightEvent = MidiEvents.CopyrightEvent
+		PitchBendEvent = MidiEvents.PitchBendEvent
+		ControllerEvent = MidiEvents.ControllerEvent
+		ProgramEvent = MidiEvents.ProgramEvent
+		TempoEvent = MidiEvents.TempoEvent
+		TimeSignatureEvent = MidiEvents.TimeSignatureEvent
+		TextEvent = MidiEvents.TextEvent
+		SysExEvent = MidiEvents.SysExEvent
+		MarkerEvent = MidiEvents.MarkerEvent
+		LyricEvent = MidiEvents.LyricEvent
+		SequencerEvent = MidiEvents.SequencerEvent
+		MidiPortEvent = MidiEvents.MidiPortEvent
+		EndOfTrackEvent = MidiEvents.EndOfTrackEvent
+
 		curpos = 0
 		for msg in eventlist:
 			curpos += msg.deltaTime
-			if type(msg) == MidiEvents.NoteOnEvent: events_obj.add_note_on(curpos, msg.channel, msg.note, msg.velocity)
-			elif type(msg) == MidiEvents.NoteOffEvent: events_obj.add_note_off(curpos, msg.channel, msg.note)
-			elif type(msg) == MidiEvents.TrackNameEvent: track_obj.visual.name = msg.name
-			elif type(msg) == MidiEvents.CopyrightEvent: events_obj.add_copyright(msg.copyright)
-			elif type(msg) == MidiEvents.PitchBendEvent: events_obj.add_pitch(curpos, msg.channel, msg.pitch)
-			elif type(msg) == MidiEvents.ControllerEvent: events_obj.add_control(curpos, msg.channel, msg.controller, msg.value)
-			elif type(msg) == MidiEvents.ProgramEvent: events_obj.add_program(curpos, msg.channel, msg.program)
-			elif type(msg) == MidiEvents.TempoEvent: events_obj.add_tempo(curpos, 60000000/msg.tempo)
-			elif type(msg) == MidiEvents.TimeSignatureEvent: events_obj.add_timesig(curpos, msg.numerator, msg.denominator**2)
-			elif type(msg) == MidiEvents.TextEvent: events_obj.add_text(curpos, msg.text)
-			elif type(msg) == MidiEvents.SysExEvent: events_obj.add_sysex(curpos, msg.data)
-			elif type(msg) == MidiEvents.MarkerEvent: events_obj.add_marker(curpos, msg.marker)
-			elif type(msg) == MidiEvents.LyricEvent: events_obj.add_lyric(curpos, msg.lyric)
-			elif type(msg) == MidiEvents.SequencerEvent: events_obj.add_seq_spec(msg.data)
-			elif type(msg) == MidiEvents.MidiPortEvent: events_obj.add_port(msg.port)
-			elif type(msg) == MidiEvents.EndOfTrackEvent: break
+			if type(msg) == NoteOnEvent: events_obj.add_note_on(curpos, msg.channel, msg.note, msg.velocity)
+			elif type(msg) == NoteOffEvent: events_obj.add_note_off(curpos, msg.channel, msg.note)
+			elif type(msg) == TrackNameEvent: track_obj.visual.name = msg.name
+			elif type(msg) == CopyrightEvent: events_obj.add_copyright(msg.copyright)
+			elif type(msg) == PitchBendEvent: events_obj.add_pitch(curpos, msg.channel, msg.pitch)
+			elif type(msg) == ControllerEvent: events_obj.add_control(curpos, msg.channel, msg.controller, msg.value)
+			elif type(msg) == ProgramEvent: events_obj.add_program(curpos, msg.channel, msg.program)
+			elif type(msg) == TempoEvent: events_obj.add_tempo(curpos, 60000000/msg.tempo)
+			elif type(msg) == TimeSignatureEvent: events_obj.add_timesig(curpos, msg.numerator, msg.denominator**2)
+			elif type(msg) == TextEvent: events_obj.add_text(curpos, msg.text)
+			elif type(msg) == SysExEvent: events_obj.add_sysex(curpos, msg.data)
+			elif type(msg) == MarkerEvent: events_obj.add_marker(curpos, msg.marker)
+			elif type(msg) == LyricEvent: events_obj.add_lyric(curpos, msg.lyric)
+			elif type(msg) == SequencerEvent: events_obj.add_seq_spec(msg.data)
+			elif type(msg) == MidiPortEvent: events_obj.add_port(msg.port)
+			elif type(msg) == EndOfTrackEvent: break
 
 class input_petaporon(plugins.base):
 	def is_dawvert_plugin(self):

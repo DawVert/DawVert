@@ -64,12 +64,14 @@ class input_musicphrase(plugins.base):
 			track_obj = cvpj_tracks.add(str(n), 'midi_single', 1, False)
 
 			# visual
-			track_obj.visual.name = mpxl_track.name
-			track_obj.visual.color.set_int(list(mpxl_track.color[0:3]))
+			visual_obj = track_obj.visual
+			visual_obj.name = mpxl_track.name
+			visual_obj.color.set_int(list(mpxl_track.color[0:3]))
 
 			# params
-			track_obj.params.add('enabled', not mpxl_track.mute, 'bool')
-			track_obj.params.add('solo', mpxl_track.solo, 'bool')
+			params_obj = track_obj.params
+			params_obj.add('enabled', not mpxl_track.mute, 'bool')
+			params_obj.add('solo', mpxl_track.solo, 'bool')
 
 			# armed
 			track_obj.armed.on = bool(mpxl_track.record)
@@ -94,8 +96,9 @@ class input_musicphrase(plugins.base):
 				events_obj.ppq = 96
 
 				# visual
-				placement_obj.visual.name = clip.name
-				placement_obj.visual.color.set_int(list(clip.color[0:3]))
+				visual_obj = placement_obj.visual
+				visual_obj.name = clip.name
+				visual_obj.color.set_int(list(clip.color[0:3]))
 
 				# notes
 				for note in clip.notes:
