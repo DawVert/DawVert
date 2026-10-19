@@ -125,12 +125,15 @@ class input_meteor(plugins.base):
 			track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
 
 			# params
-			track_obj.params.add('vol', track.volume/64, 'float')
-			track_obj.params.add('pan', (track.pan-32)/32, 'float')
+			params_obj = track_obj.params
+			params_obj.add('vol', track.volume/64, 'float')
+			params_obj.add('pan', (track.pan-32)/32, 'float')
 
-			track_obj.visual.name = 'Track #%i' % (n+1)
-			track_obj.visual.color.set_int(color_track.getcolornum(track.color))
-			track_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+			# params
+			visual_obj = track_obj.visual
+			visual_obj.name = 'Track #%i' % (n+1)
+			visual_obj.color.set_int(color_track.getcolornum(track.color))
+			visual_obj.color.fx_allowed = ['saturate', 'brighter']
 
 			# sends
 			auxsendenable = track.auxsendenable
