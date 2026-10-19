@@ -287,6 +287,8 @@ class input_fl_mobile(plugins.base):
 						v_mul = 1
 						v_bool = False
 
+						autoloc = None
+
 						if lanedata.auto_device == 0:
 							if tracktype == 'master': autoloc = ['master']
 							if tracktype == 'fx': autoloc = ['return', trackid]
@@ -307,9 +309,11 @@ class input_fl_mobile(plugins.base):
 						else:
 							autoloc = ['plugin', trackid+'_'+str(lanedata.auto_device), 'param_'+str(lanedata.auto_param)]
 
+						if autoloc is not None: autoloc = tuple(autoloc)
+
 						for flm_clip in lanedata.clips:
 							startpos = flm_clip.position/128
-							if flm_clip.evn2: 
+							if flm_clip.evn2 and autoloc is not None: 
 								autopl_obj = cvpj_automation.add_pl_points(autoloc, 'float')
 								duration = do_auto(flm_clip.evn2.events, autopl_obj.data, startpos, v_add, v_mul, v_bool)
 								maxdur = max(duration, flm_clip.duration)

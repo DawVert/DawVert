@@ -196,6 +196,8 @@ class input_soundclub2(plugins.base):
 		globaltempo = decode_tempo(project_obj.tempo)
 		outtempo = globaltempo
 		
+		autoloc_bpm = ('main', 'bpm')
+		
 		curpos = 0
 		for pat_num in project_obj.sequence:
 			size = scenedurs[pat_num]
@@ -206,7 +208,7 @@ class input_soundclub2(plugins.base):
 
 			pat_tempos = project_obj.patterns[pat_num].tempos
 
-			autopl_obj = cvpj_automation.add_pl_points(['main','bpm'], 'float')
+			autopl_obj = cvpj_automation.add_pl_points(autoloc_bpm, 'float')
 			time_obj = autopl_obj.time
 			time_obj.set_posdur(curpos, size)
 			autopoints_obj = autopl_obj.data

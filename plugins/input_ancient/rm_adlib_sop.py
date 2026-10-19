@@ -112,15 +112,19 @@ class input_sop(plugins.base):
 
 			cvpj_notelist = track_obj.placements.notelist
 			
+			autoloc_vol = ('track', cvpj_trackid, 'vol')
+			autoloc_pan = ('track', cvpj_trackid, 'pan')
+			autoloc_pitch = ('track', cvpj_trackid, 'pitch')
+
 			curtick = 0
 			instpos = []
 			for event in soptrack.events:
 				curtick += event[0]
 				if event[1] == 'VOL': 
-					cvpj_automation.add_autotick(['track', cvpj_trackid, 'vol'], 'float', curtick, event[2]/127)
+					cvpj_automation.add_autotick(autoloc_vol, 'float', curtick, event[2]/127)
 
 				elif event[1] == 'PAN': 
-					cvpj_automation.add_autotick(['track', cvpj_trackid, 'pan'], 'float', curtick, panvals[event[2]%3]*panlvl)
+					cvpj_automation.add_autotick(autoloc_pan, 'float', curtick, panvals[event[2]%3]*panlvl)
 
 				elif event[1] == 'INST': 
 					instpos.append([curtick, str(event[2])])
@@ -129,7 +133,7 @@ class input_sop(plugins.base):
 					cvpj_notelist.add_m(None, curtick, event[3], event[2]-60, 1, None)
 
 				elif event[1] == 'PITCH': 
-					cvpj_automation.add_autotick(['track', cvpj_trackid, 'pitch'], 'float', curtick, (event[2]-100)/100)
+					cvpj_automation.add_autotick(autoloc_pitch, 'float', curtick, (event[2]-100)/100)
 
 				#else:
 				#	print(event)
@@ -137,9 +141,11 @@ class input_sop(plugins.base):
 			cvpj_notelist.add_instpos(instpos)
 
 		# ---------- control track ----------
+		autoloc_bpm = ('main', 'bpm')
+		autoloc_vol = ('master', 'vol')
 		for event in project_obj.controltrack:
 			curtick += event[0]
 			if event[1] == 'TEMPO': 
-				cvpj_automation.add_autotick(['main', 'bpm'], 'float', curtick, event[2])
+				cvpj_automation.add_autotick(autoloc_bpm, 'float', curtick, event[2])
 			if event[1] == 'GVOL': 
-				cvpj_automation.add_autotick(['master', 'vol'], 'float', curtick, event[2]/127)
+				cvpj_automation.add_autotick(autoloc_vol, 'float', curtick, event[2]/127)

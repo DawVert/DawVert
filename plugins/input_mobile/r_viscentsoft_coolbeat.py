@@ -95,11 +95,11 @@ class input_coolbeat(plugins.base):
 		# ---------- automation: master ----------
 		for an, masterAuto in enumerate(project_obj.masterAutos):
 			if an == 0:
-				do_auto(cvpj_automation, ['main', 'bpm'], 50, 300, masterAuto.sections, project_obj.tempo)
-			if an == 1:
-				do_auto(cvpj_automation, ['master', 'vol'], 0, 1, masterAuto.sections, project_obj.masterVolume)
-			if an == 2:
-				do_auto(cvpj_automation, ['master', 'pan'], -1, 1, masterAuto.sections, calc_pan(project_obj.masterPan))
+				do_auto(cvpj_automation, ('main', 'bpm'), 50, 300, masterAuto.sections, project_obj.tempo)
+			elif an == 1:
+				do_auto(cvpj_automation, ('master', 'vol'), 0, 1, masterAuto.sections, project_obj.masterVolume)
+			elif an == 2:
+				do_auto(cvpj_automation, ('master', 'pan'), -1, 1, masterAuto.sections, calc_pan(project_obj.masterPan))
 
 		# ---------- tracks ----------
 		for n, track in enumerate(project_obj.tracks):
@@ -192,9 +192,9 @@ class input_coolbeat(plugins.base):
 
 			for an, ta in enumerate(track.autos):
 				if an == 0:
-					do_auto(convproj_obj, ['track', trackid, 'vol'], 0, 1, ta.sections, track.volume)
-				if an == 1:
-					do_auto(convproj_obj, ['track', trackid, 'pan'], -1, 1, ta.sections, calc_pan(track.pan))
+					do_auto(convproj_obj, ('track', trackid, 'vol'), 0, 1, ta.sections, track.volume)
+				elif an == 1:
+					do_auto(convproj_obj, ('track', trackid, 'pan'), -1, 1, ta.sections, calc_pan(track.pan))
 
 		# ---------- automation ----------
 		cvpj_automation.set_persist_all(False)

@@ -64,23 +64,23 @@ class jummbox_autotype():
 		autoloc, m_add, m_mul = None, 0, 1
 
 		if self.tracknum == -2:
-			if self.param == 0:  return ['main', 'bpm'], 180, 1
+			if self.param == 0:  return ('main', 'bpm'), 180, 1
 		elif self.tracknum == -1:
-			if self.param == 0:  return ['main', 'bpm'], 30, 1
-			elif self.param == 2:  return ['master', 'vol'], 0, 0.01
-			elif self.param == 1:  return ['main', 'bpm'], 30, 1
-			elif self.param == 3:  return ['slot', 'main_reverb', 'wet'], 0, 1/32
-			elif self.param == 17: return ['main', 'pitch'], 250, 0.01
+			if self.param == 0:  return ('main', 'bpm'), 30, 1
+			elif self.param == 2:  return ('master', 'vol'), 0, 0.01
+			elif self.param == 1:  return ('main', 'bpm'), 30, 1
+			elif self.param == 3:  return ('slot', 'main_reverb', 'wet'), 0, 1/32
+			elif self.param == 17: return ('main', 'pitch'), 250, 0.01
 		else:
 			auto_cvpj_instid = 'bb_ch'+str(self.tracknum+1)+'_inst'+str(self.instrument+1)
-			if self.param == 6:    return ['track', auto_cvpj_instid, 'pan'], -50, 0.02
-			elif self.param == 7:  return ['slot', auto_cvpj_instid+'_reverb', 'wet'], 0, 1/32
-			elif self.param == 8:  return ['slot', auto_cvpj_instid+'_distortion', 'amount'], 0, 1/7
-			elif self.param == 15: return ['slot', auto_cvpj_instid, 'pitch'], -200, 1
-			elif self.param == 25: return ['plugin', auto_cvpj_instid+'_bitcrush', 'bits'], 0, 1
-			elif self.param == 26: return ['plugin', auto_cvpj_instid+'_bitcrush', 'freq'], 0, 1
-			elif self.param == 29: return ['plugin', auto_cvpj_instid+'_chorus', 'amount'], 0, 1/8
-			elif self.param == 36: return ['track', auto_cvpj_instid, 'vol'], 0, 0.04
+			if self.param == 6:    return ('track', auto_cvpj_instid, 'pan'), -50, 0.02
+			elif self.param == 7:  return ('slot', auto_cvpj_instid+'_reverb', 'wet'), 0, 1/32
+			elif self.param == 8:  return ('slot', auto_cvpj_instid+'_distortion', 'amount'), 0, 1/7
+			elif self.param == 15: return ('slot', auto_cvpj_instid, 'pitch'), -200, 1
+			elif self.param == 25: return ('plugin', auto_cvpj_instid+'_bitcrush', 'bits'), 0, 1
+			elif self.param == 26: return ('plugin', auto_cvpj_instid+'_bitcrush', 'freq'), 0, 1
+			elif self.param == 29: return ('plugin', auto_cvpj_instid+'_chorus', 'amount'), 0, 1/8
+			elif self.param == 36: return ('track', auto_cvpj_instid, 'vol'), 0, 0.04
 
 		return autoloc, m_add, m_mul
 

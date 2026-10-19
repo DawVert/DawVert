@@ -100,14 +100,14 @@ class input_eam2(plugins.base):
 				for autop in track.AutomationList:
 					autoloc_e = None
 					if autop.AutomationType == 'Pan':
-						autoloc = autoloc_s+['pan']
+						autoloc = tuple(autoloc_s+['pan'])
 						auto_obj = cvpj_automation.create(autoloc, 'float', True)
 						auto_obj.is_seconds = True
 						for p in autop.Points:
 							if p.BeatN>=0: auto_obj.add_autopoint(p.BeatN, (p.Value-0.5)*2, None)
 
 					if autop.AutomationType == 'Volume':
-						autoloc = autoloc_s+['vol']
+						autoloc = tuple(autoloc_s+['vol'])
 						auto_obj = cvpj_automation.create(autoloc, 'float', True)
 						auto_obj.is_seconds = True
 						for p in autop.Points:

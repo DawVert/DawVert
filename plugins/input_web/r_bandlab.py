@@ -285,14 +285,16 @@ def do_track_common(convproj_obj, track_obj, blx_track, tempomul):
 				paramv = plugparams[param_id] if param_id in plugparams else dset_param.defv
 				plugin_obj.datapack_param__add(param_id, paramv, dset_param)
 				if n in blx_effect.automation: 
-					do_automation(cvpj_automation, blx_effect.automation[n], ['plugin', fxid, n], tempomul)
+					autoloc = ('plugin', fxid, n)
+					do_automation(cvpj_automation, blx_effect.automation[n], autoloc, tempomul)
 
 		else:
 			for n, v in plugparams.items():
 				if not isinstance(v, str) and isinstance(v, dict):
 					plugparams.add(n, v, 'float')
 					if n in blx_effect.automation:
-						do_automation(cvpj_automation, blx_effect.automation[n], ['plugin', fxid, n], tempomul)
+						autoloc = ('plugin', fxid, n)
+						do_automation(cvpj_automation, blx_effect.automation[n], autoloc, tempomul)
 				else:
 					plugin_obj.datavals.add(n, v)
 

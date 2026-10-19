@@ -102,9 +102,10 @@ class input_hydrogen(plugins.base):
 		bpm = project_obj.bpm
 
 		if project_obj.BPMTimeLine:
-			cvpj_automation.add_autopoint(['main', 'bpm'], 'float', 0, project_obj.bpm, 'instant')
+			autoloc_bpm = ('main', 'bpm')
+			cvpj_automation.add_autopoint(autoloc_bpm, 'float', 0, project_obj.bpm, 'instant')
 			for bpmtl in project_obj.BPMTimeLine:
-				cvpj_automation.add_autopoint(['main', 'bpm'], 'float', bpmtl.bar*48*4, bpmtl.bpm, 'instant')
+				cvpj_automation.add_autopoint(autoloc_bpm, 'float', bpmtl.bar*48*4, bpmtl.bpm, 'instant')
 				if bpmtl.bar == 0: bpm = bpmtl.bpm
 
 		convproj_obj.params.add('bpm', bpm , 'float')
@@ -141,8 +142,9 @@ class input_hydrogen(plugins.base):
 		# ---------- automation ----------
 		for autopath in project_obj.automationPaths:
 			if autopath.adjust == 'velocity':
+				autoloc_vol = ('master', 'vol')
 				for p, v in autopath.points.items():
-					cvpj_automation.add_autopoint(['master', 'vol'], 'float', p*48*4, v, 'normal')
+					cvpj_automation.add_autopoint(autoloc_vol, 'float', p*48*4, v, 'normal')
 
 		# ---------- instruments ----------
 		external_dats = {}

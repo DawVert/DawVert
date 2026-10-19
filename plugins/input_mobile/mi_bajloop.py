@@ -152,11 +152,11 @@ class input_bajloop(plugins.base):
 			v_add = 0
 			v_div = 127
 			if tracknum==-1:
-				if paramnum==0: a_loc = ['master', 'vol']
+				if paramnum==0: a_loc = ('master', 'vol')
 				else: logger_input.warning('bajloop: Master Automation Param #%i is not implemented.' % paramnum)
 			else:
 				instid = str(tracknum)
-				if paramnum==0: a_loc = ['track', instid, 'vol']
+				if paramnum==0: a_loc = ('track', instid, 'vol')
 				else: logger_input.warning('bajloop: Track Automation Param #%i is not implemented.' % paramnum)
 
 			if a_loc:

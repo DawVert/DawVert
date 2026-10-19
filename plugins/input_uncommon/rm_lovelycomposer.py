@@ -11,93 +11,93 @@ from objects import regions
 #                  Name,             Type,        FadeIn, FadeOut, PitchMod, Slide, Vib
 
 lc_instlist = {}
-lc_instlist[ 2] = ['Square Wave'     ,'Square'    ,0  ,0  ,0  ,False ,False]
-lc_instlist[ 1] = ['Triangle Wave'   ,'Triangle'  ,0  ,0  ,0  ,False ,False]
-lc_instlist[ 0] = ['Pulse Wave'      ,'Pulse25'   ,0  ,0  ,0  ,False ,False]
-lc_instlist[16] = ['SawTooth Wave'   ,'Saw'       ,0  ,0  ,0  ,False ,False]
-lc_instlist[20] = ['Sine Wave'       ,'Sine'      ,0  ,0  ,0  ,False ,False]
-lc_instlist[ 3] = ['Noise'           ,'Noise'     ,0  ,0  ,0  ,False ,False]
-lc_instlist[ 4] = ['Piano Like'      ,'Pulse25'   ,0  ,1  ,0  ,False ,False]
-lc_instlist[17] = ['Synth Piano'     ,'Saw'       ,0  ,1  ,0  ,False ,False]
-lc_instlist[ 5] = ['Xylophone Like'  ,'Triangle'  ,0  ,1  ,0  ,False ,False]
-lc_instlist[ 6] = ['Ice'             ,'Square'    ,0  ,1  ,0  ,False ,False]
-lc_instlist[21] = ['Orgel Like'      ,'Sine'      ,0  ,1  ,0  ,False ,False]
-lc_instlist[ 7] = ['Drum Like'       ,'Drum'      ,0  ,1  ,0  ,False ,False]
-lc_instlist[ 8] = ['Strings Like'    ,'Pulse25'   ,0  ,0  ,0  ,False ,True ]
-lc_instlist[ 9] = ['Vocal Like'      ,'Triangle'  ,0  ,0  ,0  ,False ,True ]
-lc_instlist[10] = ['UFO'             ,'Square'    ,0  ,0  ,0  ,False ,True ]
-lc_instlist[18] = ['Brass Like'      ,'Saw'       ,0  ,0  ,0  ,False ,True ]
-lc_instlist[22] = ['Ghost'           ,'Sine'      ,0  ,0  ,0  ,False ,True ]
+lc_instlist[  2] = ('Square Wave'          ,'Square'    ,0  ,0  ,0  ,False ,False)
+lc_instlist[  1] = ('Triangle Wave'        ,'Triangle'  ,0  ,0  ,0  ,False ,False)
+lc_instlist[  0] = ('Pulse Wave'           ,'Pulse25'   ,0  ,0  ,0  ,False ,False)
+lc_instlist[ 16] = ('SawTooth Wave'        ,'Saw'       ,0  ,0  ,0  ,False ,False)
+lc_instlist[ 20] = ('Sine Wave'            ,'Sine'      ,0  ,0  ,0  ,False ,False)
+lc_instlist[  3] = ('Noise'                ,'Noise'     ,0  ,0  ,0  ,False ,False)
+lc_instlist[  4] = ('Piano Like'           ,'Pulse25'   ,0  ,1  ,0  ,False ,False)
+lc_instlist[ 17] = ('Synth Piano'          ,'Saw'       ,0  ,1  ,0  ,False ,False)
+lc_instlist[  5] = ('Xylophone Like'       ,'Triangle'  ,0  ,1  ,0  ,False ,False)
+lc_instlist[  6] = ('Ice'                  ,'Square'    ,0  ,1  ,0  ,False ,False)
+lc_instlist[ 21] = ('Orgel Like'           ,'Sine'      ,0  ,1  ,0  ,False ,False)
+lc_instlist[  7] = ('Drum Like'            ,'Drum'      ,0  ,1  ,0  ,False ,False)
+lc_instlist[  8] = ('Strings Like'         ,'Pulse25'   ,0  ,0  ,0  ,False ,True )
+lc_instlist[  9] = ('Vocal Like'           ,'Triangle'  ,0  ,0  ,0  ,False ,True )
+lc_instlist[ 10] = ('UFO'                  ,'Square'    ,0  ,0  ,0  ,False ,True )
+lc_instlist[ 18] = ('Brass Like'           ,'Saw'       ,0  ,0  ,0  ,False ,True )
+lc_instlist[ 22] = ('Ghost'                ,'Sine'      ,0  ,0  ,0  ,False ,True )
+ 
+lc_instlist[ 14] = ('Glide Square'         ,'Square'    ,0  ,0  ,0  ,True  ,False)
+lc_instlist[ 13] = ('Glide Triangle'       ,'Triangle'  ,0  ,0  ,0  ,True  ,False)
+lc_instlist[ 12] = ('Glide Pulse'          ,'Pulse25'   ,0  ,0  ,0  ,True  ,False)
+lc_instlist[ 19] = ('Glide SawTooth'       ,'Saw'       ,0  ,0  ,0  ,True  ,False)
+lc_instlist[ 23] = ('Glide Sine'           ,'Sine'      ,0  ,0  ,0  ,True  ,False)
+lc_instlist[ 15] = ('Glide Noise'          ,'Noise'     ,0  ,0  ,0  ,True  ,False)
+lc_instlist[ 24] = ('Fish'                 ,'Noise'     ,1  ,0  ,0  ,False ,False)
+lc_instlist[ 25] = ('Flute Like'           ,'Triangle'  ,1  ,0  ,0  ,False ,False)
+lc_instlist[ 26] = ('Slow String Like'     ,'Pulse25'   ,1  ,0  ,0  ,False ,False)
+lc_instlist[ 27] = ('Saxophone Like'       ,'Saw'       ,1  ,0  ,0  ,False ,False)
+lc_instlist[ 28] = ('Ocarina Like'         ,'Sine'      ,1  ,0  ,0  ,False ,False)
+lc_instlist[ 29] = ('Seashore Like'        ,'Noise'     ,1  ,0  ,0  ,False ,False)
+lc_instlist[ 30] = ('Stomp'                ,'Stomp'     ,0  ,1  ,-1 ,False ,False)
+lc_instlist[ 31] = ('Twin Stomp'           ,'Stomp'     ,0  ,1  ,-1 ,False ,False)
+lc_instlist[ 32] = ('Twin Drum'            ,'Drum'      ,0  ,2  ,0  ,False ,False)
+lc_instlist[ 33] = ('Punch'                ,'Punch'     ,0  ,1  ,1  ,False ,False)
+lc_instlist[ 34] = ('Orchestra Hit'        ,'OrchHit'   ,0  ,0  ,0  ,False ,False)
+ 
+lc_instlist[ 35] = ('Short Freq Noise'     ,'FreqNoise' ,0  ,0  ,0  ,False ,False)
+lc_instlist[ 36] = ('Hammer'               ,'FreqNoise' ,0  ,1  ,0  ,False ,False)
+lc_instlist[ 37] = ('Robot'                ,'FreqNoise' ,1  ,0  ,0  ,False ,False)
+lc_instlist[ 38] = ('Glide S-Freq Noise'   ,'FreqNoise' ,0  ,0  ,0  ,False ,True )
+lc_instlist[ 39] = ('12.5% Pulse'          ,'Pulse125'  ,0  ,0  ,0  ,False ,False)
+lc_instlist[ 46] = ('Pulse Brass'          ,'Pulse125'  ,0  ,0  ,0  ,False ,True )
+lc_instlist[ 40] = ('Lo-Fi Piano'          ,'Pulse125'  ,0  ,1  ,0  ,False ,False)
+lc_instlist[ 41] = ('Fiddle'               ,'Pulse125'  ,1  ,0  ,0  ,False ,False)
+lc_instlist[ 42] = ('Glide 12.5% Pulse'    ,'Pulse125'  ,0  ,0  ,0  ,True  ,False)
+lc_instlist[ 43] = ('Dog'                  ,'Dog'       ,0  ,0  ,-1 ,False ,False)
+lc_instlist[ 45] = ('Robo Stomp'           ,'RoboStomp' ,0  ,0  ,-1 ,False ,False)
+lc_instlist[ 47] = ('Low-Reso Triangle'    ,'LowResoTri',0  ,0  ,0  ,False ,False)
+lc_instlist[ 48] = ('Low-Reso Xylophone'   ,'LowResoTri',0  ,1  ,0  ,False ,False)
+lc_instlist[ 49] = ('Low-Reso Vocal'       ,'LowResoTri',0  ,0  ,0  ,False ,True )
+lc_instlist[ 50] = ('Glide L-Triangle'     ,'LowResoTri',0  ,0  ,0  ,True  ,False)
+lc_instlist[ 51] = ('Low-Reso Flute'       ,'LowResoTri',1  ,0  ,0  ,True  ,False)
+lc_instlist[ 52] = ('Tilted Sawtooth'      ,'TiltedSaw' ,1  ,0  ,0  ,False ,False)
+ 
+#                   Name,             Type,        FadeIn, FadeOut, PitchMod, Slide, Vib
+ 
+lc_instlist[ 53] = ('Organ Like Wave'      ,'Organ'     ,0  ,0  ,0  ,False ,False)
+lc_instlist[ 54] = ('Phaser Triangle'      ,'PhaserTri' ,0  ,0  ,0  ,False ,False)
+lc_instlist[ 55] = ('Plucked String'       ,'TiltedSaw' ,0  ,1  ,0  ,False ,False)
+lc_instlist[ 56] = ('Bell'                 ,'Organ'     ,0  ,1  ,0  ,False ,False)
+lc_instlist[ 57] = ('Star'                 ,'PhaserTri' ,0  ,1  ,0  ,False ,False)
+lc_instlist[ 58] = ('Oboe'                 ,'TiltedSaw' ,0  ,0  ,0  ,False ,True )
+lc_instlist[ 59] = ('Opera Choir'          ,'Organ'     ,0  ,0  ,0  ,False ,True )
+lc_instlist[ 60] = ('Country String'       ,'TiltedSaw' ,1  ,0  ,0  ,False ,False)
+lc_instlist[ 61] = ('Accordian'            ,'Organ'     ,1  ,0  ,0  ,False ,False)
+lc_instlist[ 62] = ('Planet'               ,'PhaserTri' ,1  ,0  ,0  ,False ,False)
+lc_instlist[ 63] = ('Bubble'               ,'LowResoTri',0  ,0  ,1  ,False ,False)
+lc_instlist[ 64] = ('Glide Organ'          ,'Organ'     ,0  ,0  ,0  ,True  ,False)
+lc_instlist[ 65] = ('Glide Tilted Saw'     ,'TiltedSaw' ,0  ,0  ,0  ,True  ,False)
+lc_instlist[ 66] = ('Alien'                ,'LowResoTri',0  ,0  ,-.5,False ,False)
+lc_instlist[ 67] = ('Melodic Tom'          ,'Triangle'  ,0  ,0  ,-.5,False ,False)
+ 
+lc_instlist[ 68] = ('FastArp Square'       ,'FA-Square' ,0  ,0  ,0  ,False ,False)
+lc_instlist[ 69] = ('FastArp Pulse25'      ,'FA-Pul25'  ,0  ,0  ,0  ,False ,False)
+lc_instlist[ 70] = ('FastArp Pulse125'     ,'FA-Pul125' ,0  ,0  ,0  ,False ,False)
+lc_instlist[ 71] = ('FastArp Triangle'     ,'FA-Tri'    ,0  ,0  ,0  ,False ,False)
+lc_instlist[ 72] = ('FastArp Sine'         ,'FA-Sine'   ,0  ,0  ,0  ,False ,False)
+lc_instlist[ 73] = ('FastArp TiltedSaw'    ,'FA-TiltSaw',0  ,0  ,0  ,False ,False)
+lc_instlist[ 74] = ('FastArp Noise'        ,'FA-Noise'  ,0  ,0  ,0  ,False ,False)
 
-lc_instlist[14] = ['Glide Square'    ,'Square'    ,0  ,0  ,0  ,True  ,False]
-lc_instlist[13] = ['Glide Triangle'  ,'Triangle'  ,0  ,0  ,0  ,True  ,False]
-lc_instlist[12] = ['Glide Pulse'     ,'Pulse25'   ,0  ,0  ,0  ,True  ,False]
-lc_instlist[19] = ['Glide SawTooth'  ,'Saw'       ,0  ,0  ,0  ,True  ,False]
-lc_instlist[23] = ['Glide Sine'      ,'Sine'      ,0  ,0  ,0  ,True  ,False]
-lc_instlist[15] = ['Glide Noise'     ,'Noise'     ,0  ,0  ,0  ,True  ,False]
-lc_instlist[24] = ['Fish'            ,'Noise'     ,1  ,0  ,0  ,False ,False]
-lc_instlist[25] = ['Flute Like'      ,'Triangle'  ,1  ,0  ,0  ,False ,False]
-lc_instlist[26] = ['Slow String Like','Pulse25'   ,1  ,0  ,0  ,False ,False]
-lc_instlist[27] = ['Saxophone Like'  ,'Saw'       ,1  ,0  ,0  ,False ,False]
-lc_instlist[28] = ['Ocarina Like'    ,'Sine'      ,1  ,0  ,0  ,False ,False]
-lc_instlist[29] = ['Seashore Like'   ,'Noise'     ,1  ,0  ,0  ,False ,False]
-lc_instlist[30] = ['Stomp'           ,'Stomp'     ,0  ,1  ,-1 ,False ,False]
-lc_instlist[31] = ['Twin Stomp'      ,'Stomp'     ,0  ,1  ,-1 ,False ,False]
-lc_instlist[32] = ['Twin Drum'       ,'Drum'      ,0  ,2  ,0  ,False ,False]
-lc_instlist[33] = ['Punch'           ,'Punch'     ,0  ,1  ,1  ,False ,False]
-lc_instlist[34] = ['Orchestra Hit'   ,'OrchHit'   ,0  ,0  ,0  ,False ,False]
+lc_instlist[120] = ('Tone A'               ,'ToneA'     ,0  ,1  ,0  ,False ,False)
+lc_instlist[121] = ('Tone B'               ,'ToneB'     ,0  ,1  ,0  ,False ,False)
+lc_instlist[122] = ('Tone C'               ,'ToneC'     ,0  ,1  ,0  ,False ,False)
+lc_instlist[123] = ('Tone D'               ,'ToneD'     ,0  ,1  ,0  ,False ,False)
 
-lc_instlist[35] = ['Short Freq Noise','FreqNoise' ,0  ,0  ,0  ,False ,False]
-lc_instlist[36] = ['Hammer'          ,'FreqNoise' ,0  ,1  ,0  ,False ,False]
-lc_instlist[37] = ['Robot'           ,'FreqNoise' ,1  ,0  ,0  ,False ,False]
-lc_instlist[38] =['Glide S-Freq Noise','FreqNoise',0  ,0  ,0  ,False ,True ]
-lc_instlist[39] = ['12.5% Pulse'     ,'Pulse125'  ,0  ,0  ,0  ,False ,False]
-lc_instlist[46] = ['Pulse Brass'     ,'Pulse125'  ,0  ,0  ,0  ,False ,True ]
-lc_instlist[40] = ['Lo-Fi Piano'     ,'Pulse125'  ,0  ,1  ,0  ,False ,False]
-lc_instlist[41] = ['Fiddle'          ,'Pulse125'  ,1  ,0  ,0  ,False ,False]
-lc_instlist[42] = ['Glide 12.5% Pulse','Pulse125' ,0  ,0  ,0  ,True  ,False]
-lc_instlist[43] = ['Dog'             ,'Dog'       ,0  ,0  ,-1 ,False ,False]
-lc_instlist[45] = ['Robo Stomp'      ,'RoboStomp' ,0  ,0  ,-1 ,False ,False]
-lc_instlist[47] =['Low-Reso Triangle','LowResoTri',0  ,0  ,0  ,False ,False]
-lc_instlist[48] =['Low-Reso Xylophone','LowResoTri',0 ,1  ,0  ,False ,False]
-lc_instlist[49] = ['Low-Reso Vocal'  ,'LowResoTri',0  ,0  ,0  ,False ,True ]
-lc_instlist[50] = ['Glide L-Triangle','LowResoTri',0  ,0  ,0  ,True  ,False]
-lc_instlist[51] = ['Low-Reso Flute'  ,'LowResoTri',1  ,0  ,0  ,True  ,False]
-lc_instlist[52] = ['Tilted Sawtooth' ,'TiltedSaw' ,1  ,0  ,0  ,False ,False]
-
-#                  Name,             Type,        FadeIn, FadeOut, PitchMod, Slide, Vib
-
-lc_instlist[53] = ['Organ Like Wave' ,'Organ'     ,0  ,0  ,0  ,False ,False]
-lc_instlist[54] = ['Phaser Triangle' ,'PhaserTri' ,0  ,0  ,0  ,False ,False]
-lc_instlist[55] = ['Plucked String'  ,'TiltedSaw' ,0  ,1  ,0  ,False ,False]
-lc_instlist[56] = ['Bell'            ,'Organ'     ,0  ,1  ,0  ,False ,False]
-lc_instlist[57] = ['Star'            ,'PhaserTri' ,0  ,1  ,0  ,False ,False]
-lc_instlist[58] = ['Oboe'            ,'TiltedSaw' ,0  ,0  ,0  ,False ,True ]
-lc_instlist[59] = ['Opera Choir'     ,'Organ'     ,0  ,0  ,0  ,False ,True ]
-lc_instlist[60] = ['Country String'  ,'TiltedSaw' ,1  ,0  ,0  ,False ,False]
-lc_instlist[61] = ['Accordian'       ,'Organ'     ,1  ,0  ,0  ,False ,False]
-lc_instlist[62] = ['Planet'          ,'PhaserTri' ,1  ,0  ,0  ,False ,False]
-lc_instlist[63] = ['Bubble'          ,'LowResoTri',0  ,0  ,1  ,False ,False]
-lc_instlist[64] = ['Glide Organ'     ,'Organ'     ,0  ,0  ,0  ,True  ,False]
-lc_instlist[65] = ['Glide Tilted Saw','TiltedSaw' ,0  ,0  ,0  ,True  ,False]
-lc_instlist[66] = ['Alien'           ,'LowResoTri',0  ,0  ,-.5,False ,False]
-lc_instlist[67] = ['Melodic Tom'     ,'Triangle'  ,0  ,0  ,-.5,False ,False]
-
-lc_instlist[68] = ['FastArp Square'  ,'FA-Square' ,0  ,0  ,0  ,False ,False]
-lc_instlist[69] = ['FastArp Pulse25' ,'FA-Pul25'  ,0  ,0  ,0  ,False ,False]
-lc_instlist[70] = ['FastArp Pulse125','FA-Pul125' ,0  ,0  ,0  ,False ,False]
-lc_instlist[71] = ['FastArp Triangle','FA-Tri'    ,0  ,0  ,0  ,False ,False]
-lc_instlist[72] = ['FastArp Sine'    ,'FA-Sine'   ,0  ,0  ,0  ,False ,False]
-lc_instlist[73] =['FastArp TiltedSaw','FA-TiltSaw',0  ,0  ,0  ,False ,False]
-lc_instlist[74] = ['FastArp Noise'   ,'FA-Noise'  ,0  ,0  ,0  ,False ,False]
-
-lc_instlist[120] = ['Tone A'         ,'ToneA'     ,0  ,1  ,0  ,False ,False]
-lc_instlist[121] = ['Tone B'         ,'ToneB'     ,0  ,1  ,0  ,False ,False]
-lc_instlist[122] = ['Tone C'         ,'ToneC'     ,0  ,1  ,0  ,False ,False]
-lc_instlist[123] = ['Tone D'         ,'ToneD'     ,0  ,1  ,0  ,False ,False]
-
-lc_instlist[128]= ['_EXT'            ,'_EXT'      ,0  ,0  ,0  ,False ,False]
-lc_instlist[129]= ['_EXT_E'          ,'_EXT'      ,0  ,1  ,0  ,False ,False]
+lc_instlist[128] = ('_EXT'                 ,'_EXT'      ,0  ,0  ,0  ,False ,False)
+lc_instlist[129] = ('_EXT_E'               ,'_EXT'      ,0  ,1  ,0  ,False ,False)
 
 def decode_tempo(v): return (3614.75409836/v)/2
 

@@ -192,7 +192,7 @@ class input_soundop(plugins.base):
 						if Envelops:
 							if 'Points' in Envelops[0]:
 								addauto_obj.autopoints = Envelops[0]['Points']
-								addauto_obj.autoloc = autoloc_s+['vol']
+								addauto_obj.autoloc = (autoloc_s+['vol'])
 								addauto_obj.valtype = 'float'
 								addauto_obj.minval = 0
 								addauto_obj.maxval = 1
@@ -203,7 +203,7 @@ class input_soundop(plugins.base):
 						if Envelops:
 							if 'Points' in Envelops[0]:
 								addauto_obj.autopoints = Envelops[0]['Points']
-								addauto_obj.autoloc = autoloc_s+['pan']
+								addauto_obj.autoloc = (autoloc_s+['pan'])
 								addauto_obj.valtype = 'float'
 								addauto_obj.minval = -1
 								addauto_obj.maxval = 1
