@@ -280,8 +280,9 @@ class midi_modernize:
 		inittempo = self.tempo_data.get_inital(self.start_pos)
 		if inittempo: convproj_obj.params.add('bpm', inittempo, 'float')
 		cvpj_automation = convproj_obj.automation
+		autoloc_bpm = ('main', 'bpm')
 		for pos, val in self.tempo_data.get_points():
-			cvpj_automation.add_autotick(['main', 'bpm'], 'float', int(pos), float(val))
+			cvpj_automation.add_autotick(autoloc_bpm, 'float', int(pos), float(val))
 
 	def do_timesig(self, convproj_obj):
 		logger_compat.info('midi_modernize: TimeSig')

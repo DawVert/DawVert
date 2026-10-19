@@ -110,10 +110,10 @@ class autoloc_store:
 			self.data_pitch['autoloc'][p,c,3] = ''
 
 	def get_autoloc(self, po, ch, cc):
-		return [str(i) for i in self.data[po,ch,cc]['autoloc'] if i != '']
+		return tuple([str(i) for i in self.data[po,ch,cc]['autoloc'] if i != ''])
 
 	def get_autoloc_pitch(self, po, ch):
-		return [str(i) for i in self.data_pitch[po,ch]['autoloc'] if i != '']
+		return tuple([str(i) for i in self.data_pitch[po,ch]['autoloc'] if i != ''])
 
 	def get_math(self, po, ch, cc):
 		sdata = self.data[po,ch,cc]
