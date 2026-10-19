@@ -143,8 +143,10 @@ class input_hydrogen(plugins.base):
 		for autopath in project_obj.automationPaths:
 			if autopath.adjust == 'velocity':
 				autoloc_vol = ('master', 'vol')
+				auto_obj = cvpj_automation.create(autoloc_vol, 'float', True)
+				autopoints = auto_obj.make_nopl_points()
 				for p, v in autopath.points.items():
-					cvpj_automation.add_autopoint(autoloc_vol, 'float', p*48*4, v, 'normal')
+					autopoints.points__add_point_notype(p*48*4, v)
 
 		# ---------- instruments ----------
 		external_dats = {}

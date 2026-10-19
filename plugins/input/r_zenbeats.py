@@ -22,25 +22,26 @@ def do_visual(cvpj_visual, zb_visual, color_index, colordata):
 def do_auto(cvpj_automation, autoloc, curve, parammode):
 	valtype = 'float'
 	if parammode == 1: valtype = 'bool'
-	if parammode == 2: valtype = 'bool'
+	elif parammode == 2: valtype = 'bool'
 	auto_obj = cvpj_automation.create(autoloc, valtype, True)
+	autopoints = auto_obj.make_nopl_points()
 	for p in curve.points:
 		if parammode == 0: val = p.value
-		if parammode == 1: val = p.value>0.5
-		if parammode == 2: val = p.value<0.5
-		if parammode == 3: val = (p.value-0.5)*2
-		auto_obj.add_autopoint(p.position, val, None)
+		elif parammode == 1: val = p.value>0.5
+		elif parammode == 2: val = p.value<0.5
+		elif parammode == 3: val = (p.value-0.5)*2
+		autopoints.points__add_point_notype(p.position, val)
 
 def do_auto_placement(convproj_obj, mpetype, curve, parammode):
 	valtype = 'float'
 	if parammode == 1: valtype = 'bool'
-	if parammode == 2: valtype = 'bool'
+	elif parammode == 2: valtype = 'bool'
 	autopoints_obj = placement_obj.add_autopoints(mpetype, 1.0, True)
 	for p in curve.points:
 		if parammode == 0: val = p.value
-		if parammode == 1: val = p.value>0.5
-		if parammode == 2: val = p.value<0.5
-		if parammode == 3: val = (p.value-0.5)*2
+		elif parammode == 1: val = p.value>0.5
+		elif parammode == 2: val = p.value<0.5
+		elif parammode == 3: val = (p.value-0.5)*2
 		autopoints_obj.points__add_normal(p.position, val, 0, None)
 
 filter_types = {

@@ -38,13 +38,16 @@ def do_params(track_obj, track_device):
 def do_autopoints(cvpj_automation, autoloc, auto_node, v_min, v_max, instant):
 	auto_obj = cvpj_automation.create(autoloc, 'float' if not instant else 'bool', True)
 	if 'Events' in auto_node:
+		cvpj_autopoints = auto_obj.make_nopl_points()
 		autoevents = auto_node['Events']
 		if not instant:
 			for x in autoevents:
-				auto_obj.add_autopoint(x.start, xtramath.between_from_one(v_min, v_max, x.value), None)
+				val = xtramath.between_from_one(v_min, v_max, x.value)
+				cvpj_autopoints.points__add_point_notype(x.start, val)
 		else:
 			for x in autoevents:
-				auto_obj.add_autopoint(x.start, xtramath.between_from_one(v_min, v_max, x.value), 'instant')
+				val = xtramath.between_from_one(v_min, v_max, x.value)
+				cvpj_autopoints.points__add_instant(x.start, val)
 
 def do_auto(track_obj, convproj_obj, seq_automation, autoloc_start, proj_sequel):
 	globalids = proj_sequel.globalids

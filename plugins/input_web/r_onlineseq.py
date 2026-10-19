@@ -119,8 +119,12 @@ class input_onlinesequencer(plugins.base):
 
 				if autoloc:
 					auto_obj = cvpj_automation.create(autoloc, 'float', True)
+					autopoints = auto_obj.make_nopl_points()
 					for marker in markers: 
-						auto_obj.add_autopoint(marker.pos, marker.value/div, 'normal' if marker.type else 'instant')
+						pos = marker.pos
+						val = marker.value/div
+						ptype = 'normal' if marker.type else 'instant'
+						autopoints.points__add_point(pos, val, ptype)
 
 		# ---------- notes ----------
 		multig = {}

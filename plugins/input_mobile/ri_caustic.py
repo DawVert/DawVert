@@ -81,6 +81,11 @@ def loopmode_cvpj(wavdata, sp_obj):
 	if lm in [2,4]: sp_obj.loop_mode = "normal"
 	if lm in [3,5]: sp_obj.loop_mode = "pingpong"
 
+def add_autopoints_twopoints(cvpj_automation, autoloc, points, valtype):
+	auto_obj = cvpj_automation.create(autoloc, valtype, False)
+	autopoints = auto_obj.make_nopl_points()
+	for pos, val in points: autopoints.points__add_point_notype(pos, val)
+
 @dataclass
 class mixertrack:
 	vol: float = 1
@@ -486,7 +491,8 @@ class input_cvpj_r(plugins.base):
 		for machnum, machauto in enumerate(project_obj.seqn.auto_mach):
 			for ctrlid, s_machauto in machauto.data.items():
 				twopoints = [[float(x['pos']), float(x['val'])] for x in s_machauto]
-				cvpj_automation.add_autopoints_twopoints(['plugin', 'machine'+str(machnum+1), str(ctrlid)], 'float', twopoints)
+				autoloc = ['plugin', 'machine'+str(machnum+1), str(ctrlid)]
+				add_autopoints_twopoints(cvpj_automation, autoloc, twopoints, 'float')
 
 		# ---------- automation: mixer ----------
 		for fxsetnum, machauto in enumerate(project_obj.seqn.auto_mixer):
@@ -508,7 +514,7 @@ class input_cvpj_r(plugins.base):
 					twopoints = [[float(x['pos']), float(x['val'])] for x in s_machauto]
 					if ctrl_g == 8: 
 						for x in twopoints: x[1] = (x[1]-0.5)*2
-					cvpj_automation.add_autopoints_twopoints(autoloc, 'float', twopoints)
+					add_autopoints_twopoints(cvpj_automation, autoloc, twopoints, 'float')
 
 		# ---------- automation: fx ----------
 		for fxsetnum, machauto in enumerate(project_obj.seqn.auto_fx):
@@ -523,9 +529,11 @@ class input_cvpj_r(plugins.base):
 
 				if autofx_ctrl == 5: 
 					for x in twopoints: x[1] = (x[1]*-1)-1
-					cvpj_automation.add_autopoints_twopoints(['slot', cvpj_fx_autoid, 'enabled'], 'bool', twopoints)
+					autoloc = ['slot', cvpj_fx_autoid, 'enabled']
+					add_autopoints_twopoints(cvpj_automation, autoloc, twopoints, 'bool')
 				else: 
-					cvpj_automation.add_autopoints_twopoints(['plugin', cvpj_fx_autoid, str(autofx_ctrl)], 'float', twopoints)
+					autoloc = ['plugin', cvpj_fx_autoid, str(autofx_ctrl)]
+					add_autopoints_twopoints(cvpj_automation, autoloc, twopoints, 'float')
 
 		# ---------- automation: master fx ----------
 		master_fxchaindata = []
@@ -578,7 +586,7 @@ class input_cvpj_r(plugins.base):
 					autoloc = ['slot', cvpj_fx_autoid, 'enabled']
 				else:  autoloc = ['plugin', cvpj_fx_autoid, str(autofx_ctrl-64)]
 
-			if autoloc: cvpj_automation.add_autopoints_twopoints(autoloc, 'float', twopoints)
+			if autoloc: add_autopoints_twopoints(cvpj_automation, autoloc, twopoints, 'float')
 
 		# ---------- master track ----------
 		cvpj_master.params.add('vol', master_controls_data[39], 'float')

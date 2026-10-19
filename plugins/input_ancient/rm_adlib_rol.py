@@ -6,6 +6,20 @@ import os
 
 from objects import globalstore
 
+trkchannames = {
+	5: 'Bass Drum',
+	6: 'Snare Drum',
+	7: 'Tom Tom',
+	8: 'Top Cymbal',
+	9: 'Hi-Hat'
+}
+
+def to_points(cvpj_automation, autoloc, points):
+	auto_obj = cvpj_automation.create(autoloc, 'float', False)
+	autoticks = auto_obj.make_nopl_ticks()
+	for pos, val in points: autoticks.add_point(pos, val)
+	return autoticks
+
 class input_adlib_rol(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -77,9 +91,14 @@ class input_adlib_rol(plugins.base):
 
 		bpm = project_obj.track_tempo.tempo
 		convproj_obj.params.add('bpm', bpm, 'float')
-		autoloc_bpm = ('main', 'bpm')
-		for pos, bpmmod in project_obj.track_tempo.events: 
-			cvpj_automation.add_autotick(autoloc_bpm, 'float', pos, bpmmod*bpm)
+
+		# automation
+		evt_tempo = project_obj.track_tempo.events
+		if evt_tempo:
+			autoloc = ('main', 'bpm')
+			auto_obj = cvpj_automation.create(autoloc, 'float', False)
+			autoticks = auto_obj.make_nopl_ticks()
+			for pos, bpmmod in evt_tempo: autoticks.add_point(pos, bpmmod*bpm)
 
 		# ---------- tracks ----------
 		used_voices = []
@@ -88,21 +107,21 @@ class input_adlib_rol(plugins.base):
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 0, False)
 
 			# name
+			visual_obj = track_obj.visual
 			if (rol_track.voice.name!='Voix  %i'%tracknum) or keep_def_name:
-				track_obj.visual.name = rol_track.voice.name
+				visual_obj.name = rol_track.voice.name
 			elif not project_obj.isMelodic:
-				if 5>tracknum: track_obj.visual.name = 'Melodic #%i'%(tracknum+1)
-				elif tracknum==5: track_obj.visual.name = 'Bass Drum'
-				elif tracknum==6: track_obj.visual.name = 'Snare Drum'
-				elif tracknum==7: track_obj.visual.name = 'Tom Tom'
-				elif tracknum==8: track_obj.visual.name = 'Top Cymbal'
-				elif tracknum==9: track_obj.visual.name = 'Hi-Hat'
+				if tracknum in trkchannames: visual_obj.name = trkchannames[tracknum]
+				else: visual_obj.name = 'Melodic #%i'%(tracknum+1)
 
 			# notelist
+			firstnotepos = -1
 			cvpj_notelist = track_obj.placements.notelist
 			curtrackpos = 0
 			for note, pos in rol_track.voice.events:
-				if note >= 12: cvpj_notelist.add_m(None, curtrackpos, pos, note-48-12, 1, None)
+				if note >= 12: 
+					if firstnotepos==-1: firstnotepos = curtrackpos
+					cvpj_notelist.add_m(None, curtrackpos, pos, note-48-12, 1, None)
 				curtrackpos += pos
 			upper_timbre = [[i, p.upper()] for i, p in rol_track.timbre.events.copy()]
 			cvpj_notelist.add_instpos(upper_timbre)
@@ -110,24 +129,34 @@ class input_adlib_rol(plugins.base):
 				if x[1] not in used_voices: used_voices.append(x[1])
 
 			# automation
-			autoloc_vol = ('track', cvpj_trackid, 'vol')
-			autoloc_pitch = ('track', cvpj_trackid, 'pitch')
-			for pos, val in rol_track.volume.events: cvpj_automation.add_autotick(autoloc_vol, 'float', pos, val)
-			for pos, val in rol_track.pitch.events: cvpj_automation.add_autotick(autoloc_pitch, 'float', pos, val)
+			params_obj = track_obj.params
+			evt_volume = rol_track.volume.events
+
+			if evt_volume:
+				autoloc = ('track', cvpj_trackid, 'vol')
+				autoticks = to_points(cvpj_automation, autoloc, evt_volume)
+				params_obj.add('vol', autoticks.get_paramval(firstnotepos, 1), 'float')
+
+			evt_pitch = rol_track.pitch.events
+			if evt_pitch:
+				autoloc = ('track', cvpj_trackid, 'pitch')
+				autoticks = to_points(cvpj_automation, autoloc, evt_pitch)
+				params_obj.add('pitch', autoticks.get_paramval(firstnotepos, 0), 'float')
 
 		# ---------- insts ----------
 		for used_voice in used_voices:
 			instname_upper = used_voice.upper()
 			inst_obj = cvpj_insts.add(instname_upper)
-			inst_obj.visual.name = instname_upper
-			inst_obj.visual.from_datapack('adlib_rol', 'inst', instname_upper, True)
+			visual_obj = inst_obj.visual
+			visual_obj.name = instname_upper
+			visual_obj.from_datapack('adlib_rol', 'inst', instname_upper, True)
 			if instname_upper in native_insts:
 				opli = native_insts[instname_upper]
 				plugin_obj = opli.to_cvpj(convproj_obj, instname_upper)
 				plugin_obj.midi_fallback__add_from_datapack('adlib_rol', 'inst', instname_upper)
-				plugin_obj.midi_fallback__to_vis(inst_obj.visual, False)
+				plugin_obj.midi_fallback__to_vis(visual_obj, False)
 			else:
 				plugin_obj = cvpj_plugins.addspec_midi(instname_upper)
 				plugin_obj.midi.from_datapack('adlib_rol', 'inst', instname_upper)
-				plugin_obj.midi.to_visual(inst_obj.visual, False)
+				plugin_obj.midi.to_visual(visual_obj, False)
 			inst_obj.plugslots.set_synth(instname_upper)

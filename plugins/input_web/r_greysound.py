@@ -170,13 +170,17 @@ class input_greysound(plugins.base):
 						if target.parameterId=='volume':
 							autoloc = s_autoloc+['vol']
 							auto_obj = cvpj_automation.create(autoloc, 'float', True)
+							autopoints = auto_obj.make_nopl_points()
 							for point in lane.points:
-								if 'ticks' in point.position: auto_obj.add_autopoint(point.position['ticks']*16, clipGain(point.value), None)
+								if 'ticks' in point.position: 
+									autopoints.points__add_point_notype(point.position['ticks']*16, clipGain(point.value))
 						if target.parameterId=='pan':
 							autoloc = s_autoloc+['pan']
 							auto_obj = cvpj_automation.create(autoloc, 'float', True)
+							autopoints = auto_obj.make_nopl_points()
 							for point in lane.points:
-								if 'ticks' in point.position: auto_obj.add_autopoint(point.position['ticks']*16, point.value, None)
+								if 'ticks' in point.position: 
+									autopoints.points__add_point_notype(point.position['ticks']*16, point.value)
 
 			gs_trackids[gs_track.id] = track_obj
 

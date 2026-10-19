@@ -122,7 +122,8 @@ class input_notessimo_v2(plugins.base):
 
 		# ---------- bpm auto ----------
 		auto_bpm_obj = cvpj_automation.create(['main','bpm'], 'float', True)
-		
+		convproj_obj.params.add('bpm', tempo_len[project_obj.order[0]][0], 'float')
+
 		# ---------- scene ----------
 		curpos = 0
 		for pat_num in project_obj.order:

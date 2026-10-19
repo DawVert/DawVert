@@ -161,7 +161,8 @@ class input_bajloop(plugins.base):
 
 			if a_loc:
 				auto_obj = cvpj_automation.create(a_loc, 'float', True)
+				autopoints = auto_obj.make_nopl_points()
 				for pos, val in data.items():
 					pos = (int(pos)-256)/8
 					val = v_add+(int(val)/v_div)
-					auto_obj.add_autopoint(float(pos), float(val), None)
+					autopoints.points__add_point_notype(float(pos), float(val))

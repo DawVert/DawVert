@@ -7,6 +7,12 @@ endtxt = ['', '4OP', '2OP']
 panvals = [1, 0, -1]
 maincolor = [0.39, 0.16, 0.78]
 
+def to_points(cvpj_automation, autoloc, points):
+	auto_obj = cvpj_automation.create(autoloc, 'float', False)
+	autoticks = auto_obj.make_nopl_ticks()
+	for pos, val in points: autoticks.add_point(pos, val)
+	return autoticks
+
 class input_sop(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -112,33 +118,56 @@ class input_sop(plugins.base):
 
 			cvpj_notelist = track_obj.placements.notelist
 			
-			autoloc_vol = ('track', cvpj_trackid, 'vol')
-			autoloc_pan = ('track', cvpj_trackid, 'pan')
-			autoloc_pitch = ('track', cvpj_trackid, 'pitch')
-
 			curtick = 0
 			instpos = []
+			evt_vol = []
+			evt_pan = []
+			evt_pitch = []
+			firstnotepos = -1
+
 			for event in soptrack.events:
 				curtick += event[0]
 				if event[1] == 'VOL': 
-					cvpj_automation.add_autotick(autoloc_vol, 'float', curtick, event[2]/127)
+					val = event[2]/127
+					evt_vol.append([curtick, val])
 
 				elif event[1] == 'PAN': 
-					cvpj_automation.add_autotick(autoloc_pan, 'float', curtick, panvals[event[2]%3]*panlvl)
+					val = panvals[event[2]%3]*panlvl
+					evt_pan.append([curtick, val])
 
 				elif event[1] == 'INST': 
 					instpos.append([curtick, str(event[2])])
 
 				elif event[1] == 'NOTE': 
 					cvpj_notelist.add_m(None, curtick, event[3], event[2]-60, 1, None)
+					if firstnotepos==-1: firstnotepos = curtick
 
 				elif event[1] == 'PITCH': 
-					cvpj_automation.add_autotick(autoloc_pitch, 'float', curtick, (event[2]-100)/100)
+					val = (event[2]-100)/100
+					evt_pitch.append([curtick, val])
 
 				#else:
 				#	print(event)
 
 			cvpj_notelist.add_instpos(instpos)
+
+			params_obj = track_obj.params
+
+			if evt_vol:
+				autoloc_vol = ('track', cvpj_trackid, 'vol')
+				autoticks = to_points(cvpj_automation, autoloc_vol, evt_vol)
+				params_obj.add('vol', autoticks.get_paramval(firstnotepos, 1), 'float')
+
+			if evt_pan:
+				autoloc_pan = ('track', cvpj_trackid, 'pan')
+				autoticks = to_points(cvpj_automation, autoloc_pan, evt_pan)
+				params_obj.add('pan', autoticks.get_paramval(firstnotepos, 0), 'float')
+
+			if evt_pitch:
+				autoloc_pitch = ('track', cvpj_trackid, 'pitch')
+				autoticks = to_points(cvpj_automation, autoloc_pitch, evt_pitch)
+				params_obj.add('pitch', autoticks.get_paramval(firstnotepos, 0), 'float')
+
 
 		# ---------- control track ----------
 		autoloc_bpm = ('main', 'bpm')

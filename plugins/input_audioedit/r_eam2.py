@@ -103,15 +103,17 @@ class input_eam2(plugins.base):
 						autoloc = tuple(autoloc_s+['pan'])
 						auto_obj = cvpj_automation.create(autoloc, 'float', True)
 						auto_obj.is_seconds = True
+						autopoints = auto_obj.make_nopl_points()
 						for p in autop.Points:
-							if p.BeatN>=0: auto_obj.add_autopoint(p.BeatN, (p.Value-0.5)*2, None)
+							if p.BeatN>=0: autopoints.points__add_point_notype(p.BeatN, (p.Value-0.5)*2)
 
 					if autop.AutomationType == 'Volume':
 						autoloc = tuple(autoloc_s+['vol'])
 						auto_obj = cvpj_automation.create(autoloc, 'float', True)
 						auto_obj.is_seconds = True
+						autopoints = auto_obj.make_nopl_points()
 						for p in autop.Points:
-							if p.BeatN>=0: auto_obj.add_autopoint(p.BeatN, p.Value/0.71, None)
+							if p.BeatN>=0: autopoints.points__add_point_notype(p.BeatN, p.Value/0.71)
 
 				for event in track.EventsList:
 					placement_obj = track_obj.placements.add_audio()

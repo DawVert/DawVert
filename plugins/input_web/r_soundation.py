@@ -43,7 +43,11 @@ def autoall_sng_to_cvpj(convproj_obj, pluginid, soundation_device, plugin_obj, f
 
 def autopoints_set(cvpj_automation, autoloc, points, add, mul):
 	auto_obj = cvpj_automation.create(autoloc, 'float', True)
-	for point in points: auto_obj.add_autopoint(point['pos'], (point['value']+add)*mul, None)
+	autopoints = auto_obj.make_nopl_points()
+	for point in points: 
+		pos = point['pos']
+		value = (point['value']+add)*mul
+		autopoints.points__add_point_notype(pos, value)
 
 def extract_audio(url, zip_data, samplefolder):
 	if zip_data and url:

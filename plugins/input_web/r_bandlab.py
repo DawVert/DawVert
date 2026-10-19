@@ -245,9 +245,10 @@ def do_loop(time_obj, blx_region, tempomul, speed):
 
 def do_automation(cvpj_automation, blx_auto, autoloc, tempomul):
 	auto_obj = cvpj_automation.create(autoloc, 'float', True)
+	autopoints = auto_obj.make_nopl_points()
 	for p in blx_auto.points:
 		pos = tempo_calc(tempomul, p.position)
-		auto_obj.add_autopoint(pos, p.value, None)
+		autopoints.points__add_point_notype(pos, p.value)
 
 def do_track_common(convproj_obj, track_obj, blx_track, tempomul):
 	cvpj_automation = convproj_obj.automation

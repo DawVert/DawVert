@@ -188,11 +188,6 @@ class cvpj_s_automation:
 		autopoint_obj = self.nopl_points.points__add_point(p_pos, p_val, p_type)
 		return autopoint_obj
 
-	def add_autopoints_twopoints(self, twopoints):
-		self.make_nopl_points()
-		for twopoint in twopoints:
-			self.nopl_points.points__add_point(twopoint[0], twopoint[1], None)
-
 	def add_pl_points(self):
 		self.make_pl_points()
 		return self.pl_points.add(self.valtype)
@@ -594,11 +589,6 @@ class cvpj_automation:
 		self.create(autopath, valtype, False)
 		autopath = cvpj_autoloc(autopath)
 		return self.data[autopath].add_autopoint(p_pos, p_val, p_type)
-
-	def add_autopoints_twopoints(self, autopath, valtype, twopoints):
-		self.create(autopath, valtype, False)
-		autopath = cvpj_autoloc(autopath)
-		self.data[autopath].add_autopoints_twopoints(twopoints)
 
 	def add_pl_points(self, autopath, valtype):
 		self.create(autopath, valtype, False)

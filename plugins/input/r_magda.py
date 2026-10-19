@@ -25,8 +25,9 @@ def do_placement_base(magda_clip, placement_obj):
 		time_obj.set_posdur(mpl['startBeat'], mpl['lengthBeats'])
 
 def doautopoints(auto_obj, abspoints, minv, maxv):
+	autopoints = auto_obj.make_nopl_points()
 	for point in abspoints: 
-		auto_obj.add_autopoint(point.beatPosition, xtramath.between_from_one(minv, maxv, point.value), None)
+		autopoints.points__add_point_notype(point.beatPosition, xtramath.between_from_one(minv, maxv, point.value))
 
 class input_magda(plugins.base):
 	def is_dawvert_plugin(self):

@@ -116,15 +116,15 @@ def chord_parser(chordval):
 	if chordid == 1: output_val = None
 	else: 
 		if chordid == 2: output_val = [0, 4, 7]
-		if chordid == 3: output_val = [0, 3, 7]
-		if chordid == 6: output_val = [0, 3, 6]
-		if chordid == 5: output_val = [0, 4, 8]
-		if chordid == 4: output_val = [0, 5, 7]
+		elif chordid == 3: output_val = [0, 3, 7]
+		elif chordid == 6: output_val = [0, 3, 6]
+		elif chordid == 5: output_val = [0, 4, 8]
+		elif chordid == 4: output_val = [0, 5, 7]
 		if output_val:
 			if chordbytes_seven == 1: output_val.append(10)
-			if chordbytes_seven == 2: output_val.append(11)
+			elif chordbytes_seven == 2: output_val.append(11)
 			if chordbytes_nine == 1: output_val.append(14)
-			if chordbytes_nine == 2: output_val.append(13)
+			elif chordbytes_nine == 2: output_val.append(13)
 	return output_val
 
 def customtone(project_obj, tonenum, osc_data, plugin_obj):
@@ -215,9 +215,10 @@ class input_lc(plugins.base):
 			# params
 			vol = xtramath.from_db(project_obj.ui_mixer_expression_list[tracknum]/2)
 			pan = [0,-1,1][project_obj.mixer_output_channel_list[tracknum]]
-			track_obj.params.add('vol', vol, 'float')
-			track_obj.params.add('pan', pan, 'float')
-			track_obj.params.add('enabled', not project_obj.mixer_channel_switch_list[tracknum], 'bool')
+			params_obj = track_obj.params
+			params_obj.add('vol', vol, 'float')
+			params_obj.add('pan', pan, 'float')
+			params_obj.add('enabled', not project_obj.mixer_channel_switch_list[tracknum], 'bool')
 
 			# visual
 			color = colordata.getcolornum(tracknum)

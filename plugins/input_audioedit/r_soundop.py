@@ -18,10 +18,11 @@ def do_auto(addauto_obj):
 
 	auto_obj = cvpj_automation.create(autoloc, valtype, True)
 	auto_obj.is_seconds = True
+	cvpj_autopoints = auto_obj.make_nopl_points()
 	for a in autopoints:
 		pos = a['Position']/(hz/2)
 		val = xtramath.between_from_one(minval, maxval, a['Value'])
-		auto_obj.add_autopoint(pos, val, None)
+		cvpj_autopoints.points__add_point_notype(pos, val)
 
 def do_fx(convproj_obj, fxdata):
 	cvpj_plugins = convproj_obj.plugins
@@ -199,7 +200,6 @@ class input_soundop(plugins.base):
 								do_auto(addauto_obj)
 					if x.Name == 'Pan':
 						if StateParams: params_obj.add('pan', (StateParams[0]-0.5)*2, 'float')
-						auto_obj = cvpj_automation.create(['track', cvpj_trackid, 'vol'], 'float', True)
 						if Envelops:
 							if 'Points' in Envelops[0]:
 								addauto_obj.autopoints = Envelops[0]['Points']

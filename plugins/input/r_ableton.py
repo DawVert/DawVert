@@ -83,8 +83,9 @@ def do_automation(convproj_obj, AutomationEnvelopes):
 			if als_autotype == 'BoolEvent': cvpj_autotype = 'bool'
 			if cvpj_autotype:
 				auto_obj = cvpj_automation.create(['id',str(env.PointeeId)], cvpj_autotype, True)
+				autopoints = auto_obj.make_nopl_points()
 				for _,_,alsevent in env.Automation.Events:
-					autopoint_obj = auto_obj.add_autopoint(alsevent.Time*4, alsevent.Value, 'normal' if cvpj_autotype != 'bool' else 'instant')
+					autopoints.points__add_point(alsevent.Time*4, alsevent.Value, 'normal' if cvpj_autotype != 'bool' else 'instant')
 
 			if env.PointeeId == timesigid and als_autotype == 'EnumEvent':
 				for _,_,alsevent in env.Automation.Events:

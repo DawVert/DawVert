@@ -159,7 +159,9 @@ class input_orgyana(plugins.base):
 				last_pan_pos = 0
 				last_pan_val = 0
 
-				if pan_auto=='track': pan_auto_obj = cvpj_automation.create(['track', idval, 'pan'], 'float', False).make_nopl_points()
+				if pan_auto=='track': 
+					auto_obj = cvpj_automation.create(pan_autoid, 'float', False)
+					pan_auto_obj = auto_obj.make_nopl_points()
 
 				for pos, orgnote in posnotes.items():
 					note, dur, vol, pan = orgnote
@@ -185,8 +187,8 @@ class input_orgyana(plugins.base):
 						if pan!=last_pan_val:
 							if last_pan_pos>1:
 								if pan_auto=='track':
-									pan_auto_obj.points__add_point(pos-pan_smooth, last_pan_val*panlvl, 'normal')
-									pan_auto_obj.points__add_point(pos+pan_smooth, pan*panlvl, 'normal')
+									pan_auto_obj.points__add_point_notype(pos-pan_smooth, last_pan_val*panlvl)
+									pan_auto_obj.points__add_point_notype(pos+pan_smooth, pan*panlvl)
 								elif pan_auto=='note':
 									insidepos = pos-notepos
 									cvpj_notelist.last_add_auto('pan', insidepos-pan_smooth, last_pan_val*panlvl)

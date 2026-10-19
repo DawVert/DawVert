@@ -149,15 +149,16 @@ class input_ceol(plugins.base):
 			inst_obj.params.add('vol', ceol_inst_obj.volume/256, 'float')
 
 			# visual
-			inst_obj.visual.color.set_int(color_main.getcolornum(ceol_inst_obj.palette))
-			inst_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+			visual_obj = inst_obj.visual
+			visual_obj.color.set_int(color_main.getcolornum(ceol_inst_obj.palette))
+			visual_obj.color.fx_allowed = ['saturate', 'brighter']
 
 			# instrument
 			if ceol_inst_obj.inst <= 127:
 				inst_obj.midi.out_inst.patch = ceol_inst_obj.inst
 				inst_obj.to_midi(convproj_obj, cvpj_instid, True)
 			elif ceol_inst_obj.inst == 365: 
-				inst_obj.visual.name = 'MIDI Drums'
+				visual_obj.name = 'MIDI Drums'
 				inst_obj.midi.out_inst.drum = True
 				inst_obj.to_midi(convproj_obj, cvpj_instid, True)
 			else: 
@@ -200,9 +201,10 @@ class input_ceol(plugins.base):
 			nle_obj = convproj_obj.notelistindex__add(cvpj_pat_id)
 
 			# visual
-			nle_obj.visual.name = str(patnum+1)
-			nle_obj.visual.color.set_int(cvpj_patcolor)
-			nle_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+			visual_obj = nle_obj.visual
+			visual_obj.name = str(patnum+1)
+			visual_obj.color.set_int(cvpj_patcolor)
+			visual_obj.color.fx_allowed = ['saturate', 'brighter']
 
 			# notelist
 			cvpj_notelist = nle_obj.notelist

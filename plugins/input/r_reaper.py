@@ -74,21 +74,23 @@ def do_auto(pooledenvs, convproj_obj, rpp_autodata, autoloc, instant, paramtype,
 
 	if rpp_autodata.used:
 		instant_next = False
-		for point in rpp_autodata.points:
-			val = point[1] if not invert else 1-point[1]
-			if isbool: val = bool(val)
-			if instant_next: 
-				out_instant = True
-				instant_next = False
-			else: 
-				out_instant = instant
-			if len(point)>2:
-				pointmode = point[2]
-				if pointmode==1: 
-					instant_next = True
-				if pointmode==5:
-					if len(point)>6: autopoint_obj['tension'] = -point[6]
-			autopoint_obj = auto_obj.add_autopoint(point[0], val, 'normal' if not out_instant else 'instant')
+		if rpp_autodata.points:
+			autopoints = auto_obj.make_nopl_points()
+			for point in rpp_autodata.points:
+				val = point[1] if not invert else 1-point[1]
+				if isbool: val = bool(val)
+				if instant_next: 
+					out_instant = True
+					instant_next = False
+				else: 
+					out_instant = instant
+				if len(point)>2:
+					pointmode = point[2]
+					if pointmode==1: 
+						instant_next = True
+					if pointmode==5:
+						if len(point)>6: autopoint_obj['tension'] = -point[6]
+				autopoint_obj = autopoints.points__add_point(point[0], val, 'normal' if not out_instant else 'instant')
 
 def do_samplepart_loop(samplerj, sp_obj, sampleref_obj):
 	dur = sampleref_obj.get_dur_samples()
@@ -253,8 +255,9 @@ class input_reaper(plugins.base):
 		tempoenvex = rpp_project.tempoenvex
 		if tempoenvex.used:
 			auto_obj = cvpj_automation.create(['main', 'bpm'], 'float', True)
+			autopoints = auto_obj.make_nopl_points()
 			for point in tempoenvex.points:
-				autopoint_obj = auto_obj.add_autopoint(point[0], point[1], 'instant')
+				autopoint_obj = autopoints.points__add_point(point[0], point[1], 'instant')
 				if len(point)>6:
 					if point[2]: autopoint_obj['tension'] = -point[6]
 

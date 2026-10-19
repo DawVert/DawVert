@@ -55,7 +55,9 @@ def do_idauto(cvpj_automation, amped_autodata, devid, amped_auto, pluginid):
 			for autop, apoints in autoparams.items():
 				autoloc = ['plugin',str(pluginid),autop.replace('/', '__')]
 				auto_obj = cvpj_automation.create(autoloc, 'float', True)
-				for point in apoints: auto_obj.add_autopoint(point[0], point[1], 'normal')
+				autopoints = auto_obj.make_nopl_points()
+				for point in apoints: 
+					autopoints.points__add_point_notype(point[0], point[1])
 
 def get_contentGuid(contentGuid):
 	if isinstance(contentGuid, dict): return str(contentGuid['userAudio']['exportedId'])
@@ -476,11 +478,12 @@ class input_amped(plugins.base):
 				if not amped_automation.is_device:
 					autoloc = None
 					if autoname == 'volume': autoloc = ['track', amped_tr_id, 'vol']
-					if autoname == 'pan': autoloc = ['track', amped_tr_id, 'pan']
+					elif autoname == 'pan': autoloc = ['track', amped_tr_id, 'pan']
 					if autoloc: 
 						auto_obj = cvpj_automation.create(autoloc, 'float', True)
+						autopoints = auto_obj.make_nopl_points()
 						for p, v in ampedauto_to_cvpjauto(amped_automation.points):
-							auto_obj.add_autopoint(p, v, None)
+							autopoints.points__add_point_notype(p, v)
 				else:
 					deviceid = amped_automation.deviceid
 					if deviceid not in amped_autodata: amped_autodata[deviceid] = {}

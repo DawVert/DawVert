@@ -266,9 +266,10 @@ class input_old_magix_maker(plugins.base):
 							aux2_track_used = True
 						if autoloc:
 							auto_obj = cvpj_automation.create(autoloc, 'float', True)
+							autopoints = auto_obj.make_nopl_points()
 							for pos, val in paramdata.items():
 								val = xtramath.between_from_one(v_min, v_max, (val+32768)/65535)
-								auto_obj.add_autopoint(pos, val, None)
+								autopoints.points__add_point_notype(pos, val)
 
 					#if uniquecolors:
 					#	trackcolor = totalcolors[max(uniquecolors, key=lambda k: uniquecolors.get(k))]

@@ -13,16 +13,17 @@ def do_automation(cvpj_automation, trackid, atype, timelineobj, usetimeline):
 		nextinstant = False
 		autoloc = ['track', trackid, atype] if trackid else ['master', atype]
 		auto_obj = cvpj_automation.create(autoloc, 'float', True)
+		cvpj_autopoints = auto_obj.make_nopl_points()
 		for event in timelineobj:
 			value = 0
 			if atype == 'vol': value = event.value/100
-			if atype == 'pan': value = (event.value-50)/50
+			elif atype == 'pan': value = (event.value-50)/50
 
-			autopoint_obj = auto_obj.add_autopoint(event.position, value, 'normal' if not nextinstant else 'instant')
+			autopoint_obj = cvpj_autopoints.points__add_point(event.position, value, 'normal' if not nextinstant else 'instant')
 			if nextinstant: nextinstant = False
 			if event.fade == 'Exponential': autopoint_obj['tension'] = -1
-			if event.fade == 'Logarithmic': autopoint_obj['tension'] = 1
-			if event.fade == 'Edge': nextinstant = True
+			elif event.fade == 'Logarithmic': autopoint_obj['tension'] = 1
+			elif event.fade == 'Edge': nextinstant = True
 
 keynums = {
 	'B': 11,
@@ -181,15 +182,17 @@ class input_zmaestro(plugins.base):
 					if fxtype == 'LowPassFilter':
 						plugin_obj = cvpj_plugins.add_uni('filter', None, fxid)
 						if 'Frequency' in fxparams:
-							plugin_obj.filter.on = True
-							plugin_obj.filter.type.set('low_pass', None)
-							plugin_obj.filter.freq = int(fxparams['Frequency'])/2
+							filter_obj = plugin_obj.filter
+							filter_obj.on = True
+							filter_obj.type.set('low_pass', None)
+							filter_obj.freq = int(fxparams['Frequency'])/2
 					elif fxtype == 'HighPassFilter':
 						plugin_obj = cvpj_plugins.add_uni('filter', None, fxid)
 						if 'Frequency' in fxparams:
-							plugin_obj.filter.on = True
-							plugin_obj.filter.type.set('high_pass', None)
-							plugin_obj.filter.freq = int(fxparams['Frequency'])/2
+							filter_obj = plugin_obj.filter
+							filter_obj.on = True
+							filter_obj.type.set('high_pass', None)
+							filter_obj.freq = int(fxparams['Frequency'])/2
 					elif fxtype == 'Echo':
 						delay_obj = fx_delay.fx_delay()
 						delay_obj.feedback_first = True

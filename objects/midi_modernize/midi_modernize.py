@@ -281,8 +281,10 @@ class midi_modernize:
 		if inittempo: convproj_obj.params.add('bpm', inittempo, 'float')
 		cvpj_automation = convproj_obj.automation
 		autoloc_bpm = ('main', 'bpm')
+		auto_obj = cvpj_automation.create(autoloc_bpm, 'float', False)
+		autoticks = auto_obj.make_nopl_ticks()
 		for pos, val in self.tempo_data.get_points():
-			cvpj_automation.add_autotick(autoloc_bpm, 'float', int(pos), float(val))
+			autoticks.add_point(int(pos), float(val))
 
 	def do_timesig(self, convproj_obj):
 		logger_compat.info('midi_modernize: TimeSig')
@@ -448,20 +450,24 @@ class midi_modernize:
 					autoloc = self.autoloc_store.get_autoloc(pnum, enum, ccnum)
 					math_add, math_div = self.autoloc_store.get_math(pnum, enum, ccnum)
 					if afterstart:
+						auto_obj = cvpj_automation.create(autoloc, 'float', False)
+						autoticks = auto_obj.make_nopl_ticks()
 						for pos, val in data:
 							val = (float(val)+math_add)/math_div
-							cvpj_automation.add_autotick(autoloc, 'float', int(pos), val)
+							autoticks.add_point(int(pos), val)
 
 	def do_pitch_automation(self, convproj_obj):
+		cvpj_automation = convproj_obj.automation
 		logger_compat.info('midi_modernize: Pitch Automation')
 		for pnum in range(self.num_ports):
 			for enum in range(self.num_channels):
 				chanport = gfunc.calc_channum(enum, pnum, self.num_channels)
 				autoloc = self.autoloc_store.get_autoloc_pitch(pnum, enum)
 				if autoloc:
-					cvpj_automation = convproj_obj.automation
+					auto_obj = cvpj_automation.create(autoloc, 'float', False)
+					autoticks = auto_obj.make_nopl_ticks()
 					for pos, val in self.pitch_data.get_auto(chanport):
-						cvpj_automation.add_autotick(autoloc, 'float', int(pos), val)
+						autoticks.add_point(int(pos), val)
 
 	def rm__add_instruments(self, convproj_obj):
 		convproj_obj.type = 'rm'

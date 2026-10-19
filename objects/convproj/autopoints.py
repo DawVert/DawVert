@@ -169,6 +169,14 @@ class cvpj_autopoints:
 	def clean(self):
 		self.points_cur.clean()
 
+	def points__add_point_notype(self, pos, val):
+		if not isinstance(pos, (float, int)): raise ValueError('cvpj_autopoints: numeric only')
+		points_cur = self.points_cur
+		points_cur.add()
+		points_cur['pos'] = pos
+		points_cur['value'] = val
+		return points_cur
+
 	def points__add_point(self, pos, val, ptype):
 		if not isinstance(pos, (float, int)): raise ValueError('cvpj_autopoints: numeric only')
 		points_cur = self.points_cur

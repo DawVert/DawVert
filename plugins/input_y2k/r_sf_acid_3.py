@@ -367,7 +367,6 @@ class input_acid_3(plugins.base):
 													track_auto = trackg_chunk.content
 													autoloc = None
 
-													autotype = 'normal'
 													invert = False
 
 													if not track_auto.group:
@@ -378,9 +377,13 @@ class input_acid_3(plugins.base):
 															invert = True
 	
 													if autoloc:
+														auto_obj = cvpj_automation.create(autoloc, 'float', True)
+														autopoints = auto_obj.make_nopl_points()
 														for p in track_auto.points:
 															if not p[1]:
-																cvpj_automation.add_autopoint(autoloc, 'float', p[0], p[2] if not invert else 1-p[2], autotype)
+																pos = p[0]
+																value = p[2] if not invert else 1-p[2]
+																autopoints.points__add_point_notype(pos, value)
 
 
 						if track_header:

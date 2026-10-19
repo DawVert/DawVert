@@ -534,8 +534,11 @@ class input_dawproject(plugins.base):
 					target_obj = points.target
 					if target_obj.parameter:
 						auto_obj = cvpj_automation.create(['id',target_obj.parameter], 'bool' if points.points_bool else 'float', True)
-						for point in points.points: auto_obj.add_autopoint(point.time, point.value, None)
-						for point in points.points_bool: auto_obj.add_autopoint(point.time, point.value, 'instant')
+						autopoints = auto_obj.make_nopl_points()
+						for point in points.points:
+							autopoints.points__add_point(point.time, point.value)
+						for point in points.points_bool:
+							autopoints.points__add_instant(point.time, point.value, 'instant')
 
 		timesigauto = project_obj.arrangement.timesignatureautomation
 		if timesigauto:
@@ -547,7 +550,9 @@ class input_dawproject(plugins.base):
 			target_obj = tempoauto.target
 			if target_obj.parameter:
 				auto_obj = cvpj_automation.create(['id',target_obj.parameter], 'float', True)
-				for point in tempoauto.points: auto_obj.add_autopoint(point.time, point.value, None)
+				autopoints = auto_obj.make_nopl_points()
+				for point in tempoauto.points: 
+					autopoints.points__add_point_notype(point.time, point.value)
 
 		if project_obj.arrangement.markers:
 			markers = project_obj.arrangement.markers.markers

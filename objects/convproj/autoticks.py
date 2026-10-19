@@ -132,14 +132,19 @@ class cvpj_autoticks:
 		self.points = norepeats
 
 	def get_paramval(self, before_pos, def_val):
-		ba_autos = [{},{}]
-		for pos in self.points:
-			if pos <= before_pos: ba_autos[0][pos] = self.points[pos]
-			else: ba_autos[1][pos] = self.points[pos]
-		out = def_val
-		poslist = [x for x in ba_autos[0]]
-		if poslist: out = ba_autos[0][max(poslist)]
-		return out
+		ba_autos = {}
+		if before_pos>=0:
+			for pos in self.points:
+				if pos <= before_pos: ba_autos[pos] = self.points[pos]
+				#else: ba_autos[1][pos] = self.points[pos]
+			out = def_val
+			poslist = [x for x in ba_autos]
+			if poslist: out = ba_autos[max(poslist)]
+			return out
+		else:
+			poslist = [x[1] for x in ba_autos]
+			if poslist: return self.points[max(poslist)]
+			else: return def_val
 
 	def split(self):
 		prev_val = -1000000000000000
