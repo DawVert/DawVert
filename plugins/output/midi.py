@@ -50,7 +50,7 @@ class output_midi(plugins.base):
 		if 'bpm' in convproj_obj.params.list():
 			midi_tempo = mido.bpm2tempo(convproj_obj.params.get('bpm', 120).value)
 			autotrack.append(metamsg('set_tempo', tempo=midi_tempo, time=0))
-		aid_found, aid_data = cvpj_automation.get_autoticks(['main', 'bpm'])
+		aid_found, aid_data = cvpj_automation.get_autoticks( ('main', 'bpm') )
 		if aid_found:
 			for pos, val in aid_data: headcmd.append([pos, 'tempo', val])
 

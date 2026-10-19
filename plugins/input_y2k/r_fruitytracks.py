@@ -203,7 +203,7 @@ class input_fruitytracks(plugins.base):
 
 				# auto: vol
 				addauto_obj = addauto_data()
-				addauto_obj.autoloc = ['track', trackid, 'vol']
+				addauto_obj.autoloc = ('track', trackid, 'vol')
 				addauto_obj.mpetype = 'vol'
 				addauto_obj.plpos = plpos
 				addauto_obj.pldur = pldur
@@ -224,7 +224,7 @@ class input_fruitytracks(plugins.base):
 					make_auto(convproj_obj, addauto_obj)
 					
 				# auto: pan
-				addauto_obj.autoloc = ['track', trackid, 'pan']
+				addauto_obj.autoloc = ('track', trackid, 'pan')
 				addauto_obj.mpetype = 'pan'
 				addauto_obj.startval = (ftr_clip.pan_start-64)/64
 				addauto_obj.endval = (ftr_clip.pan_end-64)/64

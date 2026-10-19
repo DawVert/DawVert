@@ -139,12 +139,12 @@ class input_greysound(plugins.base):
 
 		for gs_track in session_obj.tracks:
 			if gs_track.type == 'MASTER':
-				autoloc = ['master']
+				s_autoloc = ['master']
 				track_obj = cvpj_master
 				do_track_visual(gs_track, track_obj)
 				do_track_params(gs_track, track_obj)
 			else:
-				autoloc = ['track', str(gs_track.id)]
+				s_autoloc = ['track', str(gs_track.id)]
 				if gs_track.type == 'INSTRUMENT': track_type = 'instrument'
 				if gs_track.type == 'AUX': track_type = 'fx'
 				if gs_track.type == 'AUDIO': track_type = 'audio'
@@ -168,11 +168,13 @@ class input_greysound(plugins.base):
 					target = lane.target
 					if target.type=='TRACK':
 						if target.parameterId=='volume':
-							auto_obj = cvpj_automation.create(autoloc+['vol'], 'float', True)
+							autoloc = s_autoloc+['vol']
+							auto_obj = cvpj_automation.create(autoloc, 'float', True)
 							for point in lane.points:
 								if 'ticks' in point.position: auto_obj.add_autopoint(point.position['ticks']*16, clipGain(point.value), None)
 						if target.parameterId=='pan':
-							auto_obj = cvpj_automation.create(autoloc+['pan'], 'float', True)
+							autoloc = s_autoloc+['pan']
+							auto_obj = cvpj_automation.create(autoloc, 'float', True)
 							for point in lane.points:
 								if 'ticks' in point.position: auto_obj.add_autopoint(point.position['ticks']*16, point.value, None)
 

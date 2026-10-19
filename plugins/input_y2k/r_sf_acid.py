@@ -113,7 +113,7 @@ class input_acid_old(plugins.base):
 		rootnote_auto = regions.rootnote_stor()
 		auto_basenotes[0] = project_obj.root_note
 		if len(project_obj.tempmap):
-			tempo_autoloc = ['main', 'bpm']
+			tempo_autoloc = ('main', 'bpm')
 			cvpj_automation.add_autotick(tempo_autoloc, 'float', 0, project_obj.tempo)
 			for x in project_obj.tempmap:
 				if x['tempo']:
@@ -300,10 +300,10 @@ class input_acid_old(plugins.base):
 
 					else:
 						autoloc = None
-						if env.type == 0: autoloc = ['track', cvpj_trackid, 'vol']
-						if env.type == 1: autoloc = ['track', cvpj_trackid, 'pan']
+						if env.type == 0: autoloc = ('track', cvpj_trackid, 'vol')
+						if env.type == 1: autoloc = ('track', cvpj_trackid, 'pan')
 						if env.type > 1: 
-							autoloc = ['send', 'send_%i_%i' % (tracknum, env.type-2), 'amount']
+							autoloc = ('send', 'send_%i_%i' % (tracknum, env.type-2), 'amount')
 							if env.type-2 not in used_sends: used_sends.append(env.type-2)
 						if autoloc:
 							autopl_obj = cvpj_automation.add_pl_points(autoloc, 'float')

@@ -49,6 +49,7 @@ def do_autopoints(autopoints_obj, dppoints_obj):
 			dppoints_obj.points_bool.append(dppoint_obj)
 
 def from_cvpj_auto(cvpj_automation, points_obj, autoloc, intype, dpautoid, i_addmul):
+	autoloc = tuple(autoloc)
 	autofound, autoseries = cvpj_automation.get(autoloc, intype)
 	if autofound and autoseries.nopl_points:
 		if i_addmul:
@@ -60,6 +61,7 @@ def from_cvpj_auto(cvpj_automation, points_obj, autoloc, intype, dpautoid, i_add
 		points_obj.append(dppoints_obj)
 
 def from_cvpj_auto_dppoints_obj(cvpj_automation, dppoints_obj, autoloc, intype, dpautoid, i_addmul):
+	autoloc = tuple(autoloc)
 	autofound, autoseries = cvpj_automation.get(autoloc, intype)
 	if autofound and autoseries.nopl_points:
 		if i_addmul:

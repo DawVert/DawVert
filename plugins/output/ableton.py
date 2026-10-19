@@ -59,6 +59,8 @@ def do_sampleref(convproj_obj, als_sampleref, sampleref_obj):
 def do_param(convproj_obj, cvpj_params, cvpj_name, cvpj_fallback, cvpj_type, cvpj_autoloc, als_param, als_auto):
 	cvpj_automation = convproj_obj.automation
 	
+	cvpj_autoloc = tuple(cvpj_autoloc)
+
 	outval = 0
 	if cvpj_type == 'float':
 		outval = cvpj_params.get(cvpj_name, cvpj_fallback).value
@@ -502,6 +504,8 @@ def addgrp(convproj_obj, project_obj, groupid):
 
 	cvpj_groups = convproj_obj.groups
 
+	s_autoloc = ['group', groupid]
+
 	ingroupid = None
 	if groupid not in ids_group_cvpj_als:
 		group_obj = cvpj_groups.get(groupid)
@@ -512,15 +516,15 @@ def addgrp(convproj_obj, project_obj, groupid):
 		als_gtrack.Color = group_obj.visual.color.closest_color_index_int(colordata, NOCOLORNUM)
 		if group_obj.visual.name: als_gtrack.Name.UserName = fixtxt(group_obj.visual.name)
 		if group_obj.visual.comment: als_gtrack.Name.Annotation = fixtxt(group_obj.visual.comment)
-		do_param(convproj_obj, group_obj.params, 'vol', 1, 'float', ['group', groupid, 'vol'], als_gtrack.DeviceChain.Mixer.Volume, als_gtrack.AutomationEnvelopes)
-		do_param(convproj_obj, group_obj.params, 'pan', 0, 'float', ['group', groupid, 'pan'], als_gtrack.DeviceChain.Mixer.Pan, als_gtrack.AutomationEnvelopes)
-		do_param(convproj_obj, group_obj.params, 'enabled', 0, 'invbool', ['group', groupid, 'enabled'], als_gtrack.DeviceChain.Mixer.Speaker, als_gtrack.AutomationEnvelopes)
+		do_param(convproj_obj, group_obj.params, 'vol', 1, 'float', s_autoloc+['vol'], als_gtrack.DeviceChain.Mixer.Volume, als_gtrack.AutomationEnvelopes)
+		do_param(convproj_obj, group_obj.params, 'pan', 0, 'float', s_autoloc+['pan'], als_gtrack.DeviceChain.Mixer.Pan, als_gtrack.AutomationEnvelopes)
+		do_param(convproj_obj, group_obj.params, 'enabled', 0, 'invbool', s_autoloc+['enabled'], als_gtrack.DeviceChain.Mixer.Speaker, als_gtrack.AutomationEnvelopes)
 	
 		pan_mode = group_obj.datavals.get('pan_mode', '')
 		if pan_mode == 'split': 
 			als_track.DeviceChain.Mixer.PanMode = 1
-			do_param(convproj_obj, group_obj.params, 'splitpan_left', -1, 'float', ['group', groupid, 'splitpan_left'], als_track.DeviceChain.Mixer.SplitStereoPanL, als_track.AutomationEnvelopes)
-			do_param(convproj_obj, group_obj.params, 'splitpan_right', 1, 'float', ['group', groupid, 'splitpan_right'], als_track.DeviceChain.Mixer.SplitStereoPanR, als_track.AutomationEnvelopes)
+			do_param(convproj_obj, group_obj.params, 'splitpan_left', -1, 'float', s_autoloc+['splitpan_left'], als_track.DeviceChain.Mixer.SplitStereoPanL, als_track.AutomationEnvelopes)
+			do_param(convproj_obj, group_obj.params, 'splitpan_right', 1, 'float', s_autoloc+['splitpan_right'], als_track.DeviceChain.Mixer.SplitStereoPanR, als_track.AutomationEnvelopes)
 
 		ids_group_cvpj_als[groupid] = groupnumid
 		if group_obj.group:
@@ -764,6 +768,8 @@ def add_track(convproj_obj, project_obj, trackid, track_obj):
 		if cvpj_groups.get(track_obj.group):
 			groupnumid = addgrp(convproj_obj, project_obj, track_obj.group)
 			
+	s_autoloc = ['track', trackid]
+
 	if track_obj.type == 'instrument':
 		tracknumid = counter_track.get()
 		als_track = project_obj.add_midi_track(tracknumid)
@@ -771,16 +777,16 @@ def add_track(convproj_obj, project_obj, trackid, track_obj):
 		als_track.Color = track_color
 		if track_obj.visual.name: als_track.Name.UserName = fixtxt(track_obj.visual.name)
 		if track_obj.visual.comment: als_track.Name.Annotation = fixtxt(track_obj.visual.comment)
-		do_param(convproj_obj, track_obj.params, 'vol', 1, 'float', ['track', trackid, 'vol'], als_track.DeviceChain.Mixer.Volume, als_track.AutomationEnvelopes)
-		do_param(convproj_obj, track_obj.params, 'pan', 0, 'float', ['track', trackid, 'pan'], als_track.DeviceChain.Mixer.Pan, als_track.AutomationEnvelopes)
-		do_param(convproj_obj, track_obj.params, 'enabled', 0, 'invbool', ['track', trackid, 'enabled'], als_track.DeviceChain.Mixer.Speaker, als_track.AutomationEnvelopes)
+		do_param(convproj_obj, track_obj.params, 'vol', 1, 'float', s_autoloc+['vol'], als_track.DeviceChain.Mixer.Volume, als_track.AutomationEnvelopes)
+		do_param(convproj_obj, track_obj.params, 'pan', 0, 'float', s_autoloc+['pan'], als_track.DeviceChain.Mixer.Pan, als_track.AutomationEnvelopes)
+		do_param(convproj_obj, track_obj.params, 'enabled', 0, 'invbool', s_autoloc+['enabled'], als_track.DeviceChain.Mixer.Speaker, als_track.AutomationEnvelopes)
 		als_track.TrackDelay.Value = track_obj.latency_offset
 
 		pan_mode = track_obj.datavals.get('pan_mode', '')
 		if pan_mode == 'split': 
 			als_track.DeviceChain.Mixer.PanMode = 1
-			do_param(convproj_obj, track_obj.params, 'splitpan_left', -1, 'float', ['track', trackid, 'splitpan_left'], als_track.DeviceChain.Mixer.SplitStereoPanL, als_track.AutomationEnvelopes)
-			do_param(convproj_obj, track_obj.params, 'splitpan_right', 1, 'float', ['track', trackid, 'splitpan_right'], als_track.DeviceChain.Mixer.SplitStereoPanR, als_track.AutomationEnvelopes)
+			do_param(convproj_obj, track_obj.params, 'splitpan_left', -1, 'float', s_autoloc+['splitpan_left'], als_track.DeviceChain.Mixer.SplitStereoPanL, als_track.AutomationEnvelopes)
+			do_param(convproj_obj, track_obj.params, 'splitpan_right', 1, 'float', s_autoloc+['splitpan_right'], als_track.DeviceChain.Mixer.SplitStereoPanR, als_track.AutomationEnvelopes)
 
 		if groupnumid: 
 			als_track.TrackGroupId = groupnumid
@@ -1223,16 +1229,17 @@ def add_track(convproj_obj, project_obj, trackid, track_obj):
 		als_track.Color = track_color
 		if track_obj.visual.name: als_track.Name.UserName = fixtxt(track_obj.visual.name)
 		if track_obj.visual.comment: als_track.Name.Annotation = fixtxt(track_obj.visual.comment)
-		do_param(convproj_obj, track_obj.params, 'vol', 1, 'float', ['track', trackid, 'vol'], als_track.DeviceChain.Mixer.Volume, als_track.AutomationEnvelopes)
-		do_param(convproj_obj, track_obj.params, 'pan', 0, 'float', ['track', trackid, 'pan'], als_track.DeviceChain.Mixer.Pan, als_track.AutomationEnvelopes)
-		do_param(convproj_obj, track_obj.params, 'enabled', 0, 'invbool', ['track', trackid, 'enabled'], als_track.DeviceChain.Mixer.Speaker, als_track.AutomationEnvelopes)
+
+		do_param(convproj_obj, track_obj.params, 'vol', 1, 'float', s_autoloc+['vol'], als_track.DeviceChain.Mixer.Volume, als_track.AutomationEnvelopes)
+		do_param(convproj_obj, track_obj.params, 'pan', 0, 'float', s_autoloc+['pan'], als_track.DeviceChain.Mixer.Pan, als_track.AutomationEnvelopes)
+		do_param(convproj_obj, track_obj.params, 'enabled', 0, 'invbool', s_autoloc+['enabled'], als_track.DeviceChain.Mixer.Speaker, als_track.AutomationEnvelopes)
 		als_track.TrackDelay.Value = track_obj.latency_offset
 
 		pan_mode = track_obj.datavals.get('pan_mode', '')
 		if pan_mode == 'split': 
 			als_track.DeviceChain.Mixer.PanMode = 1
-			do_param(convproj_obj, track_obj.params, 'splitpan_left', -1, 'float', ['track', trackid, 'splitpan_left'], als_track.DeviceChain.Mixer.SplitStereoPanL, als_track.AutomationEnvelopes)
-			do_param(convproj_obj, track_obj.params, 'splitpan_right', 1, 'float', ['track', trackid, 'splitpan_right'], als_track.DeviceChain.Mixer.SplitStereoPanR, als_track.AutomationEnvelopes)
+			do_param(convproj_obj, track_obj.params, 'splitpan_left', -1, 'float', s_autoloc+['splitpan_left'], als_track.DeviceChain.Mixer.SplitStereoPanL, als_track.AutomationEnvelopes)
+			do_param(convproj_obj, track_obj.params, 'splitpan_right', 1, 'float', s_autoloc+['splitpan_right'], als_track.DeviceChain.Mixer.SplitStereoPanR, als_track.AutomationEnvelopes)
 
 		if groupnumid: 
 			als_track.TrackGroupId = groupnumid
@@ -1408,17 +1415,19 @@ class output_ableton(plugins.base):
 		do_tracks(convproj_obj, project_obj, track_nongroup, track_group, groups_used,'    MAIN')
 
 		for returnid, return_obj in convproj_obj.track_master.iter_return():
+			s_autoloc = ['return', returnid]
+
 			tracknumid = counter_track.get()
 			als_track = project_obj.add_return_track(tracknumid)
 			do_effects(convproj_obj, als_track, return_obj.plugslots.slots_audio)
-			do_param(convproj_obj, return_obj.params, 'vol', 1, 'float', ['return', returnid, 'vol'], als_track.DeviceChain.Mixer.Volume, als_track.AutomationEnvelopes)
-			do_param(convproj_obj, return_obj.params, 'pan', 0, 'float', ['return', returnid, 'pan'], als_track.DeviceChain.Mixer.Pan, als_track.AutomationEnvelopes)
+			do_param(convproj_obj, return_obj.params, 'vol', 1, 'float', s_autoloc+['vol'], als_track.DeviceChain.Mixer.Volume, als_track.AutomationEnvelopes)
+			do_param(convproj_obj, return_obj.params, 'pan', 0, 'float', s_autoloc+['pan'], als_track.DeviceChain.Mixer.Pan, als_track.AutomationEnvelopes)
 
 			pan_mode = return_obj.datavals.get('pan_mode', '')
 			if pan_mode == 'split': 
 				als_track.DeviceChain.Mixer.PanMode = 1
-				do_param(convproj_obj, return_obj.params, 'splitpan_left', -1, 'float', ['return', returnid, 'splitpan_left'], als_track.DeviceChain.Mixer.SplitStereoPanL, als_track.AutomationEnvelopes)
-				do_param(convproj_obj, return_obj.params, 'splitpan_right', 1, 'float', ['return', returnid, 'splitpan_right'], als_track.DeviceChain.Mixer.SplitStereoPanR, als_track.AutomationEnvelopes)
+				do_param(convproj_obj, return_obj.params, 'splitpan_left', -1, 'float', s_autoloc+['splitpan_left'], als_track.DeviceChain.Mixer.SplitStereoPanL, als_track.AutomationEnvelopes)
+				do_param(convproj_obj, return_obj.params, 'splitpan_right', 1, 'float', s_autoloc+['splitpan_right'], als_track.DeviceChain.Mixer.SplitStereoPanR, als_track.AutomationEnvelopes)
 
 			als_track.TrackDelay.Value = return_obj.latency_offset
 			als_track.Color = return_obj.visual.color.closest_color_index_int(colordata, NOCOLORNUM)

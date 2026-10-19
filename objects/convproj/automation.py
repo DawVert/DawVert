@@ -366,12 +366,14 @@ class cvpj_autoloc:
 	__slots__ = ['autoloc']
 	
 	def __init__(self, indata):
-		if isinstance(indata, list): self.autoloc = indata
-		elif isinstance(indata, str): self.autoloc = indata.split(';')
+		if isinstance(indata, tuple): self.autoloc = indata
+		elif isinstance(indata, list): self.autoloc = tuple(indata)
+		elif isinstance(indata, str): self.autoloc = tuple(indata.split(';'))
 		else: self.autoloc = []
 
 	def __eq__(self, other):
-		if isinstance(other, list): return self.autoloc==other
+		if isinstance(other, tuple): return self.autoloc==other
+		elif isinstance(other, list): return self.autoloc==tuple(other)
 		elif isinstance(other, str): return self.__str__()==other
 		elif isinstance(other, cvpj_autoloc): return self.autoloc==other.autoloc
 		else: return False

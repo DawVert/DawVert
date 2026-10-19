@@ -37,7 +37,8 @@ def get_asdr(plugin_obj, soundation_device):
 
 def autoall_sng_to_cvpj(convproj_obj, pluginid, soundation_device, plugin_obj, fxpluginname):
 	for param_id, dset_param in globalstore.datapack.get_params('soundation', 'plugin', fxpluginname):
-		sndparam_obj = get_param(soundation_device, plugin_obj, param_id, ['plugin', pluginid, param_id], True)
+		autoloc = ('plugin', pluginid, param_id)
+		sndparam_obj = get_param(soundation_device, plugin_obj, param_id, autoloc, True)
 		plugin_obj.datapack_param__add(param_id, sndparam_obj.value, dset_param)
 
 def autopoints_set(cvpj_automation, autoloc, points, add, mul):
@@ -404,7 +405,8 @@ class input_soundation(plugins.base):
 
 						kit_name = get_paramval(soundation_inst, 'kit_name')
 						for paramid in ["gain_2", "hold_1", "pitch_6", "gain_1", "decay_5", "gain_5", "hold_0", "hold_2", "pitch_7", "gain_0", "decay_6", "gain_3", "hold_5", "pitch_3", "decay_4", "pitch_4", "gain_6", "decay_7", "pitch_2", "hold_6", "decay_1", "decay_3", "decay_0", "decay_2", "gain_7", "pitch_0", "pitch_5", "hold_3", "pitch_1", "hold_4", "hold_7", "gain_4"]:
-							get_param(soundation_inst, plugin_obj, paramid, ['plugin', pluginid, paramid], True)
+							autoloc = ('plugin', pluginid, paramid)
+							get_param(soundation_inst, plugin_obj, paramid, autoloc, True)
 						plugin_obj.datavals.add('kit_name', kit_name)
 
 					elif instpluginname == 'com.soundation.europa':
@@ -496,9 +498,11 @@ class input_soundation(plugins.base):
 						for oscnum in range(4):
 							for paramtype in ['detune','pitch','type','vol']: 
 								paramid = 'osc_'+str(oscnum)+'_'+paramtype
-								get_param(soundation_inst, plugin_obj, paramid, ['plugin', pluginid, paramid], True)
+								autoloc = ('plugin', pluginid, paramid)
+								get_param(soundation_inst, plugin_obj, paramid, autoloc, True)
 						for paramid in ['noise_vol', 'noise_color']: 
-							get_param(soundation_inst, plugin_obj, paramid, ['plugin', pluginid, paramid], True)
+							autoloc = ('plugin', pluginid, paramid)
+							get_param(soundation_inst, plugin_obj, paramid, autoloc, True)
 
 			for soundation_effect in soundation_channel.effects:
 				plugin_obj = cvpj_plugins.add_native('soundation', soundation_effect.identifier)

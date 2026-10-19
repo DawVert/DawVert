@@ -116,13 +116,13 @@ class output_onlineseq(plugins.base):
 
 			project_obj.params[onlineseqnum] = iparams
 
-			create_auto(project_obj, cvpj_automation, onlineseqnum, 1, ['track', trackid, 'vol'], 1)
-			create_auto(project_obj, cvpj_automation, onlineseqnum, 2, ['track', trackid, 'pan'], 1)
-			create_auto(project_obj, cvpj_automation, onlineseqnum, 11, ['track', trackid, 'pitch'], 100)
+			create_auto(project_obj, cvpj_automation, onlineseqnum, 1, ('track', trackid, 'vol'), 1)
+			create_auto(project_obj, cvpj_automation, onlineseqnum, 2, ('track', trackid, 'pan'), 1)
+			create_auto(project_obj, cvpj_automation, onlineseqnum, 11, ('track', trackid, 'pitch'), 100)
 
 		# ---------- automation ----------
-		create_auto(project_obj, cvpj_automation, 0, 0, ['main', 'bpm'], 1)
-		create_auto(project_obj, cvpj_automation, 0, 8, ['master', 'vol'], 1)
+		create_auto(project_obj, cvpj_automation, 0, 0, ('main', 'bpm'), 1)
+		create_auto(project_obj, cvpj_automation, 0, 8, ('master', 'vol'), 1)
 
 		# ---------- output ----------
 		if dawvert_intent.output_mode == 'file':

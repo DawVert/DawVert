@@ -22,6 +22,8 @@ def gen_hexid(num):
 		else: break
 	return outv
 
+zerodb_vol = 0.740818202495575
+
 def make_volpan_plugin(convproj_obj, track_obj, iddat, wf_track, startn):
 	from objects.file_proj import tracktion_edit as proj_tracktion_edit
 	cvpj_automation = convproj_obj.automation
@@ -29,10 +31,12 @@ def make_volpan_plugin(convproj_obj, track_obj, iddat, wf_track, startn):
 	wf_plugin.plugtype = 'volume'
 	wf_plugin.enabled = 1
 	wf_plugin.presetDirty = 1
-	wf_plugin.params['volume'] = track_obj.params.get('vol', 1.0).value*0.740818202495575
+	wf_plugin.params['volume'] = track_obj.params.get('vol', 1.0).value*zerodb_vol
 	wf_plugin.params['pan'] = track_obj.params.get('pan', 0).value
-	add_auto_curves(cvpj_automation, [startn, iddat, 'vol'], wf_plugin, 'volume', 0.740818202495575)
-	add_auto_curves(cvpj_automation, [startn, iddat, 'pan'], wf_plugin, 'pan', 1)
+	autoloc_vol = (startn, iddat, 'vol')
+	autoloc_pan = (startn, iddat, 'pan')
+	add_auto_curves(cvpj_automation, autoloc_vol, wf_plugin, 'volume', zerodb_vol)
+	add_auto_curves(cvpj_automation, autoloc_pan, wf_plugin, 'pan', 1)
 	wf_track.plugins.append(wf_plugin)
 	return wf_plugin
 
@@ -137,7 +141,8 @@ def make_send_plugin(convproj_obj, wf_track, returnid, send_obj, auxnums):
 	wf_plugin.params['auxSendSliderPos'] = send_obj.params.get('amount', 0).value
 	wf_plugin.params['busNum'] = auxnums[returnid]
 	if send_obj.sendautoid:
-		add_auto_curves(cvpj_automation, ['send', send_obj.sendautoid, 'amount'], wf_plugin, 'send level', 1)
+		autoloc = ('send', send_obj.sendautoid, 'amount')
+		add_auto_curves(cvpj_automation, autoloc, wf_plugin, 'send level', 1)
 	wf_track.plugins.append(wf_plugin)
 	return wf_plugin
 
@@ -333,7 +338,8 @@ def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, 
 				wf_plugin.params['state'] = juceobj.memoryblock
 
 				for _, _, paramnum in cvpj_automation.iter_nopl_points_external(cvpj_fxid):
-					add_auto_curves(cvpj_automation, ['plugin', cvpj_fxid, 'ext_param_'+str(paramnum)], wf_plugin, str(paramnum), 1)
+					autoloc = ('plugin', cvpj_fxid, 'ext_param_%i' % paramnum)
+					add_auto_curves(cvpj_automation, autoloc, wf_plugin, str(paramnum), 1)
 				return wf_plugin
 			else: logger_output.warning('VST2 plugin not placed: no ID found.')
 
@@ -351,7 +357,8 @@ def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, 
 				if juceobj.manufacturer: wf_plugin.params['manufacturer'] = juceobj.manufacturer
 				wf_plugin.params['state'] = juceobj.memoryblock
 				for _, _, paramnum in cvpj_automation.iter_nopl_points_external(cvpj_fxid):
-					add_auto_curves(cvpj_automation, ['plugin', cvpj_fxid, 'ext_param_'+str(paramnum)], wf_plugin, str(paramnum), 1)
+					autoloc = ('plugin', cvpj_fxid, 'ext_param_%i' % paramnum)
+					add_auto_curves(cvpj_automation, autoloc, wf_plugin, str(paramnum), 1)
 				return wf_plugin
 			else: logger_output.warning('VST2 plugin not placed: no ID found.')
 
@@ -363,7 +370,8 @@ def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, 
 			dsetfound = False
 			for param_id, dset_param in globalstore.datapack.get_params('waveform', 'plugin', wf_plugin.plugtype):
 				wf_plugin.params[param_id] = plugin_obj.params.get(param_id, dset_param.defv).value
-				add_auto_curves(cvpj_automation, ['plugin', cvpj_fxid, param_id], wf_plugin, param_id, 1)
+				autoloc = ('plugin', cvpj_fxid, param_id)
+				add_auto_curves(cvpj_automation, autoloc, wf_plugin, param_id, 1)
 				dsetfound = True
 
 			if dsetfound == False:
@@ -371,7 +379,8 @@ def get_plugin(convproj_obj, tparams_obj, sampleref_assoc, sampleref_obj_assoc, 
 				if paramlist:
 					for param_id in paramlist:
 						wf_plugin.params[param_id] = plugin_obj.params.get(param_id, 0).value
-						add_auto_curves(cvpj_automation, ['plugin', cvpj_fxid, param_id], wf_plugin, param_id, 1)
+						autoloc = ('plugin', cvpj_fxid, param_id)
+						add_auto_curves(cvpj_automation, autoloc, wf_plugin, param_id, 1)
 			return wf_plugin
 
 	elif isinstrument:

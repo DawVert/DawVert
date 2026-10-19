@@ -278,7 +278,7 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj, cvpj
 				for autoloc, autodata, paramnum in cvpj_automation.iter_all_external(pluginid):
 					parmenv_obj = rpp_plug_obj.add_env()
 					parmenv_obj.param_id = paramnum
-					add_auto_all(rpp_project, convproj_obj, parmenv_obj, list(autoloc), 'float', False)
+					add_auto_all(rpp_project, convproj_obj, parmenv_obj, autoloc, 'float', False)
 			else:
 				logger_output.warning('VST2 plugin not placed: no ID found.')
 
@@ -323,7 +323,7 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj, cvpj
 				for autoloc, autodata, paramnum in cvpj_automation.iter_all_external(pluginid):
 					parmenv_obj = rpp_plug_obj.add_env()
 					parmenv_obj.param_id = paramnum
-					add_auto_all(rpp_project, convproj_obj, parmenv_obj, list(autoloc), 'float', False)
+					add_auto_all(rpp_project, convproj_obj, parmenv_obj, autoloc, 'float', False)
 			else:
 				logger_output.warning('VST3 plugin not placed: no ID found.')
 
@@ -346,7 +346,7 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj, cvpj
 				for autoloc, autodata, paramnum in cvpj_automation.iter_all_external(pluginid):
 					parmenv_obj = rpp_plug_obj.add_env()
 					parmenv_obj.param_id = paramnum
-					add_auto_all(rpp_project, convproj_obj, parmenv_obj, list(autoloc), 'float', False)
+					add_auto_all(rpp_project, convproj_obj, parmenv_obj, autoloc, 'float', False)
 			else:
 				logger_output.warning('CLAP plugin not placed: no ID found.')
 
@@ -416,11 +416,17 @@ def do_track_params(rpp_project, convproj_obj, rpp_track_obj, params_obj, datava
 		rpp_track_obj.volpan['left'] = params_obj.get('splitpan_left', -1).value
 		rpp_track_obj.volpan['right'] = params_obj.get('splitpan_right', 1).value
 
-	add_auto_all(rpp_project, convproj_obj, rpp_track_obj.volenv2, startauto+['vol'], "float", False)
-	add_auto_all(rpp_project, convproj_obj, rpp_track_obj.panenv2, startauto+['pan'], "float", False)
-	add_auto_all(rpp_project, convproj_obj, rpp_track_obj.muteenv, startauto+['enabled'], "bool", True)
-	add_auto_all(rpp_project, convproj_obj, rpp_track_obj.dualpanenvl2, startauto+['splitpan_left'], "float", False)
-	add_auto_all(rpp_project, convproj_obj, rpp_track_obj.dualpanenv2, startauto+['splitpan_right'], "float", False)
+	autoloc_vol = tuple(startauto+['vol'])
+	autoloc_pan = tuple(startauto+['pan'])
+	autoloc_on = tuple(startauto+['enabled'])
+	autoloc_spl = tuple(startauto+['splitpan_left'])
+	autoloc_spr = tuple(startauto+['splitpan_right'])
+
+	add_auto_all(rpp_project, convproj_obj, rpp_track_obj.volenv2, autoloc_vol, "float", False)
+	add_auto_all(rpp_project, convproj_obj, rpp_track_obj.panenv2, autoloc_pan, "float", False)
+	add_auto_all(rpp_project, convproj_obj, rpp_track_obj.muteenv, autoloc_on, "bool", True)
+	add_auto_all(rpp_project, convproj_obj, rpp_track_obj.dualpanenvl2, autoloc_spl, "float", False)
+	add_auto_all(rpp_project, convproj_obj, rpp_track_obj.dualpanenv2, autoloc_spr, "float", False)
 
 def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid): 
 	from objects.file_proj._rpp import fxchain as rpp_fxchain

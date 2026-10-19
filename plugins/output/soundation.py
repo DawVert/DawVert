@@ -162,8 +162,8 @@ class output_soundation(plugins.base):
 		soundation_channel.volume = cvpj_master.params.get('vol', 1).value
 		soundation_channel.name = "Master Channel"
 		soundation_channel.type = "master"
-		soundation_channel.volumeAutomation = autopoints_get(['master','vol'], 0, 1)
-		soundation_channel.panAutomation = autopoints_get(['master','pan'], -.5, 2)
+		soundation_channel.volumeAutomation = autopoints_get( ('master','vol'), 0, 1)
+		soundation_channel.panAutomation = autopoints_get( ('master','pan'), -.5, 2)
 
 		add_fx(convproj_obj, soundation_channel, cvpj_master.plugslots.slots_audio)
 		soundation_obj.channels.append(soundation_channel)
@@ -187,8 +187,8 @@ class output_soundation(plugins.base):
 			soundation_channel.mute = not track_obj.params.get('enabled', True).value
 
 			add_fx(convproj_obj, soundation_channel, track_obj.plugslots.slots_audio)
-			soundation_channel.volumeAutomation = autopoints_get(['track',trackid,'vol'], 0, 1)
-			soundation_channel.panAutomation = autopoints_get(['track',trackid,'pan'], -.5, 2)
+			soundation_channel.volumeAutomation = autopoints_get( ('track',trackid,'vol'), 0, 1)
+			soundation_channel.panAutomation = autopoints_get( ('track',trackid,'pan'), -.5, 2)
 
 			if track_obj.type == 'instrument':
 				pluginid = track_obj.plugslots.synth
@@ -519,7 +519,7 @@ class output_soundation(plugins.base):
 					exists_1 = amount>0.001
 					exists_2 = False
 					if send_obj.sendautoid:
-						autoloc = ['send', send_obj.sendautoid, 'amount']
+						autoloc = ('send', send_obj.sendautoid, 'amount')
 						autodata = cvpj_automation.get_opt(autoloc)
 						if autodata:
 							if autodata.u_nopl_points:

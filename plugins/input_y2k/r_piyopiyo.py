@@ -29,7 +29,7 @@ alt_drum_note_map = {
 def parse_notes(convproj_obj, trackid, notes_data, track_obj, keyoffset):
 	cvpj_automation = convproj_obj.automation
 	cvpj_notelist = track_obj.placements.notelist
-	autopan = ['track', trackid, 'pan']
+	autopan = ('track', trackid, 'pan')
 	for pos, nd in enumerate(notes_data):
 		notes, pan = nd
 		cvpj_notelist.add_r_multi(pos, 1, [(x+keyoffset)-12 for x in notes], 1, None)
@@ -39,7 +39,7 @@ def parse_notes(convproj_obj, trackid, notes_data, track_obj, keyoffset):
 def parse_notes_drumalt(convproj_obj, trackid, notes_data, track_obj):
 	cvpj_automation = convproj_obj.automation
 	cvpj_notelist = track_obj.placements.notelist
-	autopan = ['track', trackid, 'pan']
+	autopan = ('track', trackid, 'pan')
 	for pos, nd in enumerate(notes_data):
 		notes, pan = nd
 		for x in notes:

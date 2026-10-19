@@ -146,13 +146,14 @@ def make_auto_track(autoidnum, autodata, visualname, automode):
 
 	song_obj.trackcontainer.tracks.append(lmms_track)
 
-def paramauto(lmms_param, paramset_obj, c_name, c_defval, i_addmul, autoloc, v_type, v_name):
+def paramauto(lmms_param, paramset_obj, c_name, c_defval, i_addmul, sautoloc, v_type, v_name):
 	cvpj_automation = cvpj_obj.automation
 	param_obj = paramset_obj.get(c_name, c_defval)
 	i_value = fix_value(param_obj.type, param_obj.value)
 	if i_addmul != None: i_value = (i_value+i_addmul[0])*i_addmul[1]
 	lmms_param.value = i_value
-	aid_found, aid_data = cvpj_automation.get(autoloc+[c_name], 'float')
+	autoloc = tuple(sautoloc+[c_name])
+	aid_found, aid_data = cvpj_automation.get(autoloc, 'float')
 	if aid_found:
 		if i_addmul != None: aid_data.calc('addmul', i_addmul[0], i_addmul[1], 0, 0)
 		lmms_param.id = aid_data.id
@@ -201,7 +202,8 @@ def setvstparams(lmms_plug_obj, plugin_obj, pluginid, keysdict):
 				param_obj = plugin_obj.params.get(cvpj_paramid, 0)
 				vst_param = lmms_plug_obj.add_vst_param(paramnum)
 				vst_param.value = param_obj.value
-				aid_found, aid_data = cvpj_automation.get(['plugin', pluginid, cvpj_paramid], 'float')
+				autoloc = ('plugin', pluginid, cvpj_paramid)
+				aid_found, aid_data = cvpj_automation.get(autoloc, 'float')
 				if aid_found:
 					vst_param.id = aid_data.id
 					if aid_data.pl_points:
@@ -216,7 +218,8 @@ def setvstparams(lmms_plug_obj, plugin_obj, pluginid, keysdict):
 			vst_param.inlist = True
 			vst_param.visname = param_obj.visual.name if param_obj.visual.name else 'noname'
 			vst_param.value = param_obj.value
-			aid_found, aid_data = cvpj_automation.get(['plugin', pluginid, cvpj_paramid], 'float')
+			autoloc = ('plugin', pluginid, cvpj_paramid)
+			aid_found, aid_data = cvpj_automation.get(autoloc, 'float')
 
 			if aid_found:
 				vst_param.id = aid_data.id
@@ -279,7 +282,8 @@ def encode_effectslot(effect_obj, plugin_obj, pluginid):
 				paramnum = int(paramnum)
 				lmms_paramid = 'port'+str(channum)+str(paramnum)
 				cvpj_paramvisname = 'LADSPA: #'+str(paramnum+1)
-				aid_found, aid_data = cvpj_automation.get(['plugin', pluginid, paramid], 'float')
+				autoloc = ('plugin', pluginid, paramid)
+				aid_found, aid_data = cvpj_automation.get(autoloc, 'float')
 				ladspa_param_obj = proj_lmms.lmms_ladspa_param()
 				ladspa_param_obj.data.value = plugin_obj.params.get(paramid, -1).value
 				if channum == 0: ladspa_param_obj.link.value = int(not ladspa_sep_chan)

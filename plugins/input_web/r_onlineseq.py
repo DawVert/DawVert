@@ -94,32 +94,33 @@ class input_onlinesequencer(plugins.base):
 				autoloc = None
 				div = 1
 				if target == 0:
-					if paramid == 0: autoloc = ['main', 'bpm']
-					if paramid == 8: autoloc = ['master', 'vol']
+					if paramid == 0: autoloc = ('main', 'bpm')
+					if paramid == 8: autoloc = ('master', 'vol')
 				else:
 					trackid = 'os_'+str(target)
-					if paramid == 1: autoloc = ['track', trackid, 'vol']
-					if paramid == 2: autoloc = ['track', trackid, 'pan']
+					if paramid == 1: autoloc = ('track', trackid, 'vol')
+					if paramid == 2: autoloc = ('track', trackid, 'pan')
 					if paramid == 11: 
-						autoloc = ['track', trackid, 'pitch']
+						autoloc = ('track', trackid, 'pitch')
 						div = 100
-					if paramid == 3: autoloc = ['plugin', trackid+'_eq', 'eq_high']
-					if paramid == 4: autoloc = ['plugin', trackid+'_eq', 'eq_mid']
-					if paramid == 5: autoloc = ['plugin', trackid+'_eq', 'eq_low']
+					if paramid == 3: autoloc = ('plugin', trackid+'_eq', 'eq_high')
+					if paramid == 4: autoloc = ('plugin', trackid+'_eq', 'eq_mid')
+					if paramid == 5: autoloc = ('plugin', trackid+'_eq', 'eq_low')
 
-					if paramid == 6: autoloc = ['slot', trackid+'_delay', 'enabled']
+					if paramid == 6: autoloc = ('slot', trackid+'_delay', 'enabled')
 
-					if paramid == 7: autoloc = ['plugin', trackid+'_reverb', 'reverb_type']
-					if paramid == 12: autoloc = ['slot', trackid+'_reverb', 'wet']
+					if paramid == 7: autoloc = ('plugin', trackid+'_reverb', 'reverb_type')
+					if paramid == 12: autoloc = ('slot', trackid+'_reverb', 'wet')
 
-					if paramid == 13: autoloc = ['plugin', trackid+'_distort', 'distort_type']
-					if paramid == 14: autoloc = ['slot', trackid+'_distort', 'wet']
+					if paramid == 13: autoloc = ('plugin', trackid+'_distort', 'distort_type')
+					if paramid == 14: autoloc = ('slot', trackid+'_distort', 'wet')
 
-					if paramid == 26: autoloc = ['plugin', trackid+'_bitcrush', 'bits']
+					if paramid == 26: autoloc = ('plugin', trackid+'_bitcrush', 'bits')
 
 				if autoloc:
 					auto_obj = cvpj_automation.create(autoloc, 'float', True)
-					for marker in markers: auto_obj.add_autopoint(marker.pos, marker.value/div, 'normal' if marker.type else 'instant')
+					for marker in markers: 
+						auto_obj.add_autopoint(marker.pos, marker.value/div, 'normal' if marker.type else 'instant')
 
 		# ---------- notes ----------
 		multig = {}

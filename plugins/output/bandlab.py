@@ -154,8 +154,8 @@ class output_bandlab(plugins.base):
 				# ---------- automation ----------
 				blx_track.automation = proj_bandlab.bandlab_track_automation()
 				blx_track.automation.id = str(uuid.uuid4())
-				do_automation(cvpj_automation, ['track', trackid, 'pan'], blx_track.automation.pan, tempomul)
-				do_automation(cvpj_automation, ['track', trackid, 'vol'], blx_track.automation.volume, tempomul)
+				do_automation(cvpj_automation, ('track', trackid, 'pan'), blx_track.automation.pan, tempomul)
+				do_automation(cvpj_automation, ('track', trackid, 'vol'), blx_track.automation.volume, tempomul)
 
 				# ---------- visual ----------
 				blx_track.name = track_obj.visual.name
@@ -337,7 +337,7 @@ def make_plugins_fx(convproj_obj, autoPitch, effects, fxslots_audio, tempomul):
 						if not dset_param.noauto: 
 							blx_effect.params[param_id] = plugin_obj.params.get(param_id, dset_param.defv).value
 							blx_effect.automation[param_id] = proj_bandlab.bandlab_automation()
-							do_automation(cvpj_automation, ['plugin', pluginid, param_id], blx_effect.automation[param_id], tempomul)
+							do_automation(cvpj_automation, ('plugin', pluginid, param_id), blx_effect.automation[param_id], tempomul)
 						else:
 							blx_effect.params[param_id] = plugin_obj.datavals.get(param_id, dset_param.defv)
 							blx_effect.automation[param_id] = proj_bandlab.bandlab_automation()
@@ -352,7 +352,7 @@ def make_plugins_fx(convproj_obj, autoPitch, effects, fxslots_audio, tempomul):
 						for param_id in paramlist:
 							blx_effect.params[param_id] = plugin_obj.params.get(param_id, 0).value
 							blx_effect.automation[param_id] = proj_bandlab.bandlab_automation()
-							do_automation(cvpj_automation, ['plugin', pluginid, param_id], blx_effect.automation[param_id], tempomul)
+							do_automation(cvpj_automation, ('plugin', pluginid, param_id), blx_effect.automation[param_id], tempomul)
 
 				effects.append(blx_effect)
 

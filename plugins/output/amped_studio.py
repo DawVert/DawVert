@@ -58,7 +58,8 @@ def do_idparams(amped_track, convproj_obj, plugin_obj, pluginid, amped_device, a
 		ampedpid = paramid.replace('__', '/')
 		param_obj = plugin_obj.params.get(ampedpid, 0)
 
-		ap_f, ap_d = convproj_obj.automation.get(['plugin', pluginid, paramid], 'float')
+		autoloc = ('plugin', pluginid, paramid)
+		ap_f, ap_d = convproj_obj.automation.get(autoloc, 'float')
 		#if ap_f: print(ap_d)
 		if ap_f: 
 			if ap_d.u_nopl_points:

@@ -134,7 +134,7 @@ class output_oldcubase(plugins.base):
 
 		tempopoints = {}
 		tempopoints[0] = bpm
-		if_found, autodata = cvpj_automation.get(['main', 'bpm'], 'float')
+		if_found, autodata = cvpj_automation.get( ('main', 'bpm'), 'float')
 		if if_found:
 			if autodata.u_nopl_ticks:
 				for pos, val in autodata.nopl_ticks:

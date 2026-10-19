@@ -492,10 +492,11 @@ class input_wavtool(plugins.base):
 		cvpj_master.params.add('vol', 1, 'float')
 
 		# ---------- bpm automation ----------
+		autoloc_bpm = ('main','bpm')
 		for x in wavtool_obj.bpmAutomation:
 			point_tempo = x['value'] if 'value' in x else 120
 			point_time = x['time'] if 'time' in x else 0
-			cvpj_automation.add_autopoint(['main','bpm'], 'float', point_time, point_tempo, 'instant')
+			cvpj_automation.add_autopoint(autoloc_bpm, 'float', point_time, point_tempo, 'instant')
 
 		# ---------- tracks ----------
 		for trackid, wavtool_track in wavtool_obj.tracks.items(): 

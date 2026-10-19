@@ -371,10 +371,10 @@ class input_acid_3(plugins.base):
 													invert = False
 
 													if not track_auto.group:
-														if track_auto.param == 0: autoloc = ['track', cvpj_trackid, 'vol']
-														if track_auto.param == 1: autoloc = ['track', cvpj_trackid, 'pan']
+														if track_auto.param == 0: autoloc = ('track', cvpj_trackid, 'vol')
+														if track_auto.param == 1: autoloc = ('track', cvpj_trackid, 'pan')
 														if track_auto.param == 31: 
-															autoloc = ['track', cvpj_trackid, 'enabled']
+															autoloc = ('track', cvpj_trackid, 'enabled')
 															invert = True
 	
 													if autoloc:
@@ -521,12 +521,13 @@ class input_acid_3(plugins.base):
 				do_orders_groups(root_chunk, old_track_order, tracks_data, None)
 
 			elif root_name == 'Group:TempoKeyPoints':
+				autoloc_bpm = ('main', 'bpm')
 				for regs_chunk, regs_name in root_chunk.iter_wtypes():
 					if regs_name == 'Group:TempoKeyPoints':
 						def_data = regs_chunk.content
 						if def_data.tempo:
 							tempov = (500000/def_data.tempo)*120
-							cvpj_automation.add_autopoint(['main', 'bpm'], 'float', def_data.pos_samples, tempov, 'instant')
+							cvpj_automation.add_autopoint(autoloc_bpm, 'float', def_data.pos_samples, tempov, 'instant')
 						if def_data.base_note:
 							if def_data.pos_samples in auto_basenotes:
 								timemarker_obj = cvpj_timemarkers.add_key(auto_basenotes[def_data.pos_samples]-60)
