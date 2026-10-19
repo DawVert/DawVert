@@ -129,6 +129,7 @@ class input_orgyana(plugins.base):
 				else: # melody
 					# visual
 					track_obj.visual.name = "Melody "+str(tracknum+1)
+					track_obj.visual_inst.name = 'Wave #%i' % orgtrack_obj.instrument
 
 					# plugin
 					if orgsamp_obj.loaded:

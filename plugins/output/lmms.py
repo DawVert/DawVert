@@ -474,6 +474,8 @@ class output_lmms(plugins.base):
 
 					synth_pluginid = track_obj.plugslots.synth
 
+					plugin_obj = None
+
 					if synth_pluginid in cvpj_plugins:
 						plugin_obj = cvpj_plugins[synth_pluginid]
 

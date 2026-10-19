@@ -67,6 +67,10 @@ def add_sample(convproj_obj, as_cell, as_channum, num, samplefolder):
 		sampleref_obj = convproj_obj.sampleref__add(full_filename, full_filename, None)
 		return full_filename
 
+def set_color(visual_obj, colornum, colordata):
+	visual_obj.color.set_int(colordata.getcolornum(colornum))
+	visual_obj.color.fx_allowed = ['saturate']
+
 class input_audiosauna(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -178,8 +182,7 @@ class input_audiosauna(plugins.base):
 			# visual
 			visual_obj = track_obj.visual
 			visual_obj.name = as_chan.name
-			visual_obj.color.set_int(colordata.getcolornum(as_channum))
-			visual_obj.color.fx_allowed = ['saturate']
+			set_color(visual_obj, as_channum, colordata)
 
 			# params
 			params_obj = track_obj.params
@@ -196,8 +199,7 @@ class input_audiosauna(plugins.base):
 			for as_pattern in as_chan.patterns:
 				# notelist
 				placement_obj = track_obj.placements.add_notes()
-				placement_obj.visual.color.set_int(colordata.getcolornum(as_pattern.patternColor))
-				placement_obj.visual.color.fx_allowed = ['saturate']
+				set_color(placement_obj.visual, as_pattern.patternColor, colordata)
 				if as_pattern.name: placement_obj.visual.name = as_pattern.name
 
 				# time

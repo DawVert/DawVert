@@ -42,6 +42,8 @@ def process_r(convproj_obj):
 				if if_notes:
 					trackid_s = trackid+'_unhybrid_notes'
 					n_track_obj.type = 'instrument'
+					n_track_obj.visual_inst.name = track_obj.visual_inst.name
+					n_track_obj.visual_inst.color = track_obj.visual_inst.color
 					cvpj_tracks.order.append(trackid_s)
 					cvpj_tracks.data[trackid_s] = n_track_obj
 					if trackroute_sendobj != None: convproj_obj.trackroute[trackid_s] = trackroute_sendobj

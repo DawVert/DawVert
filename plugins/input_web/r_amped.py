@@ -95,6 +95,8 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 	cvpj_automation = convproj_obj.automation
 	cvpj_plugins = convproj_obj.plugins
 
+	instnames = [] # for track_obj.visual_inst.name
+
 	for amped_tr_device in amped_tr_devices:
 		devid = amped_tr_device.id
 		pluginid = str(devid)
@@ -103,6 +105,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 		if amped_tr_device.className == 'WAM':
 
 			if amped_tr_device.label == 'OBXD': 
+				instnames.append('OBXD')
 				plugin_obj = cvpj_plugins.add('synth', 'discodsp', 'obxd', pluginid)
 				plugin_obj.role = 'synth'
 				wampreset = get_wampreset(amped_tr_device)
@@ -110,6 +113,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 					for n, v in enumerate(wampreset['data']): plugin_obj.params.add('obxd_'+str(n), v, 'float')
 
 			elif amped_tr_device.label == 'Augur': 
+				instnames.append('Augur')
 				plugin_obj = cvpj_plugins.add('synth', 'smartelectronix', 'augur', pluginid)
 				plugin_obj.role = 'synth'
 				wampreset = get_wampreset(amped_tr_device)
@@ -121,12 +125,14 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 						if isinstance(v, bool): plugin_obj.params.add(paramname, v, 'bool')
 
 			elif amped_tr_device.label == 'Dexed': 
+				instnames.append('Dexed')
 				plugin_obj = cvpj_plugins.add_native('amped', amped_tr_device.label, pluginid)
 				plugin_obj.role = 'synth'
 				plugin_obj.datavals.add('data', amped_tr_device.data['wamPreset'])
 				wampreset = get_wampreset(amped_tr_device)
 
 			elif amped_tr_device.label == 'Europa': 
+				instnames.append('Europa')
 				plugin_obj = cvpj_plugins.add('user', 'reasonstudios', 'europa', pluginid)
 				plugin_obj.role = 'synth'
 
@@ -169,6 +175,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 				plugin_obj.role = 'synth'
 
 		elif devicetype == ['Drumpler', 'Drumpler']:
+			instnames.append('Drumpler')
 			plugin_obj = cvpj_plugins.add_uni('sampler', 'drums', pluginid)
 			plugin_obj.role = 'synth'
 			track_obj.plugslots.set_synth(pluginid)
@@ -205,6 +212,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 						if 'name' in padpart: drumpad_obj.visual.name = padpart['name']
 
 		elif devicetype == ['SF2', 'GM Player']:
+			instnames.append('SF2 Player')
 			track_obj.plugslots.set_synth(pluginid)
 
 			value_patch = 0
@@ -221,6 +229,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			param_obj = plugin_obj.params.add_named('gain', value_gain, 'float', 'Gain')
 
 		elif devicetype == ['Granny', 'Granny']:
+			instnames.append('Granny')
 			track_obj.plugslots.set_synth(pluginid)
 			plugin_obj = cvpj_plugins.add_native('amped', 'Granny', pluginid)
 			plugin_obj.role = 'synth'
@@ -233,6 +242,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			do_idauto(cvpj_automation, amped_autodata, devid, amped_tr_device.params, pluginid)
 
 		elif devicetype == ['Volt', 'VOLT']:
+			instnames.append('VOLT')
 			track_obj.plugslots.set_synth(pluginid)
 			plugin_obj = cvpj_plugins.add_native('amped', 'Volt', pluginid)
 			plugin_obj.role = 'synth'
@@ -240,6 +250,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			do_idauto(cvpj_automation, amped_autodata, devid, amped_tr_device.params, pluginid)
 
 		elif devicetype == ['VoltMini', 'VOLT Mini']:
+			instnames.append('VOLT Mini')
 			track_obj.plugslots.set_synth(pluginid)
 			plugin_obj = cvpj_plugins.add_native('amped', 'VoltMini', pluginid)
 			plugin_obj.role = 'synth'
@@ -267,6 +278,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			volt_lfo(plugin_obj, 'part/1/lfo/1/', 'modenv', 1)
 
 		elif devicetype == ['Sampler', 'Sampler']:
+			instnames.append('Sampler')
 			track_obj.plugslots.set_synth(pluginid)
 			samplerdata = {}
 			for param in amped_tr_device.params: data_values.dict__nested_add_value(samplerdata, param.name.split('/'), param.value)
@@ -311,7 +323,9 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 #		#if devicetype != ['VSTConnection', 'VST/Remote Beta']:
 #		#	device_plugindata.fxvisual_add(amped_tr_device.label, None)
 #		#	device_plugindata.to_cvpj(cvpj_l, pluginid)
-#
+
+	return instnames
+
 def ampedauto_to_cvpjauto_specs(autopoints, autospecs):
 	v_min = 0
 	v_max = 1
@@ -473,7 +487,8 @@ class input_amped(plugins.base):
 					amped_autodata[deviceid][autoname] = ampedauto_to_cvpjauto_specs(amped_automation.points, amped_automation.spec)
 
 			# devices
-			encode_devices(convproj_obj, amped_track.devices, track_obj, amped_autodata)
+			instnames = encode_devices(convproj_obj, amped_track.devices, track_obj, amped_autodata)
+			if len(instnames)==1: track_obj.visual_inst.name = instnames[0]
 
 			# regions
 			for amped_region in amped_track.regions:
