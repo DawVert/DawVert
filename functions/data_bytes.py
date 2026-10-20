@@ -4,6 +4,7 @@
 # ----- Bytes -----
 
 def splitbyte(value):
+    value = int(value)
     first = value >> 4
     second = value & 0x0F
     return (first, second)
