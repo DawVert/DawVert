@@ -42,7 +42,6 @@ class input_color_art(plugins.base):
 		traits_obj = convproj_obj.traits
 		traits_obj.placement_loop = ['loop', 'loop_off', 'loop_adv']
 
-
 		w, h = im.size
 
 		cvpj_tracks = convproj_obj.tracks

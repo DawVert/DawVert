@@ -6,14 +6,15 @@ import math
 import os
 import numpy as np
 
-def get_timebase(i_val):
-	if i_val == 2: return 0.004
-	elif i_val == 3: return 0.005
-	elif i_val == 16: return 0.010
-	elif i_val == 17: return 0.020
-	elif i_val == 18: return 0.040
-	elif i_val == 19: return 0.050
-	
+vals_timebase = {
+	2: 0.004,
+	3: 0.005,
+	16: 0.010,
+	17: 0.020,
+	18: 0.040,
+	19: 0.050,
+}
+
 class input_mmf(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -107,7 +108,8 @@ class input_mmf(plugins.base):
 
 		for n, track in enumerate(project_obj.tracks3):
 			if track is not None:
-				timebase = get_timebase(track.timebase_dur)
+				timebase_dur = track.timebase_dur
+				timebase = vals_timebase[timebase_dur] if timebase_dur in vals_timebase else 0.010
 				realtime = int(timebase*(math.pi*10000))
 
 				midippq = 960
@@ -121,17 +123,11 @@ class input_mmf(plugins.base):
 
 					for event in track.sequence:
 						curpos += event[0]*midippq
-	
-						if event[1] == 8:
-							events_obj.add_note_dur(curpos, event[2], event[3], 127, event[4]*midippq)
-						elif event[1] == 9:
-							events_obj.add_note_dur(curpos, event[2], event[3], event[4], event[5]*midippq)
-						elif event[1] == 11:
-							events_obj.add_control(curpos, event[2], event[3], event[4])
-						elif event[1] == 12:
-							events_obj.add_program(curpos, event[2], event[3])
-						elif event[1] == 14:
-							events_obj.add_pitch(curpos, event[2], event[3])
+						if   event[1] ==  8: events_obj.add_note_dur(curpos, event[2], event[3], 127, event[4]*midippq)
+						elif event[1] ==  9: events_obj.add_note_dur(curpos, event[2], event[3], event[4], event[5]*midippq)
+						elif event[1] == 11: events_obj.add_control(curpos, event[2], event[3], event[4])
+						elif event[1] == 12: events_obj.add_program(curpos, event[2], event[3])
+						elif event[1] == 14: events_obj.add_pitch(curpos, event[2], event[3])
 
 					used_notes = events_obj.get_used_notes()
 					used_drums = used_notes[used_notes['chan']==9]

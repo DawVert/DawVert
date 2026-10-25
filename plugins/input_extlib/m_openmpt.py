@@ -55,10 +55,11 @@ class input_openmpt(plugins.base):
 		uses_instruments = bool(num_instruments)
 
 		# ---------- metadata ----------
+		cvpj_metadata = convproj_obj.metadata
 		metadata = openmpt_obj.get_metadata()
-		if 'title' in metadata: convproj_obj.metadata.name = metadata['title']
-		if 'artist' in metadata: convproj_obj.metadata.author = metadata['artist']
-		if 'message' in metadata: convproj_obj.metadata.comment_text = metadata['message']
+		if 'title' in metadata: cvpj_metadata.name = metadata['title']
+		if 'artist' in metadata: cvpj_metadata.author = metadata['artist']
+		if 'message' in metadata: cvpj_metadata.comment_text = metadata['message']
 
 		# ---------- tracker init ----------
 		tracker_obj = convproj_obj.main__create_tracker_single()
@@ -90,9 +91,9 @@ class input_openmpt(plugins.base):
 					note, inst, volfx, fx, vol, param = openmpt_obj.get_patnote(num_pat, num_row, num_ch)
 					pattern_obj.cell_note(num_ch, num_row, note-61 if note else None, inst if inst else None)
 					if volfx: pattern_obj.cell_param(num_ch, num_row, 'vol', vol/64)
-					if fx == 16: pattern_obj.cell_g_param(num_ch, num_row, 'speed', param)
-					if fx == 4: pattern_obj.cell_g_param(num_ch, num_row, 'std_slide_to_note', param)
-					if fx == 3: pattern_obj.cell_param(num_ch, num_row, 'std_slide_down', param)
-					if fx == 2: pattern_obj.cell_param(num_ch, num_row, 'std_slide_up', param)
-					if fx == 17: pattern_obj.cell_g_param(num_ch, num_row, 'tempo', param)
-					if fx == 14: pattern_obj.cell_g_param(num_ch, num_row, 'break_to_row', param)
+					if   fx ==  2: pattern_obj.cell_param(num_ch, num_row, 'std_slide_up', param)
+					elif fx ==  3: pattern_obj.cell_param(num_ch, num_row, 'std_slide_down', param)
+					elif fx ==  4: pattern_obj.cell_g_param(num_ch, num_row, 'std_slide_to_note', param)
+					elif fx == 14: pattern_obj.cell_g_param(num_ch, num_row, 'break_to_row', param)
+					elif fx == 16: pattern_obj.cell_g_param(num_ch, num_row, 'speed', param)
+					elif fx == 17: pattern_obj.cell_g_param(num_ch, num_row, 'tempo', param)

@@ -74,10 +74,6 @@ class input_sop(plugins.base):
 		traits_obj.auto_types = ['nopl_ticks']
 		traits_obj.track_nopl = True
 
-		# ---------- metadata ----------
-		cvpj_metadata.name = project_obj.title
-		cvpj_metadata.comment_text = project_obj.comment
-
 		# ---------- transport ----------
 		convproj_obj.params.add('bpm', project_obj.basicTempo, 'float')
 		convproj_obj.timesig = [project_obj.beatMeasure, 4]
@@ -103,11 +99,13 @@ class input_sop(plugins.base):
 			else:
 				inst_comments.append(opli.name_long)
 
-		inst_comments = '\n'.join(inst_comments).lstrip('\n').rstrip('\n')
-		if convproj_obj.metadata.comment_text:
-			convproj_obj.metadata.comment_text += '\n'
+		# ---------- metadata ----------
+		cvpj_metadata.name = project_obj.title
+		cvpj_metadata.comment_text = project_obj.comment
 
-		convproj_obj.metadata.comment_text += inst_comments
+		inst_comments = '\n'.join(inst_comments).lstrip('\n').rstrip('\n')
+		if cvpj_metadata.comment_text: cvpj_metadata.comment_text += '\n'
+		cvpj_metadata.comment_text += inst_comments
 
 		# ---------- tracks ----------
 		for tracknum, soptrack in enumerate(project_obj.tracks):

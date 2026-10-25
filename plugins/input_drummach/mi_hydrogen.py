@@ -11,6 +11,8 @@ logger_input = logging.getLogger('input')
 
 PL_MODE = 0
 
+def get_time(p): return p*48*4
+
 class external_data_zip():
 	def __init__(self):
 		self.zipfile = None
@@ -105,7 +107,7 @@ class input_hydrogen(plugins.base):
 			autoloc_bpm = ('main', 'bpm')
 			cvpj_automation.add_autopoint(autoloc_bpm, 'float', 0, project_obj.bpm, 'instant')
 			for bpmtl in project_obj.BPMTimeLine:
-				cvpj_automation.add_autopoint(autoloc_bpm, 'float', bpmtl.bar*48*4, bpmtl.bpm, 'instant')
+				cvpj_automation.add_autopoint(autoloc_bpm, 'float', get_time(bpmtl.bar), bpmtl.bpm, 'instant')
 				if bpmtl.bar == 0: bpm = bpmtl.bpm
 
 		convproj_obj.params.add('bpm', bpm , 'float')
@@ -136,7 +138,7 @@ class input_hydrogen(plugins.base):
 		# ---------- markers ----------
 		for tag in project_obj.timeLineTag:
 			timemarker_obj = cvpj_timemarkers.add()
-			timemarker_obj.time.set_pos(tag.bar*48*4)
+			timemarker_obj.time.set_pos(get_time(tag.bar))
 			timemarker_obj.visual.name = tag.tag
 
 		# ---------- automation ----------
@@ -146,7 +148,7 @@ class input_hydrogen(plugins.base):
 				auto_obj = cvpj_automation.create(autoloc_vol, 'float', True)
 				autopoints = auto_obj.make_nopl_points()
 				for p, v in autopath.points.items():
-					autopoints.points__add_point_notype(p*48*4, v)
+					autopoints.points__add_point_notype(get_time(p), v)
 
 		# ---------- instruments ----------
 		external_dats = {}
@@ -249,7 +251,7 @@ class input_hydrogen(plugins.base):
 						cvpj_placement = playlist_obj.placements.add_notes_indexed()
 						cvpj_placement.fromindex = pattern.name
 						time_obj = cvpj_placement.time
-						time_obj.set_posdur(p*48*4, pattern.size)
+						time_obj.set_posdur(get_time(p), pattern.size)
 				plnum += 1
 		else:
 			playlist_obj = convproj_obj.playlist__add(plnum, 1, True)
@@ -260,7 +262,7 @@ class input_hydrogen(plugins.base):
 					cvpj_placement = playlist_obj.placements.add_notes_indexed()
 					cvpj_placement.fromindex = fromindex
 					time_obj = cvpj_placement.time
-					time_obj.set_posdur(p*48*4, pattern.size)
+					time_obj.set_posdur(get_time(p), pattern.size)
 
 		#for sendnum in range(4):
 		#	returnid = 'return__'+str(sendnum)

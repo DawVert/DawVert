@@ -82,7 +82,6 @@ class input_eam2(plugins.base):
 				else:
 					autoloc_s = ['master']
 					track_obj = cvpj_master
-				track_placements = track_obj.placements
 
 				# visual
 				visual_obj = track_obj.visual
@@ -98,6 +97,7 @@ class input_eam2(plugins.base):
 				params_obj.add('enabled', not track.Muted, 'bool')
 				params_obj.add('solo', track.Solo, 'bool')
 
+				# auto
 				for autop in track.AutomationList:
 					autoloc_e = None
 					if autop.AutomationType == 'Pan':
@@ -116,6 +116,8 @@ class input_eam2(plugins.base):
 						for p in autop.Points:
 							if p.BeatN>=0: autopoints.points__add_point_notype(p.BeatN, p.Value/0.71)
 
+				# placements
+				track_placements = track_obj.placements
 				for event in track.EventsList:
 					placement_obj = track_placements.add_audio()
 					

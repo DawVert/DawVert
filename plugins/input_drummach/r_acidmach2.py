@@ -95,12 +95,13 @@ class input_petaporon(plugins.base):
 								cvpj_notelist.add_r(note.start, note.duration, key-60, note.veloc/127, None)
 
 		for instid, patternList in proj_song.patternList.items():
-			track_obj = tracks[instid]
-			for pos, num in patternList.items():
-				placement_obj = track_obj.placements.add_notes_indexed()
-				placement_obj.fromindex = str(num)
-				time_obj = placement_obj.time
-				time_obj.set_posdur(int(pos)*16, 16)
+			if instid in tracks:
+				track_obj = tracks[instid]
+				for pos, num in patternList.items():
+					placement_obj = track_obj.placements.add_notes_indexed()
+					placement_obj.fromindex = str(num)
+					time_obj = placement_obj.time
+					time_obj.set_posdur(int(pos)*16, 16)
 
 		# ---------- fx units ----------
 		for instnum, fxUnits in proj_song.fxUnits.items():

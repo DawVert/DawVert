@@ -87,7 +87,7 @@ class input_mariopaint_smp(plugins.base):
 				for s in t_smp_values:
 					n, v = get_namval(s)
 					if n == 'TEMPO': mariopaint_obj.tempo = float(v)
-					if n == 'TIME': 
+					elif n == 'TIME': 
 						tnum, tdnum = v.split('/')
 						mariopaint_obj.measure = int(tnum)
 						mariopaint_obj.measure_o = int(tdnum)
@@ -112,8 +112,8 @@ class input_mariopaint_smp(plugins.base):
 						while smpnote_str.tell() < smpnote_size:
 							t_txtp = smpnote_str.read(1)
 							if t_txtp == '#': mp_note.offset = 1
-							if t_txtp == 'b': mp_note.offset = -1
-							if t_txtp == 'm': mp_note.mode = smpnote_str.read(1)
+							elif t_txtp == 'b': mp_note.offset = -1
+							elif t_txtp == 'm': mp_note.mode = smpnote_str.read(1)
 					else:
 						n,v = get_namval(s)
 						if n == 'VOL': mp_chord.volume = int(v)/127

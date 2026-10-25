@@ -110,7 +110,7 @@ class input_musicphrase(plugins.base):
 				# ctrls
 				for ctrl in clip.ctrls:
 					event_type = ctrl.type
-					if event_type == 10: events_obj.add_note_pressure(ctrl.pos, channel, ctrl.data1, ctrl.data2)
+					if   event_type == 10: events_obj.add_note_pressure(ctrl.pos, channel, ctrl.data1, ctrl.data2)
 					elif event_type == 11: events_obj.add_control(ctrl.pos, channel, ctrl.data1, ctrl.data2)
 					elif event_type == 12: events_obj.add_program(ctrl.pos, channel, ctrl.data1)
 					elif event_type == 13: events_obj.add_chan_pressure(ctrl.pos, channel, ctrl.data1)

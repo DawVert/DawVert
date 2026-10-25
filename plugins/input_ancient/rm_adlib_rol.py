@@ -130,8 +130,8 @@ class input_adlib_rol(plugins.base):
 
 			# automation
 			params_obj = track_obj.params
+			
 			evt_volume = rol_track.volume.events
-
 			if evt_volume:
 				autoloc = ('track', cvpj_trackid, 'vol')
 				autoticks = to_points(cvpj_automation, autoloc, evt_volume)

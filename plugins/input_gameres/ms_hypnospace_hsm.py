@@ -75,9 +75,10 @@ class input_hypnospace_hsm(plugins.base):
 			inst_obj = cvpj_insts.add(instid)
 
 			# visual
-			inst_obj.visual.name = sample.path.split('\\')[-1] if sample.path else 'Unused #%s' % str(num+1)
-			inst_obj.visual.color.set_int(colordata.getcolornum(num))
-			inst_obj.visual.color.fx_allowed = ['saturate']
+			visual_obj = inst_obj.visual
+			visual_obj.name = sample.path.split('\\')[-1] if sample.path else 'Unused #%s' % str(num+1)
+			visual_obj.color.set_int(colordata.getcolornum(num))
+			visual_obj.color.fx_allowed = ['saturate']
 
 			# sample
 			if sample.path:

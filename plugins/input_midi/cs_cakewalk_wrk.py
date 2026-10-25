@@ -35,9 +35,10 @@ class proj_state():
 		track_obj = cvpj_tracks.add(cvpj_trackid, 'midi_single', 1, False)
 		track_obj.visual.name = parseddata.name.decode()
 		if parseddata.channel != 255:
-			track_obj.midi.out_enabled = True
-			track_obj.midi.out_chanport.chan = parseddata.channel
-			track_obj.midi.out_chanport.port = parseddata.port
+			trackmidi_obj = track_obj.midi
+			trackmidi_obj.out_enabled = True
+			trackmidi_obj.out_chanport.chan = parseddata.channel
+			trackmidi_obj.out_chanport.port = parseddata.port
 			trackchannel = parseddata.channel
 		else:
 			trackchannel = 0
@@ -120,10 +121,11 @@ class proj_state():
 		track_obj.visual.name = parseddata.name.decode()
 		if parseddata.channel != 255:
 			trackchannel = max(0, parseddata.channel)
-			track_obj.midi.out_enabled = True
-			track_obj.midi.out_chanport.chan = trackchannel
-			track_obj.midi.out_chanport.port = parseddata.port
-			track_obj.midi.out_inst.patch = max(parseddata.patch, 0)
+			trackmidi_obj = track_obj.midi
+			trackmidi_obj.out_enabled = True
+			trackmidi_obj.out_chanport.chan = trackchannel
+			trackmidi_obj.out_chanport.port = parseddata.port
+			trackmidi_obj.out_inst.patch = max(parseddata.patch, 0)
 		else:
 			trackchannel = 0
 
