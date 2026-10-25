@@ -66,9 +66,10 @@ class input_midsequer(plugins.base):
 				track_obj = cvpj_tracks.add(str(n), 'midi_single', 0, False)
 				
 				# midi
-				track_obj.midi.out_enabled = True
-				track_obj.midi.out_chanport.chan = n
-				track_obj.midi.out_chanport.port = 0
+				track_midi = track_obj.midi
+				track_midi.out_enabled = True
+				track_midi.out_chanport.chan = n
+				track_midi.out_chanport.port = 0
 
 				# midievents
 				events_obj = track_obj.placements.midievents

@@ -399,8 +399,8 @@ class input_acid_3(plugins.base):
 								if track_audioinfo:
 									track_obj.params.add('vol', track_audioinfo.vol, 'float')
 									track_obj.params.add('pan', track_audioinfo.pan, 'float')
-									track_obj.datavals.add('pan_mode', 'stereo')
 									track_obj.params.add('enabled', 1 not in track_header.flags, 'float')
+									track_obj.datavals.add('pan_mode', 'stereo')
 
 								if track_regions:
 									addr_d = addregion_data()
@@ -473,10 +473,8 @@ class input_acid_3(plugins.base):
 							if track_header.type == 4:
 								track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 								tracks_data[track_header.id] = track_obj
-								color = colordata.getcolornum(track_header.color)
 								track_obj.visual.name = track_header.name
-								track_obj.visual.color.set_int(color)
-								track_obj.visual.color.fx_allowed = ['brighter']
+								color = do_color(colordata, track_obj.visual, track_header.color)
 
 								if track_regions:
 									filename_obj = fileref.cvpj_fileref()

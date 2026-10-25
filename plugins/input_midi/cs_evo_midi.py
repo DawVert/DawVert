@@ -54,16 +54,21 @@ class input_cvpj_f(plugins.base):
 		track_pl = []
 		for n, evo_track in enumerate(project_obj.tracks):
 			track_obj = cvpj_tracks.add(str(n), 'midi_single', 1, False)
+			track_pl.append(track_obj)
+
+			#visual
 			track_obj.visual.name = evo_track.name
+
+			#midi
+			trackmidi_obj = track_obj.midi
 			if evo_track.channel != -1:
-				track_obj.midi.out_enabled = True
-				track_obj.midi.out_chanport.chan = evo_track.channel
-				track_obj.midi.out_chanport.port = 0
+				trackmidi_obj.out_enabled = True
+				trackmidi_obj.out_chanport.chan = evo_track.channel
+				trackmidi_obj.out_chanport.port = 0
 			if evo_track.patch != -1:
-				track_obj.midi.out_inst.patch = evo_track.patch
+				trackmidi_obj.out_inst.patch = evo_track.patch
 			if evo_track.name == 'Structure' and arranger_valid==-1:
 				arranger_valid = n
-			track_pl.append(track_obj)
 
 		# ---------- clips ----------
 		for evo_clip in project_obj.clips:

@@ -184,20 +184,28 @@ class input_cvpj_r(plugins.base):
 			machid = str(machnum)
 			pluginid = 'machine'+machid
 			cvpj_trackid = 'MACH'+machid
-
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, True)
-			track_obj.visual.from_datapack('caustic', 'plugin_inst', machine.mach_id, True)
-			if machine.name: track_obj.visual.name = machine.name
-			track_obj.plugslots.set_synth(pluginid)
 			trackstore.append(track_obj)
 
+			# visual
+			track_obj.visual.from_datapack('caustic', 'plugin_inst', machine.mach_id, True)
+			if machine.name: track_obj.visual.name = machine.name
+
+			# params
+			params_obj = track_obj.params
+			params_obj.add('vol', mixer_tracks[machnum].vol, 'float')
+			params_obj.add('pan', mixer_tracks[machnum].pan, 'float')
+			params_obj.add('enabled', int(not bool(mixer_tracks[machnum].mute)), 'bool')
+			params_obj.add('solo', mixer_tracks[machnum].solo, 'bool')
+
+			# plugin
 			machdata = machine.data
 
 			if machine.mach_id == 'PCMS':
 				middlenote = 0
 				if 'Select preset' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 
-				track_obj.params.add('usemasterpitch', True, 'bool')
+				params_obj.add('usemasterpitch', True, 'bool')
 				if len(machdata.samples) == 1:
 					singlewav = machdata.samples[0]
 					if singlewav.key_lo == 24 and singlewav.key_hi == 108: isMultiSampler = False
@@ -263,14 +271,14 @@ class input_cvpj_r(plugins.base):
 					middlenote += int(pcms_c[1]*12)
 					middlenote += int(pcms_c[2])
 
-					track_obj.params.add('pitch', pcms_c[3]/100, 'float')
+					params_obj.add('pitch', pcms_c[3]/100, 'float')
 					track_obj.datavals.add('middlenote', -middlenote)
 					plugin_obj.env_asdr_add('vol', 0, pcms_c[5], 0, pcms_c[6], pcms_c[7], pcms_c[8], 1)
 
-			if machine.mach_id == 'BBOX':
+			elif machine.mach_id == 'BBOX':
 				plugin_obj = cvpj_plugins.add_uni('sampler', 'drums', pluginid)
 				plugin_obj.role = 'synth'
-				track_obj.params.add('usemasterpitch', False, 'bool')
+				params_obj.add('usemasterpitch', False, 'bool')
 				track_obj.is_drum = True
 				track_obj.is_multinote_drum = True
 
@@ -321,7 +329,7 @@ class input_cvpj_r(plugins.base):
 
 				if 'Select Kit' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 
-			if machine.mach_id == 'SSYN':
+			elif machine.mach_id == 'SSYN':
 				plugin_obj = cvpj_plugins.add_native('caustic', 'SSYN', pluginid)
 				plugin_obj.role = 'synth'
 				add_controls(plugin_obj, 'SSYN', machdata.controls)
@@ -335,7 +343,7 @@ class input_cvpj_r(plugins.base):
 					wave_obj = plugin_obj.wave_add('customwaveform2')
 					wave_obj.set_all_range(machdata.customwaveform2, -157, 157)
 
-			if machine.mach_id == 'BLNE':
+			elif machine.mach_id == 'BLNE':
 				plugin_obj = cvpj_plugins.add_native('caustic', 'BLNE', pluginid)
 				plugin_obj.role = 'synth'
 				add_controls(plugin_obj, 'BLNE', machdata.controls)
@@ -345,7 +353,7 @@ class input_cvpj_r(plugins.base):
 					wave_obj = plugin_obj.wave_add('customwaveform1')
 					wave_obj.set_all_range(machdata.customwaveform1, -157, 157)
 
-			if machine.mach_id == 'PADS':
+			elif machine.mach_id == 'PADS':
 				plugin_obj = cvpj_plugins.add_native('caustic', 'PADS', pluginid)
 				plugin_obj.role = 'synth'
 				add_controls(plugin_obj, 'PADS', machdata.controls)
@@ -358,32 +366,32 @@ class input_cvpj_r(plugins.base):
 				plugin_obj.datavals.add('harm1_vol', machdata.harm1vol)
 				plugin_obj.datavals.add('harm2_vol', machdata.harm2vol)
 
-			if machine.mach_id == 'ORGN':
+			elif machine.mach_id == 'ORGN':
 				plugin_obj = cvpj_plugins.add_native('caustic', 'ORGN', pluginid)
 				plugin_obj.role = 'synth'
 				add_controls(plugin_obj, 'ORGN', machdata.controls)
 				if 'Select preset' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 
-			if machine.mach_id == 'FMSN':
+			elif machine.mach_id == 'FMSN':
 				plugin_obj = cvpj_plugins.add_native('caustic', 'FMSN', pluginid)
 				plugin_obj.role = 'synth'
 				add_controls(plugin_obj, 'FMSN', machdata.controls)
 				plugin_obj.datavals.add('algorithm', machdata.algorithm)
 				if 'Select preset' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 
-			if machine.mach_id == 'KSSN':
+			elif machine.mach_id == 'KSSN':
 				plugin_obj = cvpj_plugins.add_native('caustic', 'KSSN', pluginid)
 				plugin_obj.role = 'synth'
 				add_controls(plugin_obj, 'KSSN', machdata.controls)
 				if 'Select preset' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 
-			if machine.mach_id == 'SAWS':
+			elif machine.mach_id == 'SAWS':
 				plugin_obj = cvpj_plugins.add_native('caustic', 'SAWS', pluginid)
 				plugin_obj.role = 'synth'
 				add_controls(plugin_obj, 'SAWS', machdata.controls)
 				if 'Select preset' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 
-			if machine.mach_id == '8SYN':
+			elif machine.mach_id == '8SYN':
 				plugin_obj = cvpj_plugins.add_native('caustic', '8SYN', pluginid)
 				plugin_obj.role = 'synth'
 				add_controls(plugin_obj, '8SYN', machdata.controls)
@@ -391,7 +399,7 @@ class input_cvpj_r(plugins.base):
 				plugin_obj.datavals.add('bitcode2', machdata.bitcode2)
 				if 'Select preset' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 
-			if machine.mach_id == 'VCDR':
+			elif machine.mach_id == 'VCDR':
 				plugin_obj = cvpj_plugins.add_native('caustic', 'VCDR', pluginid)
 				plugin_obj.role = 'synth'
 				add_controls(plugin_obj, 'VCDR', machdata.controls)
@@ -413,18 +421,14 @@ class input_cvpj_r(plugins.base):
 						plugin_obj, sampleref_obj, sp_obj = cvpj_plugins.addspec_sampler(wave_path, None, pluginid)
 						sp_obj.point_value_type = "samples"
 
-			if machine.mach_id == 'MDLR':
+			elif machine.mach_id == 'MDLR':
 				plugin_obj = cvpj_plugins.add_native('caustic', 'MDLR', pluginid)
 				plugin_obj.role = 'synth'
 				add_controls(plugin_obj, 'MDLR', machdata.controls)
 				if 'Select preset' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 
-			track_obj.params.add('vol', mixer_tracks[machnum].vol, 'float')
-			track_obj.params.add('pan', mixer_tracks[machnum].pan, 'float')
-			track_obj.params.add('enabled', int(not bool(mixer_tracks[machnum].mute)), 'bool')
-			track_obj.params.add('solo', mixer_tracks[machnum].solo, 'bool')
-
 			if machine.mach_id != 'NULL':
+				track_obj.plugslots.set_synth(pluginid)
 				for num, pattern in enumerate(machdata.patterns.data):
 					if len(pattern.notes):
 						patid = patids[num]
@@ -434,12 +438,15 @@ class input_cvpj_r(plugins.base):
 						for n in pattern.notes: 
 							cvpj_notelist.add_r(n['pos'], n['dur'], n['key']-60, n['vol'], None)
 
+			# fx
 			c_fxdata = project_obj.effx.fxslots[machnum*2:machnum*2+2]
 			add_caustic_fx(cvpj_plugins, track_obj, c_fxdata, 'machine'+str(machnum))
 
+			# sends
 			track_obj.sends.add('master_delay', cvpj_trackid+'_send_delay', mixer_tracks[machnum].send_delay)
 			track_obj.sends.add('master_reverb', cvpj_trackid+'_send_reverb', mixer_tracks[machnum].send_reverb)
 
+			# eq
 			mixereq_plugid = 'machine'+str(machnum)+'_eq'
 			plugin_obj = cvpj_plugins.add_native('caustic', 'mixer_eq', mixereq_plugid)
 			plugin_obj.visual.name = 'Mixer EQ'
@@ -449,6 +456,7 @@ class input_cvpj_r(plugins.base):
 			plugin_obj.params.add('high', mixer_tracks[machnum].eq_high, 'float')
 			track_obj.plugslots.slots_mixer.append(mixereq_plugid)
 
+			# width
 			width_plugid = 'machine'+str(machnum)+'_width'
 			plugin_obj = cvpj_plugins.add_uni('width', None, width_plugid)
 			plugin_obj.visual.name = 'Width'
@@ -468,10 +476,11 @@ class input_cvpj_r(plugins.base):
 			patid = patids[x['key']]
 
 			placement_obj = trackstore[x['mach']].placements.add_notes_indexed()
+			placement_obj.fromindex = patid
+
 			time_obj = placement_obj.time
 			time_obj.set_posdur(float(x['pos']), float(x['dur']))
 			time_obj.set_loop_data(0, 0, float(patmeasures/4))
-			placement_obj.fromindex = patid
 
 			#if autodata:
 			#	cutpoints = xtramath.cutloop(x['pos'], x['dur'], 0, 0, patmeasures/4)
@@ -485,7 +494,8 @@ class input_cvpj_r(plugins.base):
 
 		# ---------- automation: tempo ----------
 		bpm_auto_obj = cvpj_automation.create(['main', 'bpm'], 'float', True)
-		for pos, val in project_obj.seqn.tempoauto: bpm_auto_obj.add_autopoint(pos, val, None)
+		for pos, val in project_obj.seqn.tempoauto: 
+			bpm_auto_obj.add_autopoint(pos, val, None)
 
 		# ---------- automation: mach ----------
 		for machnum, machauto in enumerate(project_obj.seqn.auto_mach):
@@ -555,9 +565,9 @@ class input_cvpj_r(plugins.base):
 				cvpj_master.plugslots.slots_audio.append(fxid)
 
 			if fxid == 'master_delay': plugin_obj.fxdata_add(not bool(master_controls_data[40]), 1)
-			if fxid == 'master_reverb': plugin_obj.fxdata_add(not bool(master_controls_data[41]), 1)
-			if fxid == 'master_eq': plugin_obj.fxdata_add(not bool(master_controls_data[42]), 1)
-			if fxid == 'master_limiter': plugin_obj.fxdata_add(not bool(master_controls_data[43]), 1)
+			elif fxid == 'master_reverb': plugin_obj.fxdata_add(not bool(master_controls_data[41]), 1)
+			elif fxid == 'master_eq': plugin_obj.fxdata_add(not bool(master_controls_data[42]), 1)
+			elif fxid == 'master_limiter': plugin_obj.fxdata_add(not bool(master_controls_data[43]), 1)
 
 			fldso = globalstore.datapack.get_obj('caustic', 'plugin_master_fx', fxid)
 			if fldso:

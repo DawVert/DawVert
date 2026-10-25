@@ -37,6 +37,12 @@ sampler_filter_slopes = {
 	9: 24
 }
 
+sampler_playMode = {
+	0: 'all',
+	1: 'round_robin',
+	2: 'random',
+}
+
 def get_dictval_fb(d, key, fb, checktype): 
 	if key in d:
 		if d[key] is not None: 
@@ -158,9 +164,8 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 							plugin_obj.role = 'synth'
 							pluginid = cvpj_plugins.get_lastid()
 							playMode = program.playMode
-							if playMode == 0: plugin_obj.datavals.add('multi_mode', 'all')
-							elif playMode == 1: plugin_obj.datavals.add('multi_mode', 'round_robin')
-							elif playMode == 2: plugin_obj.datavals.add('multi_mode', 'random')
+							if playMode in sampler_playMode:
+								plugin_obj.datavals.add('multi_mode', sampler_playMode[playMode])
 							plugin_obj.poly.mono = program.mono
 							track_obj.plugslots.set_synth(pluginid)
 							for layernum, soundlayer in enumerate(soundlayers):

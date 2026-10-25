@@ -299,7 +299,7 @@ class cvpj_project_plugins:
 		if not is_drumsynth:
 			plugin_obj = self.add('universal', 'sampler', 'single', plug_id)
 			samplepart_obj = plugin_obj.samplepart_add('sample')
-			if file_path: samplepart_obj.from_sampleref(self, sampleref)
+			if file_path: samplepart_obj.from_sampleref(self.convproj_obj, sampleref)
 		else:
 			plugin_obj = self.add('universal', 'sampler', 'drumsynth', plug_id)
 			samplepart_obj = plugin_obj.samplepart_add('sample')

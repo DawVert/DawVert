@@ -38,6 +38,29 @@ def do_plugins(convproj_obj, plugins, track_obj):
 
 				track_obj.plugslots.plugin_autoplace(plugin_obj, pluginid)
 
+def do_track_visual(qtrack, track_obj, swap_bg_fg):
+	track_obj.visual.name = qtrack.name
+	if qtrack.view.background_color and qtrack.view.foreground_color:
+		if not swap_bg_fg:
+			track_obj.visual.color.set_hex(qtrack.view.background_color)
+			track_obj.visual.altcolor_add('fg').set_hex(qtrack.view.foreground_color)
+		else:
+			track_obj.visual.color.set_hex(qtrack.view.foreground_color)
+			track_obj.visual.altcolor_add('fg').set_hex(qtrack.view.background_color)
+	elif qtrack.view.background_color:
+		track_obj.visual.color.set_hex(qtrack.view.background_color)
+	elif qtrack.view.foreground_color:
+		track_obj.visual.color.set_hex(qtrack.view.foreground_color)
+
+	if qtrack.view.height:
+		track_obj.visual_ui.height = qtrack.view.height/96
+
+def do_track_params(qtrack, track_obj):
+	track_obj.params.add('vol', qtrack.state.gain, 'float')
+	track_obj.params.add('pan', qtrack.state.panning, 'float')
+	track_obj.params.add('enabled', bool(not qtrack.state.mute), 'bool')
+	track_obj.params.add('solo', bool(qtrack.state.solo), 'bool')
+
 class input_midi(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -121,26 +144,9 @@ class input_midi(plugins.base):
 			if qtrack.type == 'midi':
 				track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 
-			track_obj.visual.name = qtrack.name
-			if qtrack.view.background_color and qtrack.view.foreground_color:
-				if not swap_bg_fg:
-					track_obj.visual.color.set_hex(qtrack.view.background_color)
-					track_obj.visual.altcolor_add('fg').set_hex(qtrack.view.foreground_color)
-				else:
-					track_obj.visual.color.set_hex(qtrack.view.foreground_color)
-					track_obj.visual.altcolor_add('fg').set_hex(qtrack.view.background_color)
-			elif qtrack.view.background_color:
-				track_obj.visual.color.set_hex(qtrack.view.background_color)
-			elif qtrack.view.foreground_color:
-				track_obj.visual.color.set_hex(qtrack.view.foreground_color)
+			do_track_visual(qtrack, track_obj, swap_bg_fg)
+			do_track_params(qtrack, track_obj)
 
-			if qtrack.view.height:
-				track_obj.visual_ui.height = qtrack.view.height/96
-
-			track_obj.params.add('vol', qtrack.state.gain, 'float')
-			track_obj.params.add('pan', qtrack.state.panning, 'float')
-			track_obj.params.add('enabled', bool(not qtrack.state.mute), 'bool')
-			track_obj.params.add('solo', bool(qtrack.state.solo), 'bool')
 			track_obj.armed.on = bool(qtrack.state.record)
 			if qtrack.type == 'audio': track_obj.armed.in_audio = track_obj.armed.on
 			if qtrack.type == 'midi': track_obj.armed.in_keys = track_obj.armed.on

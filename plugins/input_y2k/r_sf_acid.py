@@ -301,8 +301,8 @@ class input_acid_old(plugins.base):
 					else:
 						autoloc = None
 						if env.type == 0: autoloc = ('track', cvpj_trackid, 'vol')
-						if env.type == 1: autoloc = ('track', cvpj_trackid, 'pan')
-						if env.type > 1: 
+						elif env.type == 1: autoloc = ('track', cvpj_trackid, 'pan')
+						elif env.type > 1: 
 							autoloc = ('send', 'send_%i_%i' % (tracknum, env.type-2), 'amount')
 							if env.type-2 not in used_sends: used_sends.append(env.type-2)
 						if autoloc:
@@ -312,12 +312,12 @@ class input_acid_old(plugins.base):
 							for point in env.points:
 								tension = 0
 								if point[0] == 2: tension = 1
-								if point[0] == -2: tension = -1
+								elif point[0] == -2: tension = -1
 								autopl_obj.data.points__add_normal(point[0], point[1], tension, None)
 							auto_obj = cvpj_automation.get_opt(autoloc)
 							if auto_obj is not None: 
 								if env.type == 0: auto_obj.defualt_val = track.vol
-								if env.type == 1: auto_obj.defualt_val = track.pan
+								elif env.type == 1: auto_obj.defualt_val = track.pan
 
 			track_obj.placements.pl_audio.sort()
 			if stretch_type not in [1, 3]:

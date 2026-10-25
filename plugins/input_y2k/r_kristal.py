@@ -196,10 +196,13 @@ class input_kristal(plugins.base):
 				if icid == 'CMixerChannel':
 					if channum in tracknums:
 						track_obj = tracknums[channum]
-						track_obj.params.add('enabled', not bool(inpart.muted), 'bool')
-						track_obj.params.add('solo', bool(inpart.solo), 'bool')
-						track_obj.params.add('vol', inpart.vol, 'float')
-						track_obj.params.add('pan', (inpart.pan-0.5)*2, 'float')
+						
+						# params
+						params_obj = track_obj.params
+						params_obj.add('enabled', not bool(inpart.muted), 'bool')
+						params_obj.add('solo', bool(inpart.solo), 'bool')
+						params_obj.add('vol', inpart.vol, 'float')
+						params_obj.add('pan', (inpart.pan-0.5)*2, 'float')
 					channum += 1
 
 		# ---------- master fx ----------

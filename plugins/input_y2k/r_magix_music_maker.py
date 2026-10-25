@@ -135,29 +135,37 @@ class input_old_magix_maker(plugins.base):
 				if data_trci is not None:
 					trackid = str(tracknum)
 					track_obj = cvpj_tracks.add(trackid, 'hybrid', 1, False)
+					track_placements = track_obj.placements
 
+					# visual
 					track_obj.visual.name = data_trci.name
-					track_obj.params.add('pan', data_trci.pan, 'float')
-					track_obj.params.add('vol', max(0, data_trci.vol), 'float')
-					track_obj.params.add('enabled', 1 not in data_trci.flags, 'float')
+
+					# params
+					params_obj = track_obj.params
+					params_obj.add('pan', data_trci.pan, 'float')
+					params_obj.add('vol', max(0, data_trci.vol), 'float')
+					params_obj.add('enabled', 1 not in data_trci.flags, 'float')
+
+					# aux used
 					aux1_track_used = bool(data_trci.aux1) or unused_sends
 					aux2_track_used = bool(data_trci.aux2) or unused_sends
 
-					#totalcolors = []
-					#uniquecolors = {}
-
+					# clips
 					for obj in mmm_track.data_objs:
 						data_objc = obj.data_objc
 						data_AUFX = obj.data_AUFX
 
 						if data_objc is not None:
+							fade_in = (data_objc.fade_in/sample_time)
+							fade_out = (data_objc.fade_out/sample_time)
+
 							if data_objc.fileid in sampleref_objs:
-								placement_obj = track_obj.placements.add_audio()
+								placement_obj = track_placements.add_audio()
 								time_obj = placement_obj.time
 
 								placement_obj.visual.name = data_objc.name
-								placement_obj.fade_in.set_dur((data_objc.fade_in/sample_time), 'beats')
-								placement_obj.fade_out.set_dur((data_objc.fade_out/sample_time), 'beats')
+								placement_obj.fade_in.set_dur(fade_in, 'beats')
+								placement_obj.fade_out.set_dur(fade_out, 'beats')
 								placement_obj.group = str(data_objc.group) if data_objc.group else None
 
 								do_color(data_objc, placement_obj)
@@ -165,11 +173,6 @@ class input_old_magix_maker(plugins.base):
 								time_obj.set_startend(data_objc.start, data_objc.end)
 								if data_objc.loop_end: time_obj.set_loop_data(data_objc.offset, 0, data_objc.loop_end)
 
-								#if color not in totalcolors: 
-								#	uniquecolors[len(totalcolors)] = 0
-								#	totalcolors.append(color)
-								#uniquecolors[totalcolors.index(color)] += 1
-		
 								sampleref_obj = sampleref_objs[data_objc.fileid]
 
 								sample_obj = placement_obj.sample
@@ -221,8 +224,8 @@ class input_old_magix_maker(plugins.base):
 								stretch_obj.timing.set__real_rate(tempo, sample_stretch.sample_speed)
 								stretch_obj.preserve_pitch = not sample_stretch.resample
 
-							if data_objc.fileid in videoref_objs:
-								placement_obj = track_obj.placements.add_video()
+							elif data_objc.fileid in videoref_objs:
+								placement_obj = track_placements.add_video()
 								time_obj = placement_obj.time
 								
 								placement_obj.visual.name = data_objc.name
@@ -232,8 +235,8 @@ class input_old_magix_maker(plugins.base):
 								time_obj.set_startend(data_objc.start, data_objc.end)
 								if data_objc.loop_end: time_obj.set_loop_data(data_objc.offset, 0, data_objc.loop_end)
 
-								placement_obj.fade_in.set_dur((data_objc.fade_in/sample_time), 'beats')
-								placement_obj.fade_out.set_dur((data_objc.fade_out/sample_time), 'beats')
+								placement_obj.fade_in.set_dur(fade_in, 'beats')
+								placement_obj.fade_out.set_dur(fade_out, 'beats')
 								placement_obj.videoref = 'sample_'+str(data_objc.fileid)
 
 								#if color not in totalcolors: 
@@ -243,6 +246,10 @@ class input_old_magix_maker(plugins.base):
 		
 							#print(color)
 
+					track_placements.pl_audio.sort()
+					track_placements.pl_audio.remove_overlaps()
+
+					# auto
 					autodata = {}
 					for rubb in mmm_track.data_rubb:
 						if rubb.param not in autodata: autodata[rubb.param] = {}
@@ -271,18 +278,12 @@ class input_old_magix_maker(plugins.base):
 								val = xtramath.between_from_one(v_min, v_max, (val+32768)/65535)
 								autopoints.points__add_point_notype(pos, val)
 
-					#if uniquecolors:
-					#	trackcolor = totalcolors[max(uniquecolors, key=lambda k: uniquecolors.get(k))]
-					#	track_obj.visual.color.set_int(trackcolor)
-
+					# aux
 					if data_trci is not None:
 						if aux1_track_used:
 							track_obj.sends.add('aux1', 'send_%i_aux1' % (tracknum), data_trci.aux1)
 						if aux2_track_used:
 							track_obj.sends.add('aux2', 'send_%i_aux2' % (tracknum), data_trci.aux2)
-
-					track_obj.placements.pl_audio.sort()
-					track_obj.placements.pl_audio.remove_overlaps()
 
 					if aux1_track_used: aux1_used = True
 					if aux2_track_used: aux2_used = True

@@ -34,20 +34,71 @@ def get_sample(i_value):
 	else:
 		return ''
 
-lfoshape = ['sine', 'tri', 'saw_down', 'square', 'custom', 'random']
-arpdirection = ['up', 'down', 'updown', 'downup', 'random']
-
 chordids = ["major","majb5","minor","minb5","sus2","sus4","aug","augsus4","tri","6","6sus4","6add9","m6","m6add9","7","7sus4","7#5","7b5","7#9","7b9","7#5#9","7#5b9","7b5b9","7add11","7add13","7#11","maj7","maj7b5","maj7#5","maj7#11","maj7add13","m7","m7b5","m7b9","m7add11","m7add13","m-maj7","m-maj7add11","m-maj7add13","9","9sus4","add9","9#5","9b5","9#11","9b13","maj9","maj9sus4","maj9#5","maj9#11","m9","madd9","m9b5","m9-maj7","11","11b9","maj11","m11","m-maj11","13","13#9","13b9","13b5b9","maj13","m13","m-maj13","full_major","harmonic_minor","melodic_minor","whole_tone","diminished","major_pentatonic","minor_pentatonic","jap_in_sen","major_bebop","dominant_bebop","blues","arabic","enigmatic","neopolitan","neopolitan_minor","hungarian_minor","dorian","phrygian","lydian","mixolydian","aeolian","locrian","full_minor","chromatic","half-whole_diminished","5","phrygian_dominant","persian"]
 
-filtertype = [
-['low_pass', None], ['high_pass', None], ['band_pass','csg'], 
-['band_pass','czpg'], ['notch', None], ['all_pass', None], 
-['moog', None], ['low_pass','double'], ['low_pass','rc12'], 
-['band_pass','rc12'], ['high_pass','rc12'], ['low_pass','rc24'], 
-['band_pass','rc24'], ['high_pass','rc24'], ['formant', None], 
-['moog','double'], ['low_pass','sv'], ['band_pass','sv'], 
-['high_pass','sv'], ['notch','sv'], ['formant','fast'], ['tripole', None]
-]
+vals_arpdirection = {
+	0: 'up',
+	1: 'down',
+	2: 'updown',
+	3: 'downup',
+	4: 'random',
+}
+
+vals_lfoshape = {
+	0: 'sine',
+	1: 'tri',
+	2: 'saw_down',
+	3: 'square',
+	4: 'custom',
+	5: 'random',
+}
+
+vals_filtertype = {
+	0: ['low_pass', None],
+	1: ['high_pass', None],
+	2: ['band_pass','csg'],
+	3: ['band_pass','czpg'],
+	4: ['notch', None],
+	5: ['all_pass', None],
+	6: ['moog', None],
+	7: ['low_pass','double'],
+	8: ['low_pass','rc12'],
+	9: ['band_pass','rc12'],
+	10: ['high_pass','rc12'],
+	11: ['low_pass','rc24'],
+	12: ['band_pass','rc24'],
+	13: ['high_pass','rc24'],
+	14: ['formant', None],
+	15: ['moog','double'],
+	16: ['low_pass','sv'],
+	17: ['band_pass','sv'],
+	18: ['high_pass','sv'],
+	19: ['notch','sv'],
+	20: ['formant','fast'],
+	21: ['tripole', None]
+}
+
+vals_interpolation = {
+	0: 'none',
+	1: 'linear',
+	2: 'sinc',
+}
+
+vals_midi_mallets = {
+	0: 12,
+	1: 11,
+	2: 113,
+	9: 14
+}
+
+vals_plug_noteoffset = {
+	'audiofileprocessor': 3,
+	'sf2player': 12,
+	'slicert': 1,
+	'OPL2': 24,
+	'zynaddsubfx': 0,
+	'vestige': 0,
+}
 
 chord = [[0], [0, 4, 7], [0, 4, 6], [0, 3, 7], [0, 3, 6], [0, 2, 7], [0, 5, 7], [0, 4, 8], [0, 5, 8], [0, 3, 6, 9], [0, 4, 7, 9], [0, 5, 7, 9], [0, 4, 7, 9, 14], [0, 3, 7, 9], [0, 3, 7, 9, 14], [0, 4, 7, 10], [0, 5, 7, 10], [0, 4, 8, 10], [0, 4, 6, 10], [0, 4, 7, 10, 15], [0, 4, 7, 10, 13], [0, 4, 8, 10, 15], [0, 4, 8, 10, 13], [0, 4, 6, 10, 13], [0, 4, 7, 10, 17], [0, 4, 7, 10, 21], [0, 4, 7, 10, 18], [0, 4, 7, 11], [0, 4, 6, 11], [0, 4, 8, 11], [0, 4, 7, 11, 18], [0, 4, 7, 11, 21], [0, 3, 7, 10], [0, 3, 6, 10], [0, 3, 7, 10, 13], [0, 3, 7, 10, 17], [0, 3, 7, 10, 21], [0, 3, 7, 11], [0, 3, 7, 11, 17], [0, 3, 7, 11, 21], [0, 4, 7, 10, 14], [0, 5, 7, 10, 14], [0, 4, 7, 14], [0, 4, 8, 10, 14], [0, 4, 6, 10, 14], [0, 4, 7, 10, 14, 18], [0, 4, 7, 10, 14, 20], [0, 4, 7, 11, 14], [0, 5, 7, 11, 15], [0, 4, 8, 11, 14], [0, 4, 7, 11, 14, 18], [0, 3, 7, 10, 14], [0, 3, 7, 14], [0, 3, 6, 10, 14], [0, 3, 7, 11, 14], [0, 4, 7, 10, 14, 17], [0, 4, 7, 10, 13, 17], [0, 4, 7, 11, 14, 17], [0, 3, 7, 10, 14, 17], [0, 3, 7, 11, 14, 17], [0, 4, 7, 10, 14, 21], [0, 4, 7, 10, 15, 21], [0, 4, 7, 10, 13, 21], [0, 4, 6, 10, 13, 21], [0, 4, 7, 11, 14, 21], [0, 3, 7, 10, 14, 21], [0, 3, 7, 11, 14, 21], [0, 2, 4, 5, 7, 9, 11], [0, 2, 3, 5, 7, 8, 11], [0, 2, 3, 5, 7, 9, 11], [0, 2, 4, 6, 8, 10], [0, 2, 3, 5, 6, 8, 9, 11], [0, 2, 4, 7, 9], [0, 3, 5, 7, 10], [0, 1, 5, 7, 10], [0, 2, 4, 5, 7, 8, 9, 11], [0, 2, 4, 5, 7, 9, 10, 11], [0, 3, 5, 6, 7, 10], [0, 1, 4, 5, 7, 8, 11], [0, 1, 4, 6, 8, 10, 11], [0, 1, 3, 5, 7, 9, 11], [0, 1, 3, 5, 7, 8, 11], [0, 2, 3, 6, 7, 8, 11], [0, 2, 3, 5, 7, 9, 10], [0, 1, 3, 5, 7, 8, 10], [0, 2, 4, 6, 7, 9, 11], [0, 2, 4, 5, 7, 9, 10], [0, 2, 3, 5, 7, 8, 10], [0, 1, 3, 5, 6, 8, 10], [0, 2, 3, 5, 7, 8, 10], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [0, 1, 3, 4, 6, 7, 9, 10], [0, 7], [0, 1, 4, 5, 7, 8, 10], [0, 1, 4, 5, 6, 8, 11]]
 
@@ -165,10 +216,12 @@ def asdflfo_get(lmms_instrumenttrack, plugin_obj):
 	asdflfo(plugin_obj, eldata.elvol, 'vol')
 	asdflfo(plugin_obj, eldata.elcut, 'cutoff')
 	asdflfo(plugin_obj, eldata.elres, 'reso')
-	plugin_obj.filter.on = bool(float(eldata.fwet))
-	plugin_obj.filter.freq = float(eldata.fcut)
-	plugin_obj.filter.q = float(eldata.fres)
-	plugin_obj.filter.type.set_list(filtertype[int(eldata.ftype)])
+	filter_obj = plugin_obj.filter
+	filter_obj.on = bool(float(eldata.fwet))
+	filter_obj.freq = float(eldata.fcut)
+	filter_obj.q = float(eldata.fres)
+	ftype = int(eldata.ftype)
+	if ftype in vals_filtertype: filter_obj.type.set_list(vals_filtertype[ftype])
 
 def asdflfo(plugin_obj, elenv, asdrtype):
 	envelopeparams = {}
@@ -184,10 +237,12 @@ def asdflfo(plugin_obj, elenv, asdrtype):
 
 	plugin_obj.env_asdr_add(asdrtype, asdr_predelay, asdr_attack, asdr_hold, asdr_decay, asdr_sustain, asdr_release, asdr_amount)
 
+	lshp = int(elenv.lshp)
+
 	lfo_predelay = float(elenv.pdel)
 	lfo_attack = exp2sec(float(elenv.latt))
 	lfo_amount = float(elenv.lamt)
-	lfo_shape = lfoshape[int(elenv.lshp)]
+	if lshp in vals_lfoshape: lfo_shape = vals_lfoshape[lshp]
 	if asdrtype == 'cutoff': lfo_amount *= 6000
 
 	lfo_speed = (float(elenv.lspd)*0.2) if elenv.x100 == 1 else (float(elenv.lspd)*20)
@@ -248,9 +303,8 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 		sp_obj.trigger = 'oneshot' if isbb else 'normal'
 
 		if looped == 2: sp_obj.loop_mode = "pingpong"
-		if lmms_interpolation == 0: sp_obj.interpolation = "none"
-		if lmms_interpolation == 1: sp_obj.interpolation = "linear"
-		if lmms_interpolation == 2: sp_obj.interpolation = "sinc"
+		if lmms_interpolation in vals_interpolation: 
+			sp_obj.interpolation = vals_interpolation[lmms_interpolation]
 
 	elif pluginname == "vestige":
 		plugin_obj = cvpj_plugins.add_external('vst2', 'win')
@@ -284,9 +338,9 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 			s_sid_osc.syncmod = int(lmms_plugin.get_param('sync'+str(num), 0))
 			s_sid_osc.to_filter = int(lmms_plugin.get_param('filtered'+str(num), 0))
 			if sid_waveform == 0: s_sid_osc.wave_pulse = True
-			if sid_waveform == 1: s_sid_osc.wave_triangle = True
-			if sid_waveform == 2: s_sid_osc.wave_saw = True
-			if sid_waveform == 3: s_sid_osc.wave_noise = True
+			elif sid_waveform == 1: s_sid_osc.wave_triangle = True
+			elif sid_waveform == 2: s_sid_osc.wave_saw = True
+			elif sid_waveform == 3: s_sid_osc.wave_noise = True
 
 		plugin_obj = sid_obj.to_cvpj(convproj_obj, pluginid)
 
@@ -413,10 +467,8 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 
 		if pluginname == "malletsstk":
 			malpreset = lmms_plugin.get_param('preset', 0).value
-			if malpreset == 0: plugin_obj.midi_fallback__add_inst(12)
-			if malpreset == 1: plugin_obj.midi_fallback__add_inst(11)
-			if malpreset == 2: plugin_obj.midi_fallback__add_inst(113)
-			if malpreset == 9: plugin_obj.midi_fallback__add_inst(14)
+			if malpreset in vals_midi_mallets:
+				plugin_obj.midi_fallback__add_inst(vals_midi_mallets[malpreset])
 
 	plugin_obj.visual.from_datapack('lmms', 'plugin', pluginname, True)
 
@@ -512,16 +564,21 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 
 			insttr_obj = lmms_track.instrumenttrack
 
+			# params
+			params_obj = track_obj.params
 			cvpj_pan = doparam(insttr_obj.pan, 'float', [0, 0.01], ['track', cvpj_trackid, 'pan'])
 			cvpj_vol = doparam(insttr_obj.vol, 'float', [0, 0.01], ['track', cvpj_trackid, 'vol'])
 			cvpj_pitch = doparam(insttr_obj.pitch, 'float', [0, 0.01], ['track', cvpj_trackid, 'pitch'])
 			cvpj_usemasterpitch = insttr_obj.usemasterpitch.value
 	
-			track_obj.params.add('vol', cvpj_vol, 'float')
-			track_obj.params.add('pan', cvpj_pan, 'float')
-			track_obj.params.add('usemasterpitch', cvpj_usemasterpitch, 'bool')
-			track_obj.params.add('pitch', cvpj_pitch, 'float')
+			params_obj.add('vol', cvpj_vol, 'float')
+			params_obj.add('pan', cvpj_pan, 'float')
+			params_obj.add('usemasterpitch', cvpj_usemasterpitch, 'bool')
+			params_obj.add('pitch', cvpj_pitch, 'float')
 
+			if insttr_obj.fxch != -1: track_obj.fxrack_channel = int(insttr_obj.fxch)
+
+			# visual
 			pluginname = insttr_obj.instrument.name
 			insttr_obj = lmms_track.instrumenttrack
 			plug_color, instpluginid, plugin_obj = decodeplugin(convproj_obj, insttr_obj.instrument.plugin, pluginname, isbb)
@@ -531,45 +588,51 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 			track_obj.plugslots.set_synth(instpluginid)
 			if plugin_obj: asdflfo_get(insttr_obj, plugin_obj)
 
-			midiport_obj = insttr_obj.midiport
-			track_obj.midi.in_enabled = bool(int(midiport_obj.readable))
-			track_obj.midi.in_chanport.chan = int(midiport_obj.inputchannel)-1
-			track_obj.midi.in_fixedvelocity = int(midiport_obj.fixedinputvelocity)
-			track_obj.midi.out_enabled = int(midiport_obj.writable)
-			track_obj.midi.out_chanport.chan = int(midiport_obj.outputchannel)
-			track_obj.midi.out_inst.patch = int(midiport_obj.outputprogram)
-			track_obj.midi.out_fixedvelocity = int(midiport_obj.fixedoutputvelocity)
-			track_obj.midi.out_inst.key = int(midiport_obj.fixedoutputnote)
-			track_obj.midi.basevelocity = int(midiport_obj.basevelocity)
+			# midi
+			lmms_midiport_obj = insttr_obj.midiport
+			trackmidi_obj = track_obj.midi
+			trackmidi_obj.in_enabled = bool(int(lmms_midiport_obj.readable))
+			trackmidi_obj.in_chanport.chan = int(lmms_midiport_obj.inputchannel)-1
+			trackmidi_obj.in_fixedvelocity = int(lmms_midiport_obj.fixedinputvelocity)
+			trackmidi_obj.out_enabled = int(lmms_midiport_obj.writable)
+			trackmidi_obj.out_chanport.chan = int(lmms_midiport_obj.outputchannel)
+			trackmidi_obj.out_inst.patch = int(lmms_midiport_obj.outputprogram)
+			trackmidi_obj.out_fixedvelocity = int(lmms_midiport_obj.fixedoutputvelocity)
+			trackmidi_obj.out_inst.key = int(lmms_midiport_obj.fixedoutputnote)
+			trackmidi_obj.basevelocity = int(lmms_midiport_obj.basevelocity)
 
+			# fxchain
 			fxchain_obj = insttr_obj.fxchain
 			track_obj.plugslots.slots_audio_enabled = bool(fxchain_obj.enabled.value)
 			track_obj.plugslots.slots_audio += decodefxchain(convproj_obj, fxchain_obj)
 
-			if insttr_obj.fxch != -1: track_obj.fxrack_channel = int(insttr_obj.fxch)
-
+			# noteoffset
 			basenote = int(insttr_obj.basenote)-57
-			noteoffset = 0
-			if pluginname == 'audiofileprocessor': noteoffset = 3
-			elif pluginname == 'sf2player': noteoffset = 12
-			elif pluginname == 'slicert': noteoffset = 1
-			elif pluginname == 'OPL2': noteoffset = 24
-			elif pluginname == 'zynaddsubfx': noteoffset = 0
-			elif pluginname == 'vestige': noteoffset = 0
-			else: noteoffset = 12
+
+			if pluginname in vals_plug_noteoffset:
+				noteoffset = vals_plug_noteoffset[pluginname]
+			else: 
+				noteoffset = 12
 
 			middlenote = basenote - noteoffset
 			track_obj.datavals.add('middlenote', middlenote)
 
+			# patterns
 			for lmms_pattern in lmms_track.patterns:
 				placement_obj = track_obj.placements.add_notes() if not isbb else placements_notes.cvpj_placement_notes(track_obj.time_ppq)
-				time_obj = placement_obj.time
-				time_obj.set_pos(lmms_pattern.pos)
-				placement_obj.visual.name = lmms_pattern.name
-				if lmms_pattern.color: 
-					placement_obj.visual.color.set_hex(lmms_pattern.color)
 				placement_obj.muted = bool(int(lmms_pattern.muted))
 
+				# time
+				time_obj = placement_obj.time
+				time_obj.set_pos(lmms_pattern.pos)
+
+				# visual
+				visual_obj = placement_obj.visual
+				visual_obj.name = lmms_pattern.name
+				if lmms_pattern.color: 
+					visual_obj.color.set_hex(lmms_pattern.color)
+
+				# notelist
 				cvpj_notelist = placement_obj.notelist
 				for lmms_note in lmms_pattern.notes:
 					cvpj_notelist.add_r(lmms_note.pos, max(lmms_note.len, 0), lmms_note.key-60, lmms_note.vol/100, None)
@@ -667,21 +730,31 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 			do_track_params(convproj_obj, lmms_track, track_obj, cvpj_trackid, isbb)
 
 			samptr_obj = lmms_track.sampletrack
+
+			# params
+			params_obj = track_obj.params
+
 			cvpj_pan = doparam(samptr_obj.pan, 'float', [0, 0.01], ['track', cvpj_trackid, 'pan'])
 			cvpj_vol = doparam(samptr_obj.vol, 'float', [0, 0.01], ['track', cvpj_trackid, 'vol'])
-			track_obj.params.add('vol', cvpj_vol, 'float')
-			track_obj.params.add('pan', cvpj_pan, 'float')
+			params_obj.add('vol', cvpj_vol, 'float')
+			params_obj.add('pan', cvpj_pan, 'float')
 
-			track_obj.plugslots.slots_audio += decodefxchain(convproj_obj, samptr_obj.fxchain)
-			
 			if samptr_obj.fxch != -1: track_obj.fxrack_channel = int(samptr_obj.fxch)
 
+			# fxchain
+			track_obj.plugslots.slots_audio += decodefxchain(convproj_obj, samptr_obj.fxchain)
+			
+			# sampletcos
 			for lmms_sampletco in lmms_track.sampletcos:
 				placement_obj = track_obj.placements.add_audio() if not isbb else placements_audio.cvpj_placement_audio(48, False)
+				placement_obj.muted = bool(lmms_sampletco.muted)
+
+				# time
 				time_obj = placement_obj.time
 				time_obj.set_posdur(lmms_sampletco.pos, lmms_sampletco.len)
 				time_obj.set_offset(lmms_sampletco.off*-1 if lmms_sampletco.off != -1 else 0)
-				placement_obj.muted = bool(lmms_sampletco.muted)
+
+				# file
 				filepath = get_sample(lmms_sampletco.src)
 				sampleref_obj = convproj_obj.sampleref__add(filepath, filepath, None)
 				if lmms_sampletco.sample_rate:
@@ -696,11 +769,18 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 				if not isbb:
 					for id_num in lmms_automationpattern.auto_target:
 						autopl_obj = cvpj_automation.add_pl_points(['id',str(id_num)], 'float')
+						autopl_obj.muted = bool(int(lmms_automationpattern.mute))
+
+						# time
 						time_obj = autopl_obj.time
 						time_obj.set_posdur(lmms_automationpattern.pos, lmms_automationpattern.len)
-						autopl_obj.muted = bool(int(lmms_automationpattern.mute))
-						if lmms_automationpattern.name: autopl_obj.visual.name = lmms_automationpattern.name
-						if lmms_automationpattern.color: autopl_obj.visual.color.set_hex(lmms_automationpattern.color)
+
+						# visual
+						visual_obj = autopl_obj.visual
+						if lmms_automationpattern.name: visual_obj.name = lmms_automationpattern.name
+						if lmms_automationpattern.color: visual_obj.color.set_hex(lmms_automationpattern.color)
+
+						# points
 						autopoints_obj = autopl_obj.data
 						if lmms_automationpattern.prog == 0:
 							for p_pos, p_val in lmms_automationpattern.auto_points.items():
@@ -758,6 +838,13 @@ class input_lmms(plugins.base):
 
 		globalstore.datapack.load('lmms', './data/datapack/app/lmms.xml')
 
+		# ---------- convproj objects ----------
+		cvpj_tracks = convproj_obj.tracks
+		cvpj_automation = convproj_obj.automation
+		cvpj_transport = convproj_obj.transport
+		cvpj_metadata = convproj_obj.metadata
+		fxrack_obj = convproj_obj.fxrack
+		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 		convproj_obj.type = 'r'
@@ -780,9 +867,9 @@ class input_lmms(plugins.base):
 		cvpj_bpm = doparam(head_obj.bpm, 'float', None, ['main', 'bpm'])
 		convproj_obj.params.add('bpm', cvpj_bpm, 'float')
 
-		convproj_obj.transport.loop_active = bool(int(song_obj.timeline.lpstate))
-		convproj_obj.transport.loop_start = song_obj.timeline.lp0pos
-		convproj_obj.transport.loop_end = song_obj.timeline.lp1pos
+		cvpj_transport.loop_active = bool(int(song_obj.timeline.lpstate))
+		cvpj_transport.loop_start = song_obj.timeline.lp0pos
+		cvpj_transport.loop_end = song_obj.timeline.lp1pos
 		
 		# ---------- master params ----------
 		cvpj_pitch = doparam(head_obj.masterpitch, 'float', None, ['main', 'pitch'])
@@ -793,15 +880,14 @@ class input_lmms(plugins.base):
 		# ---------- metadata ----------
 		if song_obj.projectnotes.text:
 			if len(song_obj.projectnotes.text): 
-				convproj_obj.metadata.comment_text = song_obj.projectnotes.text
-				convproj_obj.metadata.comment_datatype = 'html'
+				cvpj_metadata.comment_text = song_obj.projectnotes.text
+				cvpj_metadata.comment_datatype = 'html'
 				add_window_data(song_obj.projectnotes.window, convproj_obj, 'main', 'project_notes')
 
 		# ---------- tracks ----------
 		lmms_decode_tracks(convproj_obj, song_obj.trackcontainer.tracks, False, 'LMMS_Track')
 
 		# ---------- fx channels ----------
-		fxrack_obj = convproj_obj.fxrack
 		for channum, lmms_fxchannel in song_obj.fxmixer.fxchannels.items():
 			chan_vol = doparam(lmms_fxchannel.volume, 'float', None, ['fxmixer', str(channum), 'vol'])
 

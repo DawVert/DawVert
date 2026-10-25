@@ -63,8 +63,9 @@ class input_fl_mobile_old(plugins.base):
 			track_obj = cvpj_tracks.add(idval, 'instrument', 0, False)
 
 			# params
-			track_obj.params.add('vol', xe_tr.vol, 'float')
-			track_obj.params.add('pan', xe_tr.pan, 'float')
+			params_obj = track_obj.params
+			params_obj.add('vol', xe_tr.vol, 'float')
+			params_obj.add('pan', xe_tr.pan, 'float')
 
 			# notelist
 			cvpj_notelist = track_obj.placements.notelist

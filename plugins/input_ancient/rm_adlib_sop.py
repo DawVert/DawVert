@@ -44,7 +44,7 @@ class input_sop(plugins.base):
 			project_obj.load_from_file(dawvert_intent.input_file)
 			conversion_state.project = project_obj
 			return True
-		if dawvert_intent.input_mode == 'bytes':
+		elif dawvert_intent.input_mode == 'bytes':
 			project_obj.load_from_raw(dawvert_intent.input_data)
 			conversion_state.project = project_obj
 			return True
@@ -91,9 +91,13 @@ class input_sop(plugins.base):
 				cvpj_instname = str(instnum)
 				inst_obj = cvpj_insts.add(cvpj_instname)
 				inst_obj.plugslots.set_synth(cvpj_instname)
+
+				#visual
 				outname = opli.name_long if opli.name_long else opli.name
 				if outname: inst_obj.visual.name = outname
 				if enable_color: inst_obj.visual.color.set_float(maincolor)
+
+				#inst
 				inst_obj.is_drum = opli.perc_type!=0
 				opli.to_cvpj(convproj_obj, cvpj_instname)
 			else:
@@ -109,6 +113,8 @@ class input_sop(plugins.base):
 		for tracknum, soptrack in enumerate(project_obj.tracks):
 			cvpj_trackid = str(tracknum)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 0, False)
+
+			# visual
 			track_obj.visual.name = '#'+str(cvpj_trackid)
 			if enable_color: track_obj.visual.color.set_float(maincolor)
 
@@ -116,6 +122,7 @@ class input_sop(plugins.base):
 				trackname_endtext = endtxt[soptrack.chanmode]
 				track_obj.visual.name += ' '+str()+trackname_endtext
 
+			# events
 			cvpj_notelist = track_obj.placements.notelist
 			
 			curtick = 0
@@ -151,6 +158,7 @@ class input_sop(plugins.base):
 
 			cvpj_notelist.add_instpos(instpos)
 
+			#params
 			params_obj = track_obj.params
 
 			if evt_vol:
@@ -167,7 +175,6 @@ class input_sop(plugins.base):
 				autoloc_pitch = ('track', cvpj_trackid, 'pitch')
 				autoticks = to_points(cvpj_automation, autoloc_pitch, evt_pitch)
 				params_obj.add('pitch', autoticks.get_paramval(firstnotepos, 0), 'float')
-
 
 		# ---------- control track ----------
 		autoloc_bpm = ('main', 'bpm')

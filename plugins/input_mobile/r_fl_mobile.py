@@ -11,6 +11,13 @@ from objects import globalstore
 from objects.convproj import fileref
 from objects.file import audio_wav
 
+def do_aud_mpe(placement_obj, mpename, env_data, v_mul, v_sub):
+	if env_data:
+		autopoints_obj = placement_obj.add_autopoints(mpename, 128, False)
+		for flmpoint in env_data:
+			val = (flmpoint[5]/65534)*v_mul
+			autopoints_obj.points__add_normal(flmpoint[0], val-v_sub, 0, None)
+
 class input_fl_mobile(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -227,23 +234,12 @@ class input_fl_mobile(plugins.base):
 
 									for event in flm_clip.evn2.events:
 										if event[2] == 1: env_vol.append(event) #print(, event[5]/65534)
-										if event[2] == 2: env_pan.append(event) 
-										if event[2] == 3: env_pitch.append(event) 
+										elif event[2] == 2: env_pan.append(event) 
+										elif event[2] == 3: env_pitch.append(event) 
 
-									if env_vol:
-										autopoints_obj = placement_obj.add_autopoints('gain', 128, False)
-										for flmpoint in env_vol:
-											autopoints_obj.points__add_normal(flmpoint[0], flmpoint[5]/65534, 0, None)
-
-									if env_pan:
-										autopoints_obj = placement_obj.add_autopoints('pan', 128, False)
-										for flmpoint in env_pan:
-											autopoints_obj.points__add_normal(flmpoint[0], ((flmpoint[5]/65534)*2)-1, 0, None)
-
-									if env_pitch:
-										autopoints_obj = placement_obj.add_autopoints('speed', 128, False)
-										for flmpoint in env_pitch:
-											autopoints_obj.points__add_normal(flmpoint[0], ((flmpoint[5]/65534)*48)-24, 0, None)
+									do_aud_mpe(placement_obj, 'gain', env_vol, 1, 0)
+									do_aud_mpe(placement_obj, 'pan', env_pan, 2, 1)
+									do_aud_mpe(placement_obj, 'speed', env_pitch, 48, 24)
 
 								if flm_clip.sample:
 									flm_sample = flm_clip.sample

@@ -26,6 +26,13 @@ class addauto_data():
 		self.placement_obj = None
 		self.ftr_clip = None
 
+def do_auto_points(envpoints, autopoints_obj, iseff, defval, bpmdiv, pldur):
+	if envpoints:
+		for pos, val in envpoints:
+			pos = calc_tick_val(bpmdiv, pos)
+			if pos<pldur:
+				autopoints_obj.points__add_normal(pos, val if not iseff else val*defval, 0, None)
+
 def make_auto(convproj_obj, addauto_obj):
 	autoloc = addauto_obj.autoloc
 	mpetype = addauto_obj.mpetype
@@ -50,25 +57,14 @@ def make_auto(convproj_obj, addauto_obj):
 		time_obj.set_posdur(plpos, pldur)
 
 		autopoints_obj = autopl_obj.data
-
 		autopoints_obj.points__add_normal(1, startval if not iseff else startval*defval, 0, None)
-
-		if envpoints:
-			for pos, val in envpoints:
-				pos = calc_tick_val(bpmdiv, pos)
-				if pos<pldur:
-					autopoints_obj.points__add_normal(pos, val if not iseff else val*defval, 0, None)
-
+		do_auto_points(envpoints, autopoints_obj, iseff, defval, bpmdiv, pldur)
 		autopoints_obj.points__add_normal(pldur-0.0001, endval if not iseff else endval*defval, 0, None)
 
 	elif auto_method=='clip':
 		autopoints_obj = placement_obj.add_autopoints(mpetype, 4.0)
 		autopoints_obj.points__add_normal(0, startval if not iseff else startval*defval, 0, None)
-		if envpoints:
-			for pos, val in envpoints:
-				pos = calc_tick_val(bpmdiv, pos)
-				if pos<pldur:
-					autopoints_obj.points__add_normal(pos, val if not iseff else val*defval, 0, None)
+		do_auto_points(envpoints, autopoints_obj, iseff, defval, bpmdiv, pldur)
 		autopoints_obj.points__add_normal(pldur, endval if not iseff else endval*defval, 0, None)
 
 class input_fruitytracks(plugins.base):
@@ -150,12 +146,17 @@ class input_fruitytracks(plugins.base):
 		for tracknum, ftr_track in enumerate(project_obj.tracks):
 			trackid = str(tracknum)
 			track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
+			
+			#visual
 			track_obj.visual.name = ftr_track.name if ftr_track.name else 'Track '+str(tracknum)
-			track_params = track_obj.params
-			track_params.add('pan', (ftr_track.pan-64)/64, 'float')
-			track_params.add('vol', ftr_track.vol/128, 'float')
-			track_params.add('enabled', not bool(ftr_track.muted), 'bool')
 
+			#params
+			params_obj = track_obj.params
+			params_obj.add('pan', (ftr_track.pan-64)/64, 'float')
+			params_obj.add('vol', ftr_track.vol/128, 'float')
+			params_obj.add('enabled', not bool(ftr_track.muted), 'bool')
+
+			#plugins
 			for pid in sorted(ftr_track.plugins):
 				flplug = ftr_track.plugins[pid]
 
@@ -171,6 +172,7 @@ class input_fruitytracks(plugins.base):
 				for n, v in enumerate(flplug.params): plugin_params.add(str(n), v, 'float')
 				track_obj.plugslots.slots_audio.append(fxid)
 
+			#clips
 			for ftr_clip in ftr_track.clips:
 				placement_obj = track_obj.placements.add_audio()
 				placement_obj.visual.name = ftr_clip.name

@@ -390,25 +390,25 @@ class input_famistudio(plugins.base):
 			if wavetype in ['Square1','Square2','Triangle','Noise']:
 				TrebleDb = project_obj.TrebleDb
 				TrebleRolloffHz = project_obj.TrebleRolloffHz
-			if wavetype == 'VRC7FM': 
+			elif wavetype == 'VRC7FM': 
 				TrebleDb = project_obj.VRC7TrebleDb
 				TrebleRolloffHz = project_obj.VRC7TrebleRolloffHz
-			if wavetype in ['VRC6Square','VRC6Saw']:
+			elif wavetype in ['VRC6Square','VRC6Saw']:
 				TrebleDb = project_obj.VRC6TrebleDb
 				TrebleRolloffHz = project_obj.VRC6TrebleRolloffHz
-			if wavetype == 'FDS':
+			elif wavetype == 'FDS':
 				TrebleDb = project_obj.FDSTrebleDb
 				TrebleRolloffHz = project_obj.FDSTrebleRolloffHz
-			if wavetype == 'N163':
+			elif wavetype == 'N163':
 				TrebleDb = project_obj.N163TrebleDb
 				TrebleRolloffHz = project_obj.N163TrebleRolloffHz
-			if wavetype == 'S5B':
+			elif wavetype == 'S5B':
 				TrebleDb = project_obj.S5BTrebleDb
 				TrebleRolloffHz = project_obj.S5BTrebleRolloffHz
-			if wavetype == 'MMC5':
+			elif wavetype == 'MMC5':
 				TrebleDb = project_obj.MMC5TrebleDb
 				TrebleRolloffHz = project_obj.MMC5TrebleRolloffHz
-			if wavetype in ['EPSMSquare','EPSMFM','EPSM_Kick','EPSM_Snare','EPSM_Cymbal','EPSM_HiHat','EPSM_Tom','EPSM_Rimshot']:
+			elif wavetype in ['EPSMSquare','EPSMFM','EPSM_Kick','EPSM_Snare','EPSM_Cymbal','EPSM_HiHat','EPSM_Tom','EPSM_Rimshot']:
 				TrebleDb = project_obj.EPSMTrebleDb
 				TrebleRolloffHz = project_obj.EPSMTrebleRolloffHz
 
@@ -448,19 +448,19 @@ class input_famistudio(plugins.base):
 			outvol = 0
 			if wavetype in ['Square1','Square2','Triangle','Noise']:
 				outvol = project_obj.VolumeDb
-			if wavetype == 'VRC7FM': 
+			elif wavetype == 'VRC7FM': 
 				outvol = project_obj.VRC7VolumeDb
-			if wavetype in ['VRC6Square','VRC6Saw']:
+			elif wavetype in ['VRC6Square','VRC6Saw']:
 				outvol = project_obj.VRC6VolumeDb
-			if wavetype == 'FDS':
+			elif wavetype == 'FDS':
 				outvol = project_obj.FDSVolumeDb
-			if wavetype == 'N163':
+			elif wavetype == 'N163':
 				outvol = project_obj.N163VolumeDb
-			if wavetype == 'S5B':
+			elif wavetype == 'S5B':
 				outvol = project_obj.S5BVolumeDb
-			if wavetype == 'MMC5':
+			elif wavetype == 'MMC5':
 				outvol = project_obj.MMC5VolumeDb
-			if wavetype in ['EPSMSquare','EPSMFM','EPSM_Kick','EPSM_Snare','EPSM_Cymbal','EPSM_HiHat','EPSM_Tom','EPSM_Rimshot']:
+			elif wavetype in ['EPSMSquare','EPSMFM','EPSM_Kick','EPSM_Snare','EPSM_Cymbal','EPSM_HiHat','EPSM_Tom','EPSM_Rimshot']:
 				outvol = project_obj.EPSMVolumeDb
 
 			if wavetype == 'DPCM':

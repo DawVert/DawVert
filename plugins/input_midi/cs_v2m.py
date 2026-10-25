@@ -71,9 +71,10 @@ class input_v2m(plugins.base):
 			track_obj.visual.name = 'Track #'+str(n)
 
 			# midi
-			track_obj.midi.out_enabled = True
-			track_obj.midi.out_chanport.chan = n
-			track_obj.midi.out_chanport.port = 0
+			trackmidi_obj = track_obj.midi
+			trackmidi_obj.out_enabled = True
+			trackmidi_obj.out_chanport.chan = n
+			trackmidi_obj.out_chanport.port = 0
 
 			# program
 			cur_val = 0

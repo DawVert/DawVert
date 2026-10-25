@@ -119,13 +119,14 @@ class input_korg_m1_nds(plugins.base):
 
 		for num, channel_obj in enumerate(projsong_obj.channels):
 			cvpj_trackid = 'channel_'+str(num)
+			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 
 			# params
-			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
-			track_obj.params.add('vol', channel_obj.volume/127, 'float')
-			track_obj.params.add('pan', channel_obj.pan/5, 'float')
-			track_obj.params.add('enabled', 1 not in channel_obj.flags, 'bool')
-			track_obj.params.add('solo', 2 in channel_obj.flags, 'bool')
+			params_obj = track_obj.params
+			params_obj.add('vol', channel_obj.volume/127, 'float')
+			params_obj.add('pan', channel_obj.pan/5, 'float')
+			params_obj.add('enabled', 1 not in channel_obj.flags, 'bool')
+			params_obj.add('solo', 2 in channel_obj.flags, 'bool')
 
 			# sends
 			if 0 in channel_obj.flags: track_obj.sends.add('trackfx', None, 1)

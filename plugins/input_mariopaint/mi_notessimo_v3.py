@@ -149,6 +149,7 @@ class inst_manager():
 			dfrom = 'PROJ'
 
 		if notet_inst: 
+			# visual
 			if notet_inst.name: inst_obj.visual.name = notet_inst.name
 			incolor(notet_inst.color, inst_obj.visual)
 			if notet_inst.comments: inst_obj.visual.comment = notet_inst.comments
@@ -156,6 +157,7 @@ class inst_manager():
 				if inst_obj.visual.name: inst_obj.visual.name = '['+dfrom+'] '+inst_obj.visual.name
 				else: inst_obj.visual.name = '['+dfrom+'] !!! NO NAME'
 
+			# plugin
 			sampleids = [d.sample_1 for _, d in notet_inst.sets.items() if d.sample_1]
 
 			if sampleids:
@@ -201,6 +203,7 @@ class inst_manager():
 
 			plugin_obj.env_asdr_add('vol', 0, notet_inst.fadeIn, 0, 0, 1, notet_inst.fadeOut, 1)
 
+			# filter
 			if notet_inst.biquad_active != '0':
 				fx_id = instid+'_filter'
 				plugin_obj = cvpj_plugins.add_uni('filter', 'single', fx_id)

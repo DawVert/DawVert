@@ -62,12 +62,19 @@ class input_domino(plugins.base):
 		for n, track in enumerate(project_obj.tracks):
 			channel = track.channel
 			track_obj = cvpj_tracks.add(str(n), 'midi_single', 1, False)
-			track_obj.visual.name = track.name
-			if track.color != 255: track_obj.visual.color.set_int(colordata.getcolornum(track.color))
-			track_obj.midi.out_enabled = True
-			track_obj.midi.out_chanport.chan = channel
-			track_obj.midi.out_chanport.port = track.out_port
 
+			# visual
+			track_obj.visual.name = track.name
+			if track.color != 255: 
+				track_obj.visual.color.set_int(colordata.getcolornum(track.color))
+
+			# midi
+			trackmidi_obj = track_obj.midi
+			trackmidi_obj.out_enabled = True
+			trackmidi_obj.out_chanport.chan = channel
+			trackmidi_obj.out_chanport.port = track.out_port
+
+			# events
 			events_obj = track_obj.placements.midievents
 			events_obj.has_duration = True
 			events_obj.data.alloc_size = 256

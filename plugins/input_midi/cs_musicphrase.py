@@ -78,10 +78,12 @@ class input_musicphrase(plugins.base):
 			track_obj.armed.in_keys = bool(mpxl_track.record)
 
 			# midi
-			track_obj.midi.out_enabled = True
-			track_obj.midi.out_chanport.chan = mpxl_track.channel
-			track_obj.midi.out_chanport.port = 0
-			if mpxl_track.program != -1: track_obj.midi.out_inst.patch = mpxl_track.program
+			trackmidi_obj = track_obj.midi
+			trackmidi_obj.out_enabled = True
+			trackmidi_obj.out_chanport.chan = mpxl_track.channel
+			trackmidi_obj.out_chanport.port = 0
+			if mpxl_track.program != -1:
+				trackmidi_obj.out_inst.patch = mpxl_track.program
 
 			# clips
 			for clip in mpxl_track.clips:
