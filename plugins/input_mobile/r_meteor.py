@@ -16,7 +16,7 @@ def do_effect(cvpj_plugins, fxid, plugslots, m_fx):
 		plugin_obj = cvpj_plugins.add_native('meteor', strtype, fxid)
 		plugin_obj.role = 'fx'
 		plugin_obj.fxdata_add(True, wetlvl)
-		for param_id, datapack_param in globalstore.datapack.get_params('native', 'plugin', strtype):
+		for param_id, datapack_param in globalstore.datapack.get_params('meteor', 'plugin', strtype):
 			paramval = m_fx.params[param_id] if param_id in m_fx.params else None
 			plugin_obj.datapack_param__add(param_id, paramval, datapack_param)
 		plugslots.slots_audio.append(fxid)
@@ -129,7 +129,7 @@ class input_meteor(plugins.base):
 			params_obj.add('vol', track.volume/64, 'float')
 			params_obj.add('pan', (track.pan-32)/32, 'float')
 
-			# params
+			# visual
 			visual_obj = track_obj.visual
 			visual_obj.name = 'Track #%i' % (n+1)
 			visual_obj.color.set_int(color_track.getcolornum(track.color))

@@ -8,11 +8,11 @@ import numpy as np
 
 def get_timebase(i_val):
 	if i_val == 2: return 0.004
-	if i_val == 3: return 0.005
-	if i_val == 16: return 0.010
-	if i_val == 17: return 0.020
-	if i_val == 18: return 0.040
-	if i_val == 19: return 0.050
+	elif i_val == 3: return 0.005
+	elif i_val == 16: return 0.010
+	elif i_val == 17: return 0.020
+	elif i_val == 18: return 0.040
+	elif i_val == 19: return 0.050
 	
 class input_mmf(plugins.base):
 	def is_dawvert_plugin(self):

@@ -294,14 +294,14 @@ class input_soundation(plugins.base):
 						v_loop_mode = get_paramval(soundation_inst, 'loop_mode')
 						sp_obj.loop_active = v_loop_mode != 0
 						if v_loop_mode==1: sp_obj.loop_mode = "normal"
-						if v_loop_mode==2: sp_obj.loop_mode = "reverse"
-						if v_loop_mode==3: sp_obj.loop_mode = "pingpong"
+						elif v_loop_mode==2: sp_obj.loop_mode = "reverse"
+						elif v_loop_mode==3: sp_obj.loop_mode = "pingpong"
 
 						# --------- interpolation_mode
 						v_interpolation_mode = get_paramval(soundation_inst, 'interpolation_mode')
 						if v_interpolation_mode == 0: sp_obj.interpolation = "none"
-						if v_interpolation_mode == 1: sp_obj.interpolation = "linear"
-						if v_interpolation_mode > 1: sp_obj.interpolation = "sinc"
+						elif v_interpolation_mode == 1: sp_obj.interpolation = "linear"
+						elif v_interpolation_mode > 1: sp_obj.interpolation = "sinc"
 
 						# --------- playback_direction
 						v_playback_direction = get_paramval(soundation_inst, 'playback_direction')

@@ -114,7 +114,7 @@ class input_fl_mobile(plugins.base):
 				add_params(cvpj_master.params, flm_rack)
 				do_devices(devices_order, convproj_obj, flm_rack.devices, cvpj_master.plugslots, dawvert_intent.input_file, project_obj.zipfile, trackid)
 
-			if tracktype == 'fx':
+			elif tracktype == 'fx':
 				trackid = 'flm_track_'+str(flm_rack.fx_id)
 				sorttracks[flm_channel.order] = trackid
 				track_obj = cvpj_tracks.add(trackid, 'fx', 1, False)
@@ -122,7 +122,7 @@ class input_fl_mobile(plugins.base):
 				add_params(track_obj.params, flm_rack)
 				do_devices(devices_order, convproj_obj, flm_rack.devices, track_obj.plugslots, dawvert_intent.input_file, project_obj.zipfile, trackid)
 
-			if tracktype == 'instrument':
+			elif tracktype == 'instrument':
 				trackid = 'flm_track_'+str(n)
 				sorttracks[flm_channel.order] = trackid
 				track_obj = cvpj_tracks.add(trackid, 'instrument', 1, False)
@@ -132,7 +132,7 @@ class input_fl_mobile(plugins.base):
 				track_obj.plugslots.plugin_autoplace(plugin_obj, pluginid)
 				do_devices(devices_order, convproj_obj, flm_rack.devices, track_obj.plugslots, dawvert_intent.input_file, project_obj.zipfile, trackid)
 
-			if tracktype == 'audio':
+			elif tracktype == 'audio':
 				trackid = 'flm_track_'+str(n)
 				sorttracks[flm_channel.order] = trackid
 				track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
@@ -291,19 +291,19 @@ class input_fl_mobile(plugins.base):
 
 						if lanedata.auto_device == 0:
 							if tracktype == 'master': autoloc = ['master']
-							if tracktype == 'fx': autoloc = ['return', trackid]
-							if tracktype == 'instrument': autoloc = ['track', trackid]
-							if tracktype == 'audio': autoloc = ['track', trackid]
+							elif tracktype == 'fx': autoloc = ['return', trackid]
+							elif tracktype == 'instrument': autoloc = ['track', trackid]
+							elif tracktype == 'audio': autoloc = ['track', trackid]
 
 							if lanedata.auto_param == 0: autoloc += ['vol']
-							if lanedata.auto_param == 1: 
+							elif lanedata.auto_param == 1: 
 								autoloc += ['pan']
 								v_add = -0.5
 								v_mul = 2
-							if lanedata.auto_param == 2: 
+							elif lanedata.auto_param == 2: 
 								autoloc += ['mute']
 								v_bool = True
-							if lanedata.auto_param >= 8192: 
+							elif lanedata.auto_param >= 8192: 
 								autoloc = ['send', str(flm_rack.fx_id)+'_'+str(lanedata.auto_param-8192), 'amount']
 
 						else:

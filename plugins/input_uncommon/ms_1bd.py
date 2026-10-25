@@ -103,12 +103,12 @@ class input_1bitdragon(plugins.base):
 		onebitd_scalekey = onebitd_scaleId-(onebitd_scaletype*12)
 
 		if onebitd_scaletype == 0: note_scale, note_ts = [[0 ,2 ,4 ,7 ,9 ,12,14,16,19,21,24,26,28,31,33,36] ,-24]
-		if onebitd_scaletype == 1: note_scale, note_ts = [[0 ,3 ,5 ,7 ,10,12,15,17,19,22,24,27,29,31,34,36] ,-24]
-		if onebitd_scaletype == 2: note_scale, note_ts = [[0 ,2 ,4 ,5 ,7 ,9 ,11,12,14,16,17,19,21,23,24,26] ,-24]
-		if onebitd_scaletype == 3: note_scale, note_ts = [[0 ,2 ,3 ,4 ,7 ,8 ,10,12,14,15,16,19,20,22,24,26] ,-24]
-		if onebitd_scaletype == 4: note_scale, note_ts = [[0 ,2 ,3 ,5 ,7 ,9 ,10,12,14,15,17,19,21,22,24,26] ,-24]
-		if onebitd_scaletype == 5: note_scale, note_ts = [[0 ,1 ,4 ,5 ,6 ,9 ,10,12,13,16,17,18,21,22,24,25] ,-24]
-		if onebitd_scaletype == 6: note_scale, note_ts = [range(16),-12]
+		elif onebitd_scaletype == 1: note_scale, note_ts = [[0 ,3 ,5 ,7 ,10,12,15,17,19,22,24,27,29,31,34,36] ,-24]
+		elif onebitd_scaletype == 2: note_scale, note_ts = [[0 ,2 ,4 ,5 ,7 ,9 ,11,12,14,16,17,19,21,23,24,26] ,-24]
+		elif onebitd_scaletype == 3: note_scale, note_ts = [[0 ,2 ,3 ,4 ,7 ,8 ,10,12,14,15,16,19,20,22,24,26] ,-24]
+		elif onebitd_scaletype == 4: note_scale, note_ts = [[0 ,2 ,3 ,5 ,7 ,9 ,10,12,14,15,17,19,21,22,24,26] ,-24]
+		elif onebitd_scaletype == 5: note_scale, note_ts = [[0 ,1 ,4 ,5 ,6 ,9 ,10,12,13,16,17,18,21,22,24,25] ,-24]
+		elif onebitd_scaletype == 6: note_scale, note_ts = [range(16),-12]
 
 		scale_keys = [x for x in note_scale if x<12]
 

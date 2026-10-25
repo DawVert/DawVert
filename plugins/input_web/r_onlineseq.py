@@ -7,6 +7,31 @@ import struct
 
 def int2float(value): return struct.unpack("<f", struct.pack("<I", value))[0]
 
+def get_autoloc(target, paramid):
+	if target == 0:
+		if   paramid ==  0: return ('main', 'bpm')
+		elif paramid ==  8: return ('master', 'vol')
+	else:
+		trackid = 'os_'+str(target)
+		if   paramid ==  1: return ('track', trackid, 'vol')
+		elif paramid ==  2: return ('track', trackid, 'pan')
+		elif paramid ==  3: return ('plugin', trackid+'_eq', 'eq_high')
+		elif paramid ==  4: return ('plugin', trackid+'_eq', 'eq_mid')
+		elif paramid ==  5: return ('plugin', trackid+'_eq', 'eq_low')
+		elif paramid ==  6: return ('slot', trackid+'_delay', 'enabled')
+		elif paramid ==  7: return ('plugin', trackid+'_reverb', 'reverb_type')
+		elif paramid == 11: return ('track', trackid, 'pitch')
+		elif paramid == 12: return ('slot', trackid+'_reverb', 'wet')
+		elif paramid == 13: return ('plugin', trackid+'_distort', 'distort_type')
+		elif paramid == 14: return ('slot', trackid+'_distort', 'wet')
+		elif paramid == 26: return ('plugin', trackid+'_bitcrush', 'bits')
+
+synth_filter_type = {
+	0: 'low_pass',
+	1: 'band_pass',
+	2: 'high_pass',
+}
+
 class input_onlinesequencer(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -91,31 +116,10 @@ class input_onlinesequencer(plugins.base):
 					if ((18 in params) or (19 in params) or (20 in params)) and 'bitcrush' not in used_fx[target]: used_fx[instid].append('bitcrush')
 
 			for paramid, markers in params.items(): 
-				autoloc = None
+				autoloc = get_autoloc(target, paramid)
 				div = 1
-				if target == 0:
-					if paramid == 0: autoloc = ('main', 'bpm')
-					if paramid == 8: autoloc = ('master', 'vol')
-				else:
-					trackid = 'os_'+str(target)
-					if paramid == 1: autoloc = ('track', trackid, 'vol')
-					if paramid == 2: autoloc = ('track', trackid, 'pan')
-					if paramid == 11: 
-						autoloc = ('track', trackid, 'pitch')
-						div = 100
-					if paramid == 3: autoloc = ('plugin', trackid+'_eq', 'eq_high')
-					if paramid == 4: autoloc = ('plugin', trackid+'_eq', 'eq_mid')
-					if paramid == 5: autoloc = ('plugin', trackid+'_eq', 'eq_low')
-
-					if paramid == 6: autoloc = ('slot', trackid+'_delay', 'enabled')
-
-					if paramid == 7: autoloc = ('plugin', trackid+'_reverb', 'reverb_type')
-					if paramid == 12: autoloc = ('slot', trackid+'_reverb', 'wet')
-
-					if paramid == 13: autoloc = ('plugin', trackid+'_distort', 'distort_type')
-					if paramid == 14: autoloc = ('slot', trackid+'_distort', 'wet')
-
-					if paramid == 26: autoloc = ('plugin', trackid+'_bitcrush', 'bits')
+				if target != 0:
+					if paramid == 11: div = 100
 
 				if autoloc:
 					auto_obj = cvpj_automation.create(autoloc, 'float', True)
@@ -165,7 +169,6 @@ class input_onlinesequencer(plugins.base):
 				s_synthdata = synthdata[instid]
 				plugin_obj = cvpj_plugins.add_uni('synth-osc', None, trackid)
 				plugin_obj.role = 'synth'
-				filter_obj = plugin_obj.filter
 				track_obj.plugslots.set_synth(trackid)
 				osc_data = plugin_obj.osc_add()
 				osc_data.prop.shape = ['sine', 'square', 'saw', 'triangle'][s_synthdata.shape]
@@ -185,10 +188,13 @@ class input_onlinesequencer(plugins.base):
 					if s_synthdata.lfo_freq_custom: lfo_obj.time.set_hz(s_synthdata.lfo_freq)
 					else: lfo_obj.time.set_frac(1, int(s_synthdata.lfo_freq), '', convproj_obj)
 
+				filter_obj = plugin_obj.filter
 				filter_obj.on = True
 				filter_obj.freq = s_synthdata.filter_freq
 				filter_obj.q = ((s_synthdata.filter_reso+1)/11)**2.5
-				filter_obj.type.set(['low_pass','band_pass','high_pass'][s_synthdata.filter_type], None)
+				filter_type = s_synthdata.filter_type
+				if filter_type in synth_filter_type:
+					filter_obj.type.set(synth_filter_type[filter_type], None)
 
 			else:
 				plugin_obj = cvpj_plugins.add_native('onlineseq', 'instrument', trackid)

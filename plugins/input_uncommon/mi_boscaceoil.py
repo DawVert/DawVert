@@ -39,19 +39,21 @@ def add_master_fx(convproj_obj, fx_type, fx_value):
 
 	elif fx_type == 5: #compressor
 		plugin_obj = cvpj_plugins.add_uni('compressor', None, fx_id)
-		plugin_obj.params.add('attack', 0.1, 'float')
-		plugin_obj.params.add('pregain', 0, 'float')
-		plugin_obj.params.add('knee', 6, 'float')
-		plugin_obj.params.add('postgain', 0, 'float')
-		plugin_obj.params.add('ratio', 4, 'float')
-		plugin_obj.params.add('release', 0.5, 'float')
-		plugin_obj.params.add('threshold', -20, 'float')
+		params_obj = plugin_obj.params
+		params_obj.add('attack', 0.1, 'float')
+		params_obj.add('pregain', 0, 'float')
+		params_obj.add('knee', 6, 'float')
+		params_obj.add('postgain', 0, 'float')
+		params_obj.add('ratio', 4, 'float')
+		params_obj.add('release', 0.5, 'float')
+		params_obj.add('threshold', -20, 'float')
 
 	elif fx_type == 6: #high_pass
 		plugin_obj = cvpj_plugins.add_uni('filter', None, fx_id)
-		plugin_obj.filter.on = True
-		plugin_obj.filter.type.set('high_pass', None)
-		plugin_obj.filter.freq = xtramath.midi_filter(fx_value/100)
+		filter_obj = plugin_obj.filter
+		filter_obj.on = True
+		filter_obj.type.set('high_pass', None)
+		filter_obj.freq = xtramath.midi_filter(fx_value/100)
 		
 	plugin_obj.role = 'fx'
 
@@ -62,11 +64,14 @@ def add_filter(cvpj_plugins, instnum, cutoff, resonance):
 	cvpj_instid = 'ceol_'+str(instnum).zfill(2)
 	fx_id = cvpj_instid+'_filter'
 	plugin_obj = cvpj_plugins.add_uni('filter', None, fx_id)
-	plugin_obj.filter.on = True
-	plugin_obj.filter.type.set('low_pass', None)
-	plugin_obj.filter.freq = xtramath.midi_filter(cutoff/100)
-	plugin_obj.filter.q = resonance+1
 	plugin_obj.role = 'fx'
+
+	filter_obj = plugin_obj.filter
+	filter_obj.on = True
+	filter_obj.type.set('low_pass', None)
+	filter_obj.freq = xtramath.midi_filter(cutoff/100)
+	filter_obj.q = resonance+1
+	
 	return fx_id
 
 class input_ceol(plugins.base):

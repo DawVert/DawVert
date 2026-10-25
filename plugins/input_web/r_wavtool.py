@@ -32,6 +32,9 @@ def do_track_params(params_obj, wavtool_track):
 	params_obj.add('pan', wavtool_track.balance, 'float')
 	params_obj.add('enabled', int(not wavtool_track.mute), 'bool')
 
+def get_sec(d, n, fb):
+	return d[n]/48000 if n in d else fb
+
 def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 	from objects.inst_params import fx_delay
 	cvpj_plugins = convproj_obj.plugins
@@ -101,18 +104,19 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 						if sfree: lfo_obj.time.set_seconds(freq)
 						
 						if waveform == 'Saw': lfo_obj.prop.shape = 'saw'
-						if waveform == 'Sine': lfo_obj.prop.shape = 'sine'
-						if waveform == 'Square': lfo_obj.prop.shape = 'square'
+						elif waveform == 'Sine': lfo_obj.prop.shape = 'sine'
+						elif waveform == 'Square': lfo_obj.prop.shape = 'square'
 
-					plugin_obj.filter.on = True
-					plugin_obj.filter.freq = plugin_obj.params.get('filterCutoff', 20000).value
-					plugin_obj.filter.q = plugin_obj.params.get('filterResonance', 0.71).value
+					filter_obj = plugin_obj.filter
+					filter_obj.on = True
+					filter_obj.freq = plugin_obj.params.get('filterCutoff', 20000).value
+					filter_obj.q = plugin_obj.params.get('filterResonance', 0.71).value
 
 					filtertype = plugin_obj.datavals.get('filterType', 'Low Pass')
-					if filtertype == 'Low Pass': plugin_obj.filter.type.set('low_pass', None)
-					if filtertype == 'High Pass': plugin_obj.filter.type.set('high_pass', None)
-					if filtertype == 'Band Pass': plugin_obj.filter.type.set('band_pass', None)
-					if filtertype == 'Notch': plugin_obj.filter.type.set('notch', None)
+					if filtertype == 'Low Pass': filter_obj.type.set('low_pass', None)
+					elif filtertype == 'High Pass': filter_obj.type.set('high_pass', None)
+					elif filtertype == 'Band Pass': filter_obj.type.set('band_pass', None)
+					elif filtertype == 'Notch': filter_obj.type.set('notch', None)
 
 					plugin_obj.datavals.add('matrix', matrix)
 					inst_fallback = deviceid
@@ -126,10 +130,10 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					osc_data = plugin_obj.osc_add()
 					osc_data.prop.shape = 'saw'
 
-					attack = inputdata["attack"]/48000 if "attack" in inputdata else 0.001
-					decay = inputdata["decay"]/48000 if "decay" in inputdata else 0.1
+					attack = get_sec(inputdata, "attack", 0.001)
+					decay = get_sec(inputdata, "decay", 0.1)
 					sustain = inputdata["sustain"] if "sustain" in inputdata else 0.5
-					release = inputdata["release"]/48000 if "release" in inputdata else 0.05
+					release = get_sec(inputdata, "release", 0.05)
 					track_obj.params.add('pitch', inputdata["transpose"] if "transpose" in inputdata else 0, 'float')
 
 					plugin_obj.env_asdr_add('vol', 0, attack, 0, decay, sustain, release, 1)
@@ -151,10 +155,10 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 							wave_path = extract_audio(bufferid)
 							convproj_obj.sampleref__add(bufferid, wave_path, None)
 					
-							attack = inputdata["attack"+endstr]/48000 if "attack"+endstr in inputdata else 0.1
-							decay = inputdata["decay"+endstr]/48000 if "decay"+endstr in inputdata else 0.1
-							sustain = inputdata["sustain"+endstr]/48000 if "sustain"+endstr in inputdata else 1
-							release = inputdata["release"+endstr]/48000 if "release"+endstr in inputdata else 0.05
+							attack = get_sec(inputdata, "attack"+endstr, 0.1)
+							decay = get_sec(inputdata, "decay"+endstr, 0.1)
+							sustain = inputdata["sustain"+endstr] if "sustain"+endstr in inputdata else 1
+							release = get_sec(inputdata, "release"+endstr, 0.05)
 
 							plugin_obj.env_asdr_add('vol_'+endstr, 0, attack, 0, decay, sustain, release, 1)
 
@@ -181,10 +185,10 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 						instrument_dev = deviceid
 						instrument_dev_data = devicedata
 
-						attack = inputdata["attack"]/48000 if "attack" in inputdata else 0.001
-						decay = inputdata["decay"]/48000 if "decay" in inputdata else 0.1
+						attack = get_sec(inputdata, "attack", 0.001)
+						decay = get_sec(inputdata, "decay", 0.1)
 						sustain = inputdata["sustain"] if "sustain" in inputdata else 1
-						release = inputdata["release"]/48000 if "release" in inputdata else 0.05
+						release = get_sec(inputdata, "release", 0.05)
 						plugin_obj.env_asdr_add('vol', 0, attack, 0, decay, sustain, release, 1)
 
 						sp_obj.vol = inputdata["gain"] if "gain" in inputdata else 1
@@ -195,10 +199,10 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					plugin_obj.role = 'synth'
 					inst_fallback = deviceid
 
-					attack = inputdata["attack"]/48000 if "attack" in inputdata else 0.001
-					decay = inputdata["decay"]/48000 if "decay" in inputdata else 0.1
+					attack = get_sec(inputdata, "attack", 0.001)
+					decay = get_sec(inputdata, "decay", 0.1)
 					sustain = inputdata["sustain"] if "sustain" in inputdata else 1
-					release = inputdata["release"]/48000 if "release" in inputdata else 0.05
+					release = get_sec(inputdata, "release", 0.05)
 					plugin_obj.env_asdr_add('vol', 0, attack, 0, decay, sustain, release, 1)
 
 					LoudVel = constantsdata["LoudVelocity"] if "LoudVelocity" in constantsdata else 127
@@ -238,7 +242,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					plugin_obj = cvpj_plugins.add_uni('limiter', None, deviceid)
 					plugin_obj.role = 'fx'
 					plugin_obj.params.add('attack', 0.05, 'float')
-					plugin_obj.params.add('release', inputdata['release']/48000 if 'release' in inputdata else 0.3, 'float')
+					plugin_obj.params.add('release', get_sec(inputdata, 'release', 0.3), 'float')
 					plugin_obj.params.add('pregain', inputdata['gain'] if 'gain' in inputdata else 0, 'float')
 					effects.append(deviceid)
 
@@ -251,8 +255,8 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 				elif devicedata.sourceId == 'ad949dc9-c921-429d-b08e-c62eaae5e382':
 					plugin_obj = cvpj_plugins.add_uni('compressor', None, deviceid)
 					plugin_obj.role = 'fx'
-					plugin_obj.params.add('attack', inputdata['attack']/48000 if 'attack' in inputdata else 0.001, 'float')
-					plugin_obj.params.add('release', inputdata['release']/48000 if 'release' in inputdata else 0.03, 'float')
+					plugin_obj.params.add('attack', get_sec(inputdata, 'attack', 0.001), 'float')
+					plugin_obj.params.add('release', get_sec(inputdata, 'release', 0.03), 'float')
 					plugin_obj.params.add('gain', inputdata['gain'] if 'gain' in inputdata else 0, 'float')
 					plugin_obj.params.add('threshold', inputdata['threshold'] if 'threshold' in inputdata else -20, 'float')
 					plugin_obj.params.add('ratio', inputdata['ratio'] if 'ratio' in inputdata else 8, 'float')
@@ -261,9 +265,9 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 				elif devicedata.sourceId == 'e0665a05-221d-42c6-9ff6-2ece5c20f80c':
 					plugin_obj = cvpj_plugins.add_uni('gate', None, deviceid)
 					plugin_obj.role = 'fx'
-					plugin_obj.params.add('attack', inputdata['attack']/48000 if 'attack' in inputdata else 0.0001, 'float')
-					plugin_obj.params.add('release', inputdata['release']/48000 if 'release' in inputdata else 0.015, 'float')
-					plugin_obj.params.add('hold', inputdata['hold']/48000 if 'hold' in inputdata else 0.01, 'float')
+					plugin_obj.params.add('attack', get_sec(inputdata, 'attack', 0.0001), 'float')
+					plugin_obj.params.add('release', get_sec(inputdata, 'release', 0.015), 'float')
+					plugin_obj.params.add('hold', get_sec(inputdata, 'hold', 0.01), 'float')
 					plugin_obj.params.add('threshold', inputdata['threshold'] if 'threshold' in inputdata else -20, 'float')
 					plugin_obj.params.add('floor', inputdata['floor'] if 'floor' in inputdata else -40, 'float')
 					effects.append(deviceid)

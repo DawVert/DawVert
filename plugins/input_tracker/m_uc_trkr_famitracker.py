@@ -183,10 +183,10 @@ class input_famitracker_txt(plugins.base):
 							if insttype in ['square1', 'square2']:
 								osc_data.prop.shape = 'square'
 								plugin_obj.midi_fallback__add_inst(80)
-							if insttype == 'triangle':
+							elif insttype == 'triangle':
 								osc_data.prop.shape = 'triangle'
 								plugin_obj.midi_fallback__add_inst(95)
-							if insttype == 'noise':
+							elif insttype == 'noise':
 								osc_data.prop.shape = 'random'
 
 							if ft_inst.macro_vol != -1: 
@@ -213,7 +213,7 @@ class input_famitracker_txt(plugins.base):
 							osc_data.prop.shape = 'square'
 							plugin_obj.midi_fallback__add_inst(80)
 
-						if insttype == 'vrc6_saw':
+						elif insttype == 'vrc6_saw':
 							plugin_obj = cvpj_plugins.add_uni('synth-osc', None)
 							plugin_obj.role = 'synth'
 							inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())

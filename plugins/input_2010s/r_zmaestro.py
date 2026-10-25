@@ -249,7 +249,7 @@ class input_zmaestro(plugins.base):
 					if 'wBitsPerSample' in part.format:
 						bitss = part.format['wBitsPerSample']
 						if bitss == '8': audio_obj.set_codec('int8')
-						if bitss == '16': audio_obj.set_codec('int16')
+						elif bitss == '16': audio_obj.set_codec('int16')
 
 					wave_path = samplefolder+'track_'+str(tracknum)+'_part_'+str(num)+'.wav'
 					sampleref_id = 'track_'+str(tracknum)+'_part_'+str(num)
@@ -274,7 +274,7 @@ class input_zmaestro(plugins.base):
 									outdata = np.zeros(lensample, dtype=np.uint16)
 									outdata[:lensample][0::2] = np.frombuffer(channels[0], dtype=np.uint16)
 									outdata[:lensample][1::2] = np.frombuffer(channels[1], dtype=np.uint16)
-								if bitss == 8:
+								elif bitss == 8:
 									outdata = np.zeros(lensample, dtype=np.uint8)
 									outdata[:lensample][0::2] = np.frombuffer(channels[0], dtype=np.uint8)
 									outdata[:lensample][1::2] = np.frombuffer(channels[1], dtype=np.uint8)

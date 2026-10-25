@@ -46,13 +46,13 @@ def calc_samp_vol(it_samp):
 def calc_filter_freq(i_cutoff):
 	return 131.0 * pow(2.0, (i_cutoff*512) * (5.29 / (127.0 * 512.0)))
 
-def add_filter(plugin_obj, i_cutoff, i_reso):
+def add_filter(filter_obj, i_cutoff, i_reso):
 	if i_cutoff != None:
 		if i_cutoff != 127:
-			plugin_obj.filter.on = True
-			plugin_obj.filter.freq = calc_filter_freq(i_cutoff)
-			plugin_obj.filter.q = ((i_reso/127)*6 + 1) if i_reso != None else 1
-			plugin_obj.filter.type.set('low_pass', None)
+			filter_obj.on = True
+			filter_obj.freq = calc_filter_freq(i_cutoff)
+			filter_obj.q = ((i_reso/127)*6 + 1) if i_reso != None else 1
+			filter_obj.type.set('low_pass', None)
 
 def idsamp_spobj(it_samp, sp_obj):
 	sp_obj.point_value_type = "samples"
@@ -106,7 +106,7 @@ class input_it(plugins.base):
 			project_obj.load_from_file(dawvert_intent.input_file)
 			conversion_state.project = project_obj
 			return True
-		if dawvert_intent.input_mode == 'bytes':
+		elif dawvert_intent.input_mode == 'bytes':
 			project_obj.load_from_raw(dawvert_intent.input_data)
 			conversion_state.project = project_obj
 			return True
@@ -198,15 +198,15 @@ class input_it(plugins.base):
 		
 						if cell_note != None: out_note = cell_note - 60
 						if cell_note == 254: out_note = 'cut'
-						if cell_note == 255: out_note = 'off'
-						if cell_note == 246: out_note = 'fade'
+						elif cell_note == 255: out_note = 'off'
+						elif cell_note == 246: out_note = 'fade'
 
 						pattern_obj.cell_note(cell_channel, rownum, out_note, out_inst)
 						pattern_obj.cell_param(cell_channel, rownum, 'vol', out_vol/64)
 						if out_pan != None: pattern_obj.cell_param(cell_channel, rownum, 'pan', out_pan)
 						pattern_obj.cell_fx_s3m(cell_channel, rownum, cell_commandtype, cell_commandval)
 						if cell_commandtype == 20: pattern_obj.cell_g_param(cell_channel, rownum, 'tempo', cell_commandval)
-						if cell_commandtype == 26: pattern_obj.cell_param(cell_channel, rownum, 'pan', ((cell_commandval/255)-0.5)*2)
+						elif cell_commandtype == 26: pattern_obj.cell_param(cell_channel, rownum, 'pan', ((cell_commandval/255)-0.5)*2)
 
 		# ---------- pattern names ----------
 		if project_obj.ompt_pnam:
@@ -255,14 +255,15 @@ class input_it(plugins.base):
 				if bn_s_t_ifsame: bn_s_t_f = bn_s_t[12]
 
 				inst_obj = tracker_obj.add_inst(convproj_obj, instrumentcount, None)
-				inst_obj.visual.name = cvpj_instname
-
+				visual_obj = inst_obj.visual
+				
+				visual_obj.name = cvpj_instname
 				if bn_s_t_ifsame:
 					if (not ''.join(list(map(lambda x: x.strip(), cvpj_instname.split())))):
 						if bn_s_t_f[1] <= len(project_obj.samples):
-							inst_obj.visual.name = project_obj.samples[int(bn_s_t_f[1])-1].name
-							if not inst_obj.visual.name: 
-								inst_obj.visual.name = project_obj.samples[int(bn_s_t_f[1])-1].dosfilename
+							ssamp = project_obj.samples[int(bn_s_t_f[1])-1]
+							visual_obj.name = ssamp.name
+							if not visual_obj.name: visual_obj.name = ssamp.dosfilename
 
 				if it_inst.pitch_pan_separation:
 					plugin_obj = cvpj_plugins.add_uni('pitch_pan_separation', None)
@@ -346,7 +347,7 @@ class input_it(plugins.base):
 					if not (0 in it_inst.env_pitch.flags and 7 in it_inst.env_pitch.flags): 
 						filtercutoff = it_inst.filtercutoff-128 if it_inst.filtercutoff >= 128 else None
 						filterresonance = it_inst.filterresonance-128 if it_inst.filterresonance >= 128 else None
-						add_filter(plugin_obj, filtercutoff, filterresonance)
+						add_filter(plugin_obj.filter, filtercutoff, filterresonance)
 
 					plugin_obj.env_asdr_from_points('vol')
 

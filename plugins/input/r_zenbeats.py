@@ -19,6 +19,12 @@ def do_visual(cvpj_visual, zb_visual, color_index, colordata):
 		cvpj_visual.color.set_int(colorfloat)
 		cvpj_visual.color.fx_allowed = ['saturate', 'brighter']
 
+def do_auto_val(parammode, val):
+	if parammode == 0: return val
+	elif parammode == 1: return val>0.5
+	elif parammode == 2: return val<0.5
+	elif parammode == 3: return (val-0.5)*2
+
 def do_auto(cvpj_automation, autoloc, curve, parammode):
 	valtype = 'float'
 	if parammode == 1: valtype = 'bool'
@@ -26,10 +32,7 @@ def do_auto(cvpj_automation, autoloc, curve, parammode):
 	auto_obj = cvpj_automation.create(autoloc, valtype, True)
 	autopoints = auto_obj.make_nopl_points()
 	for p in curve.points:
-		if parammode == 0: val = p.value
-		elif parammode == 1: val = p.value>0.5
-		elif parammode == 2: val = p.value<0.5
-		elif parammode == 3: val = (p.value-0.5)*2
+		val = do_auto_val(parammode, p.value)
 		autopoints.points__add_point_notype(p.position, val)
 
 def do_auto_placement(convproj_obj, mpetype, curve, parammode):
@@ -38,10 +41,7 @@ def do_auto_placement(convproj_obj, mpetype, curve, parammode):
 	elif parammode == 2: valtype = 'bool'
 	autopoints_obj = placement_obj.add_autopoints(mpetype, 1.0, True)
 	for p in curve.points:
-		if parammode == 0: val = p.value
-		elif parammode == 1: val = p.value>0.5
-		elif parammode == 2: val = p.value<0.5
-		elif parammode == 3: val = (p.value-0.5)*2
+		val = do_auto_val(parammode, p.value)
 		autopoints_obj.points__add_normal(p.position, val, 0, None)
 
 filter_types = {
@@ -453,9 +453,9 @@ def do_rack(convproj_obj, project_obj, track_obj, zb_track, autoloc, dawvert_int
 				if rack.uid==curve.target_object:
 					if curve.target == 'DT_RACK':
 						if curve.function == 'DF_POST_GAIN': do_auto(cvpj_automation, autoloc+['vol'], curve, 0)
-						if curve.function == 'DF_PAN': do_auto(cvpj_automation, autoloc+['pan'], curve, 3)
-						if curve.function == 'DF_MUTE': do_auto(cvpj_automation, autoloc+['enabled'], curve, 2)
-						if curve.function == 'DF_SOLO': do_auto(cvpj_automation, autoloc+['solo'], curve, 1)
+						elif curve.function == 'DF_PAN': do_auto(cvpj_automation, autoloc+['pan'], curve, 3)
+						elif curve.function == 'DF_MUTE': do_auto(cvpj_automation, autoloc+['enabled'], curve, 2)
+						elif curve.function == 'DF_SOLO': do_auto(cvpj_automation, autoloc+['solo'], curve, 1)
 
 			if rack.signal_chain:
 				strprocs = rack.signal_chain.stream_processors

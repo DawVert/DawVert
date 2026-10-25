@@ -63,8 +63,7 @@ class input_domino(plugins.base):
 			channel = track.channel
 			track_obj = cvpj_tracks.add(str(n), 'midi_single', 1, False)
 			track_obj.visual.name = track.name
-			if track.color != 255:
-				track_obj.visual.color.set_int(colordata.getcolornum(track.color))
+			if track.color != 255: track_obj.visual.color.set_int(colordata.getcolornum(track.color))
 			track_obj.midi.out_enabled = True
 			track_obj.midi.out_chanport.chan = channel
 			track_obj.midi.out_chanport.port = track.out_port

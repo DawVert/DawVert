@@ -104,12 +104,12 @@ class input_xm(plugins.base):
 						if cell_effect != None and cell_param != None:
 							pattern_obj.cell_fx_mod(channel, rownum, cell_effect, cell_param)
 							if cell_effect == 12: pattern_obj.cell_param(channel, rownum, 'vol', cell_param/64)
-							if cell_effect == 15: 
+							elif cell_effect == 15: 
 								if cell_param < 32: pattern_obj.cell_g_param(channel, rownum, 'speed', cell_param)
 								else: pattern_obj.cell_g_param(channel, rownum, 'tempo', cell_param)
-							if cell_effect == 16: pattern_obj.cell_param(channel, rownum, 'global_volume', cell_param/64)
+							elif cell_effect == 16: pattern_obj.cell_param(channel, rownum, 'global_volume', cell_param/64)
 							#if cell_effect == 17: pattern_obj.cell_param(channel, rownum, 'global_volume_slide', dv_trackerpattern.getfineval(cell_param))
-							if cell_effect == 34:
+							elif cell_effect == 34:
 								panbrello_params = {}
 								panbrello_params['speed'], panbrello_params['depth'] = data_bytes.splitbyte(cell_param)
 								pattern_obj.cell_param(channel, rownum, 'panbrello', panbrello_params)

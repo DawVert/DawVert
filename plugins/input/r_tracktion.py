@@ -159,8 +159,8 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 							pluginid = cvpj_plugins.get_lastid()
 							playMode = program.playMode
 							if playMode == 0: plugin_obj.datavals.add('multi_mode', 'all')
-							if playMode == 1: plugin_obj.datavals.add('multi_mode', 'round_robin')
-							if playMode == 2: plugin_obj.datavals.add('multi_mode', 'random')
+							elif playMode == 1: plugin_obj.datavals.add('multi_mode', 'round_robin')
+							elif playMode == 2: plugin_obj.datavals.add('multi_mode', 'random')
 							plugin_obj.poly.mono = program.mono
 							track_obj.plugslots.set_synth(pluginid)
 							for layernum, soundlayer in enumerate(soundlayers):
@@ -283,8 +283,8 @@ def do_plugin(convproj_obj, wf_plugin, track_obj, software_mode):
 				paramval = wf_plugin.params[param_id] if param_id in wf_plugin.params else None
 				if paramval is not None:
 					if datapack_param.type == 'float': paramval = float(paramval)
-					if datapack_param.type == 'bool': paramval = bool(float(paramval))
-					if datapack_param.type == 'int': paramval = int(float(paramval))
+					elif datapack_param.type == 'bool': paramval = bool(float(paramval))
+					elif datapack_param.type == 'int': paramval = int(float(paramval))
 				plugin_obj.datapack_param__add(param_id, paramval, datapack_param)
 	
 			for autocurves in wf_plugin.automationcurves:
@@ -306,10 +306,9 @@ def do_color(visual_obj, hexcolor):
 		if hexcolor != '0': 
 			if len(hexcolor)==8:
 				visual_obj.color.set_hex(hexcolor[2:])
-				visual_obj.color.fx_allowed = ['saturate', 'brighter']
-			if len(hexcolor)==6:
+			elif len(hexcolor)==6:
 				visual_obj.color.set_hex(hexcolor)
-				visual_obj.color.fx_allowed = ['saturate', 'brighter']
+			visual_obj.color.fx_allowed = ['saturate', 'brighter']
 	except:
 		pass
 
@@ -322,8 +321,9 @@ def do_track_params(convproj_obj, wf_track, params_obj, autoloc):
 			if 'volume' in wf_plugin.params: vol *= float(wf_plugin.params['volume'])/0.740818202495575
 			if 'pan' in wf_plugin.params: pan = float(wf_plugin.params['pan'])
 			for autocurves in wf_plugin.automationcurves:
-				if autocurves.paramid == 'volume': do_auto(convproj_obj, autocurves.points, autoloc+['vol'], 1/0.740818202495575)
-				if autocurves.paramid == 'pan': do_auto(convproj_obj, autocurves.points, autoloc+['pan'], 1)
+				paramid = autocurves.paramid
+				if paramid == 'volume': do_auto(convproj_obj, autocurves.points, autoloc+['vol'], 1/0.740818202495575)
+				elif paramid == 'pan': do_auto(convproj_obj, autocurves.points, autoloc+['pan'], 1)
 
 	params_obj.add('vol', vol, 'float')
 	params_obj.add('pan', pan, 'float')
@@ -484,9 +484,9 @@ def do_track(convproj_obj, wf_track, track_obj, store_obj, trackid):
 				params = fx.plugin.params
 				if fx.fx_type == 'pitchShift':
 					if 'semitonesUp' in params: sp_obj.pitch += float(params['semitonesUp'])
-				if fx.fx_type == 'reverse':
+				elif fx.fx_type == 'reverse':
 					sp_obj.reverse = True
-				if fx.fx_type == 'warpTime':
+				elif fx.fx_type == 'warpTime':
 					if fx.warptime:
 						is_warped = True
 						bpmmul = (1/bpmdiv)

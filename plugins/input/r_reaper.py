@@ -122,13 +122,14 @@ def do_samplepart_adsr(samplerj, plugin_obj, sampleref_obj, asdrname):
 
 def do_fade(fade_data, fadevals): 
 	fade_data.set_dur(fadevals['fade_time'], 'seconds')
-	if fadevals['fade_type'] == 3: fade_data.slope = 1
-	if fadevals['fade_type'] == 1: fade_data.slope = 0.5
-	if fadevals['fade_type'] == 0: fade_data.slope = 0
-	if fadevals['fade_type'] == 2: fade_data.slope = -0.5
-	if fadevals['fade_type'] == 4: fade_data.slope = -1
-	if fadevals['fade_type'] == 5: fade_data.shapetype = 'scurve'
-	if fadevals['fade_type'] == 5.1: fade_data.shapetype = 'scurve'
+	fade_type = fadevals['fade_type']
+	if fade_type == 0: fade_data.slope = 0
+	elif fade_type == 1: fade_data.slope = 0.5
+	elif fade_type == 2: fade_data.slope = -0.5
+	elif fade_type == 3: fade_data.slope = 1
+	elif fade_type == 4: fade_data.slope = -1
+	elif fade_type == 5: fade_data.shapetype = 'scurve'
+	elif fade_type == 5.1: fade_data.shapetype = 'scurve'
 
 def do_auto_clip_notes(placement_obj, clip_env, mpetype, paramtype, invert, instant): 
 	isbool = paramtype=='bool'
@@ -290,8 +291,8 @@ class input_reaper(plugins.base):
 		cvpj_master.params.add('pan', rpp_project.master_volume['pan'], 'float')
 		panmode = rpp_project.master_panmode.get()
 		if panmode == 3: cvpj_master.datavals.add('pan_mode', 'mono')
-		if panmode == 5: cvpj_master.datavals.add('pan_mode', 'stereo')
-		if panmode == 6: 
+		elif panmode == 5: cvpj_master.datavals.add('pan_mode', 'stereo')
+		elif panmode == 6: 
 			cvpj_master.datavals.add('pan_mode', 'split')
 			cvpj_master.params.add('splitpan_left', rpp_project.master_volume['left'], 'float')
 			cvpj_master.params.add('splitpan_right', rpp_project.master_volume['right'], 'float')
@@ -309,24 +310,29 @@ class input_reaper(plugins.base):
 			track_cvpjids.append(cvpj_trackid)
 
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'hybrid', 1, False)
-			track_obj.visual.name = rpp_track.name.get()
 			track_cvpjdata.append(track_obj)
 
+			# visual
 			trackcolor = rpp_track.peakcol.get()
+			track_obj.visual.name = rpp_track.name.get()
 			track_obj.visual.color.set_int(reaper_color_to_cvpj_color(trackcolor, True))
-			track_obj.params.add('enabled', not bool(rpp_track.mutesolo['mute']), 'bool')
-			track_obj.params.add('solo', bool(rpp_track.mutesolo['solo']), 'bool')
 
-			track_obj.params.add('vol', rpp_track.volpan['vol'], 'float')
-			track_obj.params.add('pan', rpp_track.volpan['pan'], 'float')
+			# params
+			params_obj = track_obj.params
+			params_obj.add('enabled', not bool(rpp_track.mutesolo['mute']), 'bool')
+			params_obj.add('solo', bool(rpp_track.mutesolo['solo']), 'bool')
+			params_obj.add('vol', rpp_track.volpan['vol'], 'float')
+			params_obj.add('pan', rpp_track.volpan['pan'], 'float')
+
 			panmode = rpp_track.panmode.get()
 			if panmode == 3: track_obj.datavals.add('pan_mode', 'mono')
 			if panmode == 5: track_obj.datavals.add('pan_mode', 'stereo')
 			if panmode == 6: 
 				track_obj.datavals.add('pan_mode', 'split')
-				track_obj.params.add('splitpan_left', rpp_track.volpan['left'], 'float')
-				track_obj.params.add('splitpan_right', rpp_track.volpan['right'], 'float')
+				params_obj.add('splitpan_left', rpp_track.volpan['left'], 'float')
+				params_obj.add('splitpan_right', rpp_track.volpan['right'], 'float')
 
+			# invert
 			iphase = rpp_track.iphase.get()
 			if bool(iphase):
 				inverse_fxid = cvpj_trackid+'_inverse'
@@ -334,16 +340,19 @@ class input_reaper(plugins.base):
 				plugin_obj.role = 'fx'
 				track_obj.plugslots.slots_mixer.append(inverse_fxid)
 
+			# auto
 			do_auto(pooledenvs, convproj_obj, rpp_track.volenv2, ['track', cvpj_trackid, 'vol'], False, 'float', False)
 			do_auto(pooledenvs, convproj_obj, rpp_track.panenv2, ['track', cvpj_trackid, 'pan'], False, 'float', False)
 			do_auto(pooledenvs, convproj_obj, rpp_track.muteenv, ['track', cvpj_trackid, 'enabled'], True, 'bool', True)
 			do_auto(pooledenvs, convproj_obj, rpp_track.dualpanenvl2, ['track', cvpj_trackid, 'splitpan_left'], False, 'float', False)
 			do_auto(pooledenvs, convproj_obj, rpp_track.dualpanenv2, ['track', cvpj_trackid, 'splitpan_right'], False, 'float', False)
 
+			# armed
 			track_obj.armed.on = bool(rpp_track.rec['armed'])
 			track_obj.armed.in_keys = bool(rpp_track.rec['armed'])
 			track_obj.armed.in_audio = bool(rpp_track.rec['armed'])
 			
+			# midi note names
 			if rpp_track.midinotenames:
 				try:
 					for x in rpp_track.midinotenames:
@@ -352,11 +361,13 @@ class input_reaper(plugins.base):
 				except:
 					pass
 
+			# latency offset
 			latmode = int(rpp_track.playoffs['mode'])
 			lattime = float(rpp_track.playoffs['time'])
 			if latmode == 2: track_obj.latency_offset = lattime/44100
-			if latmode == 0: track_obj.latency_offset = lattime*1000
+			elif latmode == 0: track_obj.latency_offset = lattime*1000
 
+			# plugins
 			pluginids = []
 
 			samplers = []
@@ -570,6 +581,7 @@ class input_reaper(plugins.base):
 							do_samplepart_loop(samplerj, sp_obj, sampleref_obj)
 							do_samplepart_adsr(samplerj, plugin_obj, sampleref_obj, 'vol')
 
+			# items
 			for rpp_trackitem in rpp_track.items:
 				cvpj_placement_type = 'notes'
 
@@ -601,10 +613,10 @@ class input_reaper(plugins.base):
 					if rpp_source.type in ['MP3','FLAC','VORBIS','WAVE','WAVPACK']:
 						cvpj_placement_type = 'audio'
 						cvpj_audio_file = rpp_source.file.get()
-					if rpp_source.type == 'VIDEO':
+					elif rpp_source.type == 'VIDEO':
 						cvpj_placement_type = 'video'
 						cvpj_audio_file = rpp_source.file.get()
-					if rpp_source.type == 'SECTION':
+					elif rpp_source.type == 'SECTION':
 						samplemode = int(rpp_source.mode.get())
 						startpos = rpp_source.startpos.get()
 						startpos = float(startpos) if startpos else 0

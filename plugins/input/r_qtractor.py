@@ -151,14 +151,17 @@ class input_midi(plugins.base):
 				midipath = os.path.join(os.path.dirname(dawvert_intent.input_file), qtrack.curve_file.filename)
 
 				for curve_item in qtrack.curve_file.curve_items:
-					if curve_item.index == 1:
-						midiauto_obj.define_auto(curve_item.p_channel, curve_item.p_param, ['track', cvpj_trackid, 'pan'], -1, 1, False)
-					if curve_item.index == 2:
-						midiauto_obj.define_auto(curve_item.p_channel, curve_item.p_param, ['track', cvpj_trackid, 'vol'], 0, 1, False)
-					if curve_item.index == 4:
-						midiauto_obj.define_auto(curve_item.p_channel, curve_item.p_param, ['track', cvpj_trackid, 'enabled'], 0, 1, True)
-					if curve_item.index == 5:
-						midiauto_obj.define_auto(curve_item.p_channel, curve_item.p_param, ['track', cvpj_trackid, 'solo'], 0, 1, True)
+					i_index = curve_item.index
+					p_channel = curve_item.p_channel
+					p_param = curve_item.p_param
+					if i_index == 1:
+						midiauto_obj.define_auto(p_channel, p_param, ['track', cvpj_trackid, 'pan'], -1, 1, False)
+					elif i_index == 2:
+						midiauto_obj.define_auto(p_channel, p_param, ['track', cvpj_trackid, 'vol'], 0, 1, False)
+					elif i_index == 4:
+						midiauto_obj.define_auto(p_channel, p_param, ['track', cvpj_trackid, 'enabled'], 0, 1, True)
+					elif i_index == 5:
+						midiauto_obj.define_auto(p_channel, p_param, ['track', cvpj_trackid, 'solo'], 0, 1, True)
 
 				midiauto_obj.do_midi_file(midipath, 4, True, tempomul)
 			#print(midiauto_obj)

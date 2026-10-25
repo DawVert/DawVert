@@ -68,6 +68,7 @@ class input_orgyana(plugins.base):
 		cvpj_groups = convproj_obj.groups
 		cvpj_automation = convproj_obj.automation
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_transport = convproj_obj.transport
 
 		# ---------- convproj params ----------
 		use_groups = dawvert_intent.input_get_param('use_groups', True)
@@ -90,9 +91,9 @@ class input_orgyana(plugins.base):
 		convproj_obj.timesig = [project_obj.stepsperbar, project_obj.beatsperstep]
 
 		if project_obj.loop_beginning != 0: 
-			convproj_obj.transport.loop_active = True
-			convproj_obj.transport.loop_start = project_obj.loop_beginning
-			convproj_obj.transport.loop_end = project_obj.loop_end
+			cvpj_transport.loop_active = True
+			cvpj_transport.loop_start = project_obj.loop_beginning
+			cvpj_transport.loop_end = project_obj.loop_end
 
 		# ---------- tracks ----------
 		drum_tracks = []

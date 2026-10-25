@@ -6,7 +6,7 @@ import os
 import numpy as np
 from objects import globalstore
 
-class input_cvpj_f(plugins.base):
+class input_pixitracker(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
 	

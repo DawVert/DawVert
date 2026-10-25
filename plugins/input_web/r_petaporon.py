@@ -124,14 +124,14 @@ class input_petaporon(plugins.base):
 				if instnum in [3,4,5,6]: osc_data.prop.pulse_width = 1/2
 	
 				if instnum == 0: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0.1, 0, 0, 1)
-				if instnum == 1: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0.1, 0.7, 0, 1)
-				if instnum == 2: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0.25, 0, 0, 1)
-				if instnum == 3: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0.2, 0, 0, 1)
-				if instnum == 4: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, 0, 1)
-				if instnum == 5: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, 0, 1)
-				if instnum == 6: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0.2, 0, 0, 1)
-				if instnum == 7: plugin_obj.env_asdr_add('vol', 0, 0.3, 0, 0.3, 0.2, 0.3, 1)
-				if instnum == 8: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0.4, 0, 0, 1)
+				elif instnum == 1: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0.1, 0.7, 0, 1)
+				elif instnum == 2: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0.25, 0, 0, 1)
+				elif instnum == 3: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0.2, 0, 0, 1)
+				elif instnum == 4: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, 0, 1)
+				elif instnum == 5: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, 0, 1)
+				elif instnum == 6: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0.2, 0, 0, 1)
+				elif instnum == 7: plugin_obj.env_asdr_add('vol', 0, 0.3, 0, 0.3, 0.2, 0.3, 1)
+				elif instnum == 8: plugin_obj.env_asdr_add('vol', 0, 0, 0, 0.4, 0, 0, 1)
 
 			cvpj_notelist = track_obj.placements.notelist
 

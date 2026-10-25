@@ -167,7 +167,7 @@ class input_coolbeat(plugins.base):
 						time_obj.set_loop_data(0, 0, time_obj.get_dur())
 						time_obj.calc_dur_mul((section.length)/loop_data)
 
-			if tracktype == 2:
+			elif tracktype == 2:
 				track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
 
 				# visual

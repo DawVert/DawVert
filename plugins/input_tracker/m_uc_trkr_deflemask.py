@@ -82,7 +82,7 @@ class input_deflemask(plugins.base):
 
 					if output_note != None and output_note != 'off':
 						if chantype == 'square': output_note += 36
-						if chantype == 'opn2': output_note += 12
+						elif chantype == 'opn2': output_note += 12
 
 					if r_inst != -1 and output_note != None: output_inst = r_inst
 
@@ -100,7 +100,7 @@ class input_deflemask(plugins.base):
 									pat_obj.cell_param(r_row, 'freeze_inst', 10000 if fx_param else -1)
 									pat_obj.cell_param(r_row, 'freeze_octave', 1 if fx_param else 0)
 									pat_obj.cell_param(r_row, 'key_to_inst', 1 if fx_param else 0)
-								if fx_type == 13:
+								elif fx_type == 13:
 									pat_obj.cell_g_param(r_row, 'pattern_jump', 0)
 
 		# ---------- samples ----------
@@ -146,7 +146,7 @@ class input_deflemask(plugins.base):
 						plugin_obj = dmf_inst.fm_data.to_cvpj(convproj_obj)
 						inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 
-					if dmf_inst.mode == 0:
+					elif dmf_inst.mode == 0:
 						# plugin
 						plugin_obj = plugin_obj.add_uni('synth-osc', None)
 						plugin_obj.role = 'synth'

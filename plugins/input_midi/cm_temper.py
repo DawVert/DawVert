@@ -7,6 +7,12 @@ import xml.etree.ElementTree as ET
 import plugins
 import json
 
+def do_phrase_ui(visual_obj, pui):
+	if pui:
+		if pui.name: visual_obj.name = pui.name
+		if pui.color_bg: visual_obj.color.set_int(pui.color_bg)
+		if pui.color_fg: visual_obj.altcolor_add('fg').set_int(pui.color_bg)
+
 class input_cvpj_f(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -95,11 +101,7 @@ class input_cvpj_f(plugins.base):
 					curpos += phrase.td
 					phraseauto = {}
 					placement_obj = track_obj.placements.add_midi()
-					if phrase.ui:
-						pui = phrase.ui
-						if pui.name: placement_obj.visual.name = pui.name
-						if pui.color_bg: placement_obj.visual.color.set_int(pui.color_bg)
-						if pui.color_fg: placement_obj.visual.altcolor_add('fg').set_int(pui.color_bg)
+					do_phrase_ui(placement_obj.visual, phrase.ui)
 					time_obj = placement_obj.time
 					time_obj.set_posdur(curpos, phrase.d)
 
@@ -131,11 +133,7 @@ class input_cvpj_f(plugins.base):
 				for audio in tmp_track.audios:
 					curpos += audio.td
 					placement_obj = track_obj.placements.add_audio()
-					if audio.ui:
-						pui = audio.ui
-						if pui.name: placement_obj.visual.name = pui.name
-						if pui.color_bg: placement_obj.visual.color.set_int(pui.color_bg)
-						if pui.color_fg: placement_obj.visual.altcolor_add('fg').set_int(pui.color_bg)
+					do_phrase_ui(placement_obj.visual, audio.ui)
 					time_obj = placement_obj.time
 					time_obj.set_posdur(curpos, audio.end)
 					convproj_obj.sampleref__add(audio.file, audio.file, 'win')
