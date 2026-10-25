@@ -634,8 +634,9 @@ class input_reaper(plugins.base):
 					placement_obj = track_placements.add_midi()
 
 					# visual
-					if cvpj_name: placement_obj.visual.name = cvpj_name
-					if cvpj_color: placement_obj.visual.color.set_int(cvpj_color)
+					visual_obj = placement_obj.visual
+					if cvpj_name: visual_obj.name = cvpj_name
+					if cvpj_color: visual_obj.color.set_int(cvpj_color)
 
 					# time
 					time_obj = placement_obj.time
@@ -714,8 +715,9 @@ class input_reaper(plugins.base):
 					placement_obj = track_placements.add_audio()
 
 					# visual
-					if cvpj_name: placement_obj.visual.name = cvpj_name
-					if cvpj_color: placement_obj.visual.color.set_int(cvpj_color)
+					visual_obj = placement_obj.visual
+					if cvpj_name: visual_obj.name = cvpj_name
+					if cvpj_color: visual_obj.color.set_int(cvpj_color)
 
 					# time
 					time_obj = placement_obj.time
