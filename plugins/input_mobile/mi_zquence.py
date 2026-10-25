@@ -91,7 +91,7 @@ class input_zquence(plugins.base):
 						mixerassoc[mixerattrib['ID']] = mixercount
 						do_mixer(convproj_obj, mixercount, mixerchan)
 						mixercount += 1
-				if mixer.name == 'AdditionalMixers':
+				elif mixer.name == 'AdditionalMixers':
 					for mixerchan in mixer.groups:
 						mixerattrib = mixerchan.attrib
 						mixerassoc[mixerattrib['ID']] = mixercount
@@ -165,7 +165,7 @@ class input_zquence(plugins.base):
 														if sampleref_obj: 
 															sampleref_obj.search_local(dawvert_intent.input_folder)
 
-											if instpart.name == 'Node':
+											elif instpart.name == 'Node':
 												for i in instpart:
 													if i.name=='Notes':
 														for p in i:

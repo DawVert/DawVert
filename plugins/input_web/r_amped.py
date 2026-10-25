@@ -35,9 +35,10 @@ def get_dev_auto(amped_autodata, devid, paramsdata):
 	return out
 
 def eq_calc_q(band_type, q_val):
-	if band_type in ['low_pass', 'high_pass']: q_val = xtramath.logpowmul(q_val, 2) if q_val != 0 else 1
-	if band_type in ['peak']: q_val = xtramath.logpowmul(q_val, -1) if q_val != 0 else 1
-	return q_val
+	if band_type in ['low_pass', 'high_pass']:
+		return xtramath.logpowmul(q_val, 2) if q_val != 0 else 1
+	elif band_type in ['peak']:
+		return xtramath.logpowmul(q_val, -1) if q_val != 0 else 1
 
 def do_idparams(paramsdata, plugin_obj, pluginname):
 	fldso = globalstore.datapack.get_obj('amped', 'plugin', pluginname)

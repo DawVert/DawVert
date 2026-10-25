@@ -77,7 +77,7 @@ class input_domino(plugins.base):
 			# events
 			events_obj = track_obj.placements.midievents
 			events_obj.has_duration = True
-			events_obj.data.alloc_size = 256
+			events_obj.data.alloc_size = 1024
 			events_obj.ppq = project_obj.ppq
 			
 			for x in track.notes: events_obj.add_note_dur(x.pos, channel, x.key, x.vel, x.dur)

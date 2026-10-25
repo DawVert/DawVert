@@ -71,6 +71,7 @@ class input_gt_mnbs(plugins.base):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_metadata = convproj_obj.metadata
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'rm'
@@ -89,10 +90,10 @@ class input_gt_mnbs(plugins.base):
 		convproj_obj.timesig = [project_obj.numerator, 4]
 
 		# ---------- metadata ----------
-		convproj_obj.metadata.name = project_obj.name
-		convproj_obj.metadata.author = project_obj.author
-		convproj_obj.metadata.original_author = project_obj.orgauthor
-		convproj_obj.metadata.comment_text = project_obj.description
+		cvpj_metadata.name = project_obj.name
+		cvpj_metadata.author = project_obj.author
+		cvpj_metadata.original_author = project_obj.orgauthor
+		cvpj_metadata.comment_text = project_obj.description
 
 		# ---------- layers ----------
 		used_inst = []

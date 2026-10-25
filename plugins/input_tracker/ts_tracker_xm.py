@@ -55,7 +55,7 @@ class input_xm(plugins.base):
 			project_obj.load_from_file(dawvert_intent.input_file)
 			conversion_state.project = project_obj
 			return True
-		if dawvert_intent.input_mode == 'bytes':
+		elif dawvert_intent.input_mode == 'bytes':
 			project_obj.load_from_raw(dawvert_intent.input_data)
 			conversion_state.project = project_obj
 			return True
@@ -71,6 +71,7 @@ class input_xm(plugins.base):
 		
 		# ---------- convproj objects ----------
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_metadata = convproj_obj.metadata
 
 		# ---------- convproj init ----------
 		traits_obj = convproj_obj.traits
@@ -87,8 +88,8 @@ class input_xm(plugins.base):
 		tracker_obj.use_starttempo = True
 
 		# ---------- metadata ----------
-		convproj_obj.metadata.name = project_obj.title
-		convproj_obj.metadata.comment_text = '\r'.join([i.name for i in project_obj.instruments])
+		cvpj_metadata.name = project_obj.title
+		cvpj_metadata.comment_text = '\r'.join([i.name for i in project_obj.instruments])
 
 		# ---------- patterns ----------
 		for patnum, xmpat_obj in enumerate(project_obj.patterns):

@@ -312,13 +312,14 @@ class input_notessimo_v3(plugins.base):
 			if sheet_data.comments: nle_obj.visual.comment = sheet_data.comments
 			incolor(sheet_data.color, nle_obj.visual)
 
-			sheetnoteofs = notess_noteoffset[sheet_data.signature]
+			signature = sheet_data.signature
+			sheetnoteofs = notess_noteoffset[signature] if signature in notess_noteoffset else None
 
 			cvpj_notelist = nle_obj.notelist
 
 			for nnn in sheet_data.get_allnotes():
 				out_note, out_key, out_oct = nnn.get_key_nooffs()
-				if sharp_bug: 
+				if sharp_bug and (sheetnoteofs is not None): 
 					inum = 0
 					if nnn.sharp: inum = 1
 					if nnn.flat: inum = 2

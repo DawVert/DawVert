@@ -73,10 +73,11 @@ def do_track_data(convproj_obj, track_obj, soundation_channel, autostart):
 			track_obj.visual.color.set_hex(soundation_channel.color)
 	except:
 		pass
-	track_obj.params.add('vol', soundation_channel.volume, 'float')
-	track_obj.params.add('pan', (soundation_channel.pan-0.5)*2, 'float')
-	track_obj.params.add('enabled', bool(int(not soundation_channel.mute)), 'bool')
-	track_obj.params.add('solo', int(soundation_channel.solo), 'bool')
+	params_obj = track_obj.params
+	params_obj.add('vol', soundation_channel.volume, 'float')
+	params_obj.add('pan', (soundation_channel.pan-0.5)*2, 'float')
+	params_obj.add('enabled', bool(int(not soundation_channel.mute)), 'bool')
+	params_obj.add('solo', int(soundation_channel.solo), 'bool')
 	autopoints_set(cvpj_automation, autostart+['vol'], soundation_channel.volumeAutomation, 0, 1)
 	autopoints_set(cvpj_automation, autostart+['pan'], soundation_channel.panAutomation, -1, 2)
 
@@ -190,13 +191,13 @@ class input_soundation(plugins.base):
 
 			if sound_chan_type in ['instrument', 'effect', 'audio']:
 				if sound_chan_type == 'instrument': track_type = 'instrument'
-				if sound_chan_type == 'effect': track_type = 'fx'
-				if sound_chan_type == 'audio': track_type = 'audio'
+				elif sound_chan_type == 'effect': track_type = 'fx'
+				elif sound_chan_type == 'audio': track_type = 'audio'
 
 				track_obj = cvpj_tracks.add(cvpj_trackid, track_type, 1, False)
 				do_track_data(convproj_obj, track_obj, soundation_channel, ['track',cvpj_trackid])
+				
 				track_placements = track_obj.placements
-
 				for soundation_region in soundation_channel.regions:
 					if sound_chan_type == 'instrument': placement_obj = track_placements.add_notes()
 					if sound_chan_type == 'audio': placement_obj = track_placements.add_audio()

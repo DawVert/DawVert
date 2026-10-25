@@ -7,6 +7,12 @@ import plugins
 
 FX_NAMES = ['delay','chorus','reverb','distortion','low_boost','compressor','high_pass']
 
+vals_keyoffset = {
+	363: 60,
+	364: 48,
+	365: 24,
+}
+
 def add_master_fx(convproj_obj, fx_type, fx_value):
 	fx_id = 'master-effect'
 	cvpj_plugins = convproj_obj.plugins
@@ -153,21 +159,23 @@ class input_ceol(plugins.base):
 			inst_obj = cvpj_insts.add(cvpj_instid)
 			inst_obj.params.add('vol', ceol_inst_obj.volume/256, 'float')
 
+			voinst = ceol_inst_obj.inst
+
 			# visual
 			visual_obj = inst_obj.visual
 			visual_obj.color.set_int(color_main.getcolornum(ceol_inst_obj.palette))
 			visual_obj.color.fx_allowed = ['saturate', 'brighter']
 
 			# instrument
-			if ceol_inst_obj.inst <= 127:
-				inst_obj.midi.out_inst.patch = ceol_inst_obj.inst
+			if voinst <= 127:
+				inst_obj.midi.out_inst.patch = voinst
 				inst_obj.to_midi(convproj_obj, cvpj_instid, True)
-			elif ceol_inst_obj.inst == 365: 
+			elif voinst == 365: 
 				visual_obj.name = 'MIDI Drums'
 				inst_obj.midi.out_inst.drum = True
 				inst_obj.to_midi(convproj_obj, cvpj_instid, True)
 			else: 
-				strinst = str(ceol_inst_obj.inst)
+				strinst = str(voinst)
 				inst_obj.from_datapack("boscaceoil", 'inst', strinst, False)
 				inst_ds_obj = globalstore.datapack.get_obj('boscaceoil', 'inst', strinst)
 				if inst_ds_obj:
@@ -179,10 +187,8 @@ class input_ceol(plugins.base):
 						inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 
 			# key offset
-			inst_objs[ceol_inst_obj.inst] = inst_obj
-			if ceol_inst_obj.inst == 363: t_key_offset.append(60)
-			elif ceol_inst_obj.inst == 364: t_key_offset.append(48)
-			elif ceol_inst_obj.inst == 365: t_key_offset.append(24)
+			inst_objs[voinst] = inst_obj
+			if voinst in vals_keyoffset: t_key_offset.append(vals_keyoffset[voinst])
 			else: t_key_offset.append(0)
 
 			# cutoff

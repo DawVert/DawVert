@@ -21,6 +21,7 @@ def do_automation(cvpj_automation, trackid, atype, timelineobj, usetimeline):
 
 			autopoint_obj = cvpj_autopoints.points__add_point(event.position, value, 'normal' if not nextinstant else 'instant')
 			if nextinstant: nextinstant = False
+			
 			if event.fade == 'Exponential': autopoint_obj['tension'] = -1
 			elif event.fade == 'Logarithmic': autopoint_obj['tension'] = 1
 			elif event.fade == 'Edge': nextinstant = True

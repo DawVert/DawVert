@@ -171,10 +171,11 @@ class input_soundop(plugins.base):
 
 			if track_obj is not None:
 				# visual
-				if track.Title is not None: track_obj.visual.name = track.Title
+				visual_obj = track_obj.visual
+				if track.Title is not None: visual_obj.name = track.Title
 				if track.Hue is not None: 
-					track_obj.visual.color.set_hsv(track.Hue/360, 0.8, 1)
-					track_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+					visual_obj.color.set_hsv(track.Hue/360, 0.8, 1)
+					visual_obj.color.fx_allowed = ['saturate', 'brighter']
 				if track.Height is not None and track.HeightOrg is not None: 
 					if track.HeightOrg and track.Height:
 						track_obj.visual_ui.height = track.Height/track.HeightOrg

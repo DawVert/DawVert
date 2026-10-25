@@ -93,6 +93,7 @@ class input_pxtone(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_transport = convproj_obj.transport
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_metadata = convproj_obj.metadata
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'rm'
@@ -110,8 +111,8 @@ class input_pxtone(plugins.base):
 		convproj_obj.set_timings(timebase)
 
 		# ---------- metadata ----------
-		if project_obj.title: convproj_obj.metadata.name = project_obj.title
-		if project_obj.comment: convproj_obj.metadata.comment_text = project_obj.comment
+		if project_obj.title: cvpj_metadata.name = project_obj.title
+		if project_obj.comment: cvpj_metadata.comment_text = project_obj.comment
 
 		# ---------- transport ----------
 		convproj_obj.params.add('bpm', project_obj.master.beattempo, 'float')
@@ -145,7 +146,7 @@ class input_pxtone(plugins.base):
 				inst_obj.plugslots.set_synth(cvpj_pluginid)
 				inst_obj.datavals.add('middlenote', voice_obj.basic_key_field-60)
 
-			if isinstance(voice_obj, proj_pxtone.ptcop_voice_matePCM):
+			elif isinstance(voice_obj, proj_pxtone.ptcop_voice_matePCM):
 				cvpj_instvol = 0.4
 				wave_path = samplefolder + 'ptcop_' + str(voicenum+1).zfill(2) + '.wav'
 				audio_obj = audio_data.audio_obj()
@@ -168,7 +169,7 @@ class input_pxtone(plugins.base):
 				inst_obj.plugslots.set_synth(cvpj_pluginid)
 				inst_obj.datavals.add('middlenote', voice_obj.basic_key_field-60)
 
-			if isinstance(voice_obj, proj_pxtone.ptcop_voice_matePTN):
+			elif isinstance(voice_obj, proj_pxtone.ptcop_voice_matePTN):
 				inst_obj.is_drum = True
 
 			inst_obj.params.add('vol', cvpj_instvol, 'float')
@@ -179,9 +180,11 @@ class input_pxtone(plugins.base):
 
 			cvpj_trackid = str(unitnum+1)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instruments', 0, False)
-			track_obj.visual.name = unit_obj.name
-			track_obj.visual.color.set_int(colordata.getcolor())
-			track_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+
+			visual_obj = track_obj.visual
+			visual_obj.name = unit_obj.name
+			visual_obj.color.set_int(colordata.getcolor())
+			visual_obj.color.fx_allowed = ['saturate', 'brighter']
 
 			unitstream = pxtone_cmdstream(track_obj.placements.notelist, convproj_obj, cvpj_trackid)
 

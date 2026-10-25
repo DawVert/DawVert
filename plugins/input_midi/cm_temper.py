@@ -79,8 +79,9 @@ class input_cvpj_f(plugins.base):
 			track_obj.params.add('enabled', tmp_track.mode!=1, 'bool')
 			#track_obj.params.add('solo', tmp_track.mode!=2, 'bool')
 
-			track_obj.midi.out_enabled = True
-			track_obj.midi.out_chanport.chan = channel
+			trackmidi_obj = track_obj.midi
+			trackmidi_obj.out_enabled = True
+			trackmidi_obj.out_chanport.chan = channel
 
 			# visual
 			if tmp_track.customname: track_obj.visual.name = tmp_track.customname

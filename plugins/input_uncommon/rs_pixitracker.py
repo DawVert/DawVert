@@ -61,12 +61,17 @@ class input_pixitracker(plugins.base):
 			cvpj_pluginid = 'plug_'+str(instnum)
 
 			track_obj = cvpj_tracks.add(cvpj_instid, 'instrument', 1, False)
+
+			#visual
 			track_obj.visual.name = 'Inst #'+str(instnum+1)
 			track_obj.visual.color.set_int(colordata.getcolor())
+
+			#params
 			track_obj.params.add('pitch', (pixi_sound.fine/100)+(0.2 if pixi_sound.channels == 1 else 0.4), 'float')
 			track_obj.params.add('vol', pixi_sound.volume/100, 'float')
 			track_obj.datavals.add('middlenote', pixi_sound.transpose*-1)
 
+			#audio
 			wave_path = samplefolder + str(instnum) + '.wav'
 
 			audio_obj = audio_data.audio_obj()
@@ -76,18 +81,17 @@ class input_pixitracker(plugins.base):
 			audio_obj.pcm_from_bytes(pixi_sound.data)
 			audio_obj.to_file_wav(wave_path)
 
+			#plugin
 			plugin_obj, sampleref_obj, samplepart_obj = cvpj_plugins.addspec_sampler(wave_path, None, cvpj_pluginid)
 			sampleref_obj.set_fileformat('wav')
 			audio_obj.to_sampleref_obj(sampleref_obj)
 			track_obj.plugslots.set_synth(cvpj_pluginid)
-
 			plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, 0, 1)
 			samplepart_obj.point_value_type = "samples"
 			if pixi_sound.end != 0:
 				samplepart_obj.start = pixi_sound.start
 				samplepart_obj.end = pixi_sound.end
 				samplepart_obj.length = len(pixi_sound.data)//pixi_sound.channels
-
 
 		if not dawvert_intent.input_get_param('tracker_mode', 0):
 			convproj_obj.type = 'rs'

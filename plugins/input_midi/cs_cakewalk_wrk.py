@@ -14,7 +14,198 @@ class clipinfo():
 		self.clipstretch = None
 		self.clipsize = None
 
-class input_cvpj_f(plugins.base):
+class proj_state():
+	def __init__(self, convproj_obj):
+		self.convproj_obj = convproj_obj
+		self.cur_track = None
+		self.cur_tid = None
+		self.cur_tpl = None
+		self.cur_tnum = None
+		self.cur_events = None
+		self.cur_channel = None
+
+		self.sysex_data = {}
+		self.sysex_num = 0
+		self.sysex_points = []
+		self.segment_data_store = {}
+
+	def chunk___1(self, parseddata): #Gen1:Global:Timebase
+		cvpj_tracks = self.convproj_obj.tracks
+		cvpj_trackid = str(parseddata.trackno)
+		track_obj = cvpj_tracks.add(cvpj_trackid, 'midi_single', 1, False)
+		track_obj.visual.name = parseddata.name.decode()
+		if parseddata.channel != 255:
+			track_obj.midi.out_enabled = True
+			track_obj.midi.out_chanport.chan = parseddata.channel
+			track_obj.midi.out_chanport.port = parseddata.port
+			trackchannel = parseddata.channel
+		else:
+			trackchannel = 0
+		events_obj = track_obj.placements.midievents
+		events_obj.has_duration = True
+		events_obj.ppq = int(self.convproj_obj.time_ppq)
+
+		self.cur_tid = cvpj_trackid
+		self.cur_track = track_obj
+		self.cur_tpl = track_obj.placements
+		self.cur_tnum = parseddata.trackno
+		self.cur_events = events_obj
+		self.cur_channel = trackchannel
+
+	def chunk___2(self, parseddata): #Gen1:Track:Events
+		events_obj = self.cur_events
+		trackchannel = self.cur_channel
+
+		for event in parseddata.events:
+			event_type = event.type
+			event_data = event.data
+			event_time = event.time
+
+			if event_type == 0x90: events_obj.add_note_dur(event_time, trackchannel, event_data.data1, event_data.data2, event_data.dur)
+			elif event_type == 0xA0: events_obj.add_note_pressure(event_time, trackchannel, event_data.data1, event_data.data2)
+			elif event_type == 0xB0: events_obj.add_control(event_time, trackchannel, event_data.data1, event_data.data2)
+			elif event_type == 0xC0: events_obj.add_program(event_time, trackchannel, event_data.data1)
+			elif event_type == 0xD0: events_obj.add_chan_pressure(event_time, trackchannel, event_data.data1)
+			elif event_type == 0xE0: events_obj.add_pitch_hi_lo(event_time, trackchannel, event_data.data2, event_data.data1)
+			elif event_type == 0xF0: self.sysex_points.append([events_obj, event_time, event_data.data1])
+
+	def chunk___6(self, parseddata): #Gen1:Global:SysEx
+		self.sysex_num += 1
+		self.sysex_data[self.sysex_num] = parseddata.data[1:-1]
+
+	def chunk___8(self, parseddata): #Gen1:Global:Comment
+		cvpj_metadata = self.convproj_obj.metadata
+		if len(parseddata.data)>1:
+			cvpj_metadata.comment_text = parseddata.data[1:].decode("windows-1252")
+
+	def chunk__10(self, parseddata): #Gen1:Global:Timebase
+		self.convproj_obj.set_timings(parseddata.timebase)
+
+	def chunk__15(self, parseddata): #Gen1:Global:Auto:Tempo_V3
+		cvpj_automation = self.convproj_obj.automation
+		points = parseddata.points
+		if points:
+			firstpoint = points[0]
+			if firstpoint[0]==0: self.convproj_obj.params.add('bpm', firstpoint[1]/100, 'float')
+			for x in points:
+				cvpj_automation.add_autotick(['main', 'bpm'], 'float', x[0], x[1]/100)
+
+	def chunk__21(self, parseddata): #Gen1:Global:Markers
+		cvpj_timemarkers = self.convproj_obj.timemarkers
+		for realtime, pos, text in parseddata.markers:
+			if not realtime:
+				timemarker_obj = cvpj_timemarkers.add()
+				timemarker_obj.time.set_pos(pos)
+				timemarker_obj.visual.name = text.decode()
+
+	def chunk__24(self, parseddata): #Gen1:Track:Name
+		self.cur_track.visual.name = parseddata.name.decode()
+
+	def chunk__26(self, parseddata): #Gen1:Global:VariablePart
+		cvpj_metadata = self.convproj_obj.metadata
+
+		vname = parseddata.name
+		vvalue = parseddata.value
+
+		if vname=="Title": cvpj_metadata.name = vvalue.decode("windows-1252")
+		elif vname=="Subtitle": cvpj_metadata.subname = vvalue.decode("windows-1252")
+		elif vname=="Instructions": cvpj_metadata.data['instructions'] = vvalue.decode("windows-1252")
+		elif vname=="Author": cvpj_metadata.author = vvalue.decode("windows-1252")
+		elif vname=="Copyright": cvpj_metadata.copyright = vvalue.decode("windows-1252")
+
+	def chunk__36(self, parseddata): #Gen2:Track:Header
+		cvpj_tracks = self.convproj_obj.tracks
+		cvpj_trackid = str(parseddata.trackno)
+		track_obj = cvpj_tracks.add(cvpj_trackid, 'hybrid', 1, False)
+		track_obj.visual.name = parseddata.name.decode()
+		if parseddata.channel != 255:
+			trackchannel = max(0, parseddata.channel)
+			track_obj.midi.out_enabled = True
+			track_obj.midi.out_chanport.chan = trackchannel
+			track_obj.midi.out_chanport.port = parseddata.port
+			track_obj.midi.out_inst.patch = max(parseddata.patch, 0)
+		else:
+			trackchannel = 0
+
+		events_obj = track_obj.placements.midievents
+		events_obj.has_duration = True
+		events_obj.ppq = int(self.convproj_obj.time_ppq)
+
+		self.cur_tid = cvpj_trackid
+		self.cur_track = track_obj
+		self.cur_tpl = track_obj.placements
+		self.cur_tnum = parseddata.trackno
+		self.cur_events = events_obj
+		self.cur_channel = trackchannel
+
+	def chunk__49(self, parseddata): #Gen2:Track:Segment
+		if parseddata.is_nonlinked: 
+			self.segment_data_store[parseddata.id] = [parseddata.events, parseddata.name, parseddata.color, parseddata.offset]
+		cw_events, cw_name, cw_color, startoffs = self.segment_data_store[parseddata.id]
+
+		trackchannel = self.cur_channel
+		
+		placement_obj = self.cur_tpl.add_midi()
+		events_obj = placement_obj.midievents
+		events_obj.has_duration = True
+		events_obj.ppq = int(self.convproj_obj.time_ppq)
+
+		if cw_name: placement_obj.visual.name = cw_name.decode()
+		if cw_color is not None: 
+			placement_obj.visual.color.set_int(list(cw_color))
+			placement_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+
+		for event in cw_events:
+			event_type = event.type
+			event_data = event.data
+			event_time = event.time-startoffs
+
+			if event_type == 0x90: events_obj.add_note_dur(event_time, trackchannel, event_data.data1, event_data.data2, event_data.dur)
+			elif event_type == 0xA0: events_obj.add_note_pressure(event_time, trackchannel, event_data.data1, event_data.data2)
+			elif event_type == 0xB0: events_obj.add_control(event_time, trackchannel, event_data.data1, event_data.data2)
+			elif event_type == 0xC0: events_obj.add_program(event_time, trackchannel, event_data.data1)
+			elif event_type == 0xD0: events_obj.add_chan_pressure(event_time, trackchannel, event_data.data1)
+			elif event_type == 0xE0: events_obj.add_pitch_hi_lo(event_time, trackchannel, event_data.data2, event_data.data1)
+
+		time_obj = placement_obj.time
+		time_obj.set_posdur(parseddata.offset, int(events_obj.get_dur()))
+
+	def chunk__45(self, parseddata): #Gen2:Track:Events
+		cw_events = parseddata.events
+		track_obj = self.cur_track
+		trackchannel = self.cur_channel
+
+		clipinfop = clipinfo()
+		clipinfop.track_obj = track_obj
+
+		isallaudio = False
+
+		if cw_events:
+			firstpos = cw_events[0].time
+
+			placement_obj = self.cur_tpl.add_midi()
+			events_obj = placement_obj.midievents
+			events_obj.has_duration = True
+			events_obj.ppq = int(self.convproj_obj.time_ppq)
+
+			if parseddata.name: placement_obj.visual.name = parseddata.name.decode()
+
+			for event in parseddata.events:
+				event_type = event.type
+				event_data = event.data
+				event_time = event.time-firstpos
+
+				if event_type == 0x90: events_obj.add_note_dur(event_time, trackchannel, event_data.data1, event_data.data2, event_data.dur)
+				elif event_type == 0xA0: events_obj.add_note_pressure(event_time, trackchannel, event_data.data1, event_data.data2)
+				elif event_type == 0xB0: events_obj.add_control(event_time, trackchannel, event_data.data1, event_data.data2)
+				elif event_type == 0xC0: events_obj.add_program(event_time, trackchannel, event_data.data1)
+				elif event_type == 0xD0: events_obj.add_chan_pressure(event_time, trackchannel, event_data.data1)
+				elif event_type == 0xE0: events_obj.add_pitch_hi_lo(event_time, trackchannel, event_data.data2, event_data.data1)
+
+			time_obj = placement_obj.time
+			time_obj.set_posdur(firstpos, int(events_obj.get_dur()))
+
+class input_cakewalk_wrk(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
 	
@@ -64,6 +255,8 @@ class input_cvpj_f(plugins.base):
 		# ---------- data ----------
 		trackchannel = 0
 
+		proj_gen = proj_state(convproj_obj)
+
 		if project_obj.version == 2:
 			convproj_obj.fxtype = 'rack'
 			convproj_obj.type = 'cs'
@@ -72,77 +265,22 @@ class input_cvpj_f(plugins.base):
 			convproj_obj.do_actions.append('do_addloop')
 			convproj_obj.do_actions.append('do_singlenotelistcut')
 
-			sysex_data = {}
-			sysex_points = []
-			sysex_num = 0
+			proj_gen.sysex_points = []
 
 			for chunk in project_obj.chunks:
 				if chunk.is_parsed:
 					parseddata = chunk.content
-	
-					if chunk.id == 10: #Gen1:Global:Timebase
-						convproj_obj.set_timings(parseddata.timebase)
+					if   chunk.id ==   1: proj_gen.chunk___1(parseddata) #Gen1:Global:Timebase
+					elif chunk.id ==   2: proj_gen.chunk___2(parseddata) #Gen1:Track:Events
+					elif chunk.id ==   6: proj_gen.chunk___6(parseddata) #Gen1:Global:SysEx
+					elif chunk.id ==   8: proj_gen.chunk___8(parseddata) #Gen1:Global:Comment
+					elif chunk.id ==  10: proj_gen.chunk__10(parseddata) #Gen1:Global:Timebase
+					elif chunk.id ==  15: proj_gen.chunk__15(parseddata) #Gen1:Global:Auto:Tempo_V3
+					elif chunk.id ==  24: proj_gen.chunk__24(parseddata) #Gen1:Track:Name
+					elif chunk.id ==  26: proj_gen.chunk__26(parseddata) #Gen1:Global:VariablePart
 
-					elif chunk.id == 15: #Gen1:Global:Auto:Tempo_V3
-						points = parseddata.points
-						if points:
-							firstpoint = points[0]
-							if firstpoint[0]==0: convproj_obj.params.add('bpm', firstpoint[1]/100, 'float')
-							for x in points:
-								cvpj_automation.add_autotick(['main', 'bpm'], 'float', x[0], x[1]/100)
-
-					elif chunk.id == 1: #Gen1:Track:Header
-						cvpj_trackid = str(parseddata.trackno)
-						track_obj = cvpj_tracks.add(cvpj_trackid, 'midi', 1, False)
-						track_obj.visual.name = parseddata.name.decode()
-						if parseddata.channel != 255:
-							track_obj.midi.out_enabled = True
-							track_obj.midi.out_chanport.chan = parseddata.channel
-							track_obj.midi.out_chanport.port = parseddata.port
-							trackchannel = parseddata.channel
-						else:
-							trackchannel = 0
-						events_obj = track_obj.placements.midievents
-						events_obj.has_duration = True
-						events_obj.ppq = int(convproj_obj.time_ppq)
-						
-					elif chunk.id == 24: #Gen1:Track:Name
-						track_obj.visual.name = parseddata.name.decode()
-	
-					elif chunk.id == 2: #Gen1:Track:Events
-						for event in parseddata.events:
-							event_type = event.type
-							event_data = event.data
-							event_time = event.time
-
-							if event_type == 0x90: events_obj.add_note_dur(event_time, trackchannel, event_data.data1, event_data.data2, event_data.dur)
-							elif event_type == 0xA0: events_obj.add_note_pressure(event_time, trackchannel, event_data.data1, event_data.data2)
-							elif event_type == 0xB0: events_obj.add_control(event_time, trackchannel, event_data.data1, event_data.data2)
-							elif event_type == 0xC0: events_obj.add_program(event_time, trackchannel, event_data.data1)
-							elif event_type == 0xD0: events_obj.add_chan_pressure(event_time, trackchannel, event_data.data1)
-							elif event_type == 0xE0: events_obj.add_pitch_hi_lo(event_time, trackchannel, event_data.data2, event_data.data1)
-							elif event_type == 0xF0: sysex_points.append([events_obj, event_time, event_data.data1])
-
-					elif chunk.id == 6: #Gen1:Global:SysEx
-						sysex_num += 1
-						sysex_data[sysex_num] = parseddata.data[1:-1]
-
-					elif chunk.id == 26: #Gen1:Global:VariablePart
-						vname = parseddata.name
-						vvalue = parseddata.value
-
-						if vname=="Title": cvpj_metadata.name = vvalue.decode("windows-1252")
-						if vname=="Subtitle": cvpj_metadata.subname = vvalue.decode("windows-1252")
-						if vname=="Instructions": cvpj_metadata.data['instructions'] = vvalue.decode("windows-1252")
-						if vname=="Author": cvpj_metadata.author = vvalue.decode("windows-1252")
-						if vname=="Copyright": cvpj_metadata.copyright = vvalue.decode("windows-1252")
-
-					elif chunk.id == 8: #Gen1:Global:Comment
-						if len(parseddata.data)>1:
-							cvpj_metadata.comment_text = parseddata.data[1:].decode("windows-1252")
-
-			for sysex_point in sysex_points:
-				sysex_point[0].add_sysex(sysex_point[1], sysex_data[sysex_point[2]])
+			for sysex_point in proj_gen.sysex_points:
+				sysex_point[0].add_sysex(sysex_point[1], proj_gen.sysex_data[sysex_point[2]])
 
 		if project_obj.version == 3:
 			convproj_obj.fxtype = 'rack'
@@ -150,14 +288,19 @@ class input_cvpj_f(plugins.base):
 
 			convproj_obj.do_actions.append('do_addloop')
 
-			segment_data_store = {}
-
-			#clipsdata = []
-
 			for chunk in project_obj.chunks:
 				if chunk.is_parsed:
 					parseddata = chunk.content
 	
+					if   chunk.id ==   8: proj_gen.chunk___8(parseddata) #Gen1:Global:Comment
+					elif chunk.id ==  10: proj_gen.chunk__10(parseddata) #Gen1:Global:Timebase
+					elif chunk.id ==  15: proj_gen.chunk__15(parseddata) #Gen1:Global:Auto:Tempo_V3
+					elif chunk.id ==  21: proj_gen.chunk__21(parseddata) #Gen1:Global:Markers
+					elif chunk.id ==  26: proj_gen.chunk__26(parseddata) #Gen1:Global:VariablePart
+					elif chunk.id ==  36: proj_gen.chunk__36(parseddata) #Gen2:Track:Header
+					elif chunk.id ==  45: proj_gen.chunk__45(parseddata) #Gen2:Track:Events
+					elif chunk.id ==  49: proj_gen.chunk__49(parseddata) #Gen2:Track:Segment
+
 					#if chunk.id == 3: #Gen1:Global:Settings
 					#	print(dir(parseddata))
 						#print(parseddata.TempoOfs1)
@@ -165,120 +308,6 @@ class input_cvpj_f(plugins.base):
 						#print(parseddata.TempoOfs3)
 						#convproj_obj.set_timings(parseddata.timebase, False)
 
-					if chunk.id == 10: #Gen1:Global:Timebase
-						convproj_obj.set_timings(parseddata.timebase)
-
-					elif chunk.id == 15: #Gen1:Global:Auto:Tempo_V3
-						points = parseddata.points
-						if points:
-							firstpoint = points[0]
-							if firstpoint[0]==0: convproj_obj.params.add('bpm', firstpoint[1]/100, 'float')
-							for x in points:
-								cvpj_automation.add_autotick(['main', 'bpm'], 'float', x[0], x[1]/100)
-
-					elif chunk.id == 36: #Gen2:Track:Header
-						cvpj_trackid = str(parseddata.trackno)
-						track_obj = cvpj_tracks.add(cvpj_trackid, 'hybrid', 1, False)
-						track_obj.visual.name = parseddata.name.decode()
-						if parseddata.channel != 255:
-							trackchannel = max(0, parseddata.channel)
-							track_obj.midi.out_enabled = True
-							track_obj.midi.out_chanport.chan = trackchannel
-							track_obj.midi.out_chanport.port = parseddata.port
-							track_obj.midi.out_inst.patch = max(parseddata.patch, 0)
-						else:
-							trackchannel = 0
-
-						events_obj = track_obj.placements.midievents
-						events_obj.has_duration = True
-						
-					elif chunk.id == 49: #Gen2:Track:Segment
-						if parseddata.is_nonlinked: 
-							segment_data_store[parseddata.id] = [parseddata.events, parseddata.name, parseddata.color, parseddata.offset]
-						cw_events, cw_name, cw_color, startoffs = segment_data_store[parseddata.id]
-
-						placement_obj = track_obj.placements.add_midi()
-						events_obj = placement_obj.midievents
-						events_obj.has_duration = True
-						events_obj.ppq = int(convproj_obj.time_ppq)
-
-						if cw_name: placement_obj.visual.name = cw_name.decode()
-						if cw_color is not None: 
-							placement_obj.visual.color.set_int(list(cw_color))
-							placement_obj.visual.color.fx_allowed = ['saturate', 'brighter']
-
-						for event in cw_events:
-							event_type = event.type
-							event_data = event.data
-							event_time = event.time-startoffs
-
-							if event_type == 0x90: events_obj.add_note_dur(event_time, trackchannel, event_data.data1, event_data.data2, event_data.dur)
-							elif event_type == 0xA0: events_obj.add_note_pressure(event_time, trackchannel, event_data.data1, event_data.data2)
-							elif event_type == 0xB0: events_obj.add_control(event_time, trackchannel, event_data.data1, event_data.data2)
-							elif event_type == 0xC0: events_obj.add_program(event_time, trackchannel, event_data.data1)
-							elif event_type == 0xD0: events_obj.add_chan_pressure(event_time, trackchannel, event_data.data1)
-							elif event_type == 0xE0: events_obj.add_pitch_hi_lo(event_time, trackchannel, event_data.data2, event_data.data1)
-
-						time_obj = placement_obj.time
-						time_obj.set_posdur(parseddata.offset, int(events_obj.get_dur()))
-
-					elif chunk.id == 45: #Gen2:Track:Events
-						cw_events = parseddata.events
-						
-						clipinfop = clipinfo()
-						clipinfop.track_obj = track_obj
-
-						isallaudio = False
-
-						if cw_events:
-							firstpos = cw_events[0].time
-
-							placement_obj = track_obj.placements.add_midi()
-							events_obj = placement_obj.midievents
-							events_obj.has_duration = True
-							events_obj.ppq = int(convproj_obj.time_ppq)
-
-							if parseddata.name: placement_obj.visual.name = parseddata.name.decode()
-
-							for event in parseddata.events:
-								event_type = event.type
-								event_data = event.data
-								event_time = event.time-firstpos
-
-								if event_type == 0x90: events_obj.add_note_dur(event_time, trackchannel, event_data.data1, event_data.data2, event_data.dur)
-								elif event_type == 0xA0: events_obj.add_note_pressure(event_time, trackchannel, event_data.data1, event_data.data2)
-								elif event_type == 0xB0: events_obj.add_control(event_time, trackchannel, event_data.data1, event_data.data2)
-								elif event_type == 0xC0: events_obj.add_program(event_time, trackchannel, event_data.data1)
-								elif event_type == 0xD0: events_obj.add_chan_pressure(event_time, trackchannel, event_data.data1)
-								elif event_type == 0xE0: events_obj.add_pitch_hi_lo(event_time, trackchannel, event_data.data2, event_data.data1)
-
-							time_obj = placement_obj.time
-							time_obj.set_posdur(firstpos, int(events_obj.get_dur()))
-
-						#isallaudio = all([(x.type == 4) for x in cw_events])
-
-						#clipsdata.append(clipinfop)
-
-					elif chunk.id == 21: #Gen1:Global:Markers
-						for realtime, pos, text in parseddata.markers:
-							if not realtime:
-								timemarker_obj = cvpj_timemarkers.add()
-								timemarker_obj.time.set_pos(pos)
-								timemarker_obj.visual.name = text.decode()
-
-					elif chunk.id == 26: #Gen1:Global:VariablePart
-						vname = parseddata.name
-						vvalue = parseddata.value
-
-						if vname=="Title": cvpj_metadata.name = vvalue.decode("windows-1252")
-						if vname=="Subtitle": cvpj_metadata.subname = vvalue.decode("windows-1252")
-						if vname=="Instructions": cvpj_metadata.data['instructions'] = vvalue.decode("windows-1252")
-						if vname=="Author": cvpj_metadata.author = vvalue.decode("windows-1252")
-						if vname=="Copyright": cvpj_metadata.copyright = vvalue.decode("windows-1252")
-
-					elif chunk.id == 8: #Gen1:Global:Comment
-						if len(parseddata.data)>1:
-							cvpj_metadata.comment_text = parseddata.data[1:].decode("windows-1252")
 
 					#elif chunk.id == 89: #Gen3:Track:RegionInfo
 					#	isallaudio = all([(x.cmdnum == 0 and x.channum == 4) for x in parseddata.parts])
