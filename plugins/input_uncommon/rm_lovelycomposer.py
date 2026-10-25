@@ -211,6 +211,7 @@ class input_lc(plugins.base):
 		for tracknum in range(5):
 			cvpj_instid = str(tracknum+1)
 			track_obj = cvpj_tracks.add(cvpj_instid, 'instruments', 1, False)
+			track_placements = track_obj.placements
 
 			# params
 			vol = xtramath.from_db(project_obj.ui_mixer_expression_list[tracknum]/2)
@@ -261,7 +262,7 @@ class input_lc(plugins.base):
 
 					if t_notelist:
 						p_start, p_steps = tempoblocks.get_posdur(patnum)
-						placement_obj = track_obj.placements.add_notes()
+						placement_obj = track_placements.add_notes()
 						placement_obj.time.set_posdur(p_start, p_steps)
 						cvpj_notelist = placement_obj.notelist
 
@@ -299,7 +300,7 @@ class input_lc(plugins.base):
 
 					if t_chordlist:
 						p_start, p_steps = tempoblocks.get_posdur(patnum)
-						placement_obj = track_obj.placements.add_notes()
+						placement_obj = track_placements.add_notes()
 						placement_obj.time.set_posdur(p_start, p_steps)
 						cvpj_notelist = placement_obj.notelist
 						for nnn in t_chordlist:

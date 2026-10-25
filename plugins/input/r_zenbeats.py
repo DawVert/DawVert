@@ -430,25 +430,31 @@ def do_rack(convproj_obj, project_obj, track_obj, zb_track, autoloc, dawvert_int
 	for rack in project_obj.bank.racks:
 
 		if rack.uid==zb_track.output_rack_uid:
-			track_obj.params.add('vol', rack.gain, 'float')
-			track_obj.params.add('solo', bool(rack.solo), 'bool')
-			track_obj.params.add('mute', bool(rack.mute), 'bool')
+			# params
+			params_obj = track_obj.params
+			params_obj.add('vol', rack.gain, 'float')
+			params_obj.add('solo', bool(rack.solo), 'bool')
+			params_obj.add('mute', bool(rack.mute), 'bool')
 
+			# inverse
 			if bool(rack.phase_invert_audio_output):
 				inverse_fxid = rack.uid+'_inverse'
 				plugin_obj = cvpj_plugins.add_uni('invert', None, inverse_fxid)
 				plugin_obj.role = 'synth'
 				track_obj.plugslots.slots_mixer.append(inverse_fxid)
 
+			# mono
 			if bool(rack.force_mono):
 				inverse_fxid = rack.uid+'_force_mono'
 				plugin_obj = cvpj_plugins.add_uni('force_mono', None, inverse_fxid)
 				plugin_obj.role = 'synth'
 				track_obj.plugslots.slots_mixer.append(inverse_fxid)
 
+			# sends
 			for send_track in rack.send_tracks:
 				track_obj.sends.add(send_track.send_track_uid, None, send_track.send_amount)
 
+			# auto
 			for curve in rack.automation_set.curves:
 				if rack.uid==curve.target_object:
 					if curve.target == 'DT_RACK':
@@ -457,9 +463,9 @@ def do_rack(convproj_obj, project_obj, track_obj, zb_track, autoloc, dawvert_int
 						elif curve.function == 'DF_MUTE': do_auto(cvpj_automation, autoloc+['enabled'], curve, 2)
 						elif curve.function == 'DF_SOLO': do_auto(cvpj_automation, autoloc+['solo'], curve, 1)
 
+			# plugins
 			if rack.signal_chain:
 				strprocs = rack.signal_chain.stream_processors
-	
 				for strproc in strprocs:
 					if strproc.plugin:
 						do_plugin(convproj_obj, strproc, track_obj, dawvert_intent)
@@ -580,6 +586,7 @@ class input_zenbeats(plugins.base):
 			if master_id in track_groups or master_id==None:
 				if zb_track.type in [0, 1, 97]:
 					track_obj = cvpj_tracks.add(zb_track.uid, 'instrument', 1, False)
+					track_placements = track_obj.placements
 					do_rack(convproj_obj, project_obj, track_obj, zb_track, ['track', zb_track.uid], dawvert_intent)
 					do_visual(track_obj.visual, zb_track.visual, zb_track.color_index, colordata)
 					if master_id: track_obj.group = master_id
@@ -588,7 +595,7 @@ class input_zenbeats(plugins.base):
 					track_obj.armed.on = track_obj.armed.in_keys
 
 					for zb_pattern in zb_track.patterns:
-						placement_obj = track_obj.placements.add_notes()
+						placement_obj = track_placements.add_notes()
 						time_obj = placement_obj.time
 						do_visual(placement_obj.visual, zb_pattern.visual, zb_pattern.color_index, colordata)
 						time_obj.set_startend(zb_pattern.start_beat, zb_pattern.end_beat)
@@ -619,6 +626,7 @@ class input_zenbeats(plugins.base):
 
 				if zb_track.type == 2:
 					track_obj = cvpj_tracks.add(zb_track.uid, 'audio', 1, False)
+					track_placements = track_obj.placements
 					do_rack(convproj_obj, project_obj, track_obj, zb_track, ['track', zb_track.uid], dawvert_intent)
 					do_visual(track_obj.visual, zb_track.visual, zb_track.color_index, colordata)
 					if master_id: track_obj.group = master_id
@@ -627,7 +635,7 @@ class input_zenbeats(plugins.base):
 					track_obj.armed.on = track_obj.armed.in_audio
 
 					for zb_pattern in zb_track.patterns:
-						placement_obj = track_obj.placements.add_audio()
+						placement_obj = track_placements.add_audio()
 						do_visual(placement_obj.visual, zb_pattern.visual, zb_pattern.color_index, colordata)
 						time_obj = placement_obj.time
 						time_obj.set_startend(zb_pattern.start_beat, zb_pattern.end_beat)

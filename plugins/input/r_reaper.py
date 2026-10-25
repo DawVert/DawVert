@@ -582,6 +582,7 @@ class input_reaper(plugins.base):
 							do_samplepart_adsr(samplerj, plugin_obj, sampleref_obj, 'vol')
 
 			# items
+			track_placements = track_obj.placements
 			for rpp_trackitem in rpp_track.items:
 				cvpj_placement_type = 'notes'
 
@@ -630,17 +631,18 @@ class input_reaper(plugins.base):
 				cvpj_offset_bpm = ((cvpj_offset)*8)*tempomul
 
 				if cvpj_placement_type == 'notes': 
-					placement_obj = track_obj.placements.add_midi()
+					placement_obj = track_placements.add_midi()
 
+					# visual
 					if cvpj_name: placement_obj.visual.name = cvpj_name
 					if cvpj_color: placement_obj.visual.color.set_int(cvpj_color)
 
+					# time
 					time_obj = placement_obj.time
 					time_obj.set_posdur_real(cvpj_position, cvpj_duration)
 					time_obj.cut_type = 'loop' if cvpj_loop else 'cut'
 
-					placement_obj.muted = bool(cvpj_muted)
-
+					# events
 					midievents_obj = placement_obj.midievents
 
 					if rpp_trackitem.source != None:
@@ -695,38 +697,46 @@ class input_reaper(plugins.base):
 								cvpj_end_bpm = ((maxdur/midievents_obj.ppq)*4)
 								time_obj.set_loop_data(cvpj_offset_bpm, 0, cvpj_end_bpm)
 
+					# auto
 					do_auto_clip_notes(placement_obj, rpp_trackitem.volenv, 'gain', 'float', False, False)
 					do_auto_clip_notes(placement_obj, rpp_trackitem.panenv, 'pan', 'float', False, False)
 					do_auto_clip_notes(placement_obj, rpp_trackitem.muteenv, 'mute', 'bool', False, True)
 					do_auto_clip_notes(placement_obj, rpp_trackitem.pitchenv, 'pitch', 'float', False, False)
 
+					# others
+					placement_obj.muted = bool(cvpj_muted)
 					if rpp_trackitem.lock.used: placement_obj.locked = bool(rpp_trackitem.lock.get())
-
 					if rpp_trackitem.group.used:
 						groupnum = rpp_trackitem.group.get()
 						placement_obj.group = str(groupnum)
 
 				if cvpj_placement_type == 'audio': 
-					placement_obj = track_obj.placements.add_audio()
+					placement_obj = track_placements.add_audio()
+
+					# visual
 					if cvpj_name: placement_obj.visual.name = cvpj_name
 					if cvpj_color: placement_obj.visual.color.set_int(cvpj_color)
+
+					# time
 					time_obj = placement_obj.time
 					time_obj.set_posdur_real(cvpj_position, cvpj_duration)
+
+					# sample fx
 					placement_obj.sample.pan = cvpj_pan
 					placement_obj.sample.pitch = cvpj_audio_pitch
 					placement_obj.sample.vol = cvpj_vol
 
-					placement_obj.muted = bool(cvpj_muted)
+					if samplemode == 3: placement_obj.sample.reverse = True
 
+					# fade
 					do_fade(placement_obj.fade_in, rpp_trackitem.fadein)
 					do_fade(placement_obj.fade_out, rpp_trackitem.fadeout)
 
+					# sample
 					sampleref_obj = convproj_obj.sampleref__add(cvpj_audio_file, cvpj_audio_file, None)
 					sampleref_obj.search_local(dawvert_intent.input_folder)
 
 					placement_obj.sample.sampleref = cvpj_audio_file
-
-					if samplemode == 3: placement_obj.sample.reverse = True
 
 					startoffset = (cvpj_offset_bpm/cvpj_audio_rate) + (startpos/cvpj_audio_rate)*8
 
@@ -737,6 +747,7 @@ class input_reaper(plugins.base):
 						time_obj.cut_type = 'loop' if cvpj_loop else 'cut'
 						time_obj.set_loop_data(startoffset, 0, totalaudio)
 
+					# stretch
 					stretch_obj = placement_obj.sample.stretch
 					stretch_obj.preserve_pitch = cvpj_audio_preserve_pitch
 
@@ -747,41 +758,41 @@ class input_reaper(plugins.base):
 						if rppart_audio_params in [1,2,3,4,5,6,7]:
 							stretch_algo.preserve_formants = 1
 
-					if rppart_audio_stretch == 10:
+					elif rppart_audio_stretch == 10:
 						stretch_algo.type = 'elastique_v3'
 						stretch_algo.subtype = 'efficient'
 
-					if rppart_audio_stretch == 11:
+					elif rppart_audio_stretch == 11:
 						stretch_algo.type = 'elastique_v3'
 						stretch_algo.subtype = 'mono'
 						if rppart_audio_params&2: stretch_algo.subtype = 'speech'
 
-					if rppart_audio_stretch == 6:
+					elif rppart_audio_stretch == 6:
 						stretch_algo.type = 'elastique_v2'
 						stretch_algo.subtype = 'pro'
 						if rppart_audio_params in [1,2,3,4,5,6,7]:
 							stretch_algo.preserve_formants = 1
 
-					if rppart_audio_stretch == 7:
+					elif rppart_audio_stretch == 7:
 						stretch_algo.type = 'elastique_v2'
 						stretch_algo.subtype = 'efficient'
 
-					if rppart_audio_stretch == 8:
+					elif rppart_audio_stretch == 8:
 						stretch_algo.type = 'elastique_v2'
 						stretch_algo.subtype = 'mono'
 						if rppart_audio_params&2: stretch_algo.subtype = 'speech'
 
-					if rppart_audio_stretch == 13:
+					elif rppart_audio_stretch == 13:
 						stretch_algo.type = 'rubberband'
 						if rppart_audio_params == 1:
 							stretch_algo.preserve_formants = 1
 
-					if rppart_audio_stretch == 0:
+					elif rppart_audio_stretch == 0:
 						stretch_algo.type = 'soundtouch'
 						if rppart_audio_params == 1: stretch_obj.params['mode'] = 'hq'
 						if rppart_audio_params == 2: stretch_obj.params['mode'] = 'fast'
 
-					if rppart_audio_stretch == 2:
+					elif rppart_audio_stretch == 2:
 						stretch_algo.type = 'simple_windowing'
 
 					dur_sec = sampleref_obj.get_dur_sec()
@@ -800,11 +811,13 @@ class input_reaper(plugins.base):
 					else: 
 						s_timing_obj.set__real_rate(bpm, cvpj_audio_rate)
 
+					# auto
 					do_auto_clip(placement_obj, rpp_trackitem.volenv, 'gain', 'float', False, False, cvpj_audio_rate)
 					do_auto_clip(placement_obj, rpp_trackitem.panenv, 'pan', 'float', False, False, cvpj_audio_rate)
 					do_auto_clip(placement_obj, rpp_trackitem.muteenv, 'mute', 'bool', False, True, cvpj_audio_rate)
 					do_auto_clip(placement_obj, rpp_trackitem.pitchenv, 'pitch', 'float', False, False, cvpj_audio_rate)
 
+					# others
 					time_obj.set_offset_real(cvpj_offset/cvpj_audio_rate)
 
 					#if not cvpj_loop:
@@ -813,6 +826,8 @@ class input_reaper(plugins.base):
 					#	maxdur = ((dur_sec*8)/cvpj_audio_rate)*tempomul if dur_sec else cvpj_duration
 					#	time_obj.set_loop_data(startoffset, 0, maxdur)
 
+					placement_obj.muted = bool(cvpj_muted)
+
 					if rpp_trackitem.lock.used: placement_obj.locked = bool(rpp_trackitem.lock.get())
 
 					if rpp_trackitem.group.used:
@@ -820,11 +835,13 @@ class input_reaper(plugins.base):
 						placement_obj.group = str(groupnum)
 
 				if cvpj_placement_type == 'video': 
-					placement_obj = track_obj.placements.add_video()
+					placement_obj = track_placements.add_video()
 
+					# visual
 					if cvpj_name: placement_obj.visual.name = cvpj_name
 					if cvpj_color: placement_obj.visual.color.set_int(cvpj_color)
 					
+					# time
 					time_obj = placement_obj.time
 					time_obj.set_posdur_real(cvpj_position, cvpj_duration)
 
@@ -832,16 +849,21 @@ class input_reaper(plugins.base):
 
 					time_obj.set_offset(startoffset)
 
-					placement_obj.vol = cvpj_vol
-					placement_obj.muted = bool(cvpj_muted)
-
+					# video
 					convproj_obj.fileref__add(cvpj_audio_file, cvpj_audio_file, None)
-
 					videoref_obj = convproj_obj.videoref__add(cvpj_audio_file, cvpj_audio_file, None)
 					videoref_obj.search_local(dawvert_intent.input_folder)
 					placement_obj.videoref = cvpj_audio_file
 
-			track_obj.placements.sort()
+					# others
+					placement_obj.vol = cvpj_vol
+					placement_obj.muted = bool(cvpj_muted)
+					if rpp_trackitem.lock.used: placement_obj.locked = bool(rpp_trackitem.lock.get())
+					if rpp_trackitem.group.used:
+						groupnum = rpp_trackitem.group.get()
+						placement_obj.group = str(groupnum)
+
+			track_placements.sort()
 
 		# ---------- groups/routes ----------
 		groups_valid = True

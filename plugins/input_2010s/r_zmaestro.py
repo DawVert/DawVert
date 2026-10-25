@@ -141,6 +141,7 @@ class input_zmaestro(plugins.base):
 
 			if tracktype in ['MIDITrack', 'MIDIDrumTrack']:
 				track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
+				track_placements = track_obj.placements
 				do_track_params(zm_track, track_obj, is_any_headphones, cvpj_automation, cvpj_trackid)
 				if not zm_track.soundfont:
 					track_obj.midi.out_inst.patch = zm_track.instrumentcode
@@ -163,7 +164,7 @@ class input_zmaestro(plugins.base):
 					track_obj.is_multinote_drum = True
 
 				for part in zm_track.parts:
-					placement_obj = track_obj.placements.add_notes()
+					placement_obj = track_placements.add_notes()
 					placement_to_cvpj(part, placement_obj)
 
 					cvpj_notelist = placement_obj.notelist
@@ -173,6 +174,7 @@ class input_zmaestro(plugins.base):
 			if tracktype == 'AudioTrack':
 				track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
 				track_obj.visual.from_datapack('z_maestro', 'track', 'AudioTrack', True)
+				track_placements = track_obj.placements
 				do_track_params(zm_track, track_obj, is_any_headphones, cvpj_automation, cvpj_trackid)
 				for n, fx in enumerate(zm_track.fx):
 					fxid = cvpj_trackid+'_fx_'+str(n)
@@ -225,7 +227,7 @@ class input_zmaestro(plugins.base):
 
 
 				for num, part in enumerate(zm_track.parts):
-					placement_obj = track_obj.placements.add_audio()
+					placement_obj = track_placements.add_audio()
 					placement_to_cvpj(part, placement_obj)
 
 					sp_obj = placement_obj.sample

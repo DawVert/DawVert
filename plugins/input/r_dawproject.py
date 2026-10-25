@@ -260,14 +260,14 @@ def do_notes(cvpj_notelist, notes):
 		if note.lanes:
 			for points in note.lanes.points: do_mpe(cvpj_notelist, points)
 
-def do_noteclip(track_obj, clip):
+def do_noteclip(track_placements, clip):
 	dp_notes = None
 	if clip.notes: dp_notes = clip.notes
 	if clip.lanes:
 		if clip.lanes.notes: dp_notes = clip.lanes.notes
 
 	if dp_notes:
-		placement_obj = track_obj.placements.add_notes()
+		placement_obj = track_placements.add_notes()
 		docliptime(placement_obj.time, clip)
 		if clip.name: placement_obj.visual.name = clip.name
 		if clip.color: placement_obj.visual.color.set_hex(clip.color.upper())
@@ -522,13 +522,14 @@ class input_dawproject(plugins.base):
 		# ---------- tracks ----------
 		do_tracks(convproj_obj, project_obj.tracks, None)
 
-		# ---------- automation ----------
+		# ---------- clips and auto ----------
 		for lane in project_obj.arrangement.lanes.lanes:
 			if lane.track in trackdata:
 				track_obj = trackdata[lane.track]
 				if track_obj:
+					track_placements = track_obj.placements
 					for clip in lane.clips.clips:
-						do_noteclip(track_obj, clip)
+						do_noteclip(track_placements, clip)
 						if clip.clips: do_clips(convproj_obj, track_obj, clip, clip.clips)
 				for points in lane.points:
 					target_obj = points.target

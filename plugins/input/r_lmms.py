@@ -559,18 +559,19 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 		if lmms_track.type == 0: 
 			bbpld[cvpj_trackid] = []
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
+			track_placements = track_obj.placements
 			tracks[cvpj_trackid] = track_obj
 			do_track_params(convproj_obj, lmms_track, track_obj, cvpj_trackid, isbb)
 
 			insttr_obj = lmms_track.instrumenttrack
 
 			# params
-			params_obj = track_obj.params
 			cvpj_pan = doparam(insttr_obj.pan, 'float', [0, 0.01], ['track', cvpj_trackid, 'pan'])
 			cvpj_vol = doparam(insttr_obj.vol, 'float', [0, 0.01], ['track', cvpj_trackid, 'vol'])
 			cvpj_pitch = doparam(insttr_obj.pitch, 'float', [0, 0.01], ['track', cvpj_trackid, 'pitch'])
 			cvpj_usemasterpitch = insttr_obj.usemasterpitch.value
 	
+			params_obj = track_obj.params
 			params_obj.add('vol', cvpj_vol, 'float')
 			params_obj.add('pan', cvpj_pan, 'float')
 			params_obj.add('usemasterpitch', cvpj_usemasterpitch, 'bool')
@@ -619,7 +620,7 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 
 			# patterns
 			for lmms_pattern in lmms_track.patterns:
-				placement_obj = track_obj.placements.add_notes() if not isbb else placements_notes.cvpj_placement_notes(track_obj.time_ppq)
+				placement_obj = track_placements.add_notes() if not isbb else placements_notes.cvpj_placement_notes(track_obj.time_ppq)
 				placement_obj.muted = bool(int(lmms_pattern.muted))
 
 				# time
@@ -726,6 +727,7 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 		elif lmms_track.type == 2: 
 			bbpld[cvpj_trackid] = []
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
+			track_placements = track_obj.placements
 			tracks[cvpj_trackid] = track_obj
 			do_track_params(convproj_obj, lmms_track, track_obj, cvpj_trackid, isbb)
 
@@ -746,7 +748,7 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 			
 			# sampletcos
 			for lmms_sampletco in lmms_track.sampletcos:
-				placement_obj = track_obj.placements.add_audio() if not isbb else placements_audio.cvpj_placement_audio(48, False)
+				placement_obj = track_placements.add_audio() if not isbb else placements_audio.cvpj_placement_audio(48, False)
 				placement_obj.muted = bool(lmms_sampletco.muted)
 
 				# time

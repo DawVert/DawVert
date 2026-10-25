@@ -146,7 +146,8 @@ class input_fruitytracks(plugins.base):
 		for tracknum, ftr_track in enumerate(project_obj.tracks):
 			trackid = str(tracknum)
 			track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
-			
+			track_placements = track_obj.placements
+
 			#visual
 			track_obj.visual.name = ftr_track.name if ftr_track.name else 'Track '+str(tracknum)
 
@@ -174,7 +175,7 @@ class input_fruitytracks(plugins.base):
 
 			#clips
 			for ftr_clip in ftr_track.clips:
-				placement_obj = track_obj.placements.add_audio()
+				placement_obj = track_placements.add_audio()
 				placement_obj.visual.name = ftr_clip.name
 				placement_obj.muted = bool(ftr_clip.muted)
 				time_obj = placement_obj.time

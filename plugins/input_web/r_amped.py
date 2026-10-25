@@ -123,8 +123,8 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 					for n, v in enumerate(wampreset['data']):
 						paramname = 'augur_'+str(n)
 						if isinstance(v, int): plugin_obj.params.add(paramname, v, 'int')
-						if isinstance(v, float): plugin_obj.params.add(paramname, v, 'float')
-						if isinstance(v, bool): plugin_obj.params.add(paramname, v, 'bool')
+						elif isinstance(v, float): plugin_obj.params.add(paramname, v, 'float')
+						elif isinstance(v, bool): plugin_obj.params.add(paramname, v, 'bool')
 
 			elif amped_tr_device.label == 'Dexed': 
 				instnames.append('Dexed')
@@ -222,8 +222,8 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			value_gain = 0.75
 			for param in amped_tr_device.params:
 				if param.name == 'patch': value_patch = param.value
-				if param.name == 'bank': value_bank = param.value
-				if param.name == 'gain': value_gain = param.value
+				elif param.name == 'bank': value_bank = param.value
+				elif param.name == 'gain': value_gain = param.value
 
 			plugin_obj = cvpj_plugins.add_uni('midi', None, pluginid)
 			plugin_obj.role = 'synth'
@@ -449,17 +449,21 @@ class input_amped(plugins.base):
 			amped_tr_id = str(amped_track.id)
 
 			track_obj = cvpj_tracks.add(amped_tr_id, 'hybrid', 1, False)
+			track_placements = track_obj.placements
 
 			# visual
-			track_obj.visual.name = amped_track.name
-			track_obj.visual.color.set_float(AMPED_COLORS[amped_track.color])
-			track_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+			visual_obj = track_obj.visual
+			visual_obj.name = amped_track.name
+			visual_obj.color.set_float(AMPED_COLORS[amped_track.color])
+			visual_obj.color.fx_allowed = ['saturate', 'brighter']
 
 			# params
-			track_obj.params.add('vol', amped_track.volume, 'float')
-			track_obj.params.add('pan', amped_track.pan, 'float')
-			track_obj.params.add('enabled', bool(not amped_track.mute), 'bool')
-			track_obj.params.add('solo', bool(amped_track.solo), 'bool')
+			params_obj = track_obj.params
+			params_obj.add('vol', amped_track.volume, 'float')
+			params_obj.add('pan', amped_track.pan, 'float')
+			params_obj.add('enabled', bool(not amped_track.mute), 'bool')
+			params_obj.add('solo', bool(amped_track.solo), 'bool')
+
 			track_obj.datavals.add('pan_mode', 'stereo')
 
 			# armed
@@ -498,16 +502,17 @@ class input_amped(plugins.base):
 				amped_reg_color = AMPED_COLORS[amped_region.color]
 
 				if amped_region.midi_notes: 
-					placement_obj = track_obj.placements.add_notes()
+					placement_obj = track_placements.add_notes()
 					# time
 					time_obj = placement_obj.time
 					time_obj.set_posdur(amped_region.position, amped_region.length)
 					time_obj.set_offset(amped_region.offset)
 
 					# visual
-					placement_obj.visual.name = amped_region.name
-					placement_obj.visual.color.set_float(amped_reg_color)
-					placement_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+					visual_obj = placement_obj.visual
+					visual_obj.name = amped_region.name
+					visual_obj.color.set_float(amped_reg_color)
+					visual_obj.color.fx_allowed = ['saturate', 'brighter']
 
 					# fx
 					placement_obj.muted = bool(amped_region.mute)
@@ -521,16 +526,17 @@ class input_amped(plugins.base):
 								if amped_note['mute']: cvpj_notelist.last_flag('disabled')
 
 				if amped_region.clips != []: 
-					placement_obj = track_obj.placements.add_nested_audio()
+					placement_obj = track_placements.add_nested_audio()
 					# time
 					time_obj = placement_obj.time
 					time_obj.set_posdur(amped_region.position, amped_region.length+amped_region.offset)
 					time_obj.set_offset(amped_region.offset)
 
 					# visual
-					placement_obj.visual.name = amped_region.name
-					placement_obj.visual.color.set_float(amped_reg_color)
-					placement_obj.visual.color.fx_allowed = ['saturate', 'brighter']
+					visual_obj = placement_obj.visual
+					visual_obj.name = amped_region.name
+					visual_obj.color.set_float(amped_reg_color)
+					visual_obj.color.fx_allowed = ['saturate', 'brighter']
 
 					# fx
 					placement_obj.muted = bool(amped_region.mute)

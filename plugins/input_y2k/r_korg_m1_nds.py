@@ -165,9 +165,11 @@ class input_korg_m1_nds(plugins.base):
 							pass
 
 			# blocks
+			track_placements = track_obj.placements
+			
 			curpos = 0
 			for n, block_obj in enumerate(channel_obj.blocks):
-				placement_obj = track_obj.placements.add_notes()
+				placement_obj = track_placements.add_notes()
 
 				p_start, p_steps = tempoblocks.get_posdur(block_obj.offset)
 

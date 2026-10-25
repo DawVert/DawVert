@@ -72,12 +72,13 @@ class input_darwin(plugins.base):
 		for dw_track in project_obj.tracks:
 			if not dw_track.isFolder:
 				track_obj = cvpj_tracks.add(str(dw_track.id), 'instrument', 1, False)
+				track_placements = track_obj.placements
 				if dw_track.parentFolderId>1: track_obj.group = str(dw_track.parentFolderId)
 				do_track_params(dw_track, track_obj.params)
 				do_track_visual(dw_track, track_obj.visual)
 				for dw_clip in dw_track.clips:
 					if dw_clip.clipType=='midi':
-						placement_obj = track_obj.placements.add_notes()
+						placement_obj = track_placements.add_notes()
 						time_obj = placement_obj.time
 						time_obj.set_posdur(dw_clip.startTick, dw_clip.durationTicks)
 						cvpj_notelist = placement_obj.notelist

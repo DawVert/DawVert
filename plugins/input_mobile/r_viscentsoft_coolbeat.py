@@ -109,6 +109,7 @@ class input_coolbeat(plugins.base):
 			if tracktype in [0, 1, 3]:
 				pluginid = trackid
 				track_obj = cvpj_tracks.add(trackid, 'instrument', 1, False)
+				track_placements = track_obj.placements
 
 				# visual
 				track_obj.visual.name = track.label
@@ -154,7 +155,7 @@ class input_coolbeat(plugins.base):
 
 				# sections
 				for section in track.sections:
-					placement_obj = track_obj.placements.add_notes()
+					placement_obj = track_placements.add_notes()
 					time_obj = placement_obj.time
 					time_obj.set_posdur(section.startTick, section.length)
 					cvpj_notelist = placement_obj.notelist

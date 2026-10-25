@@ -123,6 +123,7 @@ class input_meteor(plugins.base):
 			color = track.color
 
 			track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
+			track_placements = track_obj.placements
 
 			# params
 			params_obj = track_obj.params
@@ -153,7 +154,7 @@ class input_meteor(plugins.base):
 				samplenum = clip.sampleid
 				sampleid = str(samplenum)
 
-				placement_obj = track_obj.placements.add_audio()
+				placement_obj = track_placements.add_audio()
 				placement_obj.visual.name = sampleid
 
 				time_obj = placement_obj.time

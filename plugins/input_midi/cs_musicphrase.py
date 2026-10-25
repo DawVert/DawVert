@@ -62,6 +62,7 @@ class input_musicphrase(plugins.base):
 		track_pl = []
 		for n, mpxl_track in enumerate(project_obj.tracks):
 			track_obj = cvpj_tracks.add(str(n), 'midi_single', 1, False)
+			track_placements = track_obj.placements
 
 			# visual
 			visual_obj = track_obj.visual
@@ -87,7 +88,7 @@ class input_musicphrase(plugins.base):
 
 			# clips
 			for clip in mpxl_track.clips:
-				placement_obj = track_obj.placements.add_midi()
+				placement_obj = track_placements.add_midi()
 				placement_obj.time.set_posdur(clip.start, clip.size)
 
 				channel = mpxl_track.channel

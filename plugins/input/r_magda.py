@@ -212,12 +212,13 @@ class input_magda(plugins.base):
 					send_obj = sends_obj.add(str(send['target']), send['sendautoid'], send['level'])
 
 		# ---------- clips ----------
+		track_placements = track_obj.placements
 		for x in project_obj.clips:
 			trackid = x.trackId
 			if trackid in numassoc_norm:
 				track_obj = numassoc_norm[trackid]
 				if x.type==1:
-					placement_obj = track_obj.placements.add_notes()
+					placement_obj = track_placements.add_notes()
 					do_placement_base(x, placement_obj)
 					if x.loopEnabled:
 						time_obj = placement_obj.time
@@ -238,7 +239,7 @@ class input_magda(plugins.base):
 							autopoints_obj.points__add_normal(p.beatPosition, p.value, 0, None)
 
 				if x.type==0:
-					placement_obj = track_obj.placements.add_audio()
+					placement_obj = track_placements.add_audio()
 					do_placement_base(x, placement_obj)
 					time_obj = placement_obj.time
 
@@ -254,11 +255,11 @@ class input_magda(plugins.base):
 
 					placement_obj.fade_in.set_dur(x.fadeIn, 'seconds')
 					if x.fadeInType==2: placement_obj.fade_in.slope = 1
-					if x.fadeInType==3: placement_obj.fade_in.slope = -1
+					elif x.fadeInType==3: placement_obj.fade_in.slope = -1
 
 					placement_obj.fade_out.set_dur(x.fadeOut, 'seconds')
 					if x.fadeOutType==2: placement_obj.fade_out.slope = 1
-					if x.fadeOutType==3: placement_obj.fade_out.slope = -1
+					elif x.fadeOutType==3: placement_obj.fade_out.slope = -1
 
 					audiodata = x.audio
 					if audiodata:

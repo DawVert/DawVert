@@ -365,6 +365,7 @@ def do_track(convproj_obj, wf_track, track_obj, store_obj, trackid):
 	dawvert_intent = store_obj.dawvert_intent
 	do_track_visual(wf_track, track_obj.visual)
 	do_track_params(convproj_obj, wf_track, track_obj.params, ['track', trackid])
+	track_placements = track_obj.placements
 
 	bpm = convproj_obj.params.get('bpm', 120).value
 
@@ -380,7 +381,7 @@ def do_track(convproj_obj, wf_track, track_obj, store_obj, trackid):
 			do_plugin(convproj_obj, wf_plugin, track_obj, software_mode)
 
 	for midiclip in wf_track.midiclips:
-		placement_obj = track_obj.placements.add_notes()
+		placement_obj = track_placements.add_notes()
 		time_obj = placement_obj.time
 		time_obj.set_posdur_real(midiclip.start, midiclip.length)
 		if midiclip.loopStartBeats == 0 and midiclip.loopLengthBeats == 0:
@@ -422,7 +423,7 @@ def do_track(convproj_obj, wf_track, track_obj, store_obj, trackid):
 				for val in vals: autoticks.add_point(val.pos*4, int(val.val)>>7)
 
 	for stepclip in wf_track.stepclips:
-		placement_obj = track_obj.placements.add_notes()
+		placement_obj = track_placements.add_notes()
 		time_obj = placement_obj.time
 		time_obj.set_posdur_real(stepclip.start, stepclip.length)
 
@@ -448,7 +449,7 @@ def do_track(convproj_obj, wf_track, track_obj, store_obj, trackid):
 	
 	for audioclip in wf_track.audioclips:
 		if not audioclip.srcVideo:
-			placement_obj = track_obj.placements.add_audio()
+			placement_obj = track_placements.add_audio()
 			time_obj = placement_obj.time
 	
 			placement_obj.sample.sampleref = audioclip.source
@@ -513,7 +514,7 @@ def do_track(convproj_obj, wf_track, track_obj, store_obj, trackid):
 				s_timing_obj.set__beats(audioclip.loopinfo.numBeats)
 
 		else:
-			placement_obj = track_obj.placements.add_video()
+			placement_obj = track_placements.add_video()
 			time_obj = placement_obj.time
 			time_obj.set_posdur_real(audioclip.start, audioclip.length)
 			placement_obj.videoref = audioclip.srcVideo

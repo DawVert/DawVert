@@ -72,6 +72,7 @@ class input_cvpj_f(plugins.base):
 		for tracknum, tmp_track in enumerate(project_obj.track):
 			cvpj_trackid = 'track_'+str(tracknum)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'midi', 1, False)
+			track_placements = track_obj.placements
 			channel = tmp_track.channel
 
 			# params
@@ -100,7 +101,7 @@ class input_cvpj_f(plugins.base):
 				for phrase in tmp_track.phrases:
 					curpos += phrase.td
 					phraseauto = {}
-					placement_obj = track_obj.placements.add_midi()
+					placement_obj = track_placements.add_midi()
 					do_phrase_ui(placement_obj.visual, phrase.ui)
 					time_obj = placement_obj.time
 					time_obj.set_posdur(curpos, phrase.d)
@@ -132,7 +133,7 @@ class input_cvpj_f(plugins.base):
 				curpos = 0
 				for audio in tmp_track.audios:
 					curpos += audio.td
-					placement_obj = track_obj.placements.add_audio()
+					placement_obj = track_placements.add_audio()
 					do_phrase_ui(placement_obj.visual, audio.ui)
 					time_obj = placement_obj.time
 					time_obj.set_posdur(curpos, audio.end)

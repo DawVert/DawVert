@@ -167,6 +167,7 @@ class input_soundop(plugins.base):
 			elif track.Type == 1:
 				autoloc_s = ['master']
 				track_obj = cvpj_master
+			track_placements = track_obj.placements
 
 			if track_obj is not None:
 				# visual
@@ -228,7 +229,7 @@ class input_soundop(plugins.base):
 					hz = sampleref_obj.get_hz()
 					dur_samples = sampleref_obj.get_dur_samples()
 
-					placement_obj = track_obj.placements.add_audio()
+					placement_obj = track_placements.add_audio()
 
 					# time
 					time_obj = placement_obj.time

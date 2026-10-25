@@ -97,6 +97,8 @@ class input_bandlab(plugins.base):
 			else:
 				track_obj = cvpj_tracks.add(blx_track.id, 'instrument', 1, False)
 
+			track_placements = track_obj.placements
+
 			if blx_track.soundbank:
 				if not track_obj.visual_inst.from_datapack('bandlab', 'inst', blx_track.soundbank, False):
 					track_obj.visual_inst.name = blx_track.soundbank
@@ -124,7 +126,7 @@ class input_bandlab(plugins.base):
 			if blx_track.type == 'voice':
 				do_track_common(convproj_obj, track_obj, blx_track, tempomul)
 				for blx_region in blx_track.regions:
-					placement_obj = track_obj.placements.add_audio()
+					placement_obj = track_placements.add_audio()
 					time_obj = placement_obj.time
 					time_obj.set_pos(tempo_calc(tempomul, blx_region.startPosition))
 					time_obj.set_dur(tempo_calc(tempomul, blx_region.endPosition-blx_region.startPosition))
@@ -212,7 +214,7 @@ class input_bandlab(plugins.base):
 						track_obj.plugslots.set_synth(blx_track.id)
 
 				for blx_region in blx_track.regions:
-					placement_obj = track_obj.placements.add_midi()
+					placement_obj = track_placements.add_midi()
 					time_obj = placement_obj.time
 					time_obj.set_pos(tempo_calc(tempomul, blx_region.startPosition))
 					time_obj.set_dur(tempo_calc(tempomul, blx_region.endPosition-blx_region.startPosition))
@@ -254,12 +256,17 @@ def do_track_common(convproj_obj, track_obj, blx_track, tempomul):
 	cvpj_automation = convproj_obj.automation
 	cvpj_plugins = convproj_obj.plugins
 
-	track_obj.visual.name = blx_track.name
-	track_obj.visual.color.set_hex(blx_track.color)
-	track_obj.params.add('enabled', not blx_track.isMuted, 'bool')
-	track_obj.params.add('solo', blx_track.isSolo, 'bool')
-	track_obj.params.add('vol', blx_track.volume, 'float')
-	track_obj.params.add('pan', blx_track.pan, 'float')
+	# visual
+	visual_obj = track_obj.visual
+	visual_obj.name = blx_track.name
+	visual_obj.color.set_hex(blx_track.color)
+
+	# params
+	params_obj = track_obj.params
+	params_obj.add('enabled', not blx_track.isMuted, 'bool')
+	params_obj.add('solo', blx_track.isSolo, 'bool')
+	params_obj.add('vol', blx_track.volume, 'float')
+	params_obj.add('pan', blx_track.pan, 'float')
 
 	for blx_auxSend in blx_track.auxSends:
 		sendautoid = blx_track.id+'__'+'return__'+str(blx_auxSend.id)

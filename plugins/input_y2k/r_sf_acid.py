@@ -146,6 +146,7 @@ class input_acid_old(plugins.base):
 		for tracknum, track in enumerate(project_obj.tracks):
 			cvpj_trackid = 'track_'+str(tracknum)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
+			track_placements = track_obj.placements
 			tracks[cvpj_trackid] = track_obj
 			color = colordata.getcolornum(track.color)
 			track_obj.visual.name = track.name
@@ -211,7 +212,7 @@ class input_acid_old(plugins.base):
 						ppq_beats = sample_beats*ppq
 						if 1 in track.flags:
 							for start, end, cur_root in rootnote_auto.iterd(region.start, region.end):
-								placement_obj = track_obj.placements.add_audio()
+								placement_obj = track_placements.add_audio()
 								time_obj = placement_obj.time
 								time_obj.set_startend(start, end)
 								time_obj.set_loop_data((offset*ppq)+((start-region.start)%ppq_beats), 0, ppq_beats)
@@ -227,7 +228,7 @@ class input_acid_old(plugins.base):
 									sp_obj.pitch = region.pitch
 								pls.append(placement_obj)
 						else:
-							placement_obj = track_obj.placements.add_audio()
+							placement_obj = track_placements.add_audio()
 							time_obj = placement_obj.time
 							time_obj.set_startend(region.start, region.end)
 							time_obj.set_loop_data(offset, 0, ppq_beats)
@@ -240,7 +241,7 @@ class input_acid_old(plugins.base):
 							pls.append(placement_obj)
 
 					else:
-						placement_obj = track_obj.placements.add_audio()
+						placement_obj = track_placements.add_audio()
 						time_obj = placement_obj.time
 						time_obj.set_startend(region.start, region.end)
 						time_obj.set_loop_data(offset*ppq, 0, sample_beats*ppq)
@@ -259,7 +260,7 @@ class input_acid_old(plugins.base):
 						pls.append(placement_obj)
 
 				if stretch_type == 4:
-					placement_obj = track_obj.placements.add_audio()
+					placement_obj = track_placements.add_audio()
 					time_obj = placement_obj.time
 					sp_obj = placement_obj.sample
 					sp_obj.sampleref = sample_path
@@ -271,7 +272,7 @@ class input_acid_old(plugins.base):
 					pls.append(placement_obj)
 
 				if stretch_type == 3:
-					placement_obj = track_obj.placements.add_audio()
+					placement_obj = track_placements.add_audio()
 					time_obj = placement_obj.time
 					sp_obj = placement_obj.sample
 					sp_obj.sampleref = sample_path
@@ -319,9 +320,9 @@ class input_acid_old(plugins.base):
 								if env.type == 0: auto_obj.defualt_val = track.vol
 								elif env.type == 1: auto_obj.defualt_val = track.pan
 
-			track_obj.placements.pl_audio.sort()
+			track_placements.pl_audio.sort()
 			if stretch_type not in [1, 3]:
-				track_obj.placements.pl_audio.remove_overlaps()
+				track_placements.pl_audio.remove_overlaps()
 
 		# ---------- sends ----------
 		send_fx = {}

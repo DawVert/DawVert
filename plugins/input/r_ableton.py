@@ -573,9 +573,9 @@ class input_ableton(plugins.base):
 					track_obj.visual_ui.height = AutomationLanes[0].LaneHeight/85
 
 				if not DEBUG_DISABLE_PLACEMENTS:
-					
+					track_placements = track_obj.placements
 					for clipid, cliptype, clipobj in mainseq.ClipTimeable.Events:
-						placement_obj = track_obj.placements.add_audio()
+						placement_obj = track_placements.add_audio()
 						time_obj = placement_obj.time
 						time_obj.set_startend(clipobj.CurrentStart*4, clipobj.CurrentEnd*4)
 						placement_obj.visual.name = clipobj.Name
@@ -767,9 +767,9 @@ class input_ableton(plugins.base):
 					midictrls[int(x.id)] = int(n)-2
 
 				if not DEBUG_DISABLE_PLACEMENTS:
-					
+					track_placements = track_obj.placements
 					for clipid, cliptype, clipobj in als_track.DeviceChain.MainSequencer.ClipTimeable.Events:
-						placement_obj = track_obj.placements.add_notes()
+						placement_obj = track_placements.add_notes()
 						time_obj = placement_obj.time
 						time_obj.set_startend(clipobj.CurrentStart*4, clipobj.CurrentEnd*4)
 						placement_obj.visual.name = clipobj.Name

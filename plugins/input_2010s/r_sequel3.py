@@ -303,6 +303,7 @@ class input_sequel3(plugins.base):
 				track_device = track.track_device
 
 				track_obj = cvpj_tracks.add(tracknum, 'instrument', 1, False)
+				track_placements = track_obj.placements
 				do_visual(track_obj, track, track_node, colorset)
 				do_params(track_obj, track_device)
 				do_effects(track_obj, track_device, convproj_obj)
@@ -312,7 +313,7 @@ class input_sequel3(plugins.base):
 				do_plugin(track_obj.plugslots, deviceattributes['Synth Slot'], convproj_obj, 1)
 
 				for event in track_node.events:
-					placement_obj = track_obj.placements.add_midi()
+					placement_obj = track_placements.add_midi()
 					delaystart = -min(event.offset, 0)
 					realoffset = max(event.offset, 0)
 
@@ -344,6 +345,7 @@ class input_sequel3(plugins.base):
 				track_device = track.track_device
 
 				track_obj = cvpj_tracks.add(tracknum, 'audio', 1, False)
+				track_placements = track_obj.placements
 				do_visual(track_obj, track, track_node, colorset)
 				do_params(track_obj, track_device)
 				do_effects(track_obj, track_device, convproj_obj)
@@ -359,7 +361,7 @@ class input_sequel3(plugins.base):
 				#				track_obj.sends.add(returnid, None, 1)
 
 				for event in track_node.events:
-					placement_obj = track_obj.placements.add_audio()
+					placement_obj = track_placements.add_audio()
 
 					placement_obj.time.set_posdur(event.start, event.length)
 					placement_obj.time.set_offset(event.offset)

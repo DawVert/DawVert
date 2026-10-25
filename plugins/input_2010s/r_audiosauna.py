@@ -178,6 +178,7 @@ class input_audiosauna(plugins.base):
 		for as_channum, as_chan in project_obj.channels.items():
 			cvpj_trackid = 'audiosanua'+str(as_channum)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
+			track_placements = track_obj.placements
 
 			# visual
 			visual_obj = track_obj.visual
@@ -198,7 +199,7 @@ class input_audiosauna(plugins.base):
 			# patterns
 			for as_pattern in as_chan.patterns:
 				# notelist
-				placement_obj = track_obj.placements.add_notes()
+				placement_obj = track_placements.add_notes()
 				set_color(placement_obj.visual, as_pattern.patternColor, colordata)
 				if as_pattern.name: placement_obj.visual.name = as_pattern.name
 

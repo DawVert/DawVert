@@ -193,11 +193,13 @@ class input_greysound(plugins.base):
 			extract_audio(clip, sampleref_obj, dawvert_intent, zip_data)
 
 		# ---------- regions ----------
+		track_placements = track_obj.placements
+		
 		for region in session_obj.regions:
 			track_obj = gs_trackids[region.trackId]
 
 			if region.clipId:
-				placement_obj = track_obj.placements.add_audio()
+				placement_obj = track_placements.add_audio()
 				placement_obj.visual.color.set_hex(region.color)
 				sp_obj = placement_obj.sample
 				sp_obj.sampleref = region.clipId
@@ -209,7 +211,7 @@ class input_greysound(plugins.base):
 				if 'millis' in region_fadeOut: placement_obj.fade_out.set_dur(region_fadeOut['millis']/1000, 'seconds')
 
 			else:
-				placement_obj = track_obj.placements.add_notes()
+				placement_obj = track_placements.add_notes()
 				placement_obj.visual.color.set_hex(region.color)
 				cvpj_notelist = placement_obj.notelist
 				for n in region.midiNotes: 

@@ -507,12 +507,13 @@ class input_wavtool(plugins.base):
 			logger_input.info(''+wavtool_track.type+' Track: '+wavtool_track.name)
 			if wavtool_track.type == 'MIDI':
 				track_obj = cvpj_tracks.add(trackid, 'instrument', 1, False)
+				track_placements = track_obj.placements
 				do_visual_track(track_obj.visual, wavtool_track)
 				do_track_params(track_obj.params, wavtool_track)
 
 				# clip
 				for wavtool_clip in wavtool_track.clips:
-					placement_obj = track_obj.placements.add_notes()
+					placement_obj = track_placements.add_notes()
 
 					# visual
 					placement_obj.visual.color.set_hex(wavtool_clip.color)
@@ -533,12 +534,13 @@ class input_wavtool(plugins.base):
 
 			if wavtool_track.type == 'Audio':
 				track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
+				track_placements = track_obj.placements
 				do_visual_track(track_obj.visual, wavtool_track)
 				do_track_params(track_obj.params, wavtool_track)
 
 				# clip
 				for wavtool_clip in wavtool_track.clips:
-					placement_obj = track_obj.placements.add_audio()
+					placement_obj = track_placements.add_audio()
 
 					# visual
 					placement_obj.visual.color.set_hex(wavtool_clip.color)

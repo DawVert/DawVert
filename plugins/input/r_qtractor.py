@@ -39,18 +39,19 @@ def do_plugins(convproj_obj, plugins, track_obj):
 				track_obj.plugslots.plugin_autoplace(plugin_obj, pluginid)
 
 def do_track_visual(qtrack, track_obj, swap_bg_fg):
-	track_obj.visual.name = qtrack.name
+	visual_obj = track_obj.visual
+	visual_obj.name = qtrack.name
 	if qtrack.view.background_color and qtrack.view.foreground_color:
 		if not swap_bg_fg:
-			track_obj.visual.color.set_hex(qtrack.view.background_color)
-			track_obj.visual.altcolor_add('fg').set_hex(qtrack.view.foreground_color)
+			visual_obj.color.set_hex(qtrack.view.background_color)
+			visual_obj.altcolor_add('fg').set_hex(qtrack.view.foreground_color)
 		else:
-			track_obj.visual.color.set_hex(qtrack.view.foreground_color)
-			track_obj.visual.altcolor_add('fg').set_hex(qtrack.view.background_color)
+			visual_obj.color.set_hex(qtrack.view.foreground_color)
+			visual_obj.altcolor_add('fg').set_hex(qtrack.view.background_color)
 	elif qtrack.view.background_color:
-		track_obj.visual.color.set_hex(qtrack.view.background_color)
+		visual_obj.color.set_hex(qtrack.view.background_color)
 	elif qtrack.view.foreground_color:
-		track_obj.visual.color.set_hex(qtrack.view.foreground_color)
+		visual_obj.color.set_hex(qtrack.view.foreground_color)
 
 	if qtrack.view.height:
 		track_obj.visual_ui.height = qtrack.view.height/96
@@ -61,6 +62,39 @@ def do_track_params(qtrack, track_obj):
 	track_obj.params.add('enabled', bool(not qtrack.state.mute), 'bool')
 	track_obj.params.add('solo', bool(qtrack.state.solo), 'bool')
 
+def do_track_auto(cvpj_automation, qtrack, cvpj_trackid, dawvert_intent, tempomul):
+	midiauto_obj = cvpj_automation.create_midi_auto_obj()
+	if qtrack.curve_file.used:
+		midipath = os.path.join(os.path.dirname(dawvert_intent.input_file), qtrack.curve_file.filename)
+
+		for curve_item in qtrack.curve_file.curve_items:
+			i_index = curve_item.index
+			p_channel = curve_item.p_channel
+			p_param = curve_item.p_param
+			if i_index == 1:
+				midiauto_obj.define_auto(p_channel, p_param, ['track', cvpj_trackid, 'pan'], -1, 1, False)
+			elif i_index == 2:
+				midiauto_obj.define_auto(p_channel, p_param, ['track', cvpj_trackid, 'vol'], 0, 1, False)
+			elif i_index == 4:
+				midiauto_obj.define_auto(p_channel, p_param, ['track', cvpj_trackid, 'enabled'], 0, 1, True)
+			elif i_index == 5:
+				midiauto_obj.define_auto(p_channel, p_param, ['track', cvpj_trackid, 'solo'], 0, 1, True)
+
+		midiauto_obj.do_midi_file(midipath, 4, True, tempomul)
+
+def do_clip_base(clip, placement_obj, clipcolor, ppq):
+	time_obj = placement_obj.time
+	time_obj.set_posdur_real(
+		calcsec(clip.properties.start, ppq), 
+		calcsec(clip.properties.length, ppq)
+		)
+
+	placement_obj.muted = bool(clip.properties.mute)
+
+	visual_obj = placement_obj.visual
+	visual_obj.name = clip.name
+	if clipcolor: visual_obj.color.set_hex(clipcolor)
+	
 class input_midi(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -90,6 +124,8 @@ class input_midi(plugins.base):
 			return True
 
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
+		from objects.file_proj import qtractor as proj_qtractor
+
 		project_obj = conversion_state.project
 
 		# ---------- convproj objects ----------
@@ -139,72 +175,45 @@ class input_midi(plugins.base):
 		for tracknum, qtrack in enumerate(project_obj.tracks):
 			cvpj_trackid = str(tracknum)
 
-			if qtrack.type == 'audio':
-				track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
-			if qtrack.type == 'midi':
-				track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
+			armed = bool(qtrack.state.record)
 
-			do_track_visual(qtrack, track_obj, swap_bg_fg)
-			do_track_params(qtrack, track_obj)
-
-			track_obj.armed.on = bool(qtrack.state.record)
-			if qtrack.type == 'audio': track_obj.armed.in_audio = track_obj.armed.on
-			if qtrack.type == 'midi': track_obj.armed.in_keys = track_obj.armed.on
-
-			midiauto_obj = cvpj_automation.create_midi_auto_obj()
-
-			if qtrack.curve_file.used:
-				midipath = os.path.join(os.path.dirname(dawvert_intent.input_file), qtrack.curve_file.filename)
-
-				for curve_item in qtrack.curve_file.curve_items:
-					i_index = curve_item.index
-					p_channel = curve_item.p_channel
-					p_param = curve_item.p_param
-					if i_index == 1:
-						midiauto_obj.define_auto(p_channel, p_param, ['track', cvpj_trackid, 'pan'], -1, 1, False)
-					elif i_index == 2:
-						midiauto_obj.define_auto(p_channel, p_param, ['track', cvpj_trackid, 'vol'], 0, 1, False)
-					elif i_index == 4:
-						midiauto_obj.define_auto(p_channel, p_param, ['track', cvpj_trackid, 'enabled'], 0, 1, True)
-					elif i_index == 5:
-						midiauto_obj.define_auto(p_channel, p_param, ['track', cvpj_trackid, 'solo'], 0, 1, True)
-
-				midiauto_obj.do_midi_file(midipath, 4, True, tempomul)
-			#print(midiauto_obj)
-
-			do_plugins(convproj_obj, qtrack.plugins, track_obj)
-						
 			clipcolor = qtrack.view.background_color
 			
 			if qtrack.type == 'audio':
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
+				track_obj.armed.on = armed
+				track_obj.armed.in_audio = armed
+				do_track_visual(qtrack, track_obj, swap_bg_fg)
+				do_track_params(qtrack, track_obj)
+				do_track_auto(cvpj_automation, qtrack, cvpj_trackid, dawvert_intent, tempomul)
+				track_placements = track_obj.placements
 				for clip in qtrack.clips:
-					placement_obj = track_obj.placements.add_audio()
-					time_obj = placement_obj.time
-					time_obj.set_posdur_real(
-						calcsec(clip.properties.start, ppq), 
-						calcsec(clip.properties.length, ppq)
-						)
-					placement_obj.visual.name = clip.name
-					placement_obj.muted = bool(clip.properties.mute)
+					placement_obj = track_placements.add_audio()
+					do_clip_base(clip, placement_obj, clipcolor, ppq)
 
-					if clipcolor: placement_obj.visual.color.set_hex(clipcolor)
 					filepath = clip.audioclip.filename
 
+					# fade
 					pitch = math.log2(1/clip.audioclip.pitch_shift)*-12
-					placement_obj.sample.pitch = pitch
 					sp_obj = placement_obj.sample
 					sp_obj.sampleref = filepath
 					sp_obj.vol = clip.properties.gain
 					sp_obj.pan = clip.properties.panning
+					sp_obj.pitch = pitch
+
+					# fade
 					if clip.properties.fade_in in ['InOutQuad', 'InOutCubic']: 
 						placement_obj.fade_in.shapetype = 'scurve'
 					if clip.properties.fade_out in ['InOutQuad', 'InOutCubic']: 
 						placement_obj.fade_out.shapetype = 'scurve'
 					placement_obj.fade_in.set_dur(calcsec(clip.properties.fade_in, ppq), 'seconds')
 					placement_obj.fade_out.set_dur(calcsec(clip.properties.fade_out, ppq), 'seconds')
+
+					# sampleref
 					sampleref_obj = convproj_obj.sampleref__add(filepath, filepath, None)
 					sampleref_obj.search_local(os.path.dirname(dawvert_intent.input_file))
 
+					# stretch
 					stretch_obj = placement_obj.sample.stretch
 
 					if clip.audioclip.time_stretch:
@@ -218,17 +227,18 @@ class input_midi(plugins.base):
 					stretch_obj.preserve_pitch = True
 
 			if qtrack.type == 'midi':
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
+				track_obj.armed.on = armed
+				track_obj.armed.in_keys = armed
+				do_track_visual(qtrack, track_obj, swap_bg_fg)
+				do_track_params(qtrack, track_obj)
+				do_track_auto(cvpj_automation, qtrack, cvpj_trackid, dawvert_intent, tempomul)
+				do_plugins(convproj_obj, qtrack.plugins, track_obj)
+				track_placements = track_obj.placements
 				for clip in qtrack.clips:
-					placement_obj = track_obj.placements.add_midi()
-					time_obj = placement_obj.time
-					time_obj.set_posdur_real(
-						calcsec(clip.properties.start, ppq), 
-						calcsec(clip.properties.length, ppq)
-						)
-					placement_obj.visual.name = clip.name
-					placement_obj.muted = bool(clip.properties.mute)
+					placement_obj = track_placements.add_midi()
+					do_clip_base(clip, placement_obj, clipcolor, ppq)
 
-					if clipcolor: placement_obj.visual.color.set_hex(clipcolor)
 					filepath = clip.midiclip.filename
 					fileref_obj = convproj_obj.fileref__add(filepath, filepath, None)
 					fileref_obj.search_local(os.path.dirname(dawvert_intent.input_file))

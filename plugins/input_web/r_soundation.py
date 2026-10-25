@@ -195,10 +195,11 @@ class input_soundation(plugins.base):
 
 				track_obj = cvpj_tracks.add(cvpj_trackid, track_type, 1, False)
 				do_track_data(convproj_obj, track_obj, soundation_channel, ['track',cvpj_trackid])
+				track_placements = track_obj.placements
 
 				for soundation_region in soundation_channel.regions:
-					if sound_chan_type == 'instrument': placement_obj = track_obj.placements.add_notes()
-					if sound_chan_type == 'audio': placement_obj = track_obj.placements.add_audio()
+					if sound_chan_type == 'instrument': placement_obj = track_placements.add_notes()
+					if sound_chan_type == 'audio': placement_obj = track_placements.add_audio()
 
 					# time
 					clip_length = round(soundation_region.length/timing, 3)*timing
