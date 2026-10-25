@@ -66,10 +66,10 @@ class output_midi(plugins.base):
 			if hcmd[1] == 'tempo': 
 				midi_tempo = mido.bpm2tempo(hcmd[2])
 				autotrack.append(metamsg('set_tempo', tempo=midi_tempo, time=posdif))
-			if hcmd[1] == 'loop_start': 
+			elif hcmd[1] == 'loop_start': 
 				autotrack.append(rmsg('control_change', channel=0, control=111, value=0, time=posdif))
 				autotrack.append(rmsg('control_change', channel=0, control=116, value=0, time=posdif))
-			if hcmd[1] == 'loop_end': 
+			elif hcmd[1] == 'loop_end': 
 				autotrack.append(rmsg('control_change', channel=0, control=117, value=0, time=posdif))
 			prevpos = hcmd[0]
 
@@ -97,8 +97,14 @@ class output_midi(plugins.base):
 				miditrack.append(metamsg('track_name', name=midi_trackname, time=0))
 			if midi_trackcolor: 
 				midi_trackcolor = midi_trackcolor.get_int()
-				miditrack.append(metamsg('sequencer_specific', data=(83, 105, 103, 110, 1, 255, midi_trackcolor[2], midi_trackcolor[1], midi_trackcolor[0]))) #from Signal MIDI Editor
-				miditrack.append(metamsg('sequencer_specific', data=(80, 114, 101, 83, 1, 255, midi_trackcolor[2], midi_trackcolor[1], midi_trackcolor[0]))) #from Studio One
+
+				#from Signal MIDI Editor
+				miditrack.append(metamsg('sequencer_specific', data=(83, 105, 103, 110, 1, 255, midi_trackcolor[2], midi_trackcolor[1], midi_trackcolor[0])))
+
+				#from Studio One
+				miditrack.append(metamsg('sequencer_specific', data=(80, 114, 101, 83, 1, 255, midi_trackcolor[2], midi_trackcolor[1], midi_trackcolor[0])))
+
+				#from Anvil Studio
 				red_p1 = midi_trackcolor[0] >> 2
 				red_p2 = (midi_trackcolor[0] << 5) & 0x7f
 				green_p1 = midi_trackcolor[1] >> 3
@@ -106,7 +112,7 @@ class output_midi(plugins.base):
 				blue_p1 = midi_trackcolor[2] >> 4
 				blue_p2 = midi_trackcolor[2] & 0x0f
 				anvilcolor = [blue_p2,green_p2+blue_p1,red_p2+green_p1,red_p1]
-				miditrack.append(metamsg('sequencer_specific', data=(5, 15, 52, anvilcolor[0], anvilcolor[1], anvilcolor[2], anvilcolor[3], 0))) #from Anvil Studio
+				miditrack.append(metamsg('sequencer_specific', data=(5, 15, 52, anvilcolor[0], anvilcolor[1], anvilcolor[2], anvilcolor[3], 0)))
 
 			midievents_obj = track_obj.placements.midievents
 			midievents_obj.sort()

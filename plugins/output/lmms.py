@@ -423,9 +423,11 @@ class output_lmms(plugins.base):
 				lmms_track.height = int(max(track_obj.visual_ui.height, 1)*32)
 				song_obj.trackcontainer.tracks.append(lmms_track)
 
+				params_obj = track_obj.params
+
 				if trackcolor: lmms_track.color = '#' + trackcolor.get_hex()
-				paramauto(lmms_track.solo, track_obj.params, 'solo', False, None, autoloc, trackname, 'Solo')
-				paramauto(lmms_track.muted, track_obj.params, 'muted', True, [-1, -1], autoloc, trackname, 'On')
+				paramauto(lmms_track.solo, params_obj, 'solo', False, None, autoloc, trackname, 'Solo')
+				paramauto(lmms_track.muted, params_obj, 'muted', True, [-1, -1], autoloc, trackname, 'On')
 
 				if track_obj.type == 'instrument':
 					lmms_track.type = 0
@@ -434,10 +436,10 @@ class output_lmms(plugins.base):
 					insttrack_obj.fxch.value = track_obj.fxrack_channel
 					insttrack_obj.pitchrange.value = 12
 
-					paramauto(insttrack_obj.vol, track_obj.params, 'vol', 1, [0, 100], autoloc, trackname, 'Vol')
-					paramauto(insttrack_obj.pan, track_obj.params, 'pan', 0, [0, -100], autoloc, trackname, 'Pan')
-					paramauto(insttrack_obj.usemasterpitch, track_obj.params, 'usemasterpitch', not track_obj.is_drum, None, autoloc, trackname, 'Use Master Pitch')
-					paramauto(insttrack_obj.pitch, track_obj.params, 'pitch', 0, [0, 100], autoloc, trackname, 'Pitch')
+					paramauto(insttrack_obj.vol, params_obj, 'vol', 1, [0, 100], autoloc, trackname, 'Vol')
+					paramauto(insttrack_obj.pan, params_obj, 'pan', 0, [0, -100], autoloc, trackname, 'Pan')
+					paramauto(insttrack_obj.usemasterpitch, params_obj, 'usemasterpitch', not track_obj.is_drum, None, autoloc, trackname, 'Use Master Pitch')
+					paramauto(insttrack_obj.pitch, params_obj, 'pitch', 0, [0, 100], autoloc, trackname, 'Pitch')
 
 					for pluginid in track_obj.plugslots.slots_notes:
 						if pluginid in cvpj_plugins:
@@ -621,13 +623,13 @@ class output_lmms(plugins.base):
 					midiport_obj.fixedoutputnote = track_obj.midi.out_inst.key
 					encode_fxchain(insttrack_obj.fxchain, track_obj, trackname, autoloc)
 
-				if track_obj.type == 'audio':
+				elif track_obj.type == 'audio':
 					lmms_track.type = 2
 					samptrack_obj = lmms_track.sampletrack
 
 					samptrack_obj.fxch.value = track_obj.fxrack_channel
-					paramauto(samptrack_obj.vol, track_obj.params, 'vol', 1, [0, 100], autoloc, trackname, 'Vol')
-					paramauto(samptrack_obj.pan, track_obj.params, 'pan', 0, [0, -100], autoloc, trackname, 'Pan')
+					paramauto(samptrack_obj.vol, params_obj, 'vol', 1, [0, 100], autoloc, trackname, 'Vol')
+					paramauto(samptrack_obj.pan, params_obj, 'pan', 0, [0, -100], autoloc, trackname, 'Pan')
 
 					track_obj.placements.pl_audio.sort()
 					for audiopl_obj in track_obj.placements.pl_audio:
@@ -704,14 +706,15 @@ class output_lmms(plugins.base):
 				song_obj.projectnotes.text += cvpj_metadata.comment_text.replace('\n', '<br/>').replace('\r', '<br/>')
 
 		# ---------- transport ----------
+		lmms_timeline = song_obj.timeline
 		if cvpj_obj.transport.loop_active:
-			song_obj.timeline.lpstate = int(cvpj_obj.transport.loop_active)
-			song_obj.timeline.lp0pos = cvpj_obj.transport.loop_start
-			song_obj.timeline.lp1pos = cvpj_obj.transport.loop_end
+			lmms_timeline.lpstate = int(cvpj_obj.transport.loop_active)
+			lmms_timeline.lp0pos = cvpj_obj.transport.loop_start
+			lmms_timeline.lp1pos = cvpj_obj.transport.loop_end
 		else:
-			song_obj.timeline.lpstate = 1
-			song_obj.timeline.lp0pos = cvpj_obj.transport.start_pos
-			song_obj.timeline.lp1pos = cvpj_obj.get_dur()
+			lmms_timeline.lpstate = 1
+			lmms_timeline.lp0pos = cvpj_obj.transport.start_pos
+			lmms_timeline.lp1pos = cvpj_obj.get_dur()
 
 		# ---------- output ----------
 		if dawvert_intent.output_mode == 'file':

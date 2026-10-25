@@ -218,10 +218,11 @@ class output_amped(plugins.base):
 			amped_track.name = track_obj.visual.name if track_obj.visual.name else ''
 
 			# params
-			amped_track.pan = track_obj.params.get('pan', 0).value
-			amped_track.volume = track_obj.params.get('vol', 1.0).value
-			amped_track.mute = not track_obj.params.get('on', True).value
-			amped_track.solo = bool(track_obj.params.get('solo', False).value)
+			params_obj = track_obj.params
+			amped_track.pan = params_obj.get('pan', 0).value
+			amped_track.volume = params_obj.get('vol', 1.0).value
+			amped_track.mute = not params_obj.get('on', True).value
+			amped_track.solo = bool(params_obj.get('solo', False).value)
 
 			# armed
 			amped_track.armed = {

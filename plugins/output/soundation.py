@@ -82,6 +82,31 @@ def addsample(zip_sngz, filepath, alredyexists):
 
 	return zipfilename
 
+def do_pl_time(soundation_region, time_obj):
+	position, duration = time_obj.get_posdur()
+	soundation_region.position = position
+	soundation_region.length = duration
+	soundation_region.loopcount = 1
+	soundation_region.contentPosition = 0
+
+	cut_start, loop_loopstart, loop_loopend = time_obj.get_loop_data()
+
+	if time_obj.cut_type in ['loop', 'loop_off']:
+		soundation_region.length = loop_loopend
+		soundation_region.loopcount = duration/loop_loopend
+
+	elif time_obj.cut_type == 'loop_eq':
+		soundation_region.contentPosition = -(cut_start)
+		soundation_region.length = loop_loopend-cut_start
+		soundation_region.loopcount = duration/soundation_region
+
+	elif time_obj.cut_type == 'cut': 
+		soundation_region.contentPosition = -(cut_start)
+
+def do_pl_vis(soundation_region, visual_obj):
+	if visual_obj.color: soundation_region.color = '#'+visual_obj.color.get_hex_fb(128,128,128)
+	if visual_obj.name: soundation_region.name = visual_obj.name
+
 class output_soundation(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'output'
@@ -172,24 +197,32 @@ class output_soundation(plugins.base):
 		sng_channels = []
 		for trackid, track_obj in cvpj_tracks.iter():
 			soundation_channel = proj_soundation.soundation_channel(None)
+			sng_channels.append(soundation_channel)
 
 			if track_obj.type == 'instrument': soundation_channel.type = 'instrument'
 			elif track_obj.type == 'fx': soundation_channel.type = 'effect'
 			elif track_obj.type == 'audio': soundation_channel.type = 'audio'
 
-			trackcolor = track_obj.visual.color.get_hex_fb(128,128,128)
-			if track_obj.visual.name: 
-				soundation_channel.userSetName = track_obj.visual.name
-				soundation_channel.name = track_obj.visual.name
+			# visual
+			visual_obj = track_obj.visual
+			if visual_obj.name: 
+				soundation_channel.userSetName = visual_obj.name
+				soundation_channel.name = visual_obj.name
+			trackcolor = visual_obj.color.get_hex_fb(128,128,128)
 			soundation_channel.color = '#'+trackcolor.upper()
-			soundation_channel.volume = track_obj.params.get('vol', 1).value
-			soundation_channel.pan = 0.5 + track_obj.params.get('pan', 0).value/2
-			soundation_channel.mute = not track_obj.params.get('enabled', True).value
 
+			# params
+			params_obj = track_obj.params
+			soundation_channel.volume = params_obj.get('vol', 1).value
+			soundation_channel.pan = 0.5 + params_obj.get('pan', 0).value/2
+			soundation_channel.mute = not params_obj.get('enabled', True).value
+
+			# auto
 			add_fx(convproj_obj, soundation_channel, track_obj.plugslots.slots_audio)
 			soundation_channel.volumeAutomation = autopoints_get( ('track',trackid,'vol'), 0, 1)
 			soundation_channel.panAutomation = autopoints_get( ('track',trackid,'pan'), -.5, 2)
 
+			# 
 			if track_obj.type == 'instrument':
 				pluginid = track_obj.plugslots.synth
 				soundation_instrument = proj_soundation.soundation_device(None)
@@ -284,7 +317,6 @@ class output_soundation(plugins.base):
 							soundation_instrument.data['sample'] = None
 						else:
 							soundation_instrument.data['sample'] = {"url": zipfilename, "name": ""}
-
 
 					elif plugin_obj.check_match('user', 'reasonstudios', 'europa'):
 						inst_supported = True
@@ -397,36 +429,17 @@ class output_soundation(plugins.base):
 				soundation_channel.instrument = soundation_instrument
 
 				for notespl_obj in track_obj.placements.pl_notes:
-					time_obj = notespl_obj.time
-					position, duration = time_obj.get_posdur()
-
 					soundation_region = proj_soundation.soundation_region(None)
+					soundation_channel.regions.append(soundation_region)
 
-					if notespl_obj.visual.color: soundation_region.color = '#'+notespl_obj.visual.color.get_hex_fb(128,128,128)
-					if notespl_obj.visual.name: soundation_region.name = notespl_obj.visual.name
-
-					soundation_region.position = position
-					soundation_region.length = duration
-					soundation_region.loopcount = 1
-					soundation_region.contentPosition = 0
 					soundation_region.muted = notespl_obj.muted
-
-					cut_start, loop_loopstart, loop_loopend = time_obj.get_loop_data()
-
-					if time_obj.cut_type == 'loop':
-						soundation_region.length = loop_loopend
-						soundation_region.loopcount = duration/loop_loopend
-
-					if time_obj.cut_type == 'loop_eq':
-						soundation_region.contentPosition = -(cut_start)
-						soundation_region.length = loop_loopend-cut_start
-						soundation_region.loopcount = duration/soundation_region.length
-
-					if time_obj.cut_type == 'cut': 
-						soundation_region.contentPosition = -(cut_start)
-
 					soundation_region.type = 2
 
+					# data
+					do_pl_time(soundation_region, notespl_obj.time)
+					do_pl_vis(soundation_region, notespl_obj.visual)
+
+					# notelist
 					soundation_region.notes = []
 					soundation_region.isPattern = False
 
@@ -441,35 +454,19 @@ class output_soundation(plugins.base):
 							sng_note["length"] = int(cnote.dur)
 							soundation_region.notes.append(sng_note)
 
+			elif track_obj.type == 'audio':
+				for audiopl_obj in track_obj.placements.pl_audio:
+					soundation_region = proj_soundation.soundation_region(None)
 					soundation_channel.regions.append(soundation_region)
 
-			if track_obj.type == 'audio':
-				for audiopl_obj in track_obj.placements.pl_audio:
-					time_obj = audiopl_obj.time
-					position, duration = time_obj.get_posdur()
-					
-					soundation_region = proj_soundation.soundation_region(None)
-
-					if audiopl_obj.visual.color: soundation_region.color = '#'+audiopl_obj.visual.color.get_hex_fb(128,128,128)
-					if audiopl_obj.visual.name: soundation_region.name = audiopl_obj.visual.name
-
-					soundation_region.position = position
-					soundation_region.length = duration
-					soundation_region.loopcount = 1
-					soundation_region.contentPosition = 0
 					soundation_region.muted = audiopl_obj.muted
-
-					cut_start, loop_loopstart, loop_loopend = time_obj.get_loop_data()
-
-					if time_obj.cut_type in ['loop', 'loop_off']:
-						soundation_region.length = loop_loopend
-						soundation_region.loopcount = time_obj.get_dur()/loop_loopend
-
-					if time_obj.cut_type == 'cut': 
-						soundation_region.contentPosition = -(cut_start)
-
 					soundation_region.type = 1
 
+					# data
+					do_pl_time(soundation_region, audiopl_obj.time)
+					do_pl_vis(soundation_region, audiopl_obj.visual)
+
+					# audio
 					audiofilename = ''
 					ref_found, sampleref_obj = convproj_obj.sampleref__get(audiopl_obj.sample.sampleref)
 					if ref_found: audiofilename = sampleref_obj.fileref.get_path(None, False)
@@ -479,15 +476,14 @@ class output_soundation(plugins.base):
 					soundation_region.file = {"url": zipfilename, "name": ""}
 					soundation_region.reversed = audiopl_obj.sample.reverse
 					sp_obj = audiopl_obj.sample
-					pitch = sp_obj.pitch
 
+					# pitch
+					pitch = sp_obj.pitch
 					soundation_region.pitchShiftSemitones = int(round(sp_obj.pitch)*100)
 					soundation_region.pitchShiftCents = int(sp_obj.pitch*100)-soundation_region.pitchShiftSemitones
 
+					# stretch
 					stretch_obj = audiopl_obj.sample.stretch
-					stretch_algo = stretch_obj.algorithm
-
-					soundation_region.stretchMode = 3 if stretch_obj.preserve_pitch else 2
 
 					timing_obj = stretch_obj.timing
 
@@ -499,12 +495,13 @@ class output_soundation(plugins.base):
 						soundation_region.autoStretchBpm = timing_obj.get__tempo(sampleref_obj)
 						soundation_region.isAutoStretched = True
 
+					# stretch_algo
+					stretch_algo = stretch_obj.algorithm
+
 					if stretch_algo.preserve_formants:
 						soundation_region.formantCorrection = 1
 
-					soundation_channel.regions.append(soundation_region)
-
-			sng_channels.append(soundation_channel)
+					soundation_region.stretchMode = 3 if stretch_obj.preserve_pitch else 2
 
 		# ---------- track sends ----------
 		iseffectexists = 'fx' in [cvpj_tracks.data[x].type for x in cvpj_tracks.order]

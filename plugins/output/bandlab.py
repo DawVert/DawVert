@@ -158,19 +158,18 @@ class output_bandlab(plugins.base):
 				do_automation(cvpj_automation, ('track', trackid, 'vol'), blx_track.automation.volume, tempomul)
 
 				# ---------- visual ----------
-				blx_track.name = track_obj.visual.name
-				if track_obj.visual.color:
-					blx_track.color = to_color(track_obj.visual.color)
-					blx_track.colorName = 'Custom'
-				else:
-					blx_track.color = '#EEEEEE'
-					blx_track.colorName = 'Custom'
+				visual_obj = track_obj.visual
+				blx_track.name = visual_obj.name
+				if visual_obj.color: blx_track.color = to_color(visual_obj.color)
+				else: blx_track.color = '#EEEEEE'
+				blx_track.colorName = 'Custom'
 
 				# ---------- params ----------
-				blx_track.isMuted = not track_obj.params.get('enabled', True).value
-				blx_track.isSolo = track_obj.params.get('solo', False).value
-				blx_track.volume = track_obj.params.get('vol', 1).value
-				blx_track.pan = track_obj.params.get('pan', 0).value
+				params_obj = track_obj.params
+				blx_track.isMuted = not params_obj.get('enabled', True).value
+				blx_track.isSolo = params_obj.get('solo', False).value
+				blx_track.volume = params_obj.get('vol', 1).value
+				blx_track.pan = params_obj.get('pan', 0).value
 
 				# ---------- audio track ----------
 				if track_obj.type == 'audio':
