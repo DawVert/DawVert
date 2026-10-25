@@ -13,6 +13,16 @@ from functions import xtramath
 def calcsec(val, ppq):
 	return int((val*50)*ppq)
 
+def clip_time(time_obj, qt_clip, ppq):
+	position, duration = time_obj.get_posdur_real()
+	qt_clip.properties.start = calcsec(position, ppq)
+	qt_clip.properties.length = calcsec(duration, ppq)
+
+def clip_visual(visual_obj, qt_clip):
+	name = visual_obj.name if visual_obj.name else ''
+	qt_clip.properties.name = name
+	qt_clip.name = name
+
 class output_bandlab(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'output'
@@ -97,9 +107,12 @@ class output_bandlab(plugins.base):
 
 			tracknotes_midinames = []
 
-			if track_obj.type in ['instrument', 'audio']:
+			if track_obj.type in ['instrument', 'audio',]:
 				qt_track = proj_qtractor.qtractor_track()
-				if track_obj.type == 'instrument': qt_track.type = 'midi'
+				project_obj.tracks.append(qt_track)
+
+				qt_track.type = 'midi'
+				if track_obj.type == 'audio': qt_track.type = 'audio'
 
 				qt_track.state.gain = track_obj.params.get('vol', 1).value
 				qt_track.state.panning = track_obj.params.get('pan', 0).value
@@ -116,110 +129,91 @@ class output_bandlab(plugins.base):
 				qt_track.view.height = int(track_obj.visual_ui.height*96)
 
 				if track_obj.type == 'audio':
-					qt_track.type = 'audio'
 					for audiopl_obj in track_obj.placements.pl_audio:
-						time_obj = audiopl_obj.time
-
-						position, duration = time_obj.get_posdur_real()
-
 						qt_clip = proj_qtractor.qtractor_clip()
-						qt_clip.properties.start = calcsec(position, ppq)
-						qt_clip.properties.length = calcsec(duration, ppq)
+						qt_track.clips.append(qt_clip)
+
+						time_obj = audiopl_obj.time
+						clip_time(time_obj, qt_clip, ppq)
+						clip_visual(audiopl_obj.visual, qt_clip)
+						qt_clip.properties.mute = int(audiopl_obj.muted)
+
+						# fade
 						qt_clip.properties.fade_in_type = 'Linear'
 						qt_clip.properties.fade_out_type = 'Linear'
 						if audiopl_obj.fade_in.shapetype == 'scurve': qt_clip.properties.fade_in_type = 'InOutQuad'
 						if audiopl_obj.fade_out.shapetype == 'scurve': qt_clip.properties.fade_out_type = 'InOutQuad'
 						qt_clip.properties.fade_in = calcsec(audiopl_obj.fade_in.get_dur_seconds(bpm), ppq)
 						qt_clip.properties.fade_out = calcsec(audiopl_obj.fade_out.get_dur_seconds(bpm), ppq)
-						qt_clip.properties.mute = int(audiopl_obj.muted)
-						qt_clip.audioclip = proj_qtractor.qtractor_clip_audioclip()
 
+						# audioclip
 						sp_obj = audiopl_obj.sample
+
+						qt_clip.audioclip = proj_qtractor.qtractor_clip_audioclip()
 						qt_clip.audioclip.filename = sampleref_filepath[sp_obj.sampleref]
 						qt_clip.audioclip.pitch_shift = xtramath.pitch_to_speed(sp_obj.pitch)
 						qt_clip.properties.gain = sp_obj.vol
 						qt_clip.properties.panning = sp_obj.pan
 
 						_, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
+
+						# stretch
 						stretch_obj = sp_obj.stretch
 						qt_clip.audioclip.time_stretch = 1/stretch_obj.timing.get__real_rate(sampleref_obj, time_obj.realtime_tempo)
 
 						stretch_algo = stretch_obj.algorithm
 						qt_clip.audioclip.rubberband_formant = int(stretch_algo.preserve_formants)
 
-						name = audiopl_obj.visual.name if audiopl_obj.visual.name else ''
-						qt_clip.properties.name = name
-						qt_clip.name = name
-
-						qt_track.clips.append(qt_clip)
-
-				if track_obj.type == 'instrument':
-					qt_track.type = 'midi'
+				elif track_obj.type == 'instrument':
 					for notespl_obj in track_obj.placements.pl_notes:
-						time_obj = notespl_obj.time
-						
-						position, duration = time_obj.get_posdur_real()
-						
 						qt_clip = proj_qtractor.qtractor_clip()
-						qt_clip.properties.start = calcsec(position, ppq)
-						qt_clip.properties.length = calcsec(duration, ppq)
-						qt_clip.properties.name = notespl_obj.visual.name
+						qt_track.clips.append(qt_clip)
+						clip_time(notespl_obj.time, qt_clip, ppq)
+						clip_visual(notespl_obj.visual, qt_clip)
 						qt_clip.properties.mute = int(notespl_obj.muted)
-						qt_clip.midiclip = proj_qtractor.qtractor_clip_midiclip()
 
+						# notelist
+						filepath = '/'.join(['.', 'Assets', 'MIDI', filename+'.mid'])
+
+						qt_clip.midiclip = proj_qtractor.qtractor_clip_midiclip()
 						notelist = notespl_obj.notelist
 						notelist.mod_limit(-60, 67)
 						if notelist not in tracknotes_midinames:
 							tracknotes_midinames.append(notelist)
 							filename = 'track_%s_clip_%i' % (trackid, len(tracknotes_midinames)-1)
-							project_obj.files.midi_list[filename] = '/'.join(['.', 'Assets', 'MIDI', filename+'.mid'])
+							project_obj.files.midi_list[filename] = filepath
 							if dawvert_intent.output_mode == 'file':
 								notelist.midi_to(os.path.join(folder, namet, 'Assets', 'MIDI', filename+'.mid'), bpm)
 
-						notelist_id = 'track_%s_clip_%i' % (trackid, tracknotes_midinames.index(notelist))
+						#notelist_id = 'track_%s_clip_%i' % (trackid, tracknotes_midinames.index(notelist))
 
-						filepath = '/'.join(['.', 'Assets', 'MIDI', filename+'.mid'])
 						qt_clip.midiclip.filename = filepath
 
-						name = notespl_obj.visual.name if notespl_obj.visual.name else ''
-						qt_clip.properties.name = name
-						qt_clip.name = name
-
-						qt_track.clips.append(qt_clip)
 
 					for midipl_obj in track_obj.placements.pl_midi:
-						time_obj = midipl_obj.time
-						
-						position, duration = time_obj.get_posdur_real()
-						
 						qt_clip = proj_qtractor.qtractor_clip()
-						qt_clip.properties.start = calcsec(position, ppq)
-						qt_clip.properties.length = calcsec(duration, ppq)
-						qt_clip.properties.name = midipl_obj.visual.name
+						qt_track.clips.append(qt_clip)
+						clip_time(midipl_obj.time, qt_clip, ppq)
+						clip_visual(midipl_obj.visual, qt_clip)
 						qt_clip.properties.mute = int(midipl_obj.muted)
-						qt_clip.midiclip = proj_qtractor.qtractor_clip_midiclip()
+
+						# midievents
+						filepath = '/'.join(['.', 'Assets', 'MIDI', filename+'.mid'])
 
 						midievents = midipl_obj.midievents
 						if midievents not in tracknotes_midinames:
 							tracknotes_midinames.append(midievents)
 							filename = 'track_%s_clip_%i' % (trackid, len(tracknotes_midinames)-1)
-							project_obj.files.midi_list[filename] = '/'.join(['.', 'Assets', 'MIDI', filename+'.mid'])
+							project_obj.files.midi_list[filename] = filepath
 							if dawvert_intent.output_mode == 'file':
 								midievents.midi_to(os.path.join(folder, namet, 'Assets', 'MIDI', filename+'.mid'))
 
-						notelist_id = 'track_%s_clip_%i' % (trackid, tracknotes_midinames.index(midievents))
+						#notelist_id = 'track_%s_clip_%i' % (trackid, tracknotes_midinames.index(midievents))
 
-						filepath = '/'.join(['.', 'Assets', 'MIDI', filename+'.mid'])
 						qt_clip.midiclip.filename = filepath
 
-						name = midipl_obj.visual.name if midipl_obj.visual.name else ''
-						qt_clip.properties.name = name
-						qt_clip.name = name
-
-						qt_track.clips.append(qt_clip)
 
 
-				project_obj.tracks.append(qt_track)
 
 		# ---------- output ----------
 		if dawvert_intent.output_mode == 'file':

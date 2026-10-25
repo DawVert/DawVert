@@ -615,9 +615,12 @@ class output_tracktion_edit(plugins.base):
 			wf_track.height = track_obj.visual_ui.height*35.41053828354546
 			wf_track.mute = int(not bool(track_obj.params.get('enabled', True).value))
 			wf_track.solo = int(track_obj.params.get('solo', False).value)
+
+			# ---------- visual ----------
 			if track_obj.visual.name: wf_track.name = track_obj.visual.name
 			if track_obj.visual.color: wf_track.colour = 'ff'+track_obj.visual.color.get_hex()
 			
+			# ---------- middlenote ----------
 			middlenote = track_obj.datavals.get('middlenote', 0)
 
 			synth_plugid = track_obj.plugslots.synth
@@ -632,6 +635,7 @@ class output_tracktion_edit(plugins.base):
 				wf_plugin.params['semitonesUp'] = -middlenote
 				wf_track.plugins.append(wf_plugin)
 
+			# ---------- plugins ----------
 			if track_obj.plugslots.synth:
 				wf_inst_plugin = get_plugin(convproj_obj, track_obj.params, sampleref_assoc, sampleref_obj_assoc, track_obj.plugslots.synth, track_obj.type in ['instrument', 'hybrid'])
 				if wf_inst_plugin:
@@ -639,7 +643,10 @@ class output_tracktion_edit(plugins.base):
 
 			get_plugins(convproj_obj, track_obj.params, sampleref_assoc, sampleref_obj_assoc, wf_track.plugins, track_obj.plugslots.slots_audio)
 
-			for notespl_obj in track_obj.placements.pl_notes:
+			# ---------- placements ----------
+			track_placements = track_obj.placements
+
+			for notespl_obj in track_placements.pl_notes:
 				wf_midiclip = proj_tracktion_edit.tracktion_midiclip()
 				wf_midiclip.id_num = counter_id.get()
 				wf_track.midiclips.append(wf_midiclip)
@@ -715,7 +722,7 @@ class output_tracktion_edit(plugins.base):
 				# ---------- fx ----------
 				wf_midiclip.mute = int(notespl_obj.muted)
 
-			for audiopl_obj in track_obj.placements.pl_audio:
+			for audiopl_obj in track_placements.pl_audio:
 				wf_audioclip = proj_tracktion_edit.tracktion_audioclip()
 				wf_audioclip.id_num = counter_id.get()
 				wf_track.audioclips.append(wf_audioclip)
@@ -844,6 +851,7 @@ class output_tracktion_edit(plugins.base):
 				for k, v in track_obj.visual_keynotes.items(): wf_plugin.params['note'+str(k+60)] = v.name
 				wf_track.plugins.append(wf_plugin)
 
+			# ---------- sends ----------
 			do_sends(convproj_obj, sends_pre, wf_track, auxnums)
 			make_volpan_plugin(convproj_obj, track_obj, trackid, wf_track, 'track')
 			do_sends(convproj_obj, sends_post, wf_track, auxnums)

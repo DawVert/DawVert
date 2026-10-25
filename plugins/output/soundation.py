@@ -174,8 +174,8 @@ class output_soundation(plugins.base):
 			soundation_channel = proj_soundation.soundation_channel(None)
 
 			if track_obj.type == 'instrument': soundation_channel.type = 'instrument'
-			if track_obj.type == 'fx': soundation_channel.type = 'effect'
-			if track_obj.type == 'audio': soundation_channel.type = 'audio'
+			elif track_obj.type == 'fx': soundation_channel.type = 'effect'
+			elif track_obj.type == 'audio': soundation_channel.type = 'audio'
 
 			trackcolor = track_obj.visual.color.get_hex_fb(128,128,128)
 			if track_obj.visual.name: 
