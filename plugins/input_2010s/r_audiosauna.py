@@ -198,8 +198,9 @@ class input_audiosauna(plugins.base):
 
 			# patterns
 			for as_pattern in as_chan.patterns:
-				# notelist
 				placement_obj = track_placements.add_notes()
+
+				# visual
 				set_color(placement_obj.visual, as_pattern.patternColor, colordata)
 				if as_pattern.name: placement_obj.visual.name = as_pattern.name
 
@@ -241,7 +242,7 @@ class input_audiosauna(plugins.base):
 						track_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 
 						if deviceType==3: deviceType = 1
-						if deviceType==4: deviceType = 2
+						elif deviceType==4: deviceType = 2
 
 						fldso = globalstore.datapack.get_obj('audiosauna', 'plugin', str(deviceType))
 						if fldso:
@@ -252,7 +253,7 @@ class input_audiosauna(plugins.base):
 						setasdr(plugin_obj, 'vol', as_device.params, False, 'attack', 'decay', 'release', 'sustain')
 
 						if deviceType == 1: oprange = 2
-						if deviceType == 0: oprange = 4
+						elif deviceType == 0: oprange = 4
 
 						for opnum in range(oprange):
 							opnumtxt = str(opnum+1)
