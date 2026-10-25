@@ -151,16 +151,19 @@ class input_korg_m1_nds(plugins.base):
 							plugin_obj = cvpj_plugins.add_native('korg_m1', instset, cvpj_pluginid)
 							track_obj.plugslots.set_synth(cvpj_pluginid)
 
-							plugin_obj.datavals.add('set', instset)
-							plugin_obj.datavals.add('patch', realpatch)
-							plugin_obj.datavals.add('attack', channel_obj.attack)
-							plugin_obj.datavals.add('release', channel_obj.release)
+							datavals_obj = plugin_obj.datavals
+							params_obj = plugin_obj.params
+
+							datavals_obj['set'] = instset
+							datavals_obj['patch'] = realpatch
+							datavals_obj['attack'] = channel_obj.attack
+							datavals_obj['release'] = channel_obj.release
 
 							for n, drumparam in enumerate(channel_obj.drumparams):
 								starttxt = 'drum_%i_' % n
-								plugin_obj.params.add(starttxt+'level', drumparam.level/15, 'float')
-								plugin_obj.params.add(starttxt+'pan', (drumparam.pan-5)/5, 'float')
-								plugin_obj.params.add(starttxt+'tune', drumparam.tune, 'float')
+								params_obj.add(starttxt+'level', drumparam.level/15, 'float')
+								params_obj.add(starttxt+'pan', (drumparam.pan-5)/5, 'float')
+								params_obj.add(starttxt+'tune', drumparam.tune, 'float')
 						except:
 							pass
 

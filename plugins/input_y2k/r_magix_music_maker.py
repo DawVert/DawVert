@@ -111,7 +111,7 @@ class input_old_magix_maker(plugins.base):
 						sampleref_obj.search_local(dawvert_intent.input_folder)
 						sampleref_obj.set_fileformat(fileext)
 						sampleref_objs[n] = sampleref_obj
-					if fileext == 'avi':
+					elif fileext == 'avi':
 						videoref_obj = convproj_obj.videoref__add(sampleid, joinedpath, 'win')
 						videoref_obj.search_local(dawvert_intent.input_folder)
 						videoref_objs[n] = videoref_obj

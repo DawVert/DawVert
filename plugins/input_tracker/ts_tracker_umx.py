@@ -27,7 +27,7 @@ TRACKER_FORMATS = {
 
 IGNORE_ERRORS = False
 
-class input_mod(plugins.base):
+class input_umx(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
 

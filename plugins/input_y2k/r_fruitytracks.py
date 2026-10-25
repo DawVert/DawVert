@@ -7,8 +7,9 @@ import os
 
 from objects.convproj import fileref
 
-def calc_tick_val(bpmdiv, inpos):
-	return (inpos/5512)/bpmdiv
+def panval(v): (v-64)/64
+
+def calc_tick_val(bpmdiv, inpos): return (inpos/5512)/bpmdiv
 
 class addauto_data():
 	def __init__(self):
@@ -153,7 +154,7 @@ class input_fruitytracks(plugins.base):
 
 			#params
 			params_obj = track_obj.params
-			params_obj.add('pan', (ftr_track.pan-64)/64, 'float')
+			params_obj.add('pan', panval(ftr_track.pan), 'float')
 			params_obj.add('vol', ftr_track.vol/128, 'float')
 			params_obj.add('enabled', not bool(ftr_track.muted), 'bool')
 
@@ -229,15 +230,15 @@ class input_fruitytracks(plugins.base):
 				# auto: pan
 				addauto_obj.autoloc = ('track', trackid, 'pan')
 				addauto_obj.mpetype = 'pan'
-				addauto_obj.startval = (ftr_clip.pan_start-64)/64
-				addauto_obj.endval = (ftr_clip.pan_end-64)/64
+				addauto_obj.startval = panval(ftr_clip.pan_start)
+				addauto_obj.endval = panval(ftr_clip.pan_end)
 				addauto_obj.envpoints = None
-				addauto_obj.defval = (ftr_track.pan-64)/64
+				addauto_obj.defval = panval(ftr_track.pan)
 				addauto_obj.iseff = False
 				addauto_obj.auto_method = pan_auto
 
 				if (ftr_clip.pan_start == ftr_clip.pan_end):
-					sp_obj.pan = (ftr_clip.pan_start-64)/64
+					sp_obj.pan = panval(ftr_clip.pan_start)
 				else:
 					make_auto(convproj_obj, addauto_obj)
 

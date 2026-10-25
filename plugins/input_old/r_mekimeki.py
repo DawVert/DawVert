@@ -16,7 +16,7 @@ maincolor = [0.42, 0.59, 0.24]
 
 scaletable = [[0,0,0,0,0,0,0], [0,0,-1,0,0,-1,-1], [0,1,1,1,0,1,0], [0,-1,-1,-1,-1,-1,-1]]
 
-class input_cvpj_f(plugins.base):
+class input_mekimekichip(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
 	
