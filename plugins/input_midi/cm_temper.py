@@ -13,7 +13,7 @@ def do_phrase_ui(visual_obj, pui):
 		if pui.color_bg: visual_obj.color.set_int(pui.color_bg)
 		if pui.color_fg: visual_obj.altcolor_add('fg').set_int(pui.color_bg)
 
-class input_cvpj_f(plugins.base):
+class input_temper(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
 	

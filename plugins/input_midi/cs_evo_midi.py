@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 import plugins
 import json
 
-class input_cvpj_f(plugins.base):
+class input_evolution_midi(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
 	
