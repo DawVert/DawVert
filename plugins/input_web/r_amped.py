@@ -65,10 +65,11 @@ def get_contentGuid(contentGuid):
 	else: return contentGuid
 
 def volt_lfo(plugin_obj, starttxt, asdrtype, amtgain):
-	lfo_wave = int(plugin_obj.params.get(starttxt+"wave", 0).value)
-	lfo_rate = plugin_obj.params.get(starttxt+"rate", 0).value
-	lfo_amp = plugin_obj.params.get(starttxt+"amp", 0).value
-	lfo_delay = plugin_obj.params.get(starttxt+"delay", 0).value
+	params_obj = plugin_obj.params
+	lfo_wave = int(params_obj.get(starttxt+"wave", 0).value)
+	lfo_rate = params_obj.get(starttxt+"rate", 0).value
+	lfo_amp = params_obj.get(starttxt+"amp", 0).value
+	lfo_delay = params_obj.get(starttxt+"delay", 0).value
 
 	lfo_obj = plugin_obj.lfo_add(asdrtype)
 	lfo_obj.predelay = lfo_delay
@@ -77,14 +78,16 @@ def volt_lfo(plugin_obj, starttxt, asdrtype, amtgain):
 	lfo_obj.amount = lfo_amp*amtgain
 
 def volt_adsr(plugin_obj, starttxt, env_name, amount):
-	eg_A = plugin_obj.params.get(starttxt+"A", 0).value*10
-	eg_D = plugin_obj.params.get(starttxt+"D", 0).value*10
-	eg_S = plugin_obj.params.get(starttxt+"S", 0).value
-	eg_R = plugin_obj.params.get(starttxt+"R", 0).value*10
+	params_obj = plugin_obj.params
 
-	eg_curveA = plugin_obj.params.get(starttxt+"curveA", 0).value
-	eg_curveD = plugin_obj.params.get(starttxt+"curveD", 0).value
-	eg_curveR = plugin_obj.params.get(starttxt+"curveR", 0).value
+	eg_A = params_obj.get(starttxt+"A", 0).value*10
+	eg_D = params_obj.get(starttxt+"D", 0).value*10
+	eg_S = params_obj.get(starttxt+"S", 0).value
+	eg_R = params_obj.get(starttxt+"R", 0).value*10
+
+	eg_curveA = params_obj.get(starttxt+"curveA", 0).value
+	eg_curveD = params_obj.get(starttxt+"curveD", 0).value
+	eg_curveR = params_obj.get(starttxt+"curveR", 0).value
 
 	asdr_obj = plugin_obj.env_asdr_add(env_name, 0, eg_A, 0, eg_D, eg_S, eg_R, amount)
 	asdr_obj.attack_tension = eg_curveA
@@ -120,12 +123,13 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 				plugin_obj = cvpj_plugins.add('synth', 'smartelectronix', 'augur', pluginid)
 				plugin_obj.role = 'synth'
 				wampreset = get_wampreset(amped_tr_device)
+				params_obj = plugin_obj.params
 				if 'data' in wampreset:
 					for n, v in enumerate(wampreset['data']):
 						paramname = 'augur_'+str(n)
-						if isinstance(v, int): plugin_obj.params.add(paramname, v, 'int')
-						elif isinstance(v, float): plugin_obj.params.add(paramname, v, 'float')
-						elif isinstance(v, bool): plugin_obj.params.add(paramname, v, 'bool')
+						if isinstance(v, int): params_obj.add(paramname, v, 'int')
+						elif isinstance(v, float): params_obj.add(paramname, v, 'float')
+						elif isinstance(v, bool): params_obj.add(paramname, v, 'bool')
 
 			elif amped_tr_device.label == 'Dexed': 
 				instnames.append('Dexed')
@@ -160,7 +164,8 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 					for param_id, dset_param in datapack_synth_nonfree.params.iter():
 						if dset_param.name in europa_params:
 							param_type, param_value = europa_params[dset_param.name]
-							if param_type == 'number': plugin_obj.dset_param__add(param_id, param_value, dset_param)
+							if param_type == 'number': 
+								plugin_obj.dset_param__add(param_id, param_value, dset_param)
 							else:
 								if dset_param.name in ['Curve1','Curve2','Curve3','Curve4','Curve']: param_value = list(bytes.fromhex(param_value))
 								plugin_obj.datavals.add(param_id, param_value)
@@ -229,7 +234,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			plugin_obj = cvpj_plugins.add_uni('midi', None, pluginid)
 			plugin_obj.role = 'synth'
 			plugin_obj.midi.from_sf2(value_bank, value_patch)
-			param_obj = plugin_obj.params.add_named('gain', value_gain, 'float', 'Gain')
+			plugin_obj.params.add_named('gain', value_gain, 'float', 'Gain')
 
 		elif devicetype == ['Granny', 'Granny']:
 			instnames.append('Granny')
@@ -260,6 +265,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			do_idparams(amped_tr_device.params, plugin_obj, amped_tr_device.className)
 			do_idauto(cvpj_automation, amped_autodata, devid, amped_tr_device.params, pluginid)
 
+			# filter
 			filt_lvl = plugin_obj.params.get("part/1/eg/3/L", 0).value
 			modlvl = plugin_obj.params.get("part/1/eg/1/L", 0).value
 
@@ -269,14 +275,18 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 
 			filt_fc = ((filt_fc*2)**3.14)*800
 
-			plugin_obj.filter.type.set('low_pass', None)
-			plugin_obj.filter.on = not bool(filt_bypass)
-			plugin_obj.filter.freq = filt_fc
-			plugin_obj.filter.q = 1+(filt_Q*2.5)
+			filter_obj = plugin_obj.filter
+			filter_obj.type.set('low_pass', None)
+			filter_obj.on = not bool(filt_bypass)
+			filter_obj.freq = filt_fc
+			filter_obj.q = 1+(filt_Q*2.5)
 
+			# adsr
 			volt_adsr(plugin_obj, 'part/1/eg/4/', 'vol', 1)
 			volt_adsr(plugin_obj, 'part/1/eg/3/', 'cutoff', filt_lvl*6000)
 			volt_adsr(plugin_obj, 'part/1/eg/1/', 'modenv', modlvl)
+			
+			# lfo
 			volt_lfo(plugin_obj, 'part/1/lfo/3/', 'cutoff', 8000)
 			volt_lfo(plugin_obj, 'part/1/lfo/1/', 'modenv', 1)
 

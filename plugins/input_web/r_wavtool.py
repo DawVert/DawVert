@@ -13,6 +13,13 @@ from functions import xtramath
 
 logger_input = logging.getLogger('input')
 
+vals_filtertypes = {
+	'Low Pass': 'low_pass',
+	'High Pass': 'high_pass',
+	'Band Pass': 'band_pass',
+	'Notch': 'notch'
+}
+
 def extract_audio(audioname):
 	audio_filename = None
 	for s_file in zip_data.namelist():
@@ -113,10 +120,8 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					filter_obj.q = plugin_obj.params.get('filterResonance', 0.71).value
 
 					filtertype = plugin_obj.datavals.get('filterType', 'Low Pass')
-					if filtertype == 'Low Pass': filter_obj.type.set('low_pass', None)
-					elif filtertype == 'High Pass': filter_obj.type.set('high_pass', None)
-					elif filtertype == 'Band Pass': filter_obj.type.set('band_pass', None)
-					elif filtertype == 'Notch': filter_obj.type.set('notch', None)
+					ftype = vals_filtertypes[filtertype] if filtertype in vals_filtertypes else 'low_pass'
+					filter_obj.type.set(ftype, None)
 
 					plugin_obj.datavals.add('matrix', matrix)
 					inst_fallback = deviceid

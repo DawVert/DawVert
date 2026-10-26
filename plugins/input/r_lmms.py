@@ -100,6 +100,17 @@ vals_plug_noteoffset = {
 	'vestige': 0,
 }
 
+paramnames_sf2player = [
+	['chorus_depth','chorusDepth'],
+	['chorus_level','chorusLevel'],
+	['chorus_lines','chorusNum'],
+	['chorus_speed','chorusSpeed'],
+	['reverb_damping','reverbDamping'],
+	['reverb_level','reverbLevel'],
+	['reverb_roomsize','reverbRoomSize'],
+	['reverb_width','reverbWidth']
+]
+
 chord = [[0], [0, 4, 7], [0, 4, 6], [0, 3, 7], [0, 3, 6], [0, 2, 7], [0, 5, 7], [0, 4, 8], [0, 5, 8], [0, 3, 6, 9], [0, 4, 7, 9], [0, 5, 7, 9], [0, 4, 7, 9, 14], [0, 3, 7, 9], [0, 3, 7, 9, 14], [0, 4, 7, 10], [0, 5, 7, 10], [0, 4, 8, 10], [0, 4, 6, 10], [0, 4, 7, 10, 15], [0, 4, 7, 10, 13], [0, 4, 8, 10, 15], [0, 4, 8, 10, 13], [0, 4, 6, 10, 13], [0, 4, 7, 10, 17], [0, 4, 7, 10, 21], [0, 4, 7, 10, 18], [0, 4, 7, 11], [0, 4, 6, 11], [0, 4, 8, 11], [0, 4, 7, 11, 18], [0, 4, 7, 11, 21], [0, 3, 7, 10], [0, 3, 6, 10], [0, 3, 7, 10, 13], [0, 3, 7, 10, 17], [0, 3, 7, 10, 21], [0, 3, 7, 11], [0, 3, 7, 11, 17], [0, 3, 7, 11, 21], [0, 4, 7, 10, 14], [0, 5, 7, 10, 14], [0, 4, 7, 14], [0, 4, 8, 10, 14], [0, 4, 6, 10, 14], [0, 4, 7, 10, 14, 18], [0, 4, 7, 10, 14, 20], [0, 4, 7, 11, 14], [0, 5, 7, 11, 15], [0, 4, 8, 11, 14], [0, 4, 7, 11, 14, 18], [0, 3, 7, 10, 14], [0, 3, 7, 14], [0, 3, 6, 10, 14], [0, 3, 7, 11, 14], [0, 4, 7, 10, 14, 17], [0, 4, 7, 10, 13, 17], [0, 4, 7, 11, 14, 17], [0, 3, 7, 10, 14, 17], [0, 3, 7, 11, 14, 17], [0, 4, 7, 10, 14, 21], [0, 4, 7, 10, 15, 21], [0, 4, 7, 10, 13, 21], [0, 4, 6, 10, 13, 21], [0, 4, 7, 11, 14, 21], [0, 3, 7, 10, 14, 21], [0, 3, 7, 11, 14, 21], [0, 2, 4, 5, 7, 9, 11], [0, 2, 3, 5, 7, 8, 11], [0, 2, 3, 5, 7, 9, 11], [0, 2, 4, 6, 8, 10], [0, 2, 3, 5, 6, 8, 9, 11], [0, 2, 4, 7, 9], [0, 3, 5, 7, 10], [0, 1, 5, 7, 10], [0, 2, 4, 5, 7, 8, 9, 11], [0, 2, 4, 5, 7, 9, 10, 11], [0, 3, 5, 6, 7, 10], [0, 1, 4, 5, 7, 8, 11], [0, 1, 4, 6, 8, 10, 11], [0, 1, 3, 5, 7, 9, 11], [0, 1, 3, 5, 7, 8, 11], [0, 2, 3, 6, 7, 8, 11], [0, 2, 3, 5, 7, 9, 10], [0, 1, 3, 5, 7, 8, 10], [0, 2, 4, 6, 7, 9, 11], [0, 2, 4, 5, 7, 9, 10], [0, 2, 3, 5, 7, 8, 10], [0, 1, 3, 5, 6, 8, 10], [0, 2, 3, 5, 7, 8, 10], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [0, 1, 3, 4, 6, 7, 9, 10], [0, 7], [0, 1, 4, 5, 7, 8, 10], [0, 1, 4, 5, 6, 8, 11]]
 
 # ------- functions -------
@@ -265,51 +276,57 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 
 	if pluginname == "sf2player":
 		plugin_obj = cvpj_plugins.add_uni('soundfont2', None)
-		pluginid = cvpj_plugins.get_lastid()
 		plugin_obj.role = 'synth'
+		pluginid = cvpj_plugins.get_lastid()
+
+		# midi
 		bank = int(lmms_plugin.get_param('bank', 0))
 		patch = int(lmms_plugin.get_param('patch', 0))
 		plugin_obj.midi.from_sf2(bank, patch)
 
+		# file
 		sf2_path = str(lmms_plugin.get_param('src', 0))
 		convproj_obj.fileref__add(sf2_path, sf2_path, None)
 		plugin_obj.fileref__set('file', sf2_path)
 
+		# params
+		for cvpj_name, lmmsname in paramnames_sf2player:
+			plugin_obj.params.add(cvpj_name, float(lmms_plugin.get_param(lmmsname, 0)), 'float')
+		plugin_obj.params.add('chorus_enabled', float(lmms_plugin.get_param('chorusOn', 0)), 'bool')
+		plugin_obj.params.add('reverb_enabled', float(lmms_plugin.get_param('reverbOn', 0)), 'bool')
 		param_obj = plugin_obj.params.add('gain', float(lmms_plugin.get_param('gain', 0)), 'float')
 		param_obj.visual.name = 'Gain'
-		for cvpj_name, lmmsname in [['chorus_depth','chorusDepth'],['chorus_level','chorusLevel'],['chorus_lines','chorusNum'],['chorus_speed','chorusSpeed'],['reverb_damping','reverbDamping'],['reverb_level','reverbLevel'],['reverb_roomsize','reverbRoomSize'],['reverb_width','reverbWidth']]:
-			plugin_obj.params.add(cvpj_name, float(lmms_plugin.get_param(lmmsname, 0)), 'float')
-			param_obj.visual.name = lmmsname
-		param_obj = plugin_obj.params.add('chorus_enabled', float(lmms_plugin.get_param('chorusOn', 0)), 'bool')
-		param_obj = plugin_obj.params.add('reverb_enabled', float(lmms_plugin.get_param('reverbOn', 0)), 'bool')
 
 	elif pluginname == "audiofileprocessor":
 		filepath = get_sample(str(lmms_plugin.get_param('src', '')))
 		plugin_obj, sampleref_obj, sp_obj = cvpj_plugins.addspec_sampler(filepath, None)
 		pluginid = cvpj_plugins.get_lastid()
-		lmms_interpolation = int(lmms_plugin.get_param('interp', 0))
-
-		looped = int(lmms_plugin.get_param('looped', 0))
 
 		sp_obj.reverse = bool(int(lmms_plugin.get_param('reversed', 0)))
 		sp_obj.vol = float(lmms_plugin.get_param('amp', 1))/100
 		sp_obj.data['continueacrossnotes'] = bool(int(lmms_plugin.get_param('stutter', 0)))
+		sp_obj.trigger = 'oneshot' if isbb else 'normal'
+
+		# loop
 		sp_obj.point_value_type = "percent"
-		sp_obj.loop_active = looped != 0
 		sp_obj.start = float(lmms_plugin.get_param('sframe', 0))
 		sp_obj.loop_start = float(lmms_plugin.get_param('lframe', 0))
 		sp_obj.loop_end = float(lmms_plugin.get_param('eframe', 1))
 		sp_obj.end = sp_obj.loop_end
-		sp_obj.trigger = 'oneshot' if isbb else 'normal'
 
+		looped = int(lmms_plugin.get_param('looped', 0))
+		sp_obj.loop_active = looped != 0
 		if looped == 2: sp_obj.loop_mode = "pingpong"
+
+		# interpolation
+		lmms_interpolation = int(lmms_plugin.get_param('interp', 0))
 		if lmms_interpolation in vals_interpolation: 
 			sp_obj.interpolation = vals_interpolation[lmms_interpolation]
 
 	elif pluginname == "vestige":
 		plugin_obj = cvpj_plugins.add_external('vst2', 'win')
-		pluginid = cvpj_plugins.get_lastid()
 		plugin_obj.role = 'synth'
+		pluginid = cvpj_plugins.get_lastid()
 		getvstparams(convproj_obj, plugin_obj, pluginid, lmms_plugin)
 
 	elif pluginname == "sid":
@@ -317,10 +334,12 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 		pluginid = cvpj_plugins.get_lastid()
 		sid_obj = chip_sid.sid_inst()
 
+		# filter
 		sid_obj.filter_cutoff = int(lmms_plugin.get_param('filterFC', 0))
 		sid_obj.filter_resonance = int(lmms_plugin.get_param('filterResonance', 0))
 		sid_obj.filter_mode = int(lmms_plugin.get_param('filterMode', 0))
 
+		# oscs
 		sid_obj.oscs[0].on = 1
 		sid_obj.oscs[1].on = 1
 		sid_obj.oscs[2].on = int(not lmms_plugin.get_param('voice3Off', 0))
@@ -384,13 +403,13 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 			wave_obj = plugin_obj.wave_add('shape')
 			wave_obj.set_all_range(wave_data, 0, 15)
 
-		if pluginname == "watsyn":
+		elif pluginname == "watsyn":
 			for shapename in ['b1_wave', 'a2_wave', 'b2_wave', 'a1_wave']:
 				wave_data = get_wavestr(lmms_plugin, shapename)
 				wave_obj = plugin_obj.wave_add(shapename)
 				wave_obj.set_all_range(wave_data, -1, 1)
 
-		if pluginname == "vibedstrings":
+		elif pluginname == "vibedstrings":
 			for num in range(9):
 				graphid = 'graph'+str(num)
 				wave_data = get_wavestr(lmms_plugin, graphid)
@@ -399,7 +418,7 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 				wave_obj.smooth = True
 			plugin_obj.midi_fallback__add_inst(24)
 
-		if pluginname == "bitinvader":
+		elif pluginname == "bitinvader":
 			wave_data = get_wavestr(lmms_plugin, 'sampleShape')
 
 			wave_obj = plugin_obj.wave_add('main')
@@ -423,11 +442,11 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 			osc_data.prop.type = 'wave'
 			osc_data.prop.nameid = 'main'
 
-		if pluginname == "zynaddsubfx":
+		elif pluginname == "zynaddsubfx":
 			if 'ZynAddSubFX-data' in lmms_plugin.custom:
 				plugin_obj.rawdata_add('data', ET.tostring(lmms_plugin.custom['ZynAddSubFX-data'], encoding='utf-8'))
 
-		if pluginname == "tripleoscillator":
+		elif pluginname == "tripleoscillator":
 			for oscnum in range(1, 4):
 				out_str = 'userwavefile'+str(oscnum)
 				sampleid = pluginid+'_'+out_str
@@ -437,7 +456,7 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 					sp_obj = plugin_obj.samplepart_add(out_str)
 					sp_obj.sampleid = sampleid
 
-		if pluginname == "slicert":
+		elif pluginname == "slicert":
 			plugin_obj = cvpj_plugins.add_uni('sampler', 'slicer')
 			plugin_obj.role = 'synth'
 			pluginid = cvpj_plugins.get_lastid()
@@ -465,7 +484,7 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 					slice_obj.start = int(float(value)*hzmod*dur_samples)
 					slicenum += 1
 
-		if pluginname == "malletsstk":
+		elif pluginname == "malletsstk":
 			malpreset = lmms_plugin.get_param('preset', 0).value
 			if malpreset in vals_midi_mallets:
 				plugin_obj.midi_fallback__add_inst(vals_midi_mallets[malpreset])

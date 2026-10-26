@@ -118,22 +118,25 @@ class input_nanostudio_v1(plugins.base):
 							if fx.type == 'TCE-1':
 								plugin_obj = cvpj_plugins.add_uni('compressor', None, fxid)
 								plugin_obj.role = 'fx'
+								params_obj = plugin_obj.params
+
 								if 'Enable' in patch_data: plugin_obj.fxdata_add(patch_data['Enable']=='1', None)
-								if 'Attack' in patch_data: plugin_obj.params.add('attack', float(patch_data['Attack'])/10, 'float')
-								if 'Release' in patch_data: plugin_obj.params.add('release', float(patch_data['Release']), 'float')
-								if 'Threshold' in patch_data: plugin_obj.params.add('threshold', float(patch_data['Threshold']), 'float')
-								if 'OutputGain' in patch_data: plugin_obj.params.add('gain', float(patch_data['OutputGain']), 'float')
+								if 'Attack' in patch_data: params_obj.add('attack', float(patch_data['Attack'])/10, 'float')
+								if 'Release' in patch_data: params_obj.add('release', float(patch_data['Release']), 'float')
+								if 'Threshold' in patch_data: params_obj.add('threshold', float(patch_data['Threshold']), 'float')
+								if 'OutputGain' in patch_data: params_obj.add('gain', float(patch_data['OutputGain']), 'float')
 								if 'Ratio' in patch_data: 
 									ratio = float(patch_data['Ratio'])
-									plugin_obj.params.add('ratio', 1/(1-ratio), 'float')
+									params_obj.add('ratio', 1/(1-ratio), 'float')
 							else:
 								plugin_obj = cvpj_plugins.add_native('nanostudio_v1', fx.type, fxid)
 								plugin_obj.role = 'fx'
+								params_obj = plugin_obj.params
 								if 'Enable' in patch_data: 
 									plugin_obj.fxdata_add(patch_data['Enable']=='1', None)
 									del patch_data['Enable']
 								for key, val in patch_data.items():
-									if val.replace('.', '').isnumeric(): plugin_obj.params.add(key, float(val), 'float')
+									if val.replace('.', '').isnumeric(): params_obj.add(key, float(val), 'float')
 									else: plugin_obj.datavals.add(key, val)
 							track_obj.plugin_autoplace(plugin_obj, fxid)
 
@@ -148,14 +151,15 @@ class input_nanostudio_v1(plugins.base):
 				if clips is not None:
 					for clip in clips:
 						placement_obj = lane_pl.placements.add_notes()
-						
+
 						# visual
+						visual_obj = placement_obj.visual
 						if clip['event_assoc']<100: 
-							placement_obj.visual.name = 'Pattern #'+str(clip['event_assoc'])
+							visual_obj.name = 'Pattern #'+str(clip['event_assoc'])
 							colorfloat = colordata.getcolornum(clip['event_assoc']-1)
-							placement_obj.visual.color.set_int(colorfloat)
+							visual_obj.color.set_int(colorfloat)
 						else:
-							placement_obj.visual.color.set_float([0.25, 0.59, 0.73])
+							visual_obj.color.set_float([0.25, 0.59, 0.73])
 
 						# time
 						clipsize, events = project_obj.patterns[clip['event_assoc']]

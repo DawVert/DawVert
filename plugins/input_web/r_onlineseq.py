@@ -155,13 +155,13 @@ class input_onlinesequencer(plugins.base):
 				if instid == 13:
 					plugin_obj.midi_fallback__add_inst(11)
 					osc_data.prop.shape = 'sine'
-				if instid == 14:
+				elif instid == 14:
 					plugin_obj.midi_fallback__add_inst(80)
 					osc_data.prop.shape = 'square'
-				if instid == 15:
+				elif instid == 15:
 					plugin_obj.midi_fallback__add_inst(81)
 					osc_data.prop.shape = 'saw'
-				if instid == 16:
+				elif instid == 16:
 					plugin_obj.midi_fallback__add_inst(95)
 					osc_data.prop.shape = 'triangle'
 			

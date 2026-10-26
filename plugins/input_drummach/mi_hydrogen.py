@@ -112,11 +112,11 @@ class input_hydrogen(plugins.base):
 
 		convproj_obj.params.add('bpm', bpm , 'float')
 
-		# ---------- bpm master track ----------
+		# ---------- master track ----------
 		cvpj_master.params.add('vol', project_obj.volume, 'float')
 		cvpj_master.params.add('enabled', not project_obj.isMuted, 'float')
 
-		# ---------- bpm playback track ----------
+		# ---------- playback track ----------
 		plnum = 0
 		if project_obj.playbackTrackFilename and pb_track:
 			playlist_obj = convproj_obj.playlist__add(plnum, 1, True)

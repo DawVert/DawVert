@@ -56,11 +56,6 @@ class addregion_data():
 		self.version = 0
 		self.ppq = 96
 
-#def add_audio_regions(
-#	placements_obj, ppq, rootnote_auto, 
-#	region, stretch_type, num_beats, seconds,
-#	stretchflags, filename, tempo,
-#	track_root_note, audiotempo, pitch, version):
 def add_audio_regions(placements_obj, region, addr_d):
 	rootnote_auto = addr_d.rootnote_auto
 	stretch_type = addr_d.stretch_type
@@ -216,7 +211,7 @@ class input_acid_3(plugins.base):
 					cvpj_tracks.order.append( 'track_'+str(def_data.tracknum) )
 					track_obj = tracks_data[def_data.tracknum]
 					track_obj.group = ingroup
-				if regs_name=='TrackSFolder':
+				elif regs_name=='TrackSFolder':
 					def_data = regs_chunk.content
 					groupid = 'group_'+str(def_data.idnum)
 					if use_groups: 
@@ -371,8 +366,8 @@ class input_acid_3(plugins.base):
 
 													if not track_auto.group:
 														if track_auto.param == 0: autoloc = ('track', cvpj_trackid, 'vol')
-														if track_auto.param == 1: autoloc = ('track', cvpj_trackid, 'pan')
-														if track_auto.param == 31: 
+														elif track_auto.param == 1: autoloc = ('track', cvpj_trackid, 'pan')
+														elif track_auto.param == 31: 
 															autoloc = ('track', cvpj_trackid, 'enabled')
 															invert = True
 	
@@ -434,9 +429,10 @@ class input_acid_3(plugins.base):
 											pls += add_audio_regions(track_obj.placements, region, addr_d)
 	
 											for p in pls:
-												p.visual.name = track_header.name
-												p.visual.color.set_int(color)
-												p.visual.color.fx_allowed = ['brighter']
+												visual_obj = p.visual
+												visual_obj.name = track_header.name
+												visual_obj.color.set_int(color)
+												visual_obj.color.fx_allowed = ['brighter']
 	
 									elif track_audiodefs is not None:
 										for audiodef, audiostretch in track_audiodefs:

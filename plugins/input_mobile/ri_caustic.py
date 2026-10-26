@@ -187,16 +187,18 @@ class input_cvpj_r(plugins.base):
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, True)
 			trackstore.append(track_obj)
 
+			mixer_track = mixer_tracks[machnum]
+
 			# visual
 			track_obj.visual.from_datapack('caustic', 'plugin_inst', machine.mach_id, True)
 			if machine.name: track_obj.visual.name = machine.name
 
 			# params
 			params_obj = track_obj.params
-			params_obj.add('vol', mixer_tracks[machnum].vol, 'float')
-			params_obj.add('pan', mixer_tracks[machnum].pan, 'float')
-			params_obj.add('enabled', int(not bool(mixer_tracks[machnum].mute)), 'bool')
-			params_obj.add('solo', mixer_tracks[machnum].solo, 'bool')
+			params_obj.add('vol', mixer_track.vol, 'float')
+			params_obj.add('pan', mixer_track.pan, 'float')
+			params_obj.add('enabled', int(not bool(mixer_track.mute)), 'bool')
+			params_obj.add('solo', mixer_track.solo, 'bool')
 
 			# plugin
 			machdata = machine.data
@@ -443,17 +445,17 @@ class input_cvpj_r(plugins.base):
 			add_caustic_fx(cvpj_plugins, track_obj, c_fxdata, 'machine'+str(machnum))
 
 			# sends
-			track_obj.sends.add('master_delay', cvpj_trackid+'_send_delay', mixer_tracks[machnum].send_delay)
-			track_obj.sends.add('master_reverb', cvpj_trackid+'_send_reverb', mixer_tracks[machnum].send_reverb)
+			track_obj.sends.add('master_delay', cvpj_trackid+'_send_delay', mixer_track.send_delay)
+			track_obj.sends.add('master_reverb', cvpj_trackid+'_send_reverb', mixer_track.send_reverb)
 
 			# eq
 			mixereq_plugid = 'machine'+str(machnum)+'_eq'
 			plugin_obj = cvpj_plugins.add_native('caustic', 'mixer_eq', mixereq_plugid)
 			plugin_obj.visual.name = 'Mixer EQ'
 			plugin_obj.visual.color.set_float([0.67, 0.67, 0.67])
-			plugin_obj.params.add('bass', mixer_tracks[machnum].eq_low, 'float')
-			plugin_obj.params.add('mid', mixer_tracks[machnum].eq_mid, 'float')
-			plugin_obj.params.add('high', mixer_tracks[machnum].eq_high, 'float')
+			plugin_obj.params.add('bass', mixer_track.eq_low, 'float')
+			plugin_obj.params.add('mid', mixer_track.eq_mid, 'float')
+			plugin_obj.params.add('high', mixer_track.eq_high, 'float')
 			track_obj.plugslots.slots_mixer.append(mixereq_plugid)
 
 			# width
@@ -461,7 +463,7 @@ class input_cvpj_r(plugins.base):
 			plugin_obj = cvpj_plugins.add_uni('width', None, width_plugid)
 			plugin_obj.visual.name = 'Width'
 			plugin_obj.visual.color.set_float([0.66, 0.61, 0.76])
-			plugin_obj.params.add('width', mixer_tracks[machnum].width, 'float')
+			plugin_obj.params.add('width', mixer_track.width, 'float')
 			track_obj.plugslots.slots_mixer.append(width_plugid)
 		
 		# ---------- sequences ----------

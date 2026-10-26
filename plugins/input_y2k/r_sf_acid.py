@@ -289,9 +289,10 @@ class input_acid_old(plugins.base):
 					pls.append(placement_obj)
 
 				for p in pls:
-					p.visual.name = track.name
-					p.visual.color.set_int(color)
-					p.visual.color.fx_allowed = ['saturate', 'brighter']
+					visual_obj = p.visual
+					visual_obj.name = track.name
+					visual_obj.color.set_int(color)
+					visual_obj.color.fx_allowed = ['saturate', 'brighter']
 
 				for env in region.envs:
 					if len(env.points)==1 and env.type == 0:

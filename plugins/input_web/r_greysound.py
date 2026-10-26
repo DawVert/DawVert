@@ -23,7 +23,7 @@ def do_track_params(gs_track, cvpj_track):
 	if channelPans: 
 		if channelCount == 1:
 			cvpj_track.params.add('pan', channelPans[0], 'float')
-		if channelCount == 2:
+		elif channelCount == 2:
 			cvpj_track.datavals.add('pan_mode', 'split')
 			cvpj_track.params.add('splitpan_left', channelPans[0], 'float')
 			cvpj_track.params.add('splitpan_right', channelPans[1], 'float')
@@ -174,7 +174,7 @@ class input_greysound(plugins.base):
 							for point in lane.points:
 								if 'ticks' in point.position: 
 									autopoints.points__add_point_notype(point.position['ticks']*16, clipGain(point.value))
-						if target.parameterId=='pan':
+						elif target.parameterId=='pan':
 							autoloc = s_autoloc+['pan']
 							auto_obj = cvpj_automation.create(autoloc, 'float', True)
 							autopoints = auto_obj.make_nopl_points()
@@ -284,7 +284,7 @@ class input_greysound(plugins.base):
 				if device_kind=='INPUT': 
 					device_obj = convproj_obj.realdevices.add_audio_in(device_id)
 					device_obj.visual.name = device_label
-				if device_kind=='OUTPUT': 
+				elif device_kind=='OUTPUT': 
 					device_obj = convproj_obj.realdevices.add_audio_out(device_id)
 					device_obj.visual.name = device_label
 

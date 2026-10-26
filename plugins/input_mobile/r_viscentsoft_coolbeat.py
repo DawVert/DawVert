@@ -175,10 +175,11 @@ class input_coolbeat(plugins.base):
 				track_obj.visual.name = track.label
 
 				# params
-				track_obj.params.add('vol', track.volume, 'float')
-				track_obj.params.add('pan', calc_pan(track.pan), 'float')
-				track_obj.params.add('enabled', not track.muteState, 'bool')
-				track_obj.params.add('solo', track.solo, 'bool')
+				params_obj = track_obj.params
+				params_obj.add('vol', track.volume, 'float')
+				params_obj.add('pan', calc_pan(track.pan), 'float')
+				params_obj.add('enabled', not track.muteState, 'bool')
+				params_obj.add('solo', track.solo, 'bool')
 				
 				# sections
 				sampleid = do_sample(convproj_obj, track.soundPack, track.fileName, dawvert_intent)

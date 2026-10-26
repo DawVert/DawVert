@@ -15,6 +15,12 @@ import glob
 def tempo_calc(mul, seconds):
 	return ((seconds)/mul)*8
 
+def get_audio_path(dawvert_intent, idnum):
+	return os.path.join(dawvert_intent.input_folder, 'Assets', 'Audio', idnum+'.*')
+
+def get_midi_path(dawvert_intent, idnum):
+	return os.path.join(dawvert_intent.input_folder, 'Assets', 'MIDI', idnum+'.mid')
+
 class input_bandlab(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -83,7 +89,7 @@ class input_bandlab(plugins.base):
 
 		if project_obj.samplerKits:
 			for sample in project_obj.samplerKits.samples:
-				filename = os.path.join(dawvert_intent.input_folder, 'Assets', 'Audio', sample.id+'.*')
+				filename = get_audio_path(dawvert_intent, sample.id)
 				for file in glob.glob(filename):
 					sampleref_obj = convproj_obj.sampleref__add(sample.id, file, None)
 					sampleref_obj.convert__path__fileformat()
@@ -219,12 +225,12 @@ class input_bandlab(plugins.base):
 					time_obj.set_pos(tempo_calc(tempomul, blx_region.startPosition))
 					time_obj.set_dur(tempo_calc(tempomul, blx_region.endPosition-blx_region.startPosition))
 					if blx_region.name: placement_obj.visual.name = blx_region.name
-					midipath = os.path.join(dawvert_intent.input_folder, 'Assets', 'MIDI', blx_region.sampleId+'.mid')
+					midipath = get_midi_path(dawvert_intent, blx_region.sampleId)
 					do_loop(time_obj, blx_region, tempomul, 1)
 					placement_obj.midi_from(midipath)
 
 def add_sample(convproj_obj, dawvert_intent, blx_sample):
-	filename = os.path.join(dawvert_intent.input_folder, 'Assets', 'Audio', blx_sample.id+'.*')
+	filename = get_audio_path(dawvert_intent, blx_sample.id)
 
 	for file in glob.glob(filename):
 		sampleref_obj = convproj_obj.sampleref__add(blx_sample.id, file, None)
