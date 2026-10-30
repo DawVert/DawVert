@@ -92,7 +92,7 @@ class input_mariopaint_mss(plugins.base):
 							mp_note.key = keynum%7
 							mp_note.oct = keynum//7
 							if toff == '-': mp_note.offset = -1
-							if toff == '+': mp_note.offset = 1
+							elif toff == '+': mp_note.offset = 1
 
 				chordpos += 1
 

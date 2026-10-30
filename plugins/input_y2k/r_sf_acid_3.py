@@ -564,9 +564,10 @@ class input_acid_3(plugins.base):
 					if regs_name == 'ArrangerPart':
 						arrdata = regs_chunk.content
 
+						color = arrcolordata.getcolornum(arrdata.color)
+						
 						timemarker_obj = convproj_obj.arranger.add()
 						timemarker_obj.type = 'region'
 						timemarker_obj.time.set_posdur(arrdata.pos, arrdata.dur)
 						timemarker_obj.visual.name = arrdata.name
-						color = arrcolordata.getcolornum(arrdata.color)
 						timemarker_obj.visual.color.set_int(color)

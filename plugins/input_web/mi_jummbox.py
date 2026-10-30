@@ -191,32 +191,32 @@ def add_inst_fx(convproj_obj, inst_obj, bb_fx, cvpj_instid):
 		timing_obj = delay_obj.timing_add(0)
 		timing_obj.set_steps(bb_fx.echoDelayBeats*8, convproj_obj)
 		plugin_obj, _ = delay_obj.to_cvpj(convproj_obj, fx_pluginid)
-		plugin_obj.visual.name = 'Echo'
 		plugin_obj.fxdata_add(1, 0.5)
 		inst_obj.plugslots.slots_audio.append(fx_pluginid)
-		
+		plugin_obj.visual.from_datapack('beepbox', 'fx', 'echo', True)
+
 	if 'distortion' in bb_fx.used:
 		plugin_obj = addfx(cvpj_plugins, inst_obj, 'simple', cvpj_instid, 'distortion', None)
-		plugin_obj.visual.name = 'Distortion'
 		plugin_obj.params.add_named('amount', bb_fx.distortion/100, 'float', 'Amount')
-	
+		plugin_obj.visual.from_datapack('beepbox', 'fx', 'distortion', True)
+
 	if 'bitcrusher' in bb_fx.used:
 		plugin_obj = addfx(cvpj_plugins, inst_obj, 'universal', cvpj_instid, 'bitcrush', None)
-		plugin_obj.visual.name = 'Bitcrusher'
 		t_bits_val = round(xtramath.between_from_one(7, 0, bb_fx.bitcrusherQuantization/100))
 		plugin_obj.params.add('bits', 2**t_bits_val, 'float')
 		plugin_obj.params.add('freq', (bb_fx.bitcrusherOctave+1)*523.25, 'float')
-		
+		plugin_obj.visual.from_datapack('beepbox', 'fx', 'bitcrusher', True)
+
 	if 'chorus' in bb_fx.used:
 		plugin_obj = addfx(cvpj_plugins, inst_obj, 'simple', cvpj_instid, 'chorus', None)
-		plugin_obj.visual.name = 'Chorus'
 		plugin_obj.params.add_named('amount', bb_fx.chorus/100, 'float', 'Amount')
-		
+		plugin_obj.visual.from_datapack('beepbox', 'fx', 'chorus', True)
+
 	if 'reverb' in bb_fx.used:
 		plugin_obj = addfx(cvpj_plugins, inst_obj, 'simple', cvpj_instid, 'reverb', None)
-		plugin_obj.visual.name = 'Reverb'
 		plugin_obj.fxdata_add(1, bb_fx.reverb/100)
-						
+		plugin_obj.visual.from_datapack('beepbox', 'fx', 'reverb', True)
+		
 class input_jummbox(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'

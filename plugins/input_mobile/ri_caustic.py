@@ -348,6 +348,7 @@ class input_cvpj_r(plugins.base):
 			elif machine.mach_id == 'BLNE':
 				plugin_obj = cvpj_plugins.add_native('caustic', 'BLNE', pluginid)
 				plugin_obj.role = 'synth'
+				plugin_obj.midi_fallback__add_inst(39)
 				add_controls(plugin_obj, 'BLNE', machdata.controls)
 				if 'Select preset' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 
@@ -358,6 +359,7 @@ class input_cvpj_r(plugins.base):
 			elif machine.mach_id == 'PADS':
 				plugin_obj = cvpj_plugins.add_native('caustic', 'PADS', pluginid)
 				plugin_obj.role = 'synth'
+				plugin_obj.midi_fallback__add_inst(90)
 				add_controls(plugin_obj, 'PADS', machdata.controls)
 				if 'Select preset' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 
@@ -371,6 +373,7 @@ class input_cvpj_r(plugins.base):
 			elif machine.mach_id == 'ORGN':
 				plugin_obj = cvpj_plugins.add_native('caustic', 'ORGN', pluginid)
 				plugin_obj.role = 'synth'
+				plugin_obj.midi_fallback__add_inst(17)
 				add_controls(plugin_obj, 'ORGN', machdata.controls)
 				if 'Select preset' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 
@@ -390,6 +393,7 @@ class input_cvpj_r(plugins.base):
 			elif machine.mach_id == 'SAWS':
 				plugin_obj = cvpj_plugins.add_native('caustic', 'SAWS', pluginid)
 				plugin_obj.role = 'synth'
+				plugin_obj.midi_fallback__add_inst(82)
 				add_controls(plugin_obj, 'SAWS', machdata.controls)
 				if 'Select preset' not in machdata.presetname: track_obj.visual.name = machdata.presetname
 

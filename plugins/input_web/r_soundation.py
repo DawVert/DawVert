@@ -81,6 +81,31 @@ def do_track_data(convproj_obj, track_obj, soundation_channel, autostart):
 	autopoints_set(cvpj_automation, autostart+['vol'], soundation_channel.volumeAutomation, 0, 1)
 	autopoints_set(cvpj_automation, autostart+['pan'], soundation_channel.panAutomation, -1, 2)
 
+def conv_clip_base(soundation_region, placement_obj, timing):
+	# time
+	clip_length = round(soundation_region.length/timing, 3)*timing
+	clip_contentPosition = soundation_region.contentPosition
+	clip_loopcount = round(soundation_region.loopcount, 3)
+	time_obj = placement_obj.time
+	time_obj.set_posdur(soundation_region.position, clip_length*clip_loopcount)
+	time_obj.set_loop_data(-clip_contentPosition, -clip_contentPosition, clip_length-clip_contentPosition)
+
+	# fx
+	placement_obj.muted = soundation_region.muted
+
+	# visual
+	if soundation_region.name: placement_obj.visual.name = soundation_region.name
+
+def conv_track_fx(convproj_obj, cvpj_plugins, soundation_channel, plugslots):
+	for soundation_effect in soundation_channel.effects:
+		plugin_obj = cvpj_plugins.add_native('soundation', soundation_effect.identifier)
+		plugin_obj.role = 'fx'
+		plugin_obj.fxdata_add(not soundation_effect.bypass, 1)
+		plugin_obj.visual.from_datapack('soundation', 'plugin', soundation_effect.identifier, True)
+		pluginid = cvpj_plugins.get_lastid()
+		plugslots.slots_audio.append(pluginid)
+		autoall_sng_to_cvpj(convproj_obj, pluginid, soundation_effect, plugin_obj, soundation_effect.identifier)
+
 class input_soundation(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -185,335 +210,329 @@ class input_soundation(plugins.base):
 			sound_chan_type = soundation_channel.type
 			cvpj_trackid = 'soundation'+str(tracknum)
 
+			# ------- master -------
 			if sound_chan_type == 'master':
 				track_obj = cvpj_master
 				do_track_data(convproj_obj, cvpj_master, soundation_channel, ['master'])
+				conv_track_fx(convproj_obj, cvpj_plugins, soundation_channel, track_obj.plugslots)
 
-			if sound_chan_type in ['instrument', 'effect', 'audio']:
-				if sound_chan_type == 'instrument': track_type = 'instrument'
-				elif sound_chan_type == 'effect': track_type = 'fx'
-				elif sound_chan_type == 'audio': track_type = 'audio'
-
-				track_obj = cvpj_tracks.add(cvpj_trackid, track_type, 1, False)
+			# ------- effect -------
+			elif sound_chan_type == 'effect':
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'fx', 1, False)
 				do_track_data(convproj_obj, track_obj, soundation_channel, ['track',cvpj_trackid])
-				
+				conv_track_fx(convproj_obj, cvpj_plugins, soundation_channel, track_obj.plugslots)
+
+			# ------- instrument -------
+			elif sound_chan_type == 'instrument':
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
+				do_track_data(convproj_obj, track_obj, soundation_channel, ['track',cvpj_trackid])
+
+				# regions
 				track_placements = track_obj.placements
 				for soundation_region in soundation_channel.regions:
-					if sound_chan_type == 'instrument': placement_obj = track_placements.add_notes()
-					if sound_chan_type == 'audio': placement_obj = track_placements.add_audio()
+					placement_obj = track_placements.add_notes()
+					conv_clip_base(soundation_region, placement_obj, timing)
+					cvpj_notelist = placement_obj.notelist
+					for sndstat_note in soundation_region.notes: 
+						cvpj_notelist.add_r(sndstat_note['position'], sndstat_note['length'], sndstat_note['note']-60, sndstat_note['velocity'], None)
+					placement_obj.antiminus()
 
-					# time
-					clip_length = round(soundation_region.length/timing, 3)*timing
-					clip_contentPosition = soundation_region.contentPosition
-					clip_loopcount = round(soundation_region.loopcount, 3)
-					time_obj = placement_obj.time
-					time_obj.set_posdur(soundation_region.position, clip_length*clip_loopcount)
-					time_obj.set_loop_data(-clip_contentPosition, -clip_contentPosition, clip_length-clip_contentPosition)
+				# inst
+				soundation_inst = soundation_channel.instrument
 
-					# fx
-					placement_obj.muted = soundation_region.muted
+				instpluginname = soundation_inst.identifier
 
-					# visual
-					if soundation_region.name:
-						placement_obj.visual.name = soundation_region.name
+				if instpluginname == 'com.soundation.simple-sampler':
+					if 'sample' in soundation_inst.data:
+						sampleref, sampleref_obj = create_sampleref(soundation_inst.data['sample'], convproj_obj, samplefolder, zip_data)
+					else:
+						sampleref, sampleref_obj = None, None
 
-					# instrument
-					if sound_chan_type == 'instrument':
-						cvpj_notelist = placement_obj.notelist
-						for sndstat_note in soundation_region.notes: 
-							cvpj_notelist.add_r(sndstat_note['position'], sndstat_note['length'], sndstat_note['note']-60, sndstat_note['velocity'], None)
-						placement_obj.antiminus()
+					plugin_obj = cvpj_plugins.add_uni('sampler', 'single', pluginid)
+					plugin_obj.role = 'synth'
+					track_obj.plugslots.set_synth(pluginid)
 
-					# audio
-					if sound_chan_type == 'audio':
-						sp_obj = placement_obj.sample
-						sp_obj.sampleref, sampleref_obj = create_sampleref(soundation_region.file, convproj_obj, samplefolder, zip_data)
-						sp_obj.reverse = soundation_region.reversed
-						pitch = (soundation_region.pitchShiftSemitones+soundation_region.pitchShiftCents)/100
+					# --------- samplepart
+					sp_obj = plugin_obj.samplepart_add('sample')
 
-						# stretch
-						stretch_obj = sp_obj.stretch
-						stretch_obj.preserve_pitch = not (soundation_region.stretchMode != 3)
-						if sp_obj.pitch: stretch_obj.preserve_pitch = True
-						if soundation_region.autoStretchBpm:
-							stretch_obj.timing.set__orgtempo(soundation_region.autoStretchBpm)
-						else:
-							stretch_obj.timing.set__orgtempo(soundation_obj.bpm)
-						if soundation_region.formantCorrection:
-							stretch_algo = stretch_obj.algorithm
-							stretch_algo.preserve_formants = 1
-							stretch_algo.formant = pitch
-						else:
-							sp_obj.pitch = pitch
+					# --------- asdr
+					get_asdr(plugin_obj, soundation_inst)
 
+					# --------- gain
+					v_gain = get_paramval(soundation_inst, 'gain')
+					plugin_obj.params.add('gain', v_gain, 'float')
 
-				if sound_chan_type == 'instrument':
-					soundation_inst = soundation_channel.instrument
+					# --------- loop_points
+					v_start = get_paramval(soundation_inst, 'start')
+					v_end = get_paramval(soundation_inst, 'end')
+					v_loop_start = get_paramval(soundation_inst, 'loop_start')
+					v_loop_end = get_paramval(soundation_inst, 'loop_end')
+					sp_obj.start = v_start
+					sp_obj.end = v_end
+					sp_obj.loop_start = v_loop_start
+					sp_obj.loop_end = v_loop_end
+					sp_obj.point_value_type = "percent"
 
-					instpluginname = soundation_inst.identifier
+					# --------- pitch
+					v_coarse = (get_paramval(soundation_inst, 'coarse')-0.5)*2
+					v_fine = (get_paramval(soundation_inst, 'fine')-0.5)*2
+					track_obj.params.add('pitch', v_coarse*48 + v_fine, 'float')
 
-					if instpluginname == 'com.soundation.simple-sampler':
-						if 'sample' in soundation_inst.data:
-							sampleref, sampleref_obj = create_sampleref(soundation_inst.data['sample'], convproj_obj, samplefolder, zip_data)
-						else:
-							sampleref, sampleref_obj = None, None
+					# --------- root_note
+					v_root_note = get_paramval(soundation_inst, 'root_note')
+					track_obj.datavals.add('middlenote', v_root_note-72)
 
-						plugin_obj = cvpj_plugins.add_uni('sampler', 'single', pluginid)
-						plugin_obj.role = 'synth'
-						track_obj.plugslots.set_synth(pluginid)
+					# --------- loop_mode
+					v_loop_mode = get_paramval(soundation_inst, 'loop_mode')
+					sp_obj.loop_active = v_loop_mode != 0
+					if v_loop_mode==1: sp_obj.loop_mode = "normal"
+					elif v_loop_mode==2: sp_obj.loop_mode = "reverse"
+					elif v_loop_mode==3: sp_obj.loop_mode = "pingpong"
 
-						# --------- samplepart
-						sp_obj = plugin_obj.samplepart_add('sample')
+					# --------- interpolation_mode
+					v_interpolation_mode = get_paramval(soundation_inst, 'interpolation_mode')
+					if v_interpolation_mode == 0: sp_obj.interpolation = "none"
+					elif v_interpolation_mode == 1: sp_obj.interpolation = "linear"
+					elif v_interpolation_mode > 1: sp_obj.interpolation = "sinc"
 
-						# --------- asdr
-						get_asdr(plugin_obj, soundation_inst)
+					# --------- playback_direction
+					v_playback_direction = get_paramval(soundation_inst, 'playback_direction')
+					sp_obj.reverse = bool(v_playback_direction)
+					
+					# --------- release_mode
+					v_release_mode = get_paramval(soundation_inst, 'release_mode')
+					sp_obj.loop_release = bool(v_release_mode)
 
-						# --------- gain
-						v_gain = get_paramval(soundation_inst, 'gain')
-						plugin_obj.params.add('gain', v_gain, 'float')
+					# --------- playback_mode
+					v_playback_mode = get_paramval(soundation_inst, 'playback_mode')
+					v_portamento_time = get_paramval(soundation_inst, 'portamento_time')
+					poly_obj = plugin_obj.state.poly
+					poly_obj.defined = True
+					if v_playback_mode==0:
+						poly_obj.max = 1
+						poly_obj.limited = True
+						poly_obj.mono = True
+						poly_obj.slide_always = False
+						poly_obj.porta = False
+					elif v_playback_mode==1:
+						poly_obj.max = 1
+						poly_obj.limited = True
+						poly_obj.mono = True
+						poly_obj.slide_always = True
+						poly_obj.porta = True
+						poly_obj.porta_time.set_seconds(v_portamento_time)
+					elif v_playback_mode==2:
+						poly_obj.max = 0
+						poly_obj.limited = False
+						poly_obj.mono = False
+						poly_obj.slide_always = False
 
-						# --------- loop_points
-						v_start = get_paramval(soundation_inst, 'start')
-						v_end = get_paramval(soundation_inst, 'end')
-						v_loop_start = get_paramval(soundation_inst, 'loop_start')
-						v_loop_end = get_paramval(soundation_inst, 'loop_end')
-						sp_obj.start = v_start
-						sp_obj.end = v_end
-						sp_obj.loop_start = v_loop_start
-						sp_obj.loop_end = v_loop_end
-						sp_obj.point_value_type = "percent"
+					# --------- others
+					#v_crossfade = get_paramval(soundation_inst, 'crossfade')
 
-						# --------- pitch
-						v_coarse = (get_paramval(soundation_inst, 'coarse')-0.5)*2
-						v_fine = (get_paramval(soundation_inst, 'fine')-0.5)*2
-						track_obj.params.add('pitch', v_coarse*48 + v_fine, 'float')
+					if sampleref:
+						sp_obj.sampleref = sampleref
 
-						# --------- root_note
-						v_root_note = get_paramval(soundation_inst, 'root_note')
-						track_obj.datavals.add('middlenote', v_root_note-72)
+				elif instpluginname == 'com.soundation.beat_maker':
+					plugin_obj = cvpj_plugins.add_uni('sampler', 'drums')
+					plugin_obj.role = 'synth'
+					pluginid = cvpj_plugins.get_lastid()
+					track_obj.plugslots.set_synth(pluginid)
+					track_obj.is_drum = True
+					track_obj.is_multinote_drum = True
 
-						# --------- loop_mode
-						v_loop_mode = get_paramval(soundation_inst, 'loop_mode')
-						sp_obj.loop_active = v_loop_mode != 0
-						if v_loop_mode==1: sp_obj.loop_mode = "normal"
-						elif v_loop_mode==2: sp_obj.loop_mode = "reverse"
-						elif v_loop_mode==3: sp_obj.loop_mode = "pingpong"
+					kit_name = get_paramval(soundation_inst, 'kit_name')
+					sampdata = [[None, 0.5, 0.5, 0.5, None, None, None, x-24] for x in range(16)]
 
-						# --------- interpolation_mode
-						v_interpolation_mode = get_paramval(soundation_inst, 'interpolation_mode')
-						if v_interpolation_mode == 0: sp_obj.interpolation = "none"
-						elif v_interpolation_mode == 1: sp_obj.interpolation = "linear"
-						elif v_interpolation_mode > 1: sp_obj.interpolation = "sinc"
+					instdata = soundation_inst.data
+					if 'samples' in instdata:
+						for n, v in enumerate(instdata['samples']): sampdata[n][0] = v
 
-						# --------- playback_direction
-						v_playback_direction = get_paramval(soundation_inst, 'playback_direction')
-						sp_obj.reverse = bool(v_playback_direction)
+					if 'envelopes' in instdata:
+						for n, v in enumerate(instdata['envelopes']): sampdata[n][4] = v
+
+					if 'playback_modes' in instdata:
+						for n, v in enumerate(instdata['playback_modes']): sampdata[n][5] = v
+
+					if 'cuts' in instdata:
+						for n, v in enumerate(instdata['cuts']): sampdata[n][6] = v
+
+					for n in range(16):
+						paramlist = list(soundation_inst.params.data)
+						strnum = str(n)
+						samp_gain = get_paramval_opt(soundation_inst, 'gain_'+strnum)
+						samp_pan = get_paramval_opt(soundation_inst, 'pan_'+strnum)
+						samp_pitch = get_paramval_opt(soundation_inst, 'pitch_'+strnum)
+						if samp_gain is not None: sampdata[n][1] = samp_gain
+						if samp_pan is not None: sampdata[n][2] = samp_pan
+						if samp_pitch is not None: sampdata[n][3] = samp_pitch
+
+					for sampfile, gain, pan, pitch, env, pbmode, cuts, num in sampdata:
+						if sampfile:
+							endstr = str(num+24)
+							drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
+							drumpad_obj.key = num
+							drumpad_obj.vol = gain*2
+							drumpad_obj.pan = (pan-0.5)*2
+							drumpad_obj.enabled = (not pbmode['mute']) if 'mute' in pbmode else True
+							if 'name' in sampfile: drumpad_obj.visual.name = sampfile['name']
+
+							layer_obj.samplepartid = 'drum_%i' % num
+							sp_obj = plugin_obj.samplepart_add(layer_obj.samplepartid)
+							sp_obj.pitch = (pitch-0.5)*24
+							sp_obj.sampleref, sampleref_obj = create_sampleref(sampfile, convproj_obj, samplefolder, zip_data)
+							if env is not None:
+								if sampleref_obj:
+									dur_sec = sampleref_obj.get_dur_sec()
+									if dur_sec is not None:
+										attack = env['p2'] if 'p2' in env else 0
+										release = 1-env['p3'] if 'p3' in env else 0
+										sustain = env['sustain'] if 'sustain' in env else 1
+										plugin_obj.env_asdr_add('vol_'+endstr, 0, attack*dur_sec, 0, 0, sustain, release*dur_sec, 1)
+										drumpad_obj.envs['vol'] = 'vol_'+endstr
+
+				elif instpluginname == 'com.soundation.drummachine':
+					plugin_obj = cvpj_plugins.add_native('soundation', instpluginname)
+					plugin_obj.role = 'synth'
+					pluginid = cvpj_plugins.get_lastid()
+					track_obj.plugslots.set_synth(pluginid)
+					track_obj.is_drum = True
+					track_obj.is_multinote_drum = True
+
+					kit_name = get_paramval(soundation_inst, 'kit_name')
+					for paramid in ["gain_2", "hold_1", "pitch_6", "gain_1", "decay_5", "gain_5", "hold_0", "hold_2", "pitch_7", "gain_0", "decay_6", "gain_3", "hold_5", "pitch_3", "decay_4", "pitch_4", "gain_6", "decay_7", "pitch_2", "hold_6", "decay_1", "decay_3", "decay_0", "decay_2", "gain_7", "pitch_0", "pitch_5", "hold_3", "pitch_1", "hold_4", "hold_7", "gain_4"]:
+						autoloc = ('plugin', pluginid, paramid)
+						get_param(soundation_inst, plugin_obj, paramid, autoloc, True)
+					plugin_obj.datavals.add('kit_name', kit_name)
+
+				elif instpluginname == 'com.soundation.europa':
+					plugin_obj = cvpj_plugins.add('user', 'reasonstudios', 'europa')
+					plugin_obj.role = 'synth'
+					pluginid = cvpj_plugins.get_lastid()
+					track_obj.plugslots.set_synth(pluginid)
+
+					fldso = globalstore.datapack.get_obj('synth_nonfree', 'plugin', 'europa')
+					if fldso:
+						for param_id, dset_param in fldso.params.iter():
+							outval = get_paramval(soundation_inst, "/custom_properties/"+dset_param.name)
+							plugin_obj.datapack_param__add(param_id, outval, dset_param)
+
+				elif instpluginname == 'com.soundation.GM-2':
+					plugin_obj = cvpj_plugins.add_native('soundation', instpluginname)
+					plugin_obj.role = 'synth'
+					pluginid = cvpj_plugins.get_lastid()
+					track_obj.plugslots.set_synth(pluginid)
+					get_asdr(plugin_obj, soundation_inst)
+					if 'sample_pack' in soundation_inst.params.data:
+						sample_pack = get_paramval(soundation_inst, 'sample_pack')
+						plugin_obj.datavals.add('sample_pack', sample_pack)
+						sv = sample_pack.split('_')
+						try:
+							if len(sv) > 1: plugin_obj.midi.from_sf2(int(sv[1]), int(sv[0])-1)
+						except:
+							pass
+
+				elif instpluginname == 'com.soundation.noiser':
+					plugin_obj = cvpj_plugins.add_native('soundation', instpluginname)
+					plugin_obj.role = 'synth'
+					pluginid = cvpj_plugins.get_lastid()
+					track_obj.plugslots.set_synth(pluginid)
+					track_obj.is_drum = True
+					get_asdr(plugin_obj, soundation_inst)
 						
-						# --------- release_mode
-						v_release_mode = get_paramval(soundation_inst, 'release_mode')
-						sp_obj.loop_release = bool(v_release_mode)
+				elif instpluginname == 'com.soundation.SAM-1':
+					plugin_obj = cvpj_plugins.add_native('soundation', instpluginname)
+					plugin_obj.role = 'synth'
+					pluginid = cvpj_plugins.get_lastid()
+					track_obj.plugslots.set_synth(pluginid)
+					get_asdr(plugin_obj, soundation_inst)
+					if 'sample_pack' in soundation_inst.params.data:
+						sample_pack = get_paramval(soundation_inst, 'sample_pack')
+						plugin_obj.datavals.add('sample_pack', sample_pack)
 
-						# --------- playback_mode
-						v_playback_mode = get_paramval(soundation_inst, 'playback_mode')
-						v_portamento_time = get_paramval(soundation_inst, 'portamento_time')
-						poly_obj = plugin_obj.state.poly
-						poly_obj.defined = True
-						if v_playback_mode==0:
-							poly_obj.max = 1
-							poly_obj.limited = True
-							poly_obj.mono = True
-							poly_obj.slide_always = False
-							poly_obj.porta = False
-						elif v_playback_mode==1:
-							poly_obj.max = 1
-							poly_obj.limited = True
-							poly_obj.mono = True
-							poly_obj.slide_always = True
-							poly_obj.porta = True
-							poly_obj.porta_time.set_seconds(v_portamento_time)
-						elif v_playback_mode==2:
-							poly_obj.max = 0
-							poly_obj.limited = False
-							poly_obj.mono = False
-							poly_obj.slide_always = False
+				elif instpluginname in ['com.soundation.fm_synth', 'com.soundation.mono', 'com.soundation.spc', 'com.soundation.supersaw', 'com.soundation.the_wub_machine', 'com.soundation.va_synth']:
+					plugin_obj = cvpj_plugins.add_native('soundation', instpluginname)
+					plugin_obj.role = 'synth'
+					pluginid = cvpj_plugins.get_lastid()
+					track_obj.plugslots.set_synth(pluginid)
 
-						# --------- others
-						#v_crossfade = get_paramval(soundation_inst, 'crossfade')
+					fldso = globalstore.datapack.get_obj('soundation', 'plugin', instpluginname)
+					if fldso:
+						for param_id, dset_param in fldso.params.iter():
+							outval = get_paramval(soundation_inst, param_id)
+							plugin_obj.datapack_param__add(param_id, outval, dset_param)
 
-						if sampleref:
-							sp_obj.sampleref = sampleref
-
-					elif instpluginname == 'com.soundation.beat_maker':
-						plugin_obj = cvpj_plugins.add_uni('sampler', 'drums')
-						plugin_obj.role = 'synth'
-						pluginid = cvpj_plugins.get_lastid()
-						track_obj.plugslots.set_synth(pluginid)
+					if instpluginname == 'com.soundation.spc':
+						plugin_obj.datavals.add('cuts', soundation_inst.data['cuts'])
+						plugin_obj.datavals.add('envelopes', soundation_inst.data['envelopes'])
 						track_obj.is_drum = True
 						track_obj.is_multinote_drum = True
 
-						kit_name = get_paramval(soundation_inst, 'kit_name')
-						sampdata = [[None, 0.5, 0.5, 0.5, None, None, None, x-24] for x in range(16)]
+					if instpluginname == 'com.soundation.supersaw':
+						get_asdr(plugin_obj, soundation_inst)
+						plugin_obj.midi_fallback__add_inst(81)
 
-						instdata = soundation_inst.data
-						if 'samples' in instdata:
-							for n, v in enumerate(instdata['samples']): sampdata[n][0] = v
+				elif instpluginname == 'com.soundation.simple':
+					plugin_obj = cvpj_plugins.add_native('soundation', instpluginname)
+					plugin_obj.role = 'synth'
+					pluginid = cvpj_plugins.get_lastid()
+					track_obj.plugslots.set_synth(pluginid)
+					get_asdr(plugin_obj, soundation_inst)
+					asdrf_a = get_paramval(soundation_inst, 'filter_attack')
+					asdrf_s = get_paramval(soundation_inst, 'filter_decay')
+					asdrf_d = get_paramval(soundation_inst, 'filter_sustain')
+					asdrf_r = get_paramval(soundation_inst, 'filter_release')
+					asdrf_i = get_paramval(soundation_inst, 'filter_int')
+					plugin_obj.env_asdr_add('cutoff', 0, asdrf_a, 0, asdrf_d, asdrf_s, asdrf_r, asdrf_i)
+					filter_cutoff = xtramath.between_from_one(20, 7500, get_paramval(soundation_inst, 'filter_cutoff'))
+					filter_reso = get_paramval(soundation_inst, 'filter_resonance')
+					plugin_obj.filter.on = True
+					plugin_obj.filter.type.set('low_pass', None)
+					plugin_obj.filter.freq = filter_cutoff
+					plugin_obj.filter.q = 1+filter_reso
 
-						if 'envelopes' in instdata:
-							for n, v in enumerate(instdata['envelopes']): sampdata[n][4] = v
-
-						if 'playback_modes' in instdata:
-							for n, v in enumerate(instdata['playback_modes']): sampdata[n][5] = v
-
-						if 'cuts' in instdata:
-							for n, v in enumerate(instdata['cuts']): sampdata[n][6] = v
-
-						for n in range(16):
-							paramlist = list(soundation_inst.params.data)
-							strnum = str(n)
-							samp_gain = get_paramval_opt(soundation_inst, 'gain_'+strnum)
-							samp_pan = get_paramval_opt(soundation_inst, 'pan_'+strnum)
-							samp_pitch = get_paramval_opt(soundation_inst, 'pitch_'+strnum)
-							if samp_gain is not None: sampdata[n][1] = samp_gain
-							if samp_pan is not None: sampdata[n][2] = samp_pan
-							if samp_pitch is not None: sampdata[n][3] = samp_pitch
-
-						for sampfile, gain, pan, pitch, env, pbmode, cuts, num in sampdata:
-							if sampfile:
-								endstr = str(num+24)
-								drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
-								drumpad_obj.key = num
-								drumpad_obj.vol = gain*2
-								drumpad_obj.pan = (pan-0.5)*2
-								drumpad_obj.enabled = (not pbmode['mute']) if 'mute' in pbmode else True
-								if 'name' in sampfile: drumpad_obj.visual.name = sampfile['name']
-
-								layer_obj.samplepartid = 'drum_%i' % num
-								sp_obj = plugin_obj.samplepart_add(layer_obj.samplepartid)
-								sp_obj.pitch = (pitch-0.5)*24
-								sp_obj.sampleref, sampleref_obj = create_sampleref(sampfile, convproj_obj, samplefolder, zip_data)
-								if env is not None:
-									if sampleref_obj:
-										dur_sec = sampleref_obj.get_dur_sec()
-										if dur_sec is not None:
-											attack = env['p2'] if 'p2' in env else 0
-											release = 1-env['p3'] if 'p3' in env else 0
-											sustain = env['sustain'] if 'sustain' in env else 1
-											plugin_obj.env_asdr_add('vol_'+endstr, 0, attack*dur_sec, 0, 0, sustain, release*dur_sec, 1)
-											drumpad_obj.envs['vol'] = 'vol_'+endstr
-
-					elif instpluginname == 'com.soundation.drummachine':
-						plugin_obj = cvpj_plugins.add_native('soundation', instpluginname)
-						plugin_obj.role = 'synth'
-						pluginid = cvpj_plugins.get_lastid()
-						track_obj.plugslots.set_synth(pluginid)
-						track_obj.is_drum = True
-						track_obj.is_multinote_drum = True
-
-						kit_name = get_paramval(soundation_inst, 'kit_name')
-						for paramid in ["gain_2", "hold_1", "pitch_6", "gain_1", "decay_5", "gain_5", "hold_0", "hold_2", "pitch_7", "gain_0", "decay_6", "gain_3", "hold_5", "pitch_3", "decay_4", "pitch_4", "gain_6", "decay_7", "pitch_2", "hold_6", "decay_1", "decay_3", "decay_0", "decay_2", "gain_7", "pitch_0", "pitch_5", "hold_3", "pitch_1", "hold_4", "hold_7", "gain_4"]:
+					for oscnum in range(4):
+						for paramtype in ['detune','pitch','type','vol']: 
+							paramid = 'osc_'+str(oscnum)+'_'+paramtype
 							autoloc = ('plugin', pluginid, paramid)
 							get_param(soundation_inst, plugin_obj, paramid, autoloc, True)
-						plugin_obj.datavals.add('kit_name', kit_name)
+					for paramid in ['noise_vol', 'noise_color']: 
+						autoloc = ('plugin', pluginid, paramid)
+						get_param(soundation_inst, plugin_obj, paramid, autoloc, True)
 
-					elif instpluginname == 'com.soundation.europa':
-						plugin_obj = cvpj_plugins.add('user', 'reasonstudios', 'europa')
-						plugin_obj.role = 'synth'
-						pluginid = cvpj_plugins.get_lastid()
-						track_obj.plugslots.set_synth(pluginid)
+				# fx
+				conv_track_fx(convproj_obj, cvpj_plugins, soundation_channel, track_obj.plugslots)
 
-						fldso = globalstore.datapack.get_obj('synth_nonfree', 'plugin', 'europa')
-						if fldso:
-							for param_id, dset_param in fldso.params.iter():
-								outval = get_paramval(soundation_inst, "/custom_properties/"+dset_param.name)
-								plugin_obj.datapack_param__add(param_id, outval, dset_param)
+			# ------- audio -------
+			elif sound_chan_type == 'audio':
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
+				do_track_data(convproj_obj, track_obj, soundation_channel, ['track',cvpj_trackid])
 
-					elif instpluginname == 'com.soundation.GM-2':
-						plugin_obj = cvpj_plugins.add_native('soundation', instpluginname)
-						plugin_obj.role = 'synth'
-						pluginid = cvpj_plugins.get_lastid()
-						track_obj.plugslots.set_synth(pluginid)
-						get_asdr(plugin_obj, soundation_inst)
-						if 'sample_pack' in soundation_inst.params.data:
-							sample_pack = get_paramval(soundation_inst, 'sample_pack')
-							plugin_obj.datavals.add('sample_pack', sample_pack)
-							sv = sample_pack.split('_')
-							try:
-								if len(sv) > 1: plugin_obj.midi.from_sf2(int(sv[1]), int(sv[0])-1)
-							except:
-								pass
+				# regions
+				track_placements = track_obj.placements
+				for soundation_region in soundation_channel.regions:
+					placement_obj = track_placements.add_audio()
+					conv_clip_base(soundation_region, placement_obj, timing)
 
-					elif instpluginname == 'com.soundation.noiser':
-						plugin_obj = cvpj_plugins.add_native('soundation', instpluginname)
-						plugin_obj.role = 'synth'
-						pluginid = cvpj_plugins.get_lastid()
-						track_obj.plugslots.set_synth(pluginid)
-						track_obj.is_drum = True
-						get_asdr(plugin_obj, soundation_inst)
-							
-					elif instpluginname == 'com.soundation.SAM-1':
-						plugin_obj = cvpj_plugins.add_native('soundation', instpluginname)
-						plugin_obj.role = 'synth'
-						pluginid = cvpj_plugins.get_lastid()
-						track_obj.plugslots.set_synth(pluginid)
-						get_asdr(plugin_obj, soundation_inst)
-						if 'sample_pack' in soundation_inst.params.data:
-							sample_pack = get_paramval(soundation_inst, 'sample_pack')
-							plugin_obj.datavals.add('sample_pack', sample_pack)
+					sp_obj = placement_obj.sample
+					sp_obj.sampleref, sampleref_obj = create_sampleref(soundation_region.file, convproj_obj, samplefolder, zip_data)
+					sp_obj.reverse = soundation_region.reversed
+					pitch = (soundation_region.pitchShiftSemitones+soundation_region.pitchShiftCents)/100
 
-					elif instpluginname in ['com.soundation.fm_synth', 'com.soundation.mono', 'com.soundation.spc', 'com.soundation.supersaw', 'com.soundation.the_wub_machine', 'com.soundation.va_synth']:
-						plugin_obj = cvpj_plugins.add_native('soundation', instpluginname)
-						plugin_obj.role = 'synth'
-						pluginid = cvpj_plugins.get_lastid()
-						track_obj.plugslots.set_synth(pluginid)
+					# stretch
+					stretch_obj = sp_obj.stretch
+					stretch_obj.preserve_pitch = not (soundation_region.stretchMode != 3)
+					if sp_obj.pitch: stretch_obj.preserve_pitch = True
+					if soundation_region.autoStretchBpm:
+						stretch_obj.timing.set__orgtempo(soundation_region.autoStretchBpm)
+					else:
+						stretch_obj.timing.set__orgtempo(soundation_obj.bpm)
+					if soundation_region.formantCorrection:
+						stretch_algo = stretch_obj.algorithm
+						stretch_algo.preserve_formants = 1
+						stretch_algo.formant = pitch
+					else:
+						sp_obj.pitch = pitch
 
-						fldso = globalstore.datapack.get_obj('soundation', 'plugin', instpluginname)
-						if fldso:
-							for param_id, dset_param in fldso.params.iter():
-								outval = get_paramval(soundation_inst, param_id)
-								plugin_obj.datapack_param__add(param_id, outval, dset_param)
-
-						if instpluginname == 'com.soundation.spc':
-							plugin_obj.datavals.add('cuts', soundation_inst.data['cuts'])
-							plugin_obj.datavals.add('envelopes', soundation_inst.data['envelopes'])
-							track_obj.is_drum = True
-							track_obj.is_multinote_drum = True
-
-						if instpluginname == 'com.soundation.supersaw':
-							get_asdr(plugin_obj, soundation_inst)
-							plugin_obj.midi_fallback__add_inst(81)
-
-					elif instpluginname == 'com.soundation.simple':
-						plugin_obj = cvpj_plugins.add_native('soundation', instpluginname)
-						plugin_obj.role = 'synth'
-						pluginid = cvpj_plugins.get_lastid()
-						track_obj.plugslots.set_synth(pluginid)
-						get_asdr(plugin_obj, soundation_inst)
-						asdrf_a = get_paramval(soundation_inst, 'filter_attack')
-						asdrf_s = get_paramval(soundation_inst, 'filter_decay')
-						asdrf_d = get_paramval(soundation_inst, 'filter_sustain')
-						asdrf_r = get_paramval(soundation_inst, 'filter_release')
-						asdrf_i = get_paramval(soundation_inst, 'filter_int')
-						plugin_obj.env_asdr_add('cutoff', 0, asdrf_a, 0, asdrf_d, asdrf_s, asdrf_r, asdrf_i)
-						filter_cutoff = xtramath.between_from_one(20, 7500, get_paramval(soundation_inst, 'filter_cutoff'))
-						filter_reso = get_paramval(soundation_inst, 'filter_resonance')
-						plugin_obj.filter.on = True
-						plugin_obj.filter.type.set('low_pass', None)
-						plugin_obj.filter.freq = filter_cutoff
-						plugin_obj.filter.q = 1+filter_reso
-
-						for oscnum in range(4):
-							for paramtype in ['detune','pitch','type','vol']: 
-								paramid = 'osc_'+str(oscnum)+'_'+paramtype
-								autoloc = ('plugin', pluginid, paramid)
-								get_param(soundation_inst, plugin_obj, paramid, autoloc, True)
-						for paramid in ['noise_vol', 'noise_color']: 
-							autoloc = ('plugin', pluginid, paramid)
-							get_param(soundation_inst, plugin_obj, paramid, autoloc, True)
-
-			for soundation_effect in soundation_channel.effects:
-				plugin_obj = cvpj_plugins.add_native('soundation', soundation_effect.identifier)
-				plugin_obj.role = 'fx'
-				plugin_obj.fxdata_add(not soundation_effect.bypass, 1)
-				pluginid = cvpj_plugins.get_lastid()
-				track_obj.plugslots.slots_audio.append(pluginid)
-				autoall_sng_to_cvpj(convproj_obj, pluginid, soundation_effect, plugin_obj, soundation_effect.identifier)
+				# fx
+				conv_track_fx(convproj_obj, cvpj_plugins, soundation_channel, track_obj.plugslots)

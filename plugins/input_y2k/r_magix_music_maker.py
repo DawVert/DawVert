@@ -261,14 +261,14 @@ class input_old_magix_maker(plugins.base):
 						v_max = 1
 						if paramnum == 0: 
 							autoloc = ('track', trackid, 'vol')
-						if paramnum == 30: 
+						elif paramnum == 30: 
 							autoloc = ('track', trackid, 'pan')
 							v_min = 1
 							v_max = -1
-						if paramnum == 4: 
+						elif paramnum == 4: 
 							autoloc = ('send', 'send_%i_aux1' % (tracknum), 'amount')
 							aux1_track_used = True
-						if paramnum == 5: 
+						elif paramnum == 5: 
 							autoloc = ('send', 'send_%i_aux2' % (tracknum), 'amount')
 							aux2_track_used = True
 						if autoloc:

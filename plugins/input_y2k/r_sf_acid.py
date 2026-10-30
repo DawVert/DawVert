@@ -146,21 +146,29 @@ class input_acid_old(plugins.base):
 		for tracknum, track in enumerate(project_obj.tracks):
 			cvpj_trackid = 'track_'+str(tracknum)
 			track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
-			track_placements = track_obj.placements
 			tracks[cvpj_trackid] = track_obj
+
+			# visual
 			color = colordata.getcolornum(track.color)
-			track_obj.visual.name = track.name
-			track_obj.visual.color.set_int(color)
-			track_obj.visual.color.fx_allowed = ['saturate', 'brighter']
-			track_obj.params.add('vol', track.vol, 'float')
-			track_obj.params.add('pan', track.pan, 'float')
+			visual_obj = track_obj.visual
+			visual_obj.name = track.name
+			visual_obj.color.set_int(color)
+			visual_obj.color.fx_allowed = ['saturate', 'brighter']
+
+			# params
+			params_obj = track_obj.params
+			params_obj.add('vol', track.vol, 'float')
+			params_obj.add('pan', track.pan, 'float')
+			if track.mutesolo == 2: params_obj.add('enabled', False, 'bool')
 			track_obj.is_drum = 1 not in track.flags
-			if track.mutesolo == 2: track_obj.params.add('enabled', False, 'bool')
+
+			# sends
 			for send in track.sends:
 				returnid = 'return__'+str(send.id)
 				track_obj.sends.add(returnid, 'send_%i_%i' % (tracknum, send.id), send.vol)
 				if send.id not in used_sends: used_sends.append(send.id)
 
+			# audios
 			sample_path = None
 			sampleref_obj = None
 
@@ -180,8 +188,7 @@ class input_acid_old(plugins.base):
 				sampleref_obj = convproj_obj.sampleref__add(sample_path, sample_path, 'win')
 				sampleref_obj.search_local(dawvert_intent.input_folder)
 
-			#sampleref_obj.set_dur_samples(track.num_samples)
-			
+			# track sample stretch
 			trackpitch = track.pitch
 			track_root_note = track.root_note
 
@@ -192,8 +199,8 @@ class input_acid_old(plugins.base):
 			if dur_sec: samplemul = sample_beats/(dur_sec*2)
 			else: samplemul = sample_tempo/120
 
-			#print(stretch_type, track.flags, trackpitch, songroot, track.name)
-
+			# regions
+			track_placements = track_obj.placements
 			for region in track.regions:
 
 				offsamp = 0

@@ -521,8 +521,9 @@ class input_wavtool(plugins.base):
 					placement_obj = track_placements.add_notes()
 
 					# visual
-					placement_obj.visual.color.set_hex(wavtool_clip.color)
-					placement_obj.visual.name = wavtool_clip.name
+					visual_obj = placement_obj.visual
+					visual_obj.color.set_hex(wavtool_clip.color)
+					visual_obj.name = wavtool_clip.name
 
 					# time
 					time_obj = placement_obj.time
@@ -537,7 +538,7 @@ class input_wavtool(plugins.base):
 				# devices
 				add_devices(convproj_obj, track_obj, trackid, wavtool_obj.devices)
 
-			if wavtool_track.type == 'Audio':
+			elif wavtool_track.type == 'Audio':
 				track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)
 				track_placements = track_obj.placements
 				do_visual_track(track_obj.visual, wavtool_track)
@@ -548,8 +549,9 @@ class input_wavtool(plugins.base):
 					placement_obj = track_placements.add_audio()
 
 					# visual
-					placement_obj.visual.color.set_hex(wavtool_clip.color)
-					placement_obj.visual.name = wavtool_clip.name
+					visual_obj = placement_obj.visual
+					visual_obj.color.set_hex(wavtool_clip.color)
+					visual_obj.name = wavtool_clip.name
 
 					# sampleref
 					audioBufferId = wavtool_clip.audioBufferId

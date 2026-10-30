@@ -332,13 +332,17 @@ class input_lc(plugins.base):
 
 					if instdata[1] == 'Sine': 
 						osc_data.prop.shape = 'sine'
+						plugin_obj.midi_fallback__add_inst(11)
 					elif instdata[1] == 'Square': 
 						osc_data.prop.shape = 'square'
 						osc_data.prop.pulse_width = 1/2
+						plugin_obj.midi_fallback__add_inst(80)
 					elif instdata[1] == 'Triangle':
 						osc_data.prop.shape = 'triangle'
+						plugin_obj.midi_fallback__add_inst(95)
 					elif instdata[1] == 'Saw': 
 						osc_data.prop.shape = 'saw'
+						plugin_obj.midi_fallback__add_inst(81)
 					elif instdata[1] == 'Noise': 
 						osc_data.prop.shape = 'noise'
 						osc_data.prop.noise_type = '4bit'
@@ -348,9 +352,12 @@ class input_lc(plugins.base):
 					elif instdata[1] == 'Pulse25': 
 						osc_data.prop.shape = 'square'
 						osc_data.prop.pulse_width = 1/4
+						plugin_obj.midi_fallback__add_inst(80)
 					elif instdata[1] == 'Pulse125': 
 						osc_data.prop.shape = 'square'
 						osc_data.prop.noise_type = 1/8
+						plugin_obj.midi_fallback__add_inst(80)
+
 					elif instdata[1] == 'ToneA': 
 						osc_data.prop.type = 'wave'
 						osc_data.prop.nameid = 'main'

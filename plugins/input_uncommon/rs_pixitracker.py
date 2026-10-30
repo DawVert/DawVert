@@ -63,13 +63,15 @@ class input_pixitracker(plugins.base):
 			track_obj = cvpj_tracks.add(cvpj_instid, 'instrument', 1, False)
 
 			#visual
-			track_obj.visual.name = 'Inst #'+str(instnum+1)
-			track_obj.visual.color.set_int(colordata.getcolor())
+			visual_obj = track_obj.visual
+			visual_obj.name = 'Inst #'+str(instnum+1)
+			visual_obj.color.set_int(colordata.getcolor())
 
 			#params
-			track_obj.params.add('pitch', (pixi_sound.fine/100)+(0.2 if pixi_sound.channels == 1 else 0.4), 'float')
-			track_obj.params.add('vol', pixi_sound.volume/100, 'float')
 			track_obj.datavals.add('middlenote', pixi_sound.transpose*-1)
+			params_obj = track_obj.params
+			params_obj.add('pitch', (pixi_sound.fine/100)+(0.2 if pixi_sound.channels == 1 else 0.4), 'float')
+			params_obj.add('vol', pixi_sound.volume/100, 'float')
 
 			#audio
 			wave_path = samplefolder + str(instnum) + '.wav'

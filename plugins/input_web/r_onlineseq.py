@@ -214,6 +214,7 @@ class input_onlinesequencer(plugins.base):
 					plugin_obj = cvpj_plugins.add_uni('bitcrush', None, pluginid)
 					plugin_obj.role = 'fx'
 					plugin_obj.params.add('bits', i_params.bitcrush_depth, 'float')
+					plugin_obj.visual.from_datapack('onlineseq', 'fx', 'bitcrush', True)
 					track_obj.plugslots.slots_audio.append(pluginid)
 
 				if 'delay' in s_used_fx:
@@ -224,7 +225,8 @@ class input_onlinesequencer(plugins.base):
 					timing_obj.set_steps(2, convproj_obj)
 					plugin_obj, pluginid = delay_obj.to_cvpj(convproj_obj, pluginid)
 					plugin_obj.fxdata_add(bool(i_params.delay_on), 0.5)
-					plugin_obj.visual.name = 'Delay'
+					plugin_obj.visual.from_datapack('onlineseq', 'fx', 'delay', True)
+					track_obj.plugslots.slots_audio.append(pluginid)
 	
 				if 'distort' in s_used_fx:
 					pluginid = trackid+'_distort'
@@ -232,7 +234,7 @@ class input_onlinesequencer(plugins.base):
 					plugin_obj.role = 'fx'
 					plugin_obj.fxdata_add(True, i_params.distort_wet)
 					plugin_obj.params.add('distort_type', i_params.distort_type, 'int')
-					plugin_obj.visual.name = 'Distortion'
+					plugin_obj.visual.from_datapack('onlineseq', 'fx', 'distortion', True)
 					track_obj.plugslots.slots_audio.append(pluginid)
 	
 				if 'reverb' in s_used_fx:
@@ -241,7 +243,7 @@ class input_onlinesequencer(plugins.base):
 					plugin_obj.role = 'fx'
 					plugin_obj.fxdata_add(bool(i_params.reverb_on), i_params.reverb_wet)
 					plugin_obj.params.add('reverb_type', i_params.reverb_type, 'int')
-					plugin_obj.visual.name = 'Reverb'
+					plugin_obj.visual.from_datapack('onlineseq', 'fx', 'reverb', True)
 					track_obj.plugslots.slots_audio.append(pluginid)
 	
 				if 'eq' in s_used_fx:
@@ -252,7 +254,7 @@ class input_onlinesequencer(plugins.base):
 					plugin_obj.params.add('eq_high', i_params.eq_high, 'float')
 					plugin_obj.params.add('eq_mid', i_params.eq_mid, 'float')
 					plugin_obj.params.add('eq_low', i_params.eq_low, 'float')
-					plugin_obj.visual.name = 'EQ'
+					plugin_obj.visual.from_datapack('onlineseq', 'fx', 'eq', True)
 					track_obj.plugslots.slots_audio.append(pluginid)
 
 			cvpj_notelist = track_obj.placements.notelist

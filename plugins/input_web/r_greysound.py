@@ -17,16 +17,17 @@ def do_track_visual(gs_track, cvpj_track):
 def do_track_params(gs_track, cvpj_track):
 	channelCount = gs_track.channelCount
 	channelPans = gs_track.channelPans
-	cvpj_track.params.add('vol', clipGain(gs_track.faderGainDb), 'float')
-	cvpj_track.params.add('enabled', bool(not gs_track.muted), 'bool')
-	cvpj_track.params.add('solo', bool(gs_track.solo), 'bool')
+	params_obj = cvpj_track.params
+	params_obj.add('vol', clipGain(gs_track.faderGainDb), 'float')
+	params_obj.add('enabled', bool(not gs_track.muted), 'bool')
+	params_obj.add('solo', bool(gs_track.solo), 'bool')
 	if channelPans: 
 		if channelCount == 1:
-			cvpj_track.params.add('pan', channelPans[0], 'float')
+			params_obj.add('pan', channelPans[0], 'float')
 		elif channelCount == 2:
 			cvpj_track.datavals.add('pan_mode', 'split')
-			cvpj_track.params.add('splitpan_left', channelPans[0], 'float')
-			cvpj_track.params.add('splitpan_right', channelPans[1], 'float')
+			params_obj.add('splitpan_left', channelPans[0], 'float')
+			params_obj.add('splitpan_right', channelPans[1], 'float')
 
 def extract_audio(clip, sampleref_obj, dawvert_intent, zipfile):
 	filename = str(sampleref_obj.fileref.file)
@@ -138,23 +139,36 @@ class input_greysound(plugins.base):
 		routesends = {}
 
 		for gs_track in session_obj.tracks:
+			cvpj_trackid = str(gs_track.id)
+			s_autoloc = ['track', cvpj_trackid]
 			if gs_track.type == 'MASTER':
 				s_autoloc = ['master']
 				track_obj = cvpj_master
 				do_track_visual(gs_track, track_obj)
 				do_track_params(gs_track, track_obj)
-			else:
-				s_autoloc = ['track', str(gs_track.id)]
-				if gs_track.type == 'INSTRUMENT': track_type = 'instrument'
-				if gs_track.type == 'AUX': track_type = 'fx'
-				if gs_track.type == 'AUDIO': track_type = 'audio'
-				track_obj = cvpj_tracks.add(str(gs_track.id), track_type, 1, False)
+
+			elif gs_track.type == 'INSTRUMENT':
+				trackorder[gs_track.position] = gs_track.id
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 				do_track_visual(gs_track, track_obj)
 				do_track_params(gs_track, track_obj)
 				track_obj.armed.on = gs_track.armed
-				if gs_track.type == 'INSTRUMENT': track_obj.armed.in_keys = gs_track.armed
-				if gs_track.type == 'AUDIO': track_obj.armed.in_audio = gs_track.armed
+				track_obj.armed.in_keys = gs_track.armed
+
+			elif gs_track.type == 'AUDIO':
 				trackorder[gs_track.position] = gs_track.id
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'audio', 1, False)
+				do_track_visual(gs_track, track_obj)
+				do_track_params(gs_track, track_obj)
+				track_obj.armed.on = gs_track.armed
+				track_obj.armed.in_audio = gs_track.armed
+
+			elif gs_track.type == 'AUX':
+				trackorder[gs_track.position] = gs_track.id
+				track_obj = cvpj_tracks.add(cvpj_trackid, 'fx', 1, False)
+				do_track_visual(gs_track, track_obj)
+				do_track_params(gs_track, track_obj)
+				
 				if gs_track.id not in routesends: 
 					master_on = True
 					outputRouting = gs_track.outputRouting
@@ -265,6 +279,7 @@ class input_greysound(plugins.base):
 
 				fxparams = fxdata.parameters
 				dpackpluginname = fxdata.pluginType.upper()
+				plugin_obj.visual.from_datapack('greysound', 'plugin', dpackpluginname, True)
 				for param_id, dset_param in globalstore.datapack.get_params('greysound', 'plugin', dpackpluginname):
 					plugin_obj.datapack_param__add(param_id, fxparams[param_id] if param_id in fxparams else None, dset_param)
 

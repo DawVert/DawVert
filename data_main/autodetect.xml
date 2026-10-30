@@ -1,4 +1,159 @@
 <autodetect>
+	<!-- Main -->
+
+	<plugin pluginset="main" name="flp">
+		<file fileext=".flp"/>
+		<archived type="zip" file="*.flp" optional="1"/>
+		<bytes_header data="464c6864"/>
+	</plugin>
+
+	<plugin pluginset="main" name="ableton">
+		<file fileext=".als"/>
+		<compressed type="gzip" optional="1"/>
+		<xml root_name="Ableton"/>
+	</plugin>
+
+	<plugin pluginset="main" name="serato">
+		<file fileext=".ssp"/>
+	</plugin>
+
+	<plugin pluginset="main" name="dawproject">
+		<file fileext=".dawproject"/>
+		<archived type="zip" file="project.xml"/>
+	</plugin>
+
+	<plugin pluginset="main" name="lmms">
+		<file fileext=".mmp"/>
+		<xml root_name="lmms-project"/>
+	</plugin>
+
+	<plugin pluginset="main" name="lmms">
+		<file fileext=".mmpz"/>
+		<compressed type="zlib" offset="4"/>
+		<xml root_name="lmms-project"/>
+	</plugin>
+
+	<plugin pluginset="main" name="reaper">
+		<file fileext=".rpp"/>
+	</plugin>
+
+	<plugin pluginset="main" name="midi">
+		<file fileext=".mid;midi"/>
+		<bytes_header data="4d546864"/>
+	</plugin>
+
+	<plugin pluginset="main" name="qtractor">
+		<xml root_name="session"/>
+		<file fileext=".qtr"/>
+	</plugin>
+
+	<plugin pluginset="main" name="tracktion_edit">
+		<bytes_header data="534E4452"/>
+		<file fileext=".sndt"/>
+	</plugin>
+
+	<plugin pluginset="main" name="famistudio_txt">
+		<bytes_header data="50726F6A6563742056657273696F6E3D22"/>
+	</plugin>
+
+	<plugin pluginset="main" name="magda">
+		<file fileext=".mgd"/>
+	</plugin>
+
+	<plugin pluginset="main" name="tracktion_edit">
+		<file fileext=".tracktionedit"/>
+		<xml root_name="EDIT"/>
+	</plugin>
+
+	<plugin pluginset="main" name="zenbeats">
+		<file fileext=".song"/>
+		<xml root_name="song"/>
+	</plugin>
+
+	<!-- midi -->
+
+	<plugin pluginset="midi" name="mmf">
+		<file fileext=".mmf"/>
+		<bytes_header data="4d4d4d44"/>
+	</plugin>
+
+	<plugin pluginset="midi" name="temper">
+		<file fileext=".squ"/>
+		<xml root_name="music-sequence"/>
+	</plugin>
+
+	<plugin pluginset="midi" name="domino">
+		<file fileext=".dms"/>
+		<bytes_header data="506f7274616c53657175656e636544617461"/>
+	</plugin>
+
+	<plugin pluginset="midi" name="cakewalk_wrk">
+		<file fileext=".wrk"/>
+	</plugin>
+
+	<plugin pluginset="midi" name="evolution_midi">
+		<bytes_header data="736E673201"/>
+	</plugin>
+
+	<plugin pluginset="midi" name="v2m">
+		<file fileext=".v2m"/>
+	</plugin>
+
+	<plugin pluginset="midi" name="musicphrase">
+		<file fileext=".mps"/>
+		<bytes_header data="176D757369637068726173652066696C6520666F726D617464"/>
+	</plugin>
+
+	<!-- mobile -->
+
+	<plugin pluginset="mobile" name="fl_mobile">
+		<file fileext=".flm"/>
+		<archived type="zip" file="*.flm" optional="1"/>
+		<bytes_header data="31304c46"/>
+	</plugin>
+
+	<plugin pluginset="mobile" name="nanostudio_v1">
+		<folder fileext=".prj" files="Package.sng;Package.prj"/>
+	</plugin>
+
+	<plugin pluginset="mobile" name="midsequer">
+		<file fileext=".mdsq"/>
+	</plugin>
+
+	<plugin pluginset="mobile" name="xewton_music">
+		<file fileext=".xms"/>
+	</plugin>
+
+	<plugin pluginset="mobile" name="zquence">
+		<file fileext=".zssong"/>
+	</plugin>
+
+	<plugin pluginset="mobile" name="fl_mobile_old">
+		<file fileext=".flm"/>
+		<bytes_header data="0080D444"/>
+	</plugin>
+
+	<plugin pluginset="mobile" name="bajloop">
+		<file fileext=".bjm"/>
+		<bytes_header data="52656369706520666F7220707572652076656720736F6E6720312E30303A00"/>
+	</plugin>
+
+	<plugin pluginset="mobile" name="meteor">
+		<xml root_name="Project"/>
+		<file fileext=".mtproj"/>
+	</plugin>
+
+	<plugin pluginset="mobile" name="caustic">
+		<file fileext=".caustic"/>
+		<bytes_header data="5241434b"/>
+	</plugin>
+
+	<plugin pluginset="mobile" name="vs_coolbeat">
+		<file fileext=".mlp"/>
+	</plugin>
+
+	<!-- mobile -->
+
 	<plugin pluginset="tracker" name="it">
 		<file fileext=".it"/>
 		<bytes_header data="494d504d"/>
@@ -34,19 +189,14 @@
 		<bytes_header data="00545241434b4552424f5900"/>
 	</plugin>
 
+	<plugin pluginset="tracker" name="famitracker_txt">
+		<bytes_header data="232046616D69547261636B65722074657874206578706F7274"/>
+	</plugin>
+
+	<!-- uncommon -->
+
 	<plugin pluginset="uncommon" name="ceol">
 		<file fileext=".ceol"/>
-	</plugin>
-
-	<plugin pluginset="main" name="flp">
-		<file fileext=".flp"/>
-		<archived type="zip" file="*.flp" optional="1"/>
-		<bytes_header data="464c6864"/>
-	</plugin>
-
-	<plugin pluginset="mariopaint" name="notessimo_v3">
-		<file fileext=".note"/>
-		<archived type="zip" file="sheets.xml"/>
 	</plugin>
 
 	<plugin pluginset="uncommon" name="1bitdragon">
@@ -57,77 +207,43 @@
 		<file fileext=".jsonl"/>
 	</plugin>
 
-	<plugin pluginset="mariopaint" name="notessimo_v2">
-		<file fileext=".note"/>
-		<compressed type="zlib"/>
+	<plugin pluginset="uncommon" name="orgyana">
+		<file fileext=".org"/>
+		<bytes_header data="4f72672d30"/>
 	</plugin>
 
-	<plugin pluginset="main" name="serato">
-		<file fileext=".ssp"/>
+	<plugin pluginset="uncommon" name="mnbs">
+		<file fileext=".nbs"/>
 	</plugin>
 
-	<plugin pluginset="main" name="ableton">
-		<file fileext=".als"/>
-		<compressed type="gzip" optional="1"/>
-		<xml root_name="Ableton"/>
+	<plugin pluginset="uncommon" name="ptcop">
+		<file fileext=".ptcop"/>
+		<bytes_header data="5054434f4c4c4147452d303731313139"/>
+		<bytes_header data="505454554e452d2d3230303731313139"/>
 	</plugin>
+
+	<plugin pluginset="uncommon" name="pixitracker">
+		<file fileext=".piximod"/>
+		<bytes_header data="504958494d4f4431"/>
+	</plugin>
+
+	<plugin pluginset="uncommon" name="darwin">
+		<file fileext=".darwin"/>
+	</plugin>
+
+	<!-- web -->
 
 	<plugin pluginset="web" name="amped">
 		<file fileext=".amped"/>
 		<archived type="zip" file="amped-studio-project.json"/>
 	</plugin>
 
-	<plugin pluginset="2010s" name="audiosauna">
-		<file fileext=".song"/>
-		<archived type="zip" file="songdata.xml"/>
-	</plugin>
-
 	<plugin pluginset="web" name="bandlab">
 		<file fileext=".blx"/>
 	</plugin>
 
-	<plugin pluginset="main" name="dawproject">
-		<file fileext=".dawproject"/>
-		<archived type="zip" file="project.xml"/>
-	</plugin>
-
-	<plugin pluginset="mobile" name="fl_mobile">
-		<file fileext=".flm"/>
-		<archived type="zip" file="*.flm" optional="1"/>
-		<bytes_header data="31304c46"/>
-	</plugin>
-
-	<plugin pluginset="main" name="lmms">
-		<file fileext=".mmp"/>
-		<xml root_name="lmms-project"/>
-	</plugin>
-
-	<plugin pluginset="main" name="lmms">
-		<file fileext=".mmpz"/>
-		<compressed type="zlib" offset="4"/>
-		<xml root_name="lmms-project"/>
-	</plugin>
-
-	<plugin pluginset="mobile" name="nanostudio_v1">
-		<folder fileext=".prj" files="Package.sng;Package.prj"/>
-	</plugin>
-
 	<plugin pluginset="web" name="onlineseq">
 		<file fileext=".sequence"/>
-	</plugin>
-
-	<plugin pluginset="uncommon" name="orgyana">
-		<file fileext=".org"/>
-		<bytes_header data="4f72672d30"/>
-	</plugin>
-
-	<plugin pluginset="y2k" name="piyopiyo">
-		<file fileext=".pmd"/>
-		<bytes_header data="504d44"/>
-	</plugin>
-
-	<plugin pluginset="main" name="reaper">
-		<file fileext=".rpp"/>
 	</plugin>
 
 	<plugin pluginset="web" name="soundation">
@@ -139,24 +255,26 @@
 		<archived type="zip" file="*.sng"/>
 	</plugin>
 
-	<plugin pluginset="main" name="tracktion_edit">
-		<file fileext=".tracktionedit"/>
-		<xml root_name="EDIT"/>
+	<plugin pluginset="web" name="greysound">
+		<archived type="zip" file="session.json"/>
 	</plugin>
 
-	<plugin pluginset="main" name="zenbeats">
+	<!-- 2010s -->
+
+	<plugin pluginset="2010s" name="audiosauna">
 		<file fileext=".song"/>
-		<xml root_name="song"/>
+		<archived type="zip" file="songdata.xml"/>
 	</plugin>
 
 	<plugin pluginset="2010s" name="z_maestro">
 		<file fileext=".zmm"/>
 	</plugin>
 
-	<plugin pluginset="mobile" name="caustic">
-		<file fileext=".caustic"/>
-		<bytes_header data="5241434b"/>
+	<plugin pluginset="2010s" name="sequel3">
+		<file fileext=".steinberg-project"/>
 	</plugin>
+
+	<!-- ancient -->
 
 	<plugin pluginset="ancient" name="adlib_rol">
 		<file fileext=".rol"/>
@@ -168,6 +286,44 @@
 		<bytes_header data="736f7065706f73"/>
 	</plugin>
 
+	<plugin pluginset="ancient" name="soundclub2">
+		<file fileext=".sn2"/>
+		<bytes_header data="534e32"/>
+	</plugin>
+
+	<!-- audioedit -->
+
+	<plugin pluginset="audioedit" name="eam2">
+		<file fileext=".eamixer"/>
+	</plugin>
+
+	<plugin pluginset="audioedit" name="soundop">
+		<file fileext=".msf"/>
+	</plugin>
+
+	<!-- drummach -->
+
+	<plugin pluginset="drummach" name="hydrogen">
+		<xml root_name="song"/>
+		<file fileext=".h2song"/>
+	</plugin>
+
+	<plugin pluginset="drummach" name="acidmach2">
+		<file fileext=".amx"/>
+	</plugin>
+
+	<!-- mariopaint -->
+
+	<plugin pluginset="mariopaint" name="notessimo_v3">
+		<file fileext=".note"/>
+		<archived type="zip" file="sheets.xml"/>
+	</plugin>
+
+	<plugin pluginset="mariopaint" name="notessimo_v2">
+		<file fileext=".note"/>
+		<compressed type="zlib"/>
+	</plugin>
+
 	<plugin pluginset="mariopaint" name="mariosequencer">
 		<file fileext=".msq"/>
 	</plugin>
@@ -177,29 +333,11 @@
 		<xml root_name="MarioSequencerSong"/>
 	</plugin>
 
-	<plugin pluginset="uncommon" name="mnbs">
-		<file fileext=".nbs"/>
-	</plugin>
+	<!-- y2k -->
 
-	<plugin pluginset="main" name="midi">
-		<file fileext=".mid;midi"/>
-		<bytes_header data="4d546864"/>
-	</plugin>
-
-	<plugin pluginset="uncommon" name="ptcop">
-		<file fileext=".ptcop"/>
-		<bytes_header data="5054434f4c4c4147452d303731313139"/>
-		<bytes_header data="505454554e452d2d3230303731313139"/>
-	</plugin>
-
-	<plugin pluginset="midi" name="mmf">
-		<file fileext=".mmf"/>
-		<bytes_header data="4d4d4d44"/>
-	</plugin>
-
-	<plugin pluginset="uncommon" name="pixitracker">
-		<file fileext=".piximod"/>
-		<bytes_header data="504958494d4f4431"/>
+	<plugin pluginset="y2k" name="piyopiyo">
+		<file fileext=".pmd"/>
+		<bytes_header data="504d44"/>
 	</plugin>
 
 	<plugin pluginset="y2k" name="fruitytracks">
@@ -212,52 +350,9 @@
 		<bytes_header data="43727973"/>
 	</plugin>
 
-	<plugin pluginset="midi" name="temper">
-		<file fileext=".squ"/>
-		<xml root_name="music-sequence"/>
-	</plugin>
-
-	<plugin pluginset="ancient" name="soundclub2">
-		<file fileext=".sn2"/>
-		<bytes_header data="534e32"/>
-	</plugin>
-
-	<plugin pluginset="extlib" name="color_art">
-		<file fileext=".png"/>
-	</plugin>
-
-	<plugin pluginset="midi" name="domino">
-		<file fileext=".dms"/>
-		<bytes_header data="506f7274616c53657175656e636544617461"/>
-	</plugin>
-
 	<plugin pluginset="y2k" name="sf_acid">
 		<bytes_header pos="8" data="41434944"/>
-		<file fileext=".acd"/>
-	</plugin>
-
-	<plugin pluginset="y2k" name="sf_acid">
-		<bytes_header pos="8" data="41434944"/>
-		<file fileext=".sdml"/>
-	</plugin>
-
-	<plugin pluginset="drummach" name="hydrogen">
-		<xml root_name="song"/>
-		<file fileext=".h2song"/>
-	</plugin>
-
-	<plugin pluginset="main" name="qtractor">
-		<xml root_name="session"/>
-		<file fileext=".qtr"/>
-	</plugin>
-
-	<plugin pluginset="mobile" name="vs_coolbeat">
-		<file fileext=".mlp"/>
-	</plugin>
-
-	<plugin pluginset="main" name="tracktion_edit">
-		<bytes_header data="534E4452"/>
-		<file fileext=".sndt"/>
+		<file fileext=".acd;.sdml"/>
 	</plugin>
 
 	<plugin pluginset="y2k" name="sf_acid_3">
@@ -275,55 +370,19 @@
 		<bytes_header pos="4" data="4D303157"/>
 	</plugin>
 
-	<plugin pluginset="midi" name="cakewalk_wrk">
-		<file fileext=".wrk"/>
+	<!-- extlib -->
+
+	<plugin pluginset="extlib" name="color_art">
+		<file fileext=".png"/>
 	</plugin>
 
-	<plugin pluginset="midi" name="evolution_midi">
-		<bytes_header data="736E673201"/>
-	</plugin>
-
-	<plugin pluginset="midi" name="v2m">
-		<file fileext=".v2m"/>
-	</plugin>
-
-	<plugin pluginset="tracker" name="famitracker_txt">
-		<bytes_header data="232046616D69547261636B65722074657874206578706F7274"/>
-	</plugin>
-
-	<plugin pluginset="main" name="famistudio_txt">
-		<bytes_header data="50726F6A6563742056657273696F6E3D22"/>
-	</plugin>
-
-	<plugin pluginset="2010s" name="sequel3">
-		<file fileext=".steinberg-project"/>
-	</plugin>
-
-	<plugin pluginset="audioedit" name="eam2">
-		<file fileext=".eamixer"/>
-	</plugin>
-
-	<plugin pluginset="main" name="cakewalk_cxf">
-		<file fileext=".cxf"/>
-		<archived type="zip" file="*.cxf" optional="1"/>
-	</plugin>
-
-	<plugin pluginset="midi" name="musicphrase">
-		<file fileext=".mps"/>
-		<bytes_header data="176D757369637068726173652066696C6520666F726D617464"/>
-	</plugin>
-
-	<plugin pluginset="drummach" name="acidmach2">
-		<file fileext=".amx"/>
-	</plugin>
-
-	<plugin pluginset="audioedit" name="soundop">
-		<file fileext=".msf"/>
-	</plugin>
+	<!-- gameres -->
 
 	<plugin pluginset="gameres" name="hypnospace_hsm">
 		<file fileext=".hsm"/>
 	</plugin>
+
+	<!-- libopenmpt -->
 
 	<plugin pluginset="extlib" name="libopenmpt">
 		<file fileext=".669"/>
@@ -477,42 +536,4 @@
 		<file fileext=".mmcmp"/>
 	</plugin>
 
-	<plugin pluginset="uncommon" name="darwin">
-		<file fileext=".darwin"/>
-	</plugin>
-
-	<plugin pluginset="web" name="greysound">
-		<archived type="zip" file="session.json"/>
-	</plugin>
-
-	<plugin pluginset="mobile" name="midsequer">
-		<file fileext=".mdsq"/>
-	</plugin>
-
-	<plugin pluginset="mobile" name="xewton_music">
-		<file fileext=".xms"/>
-	</plugin>
-
-	<plugin pluginset="mobile" name="zquence">
-		<file fileext=".zssong"/>
-	</plugin>
-
-	<plugin pluginset="mobile" name="fl_mobile_old">
-		<file fileext=".flm"/>
-		<bytes_header data="0080D444"/>
-	</plugin>
-
-	<plugin pluginset="main" name="magda">
-		<file fileext=".mgd"/>
-	</plugin>
-
-	<plugin pluginset="mobile" name="bajloop">
-		<file fileext=".bjm"/>
-		<bytes_header data="52656369706520666F7220707572652076656720736F6E6720312E30303A00"/>
-	</plugin>
-
-	<plugin pluginset="mobile" name="meteor">
-		<xml root_name="Project"/>
-		<file fileext=".mtproj"/>
-	</plugin>
 </autodetect>
