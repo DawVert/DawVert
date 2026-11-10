@@ -281,15 +281,17 @@ def do_audio(convproj_obj, npa_obj, audio_obj):
 	global samplefolder
 	global zip_data
 
+	cvpj_samplerefs = convproj_obj.samplerefs
+
 	filepath = str(audio_obj.file)
 
 	if not audio_obj.file.external:
 		extfilepath = os.path.join(samplefolder, filepath)
 		try: zip_data.extract(filepath, path=samplefolder, pwd=None)
 		except: pass
-		sampleref_obj = convproj_obj.sampleref__add(filepath, extfilepath, None)
+		sampleref_obj = cvpj_samplerefs.add(filepath, extfilepath)
 	else:
-		sampleref_obj = convproj_obj.sampleref__add(filepath, filepath, None)
+		sampleref_obj = cvpj_samplerefs.add(filepath, filepath)
 	sampleref_obj.convert__path__fileformat()
 
 	if audio_obj.channels: sampleref_obj.set_channels(audio_obj.channels)

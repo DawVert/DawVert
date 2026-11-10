@@ -52,7 +52,8 @@ class input_famitracker_txt(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_plugins = convproj_obj.plugins
-		
+		cvpj_samplerefs = convproj_obj.samplerefs
+
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
 
@@ -168,7 +169,7 @@ class input_famitracker_txt(plugins.base):
 									audio_obj.decode_from_codec('dpcm', dpcm_data.data)
 									audio_obj.rate = dpcm_freqlist[dpcm_key.pitch]
 									audio_obj.to_file_wav(filename)
-									sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
+									sampleref_obj = cvpj_samplerefs.add(filename, filename)
 									sampleref_obj.set_fileformat('wav')
 									audio_obj.to_sampleref_obj(sampleref_obj)
 									sp_obj = plugin_obj.sampleregion_add(dkey, dkey, dkey, None)

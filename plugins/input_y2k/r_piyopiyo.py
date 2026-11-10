@@ -27,12 +27,12 @@ alt_drum_note_map = {
 }
 
 samp_vals = {
-	'bass1': ('PIYOPIYO_BASS1', 'Bass 1'),
-	'bass2': ('PIYOPIYO_BASS2', 'Bass 2'),
-	'snare1': ('PIYOPIYO_SNARE1', 'Snare'),
-	'hat1': ('PIYOPIYO_HAT1', 'Hat 1'),
-	'hat2': ('PIYOPIYO_HAT2', 'Hat 2'),
-	'symbal1': ('PIYOPIYO_SYMBAL1', 'Symbal'),
+	'bass1': ('BASS1', 'Bass 1'),
+	'bass2': ('BASS2', 'Bass 2'),
+	'snare1': ('SNARE1', 'Snare'),
+	'hat1': ('HAT1', 'Hat 1'),
+	'hat2': ('HAT2', 'Hat 2'),
+	'symbal1': ('SYMBAL1', 'Symbal'),
 }
 
 def parse_notes(convproj_obj, trackid, notes_data, track_obj, keyoffset):
@@ -121,11 +121,11 @@ class input_piyopiyo(plugins.base):
 
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		from objects import colors
-		from objects.convproj import fileref
 
 		project_obj = conversion_state.project
 
-		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'piyopiyo_wav', ['piyopiyo'])
+		folder_prefixes = convproj_obj.folder_prefixes
+		folder_prefixes.extend('extdata', 'piyopiyo_wav', ['piyopiyo'])
 
 		globalstore.datapack.load('piyopiyo', './data/datapack/app/piyopiyo.xml')
 		colordata = colors.colorset.from_datapack('piyopiyo', 'inst', 'main')
@@ -135,6 +135,7 @@ class input_piyopiyo(plugins.base):
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_transport = convproj_obj.transport
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj params ----------
 		use_samples = dawvert_intent.input_get_param('use_samples', True)
@@ -198,9 +199,13 @@ class input_piyopiyo(plugins.base):
 				for sampname in ['BASS1', 'BASS2', 'SNARE1', 'HAT1', 'HAT2', 'SYMBAL1']:
 					sampid = 'PIYOPIYO_%s' % sampname
 					wavfilename = sampname+'.wav'
-					outfile = os.path.join(dawvert_intent.path_samples['extracted'], wavfilename)
-					external_dat.extract(wavfilename, outfile)
-					sampleref_obj = convproj_obj.sampleref__add(sampname, outfile, None)
+
+					outpath = dawvert_intent.path_samples['extracted']
+					external_dat.extract(wavfilename, outpath)
+
+					sampleref_obj = cvpj_samplerefs.add(sampname, wavfilename)
+					sampleref_obj.apply_prefix('extracted')
+
 					sp_obj = plugin_obj.samplepart_add(sampid)
 					sp_obj.sampleref = sampname
 			except FileNotFoundError:

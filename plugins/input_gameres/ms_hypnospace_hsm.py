@@ -42,13 +42,15 @@ class input_hypnospace_hsm(plugins.base):
 		globalstore.datapack.load('hypnospace_hsm', './data/datapack/app/hypnospace_hsm.xml')
 		colordata = colors.colorset.from_datapack('hypnospace_hsm', 'sample', 'main')
 
-		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'hypnospace_hsm', ['hypnospace_hsm'])
+		folder_prefixes = convproj_obj.folder_prefixes
+		folder_prefixes.extend('extdata', 'hypnospace_hsm', ['hypnospace_hsm'])
 
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'ms'
@@ -83,8 +85,8 @@ class input_hypnospace_hsm(plugins.base):
 			# sample
 			if sample.path:
 				sampleref_id = sample.path
-				sampleref_obj = convproj_obj.sampleref__add__prefix(sampleref_id, 'hypnospace_hsm', sample.path+'.ogg')
-				sampleref_obj.fileref.resolve_prefix()
+				sampleref_obj = cvpj_samplerefs.add(sampleref_id, sample.path+'.ogg')
+				sampleref_obj.apply_prefix('hypnospace_hsm')
 				plugin_obj, samplepart_obj = cvpj_plugins.addspec_sampler__sampleref(sampleref_id, instid)
 				inst_obj.plugslots.set_synth(instid)
 

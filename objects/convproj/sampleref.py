@@ -20,8 +20,9 @@ class cvpj_sampleref:
 	audiofile_selector = dv_plugins.create_selector('audiofile')
 	audioconv_selector = dv_plugins.create_selector('audioconv')
 
-	def __init__(self):
-		self.fileref = fileref.cvpj_fileref()
+	def __init__(self, convproj_obj):
+		self.convproj_obj = convproj_obj
+		self.fileref = fileref.cvpj_fileref(convproj_obj)
 		self.found = False
 		self.dur_samples = -1
 		self.dur_sec = -1
@@ -96,7 +97,7 @@ class cvpj_sampleref:
 
 	def convert__path__fileformat(self):
 		if ('fileformat' not in self.defined_meta):
-			self.set_fileformat(self.fileref.file.extension.lower())
+			self.set_fileformat(self.fileref.get_fileext())
 
 
 
@@ -135,20 +136,20 @@ class cvpj_sampleref:
 		if 'fileformat' in self.defined_meta: return self.fileformat
 
 	def get_exists(self):
-		orgpath = self.fileref.get_path(None, False)
+		orgpath = self.fileref.get()
 		return os.path.exists(orgpath)
 
 
 
 
 	def set_path(self, in_os_type, in_path):
-		self.fileref.set_path(in_os_type, in_path, 0)
+		self.fileref.set_file(in_path, in_os_type)
 
 	def set_path_prefix(self, prefixname, in_path):
 		self.fileref.set_path_prefix(prefixname, in_path, 0)
 
 	def copy_file(self, os_type, outfilename):
-		filename = self.fileref.get_path(None, False)
+		filename = self.fileref.get()
 		if os.path.exists(filename):
 			shutil.copy(filename, outfilename)
 			self.set_path(os_type, outfilename)
@@ -156,7 +157,7 @@ class cvpj_sampleref:
 
 	def copy_resample(self, os_type, outfilename):
 		try:
-			filename = self.fileref.get_path(None, False)
+			filename = self.fileref.get()
 			if not os.path.exists(outfilename):
 				audiof_obj = audio_data.audio_obj()
 				audiof_obj.from_file_wav(filename)
@@ -172,7 +173,7 @@ class cvpj_sampleref:
 			self.timebase = 44100
 			return True
 		except:
-			filename = self.fileref.get_path(None, False)
+			filename = self.fileref.get()
 			logger_project.warning('sampleref: Failed to Resample '+str(self.fileref.file)+'. Copying instead.')
 			try:
 				shutil.copy(filename, outfilename)
@@ -180,11 +181,11 @@ class cvpj_sampleref:
 			except: pass
 			return False
 
-	def search_local(self, dirpath):
-		return self.fileref.search_local(dirpath)
+	def apply_prefix(self, prefixname):
+		return self.fileref.apply_prefix(prefixname)
 
 	def get_info(self, *args):
-		wav_realpath = self.fileref.get_path(get_path_type(None), False)
+		wav_realpath = self.fileref.get(get_path_type(None))
 
 		if os.path.exists(wav_realpath):
 
@@ -193,7 +194,7 @@ class cvpj_sampleref:
 			self.file_size = os.path.getsize(wav_realpath)
 			self.file_date = int(os.path.getmtime(wav_realpath))
 
-			fileextlow = self.fileref.file.extension.lower()
+			fileextlow = self.fileref.get_fileext()
 
 			if fileextlow == 'wav':
 				try:
@@ -247,7 +248,7 @@ class cvpj_sampleref:
 					filesupported = data_values.list__in_both(dawaudiofiles, prop_obj.out_file_formats)
 					if filesupported:
 						isconverted = False
-						oldpath = self.fileref.get_path(None, False)
+						oldpath = self.fileref.get()
 
 						try: isconverted = plug_obj.convert_file(self, filesupported[0], outpath)
 						except PermissionError:

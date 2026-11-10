@@ -59,6 +59,7 @@ class extplug_manu:
 	def __init__(self, plugin_obj, convproj_obj, pluginid):
 		self.plugin_obj = plugin_obj
 		self.convproj_obj = convproj_obj
+		self.filerefs = convproj_obj.filerefs
 		self.pluginid = pluginid
 		self.extplugtype = None
 		self.cur_params = {}
@@ -102,7 +103,7 @@ class extplug_manu:
 
 		vst_cpuarch, vst_path = pluginfo_obj.find_locpath(self.cpu_arch_list)
 		if vst_cpuarch and vst_path:
-			self.convproj_obj.fileref__add(vst_path, vst_path, None)
+			self.filerefs.add(vst_path, vst_path, None)
 			plugin_obj.filerefs_global['plugin'] = vst_path
 			external_info.cpu_arch = vst_cpuarch
 

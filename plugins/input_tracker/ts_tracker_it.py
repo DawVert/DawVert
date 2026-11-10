@@ -66,10 +66,11 @@ def idsamp_spobj(it_samp, sp_obj):
 
 def add_single_sampler(convproj_obj, it_samp, sampleidnum):
 	cvpj_plugins = convproj_obj.plugins
+	cvpj_samplerefs = convproj_obj.samplerefs
 
 	filename = samplefolder+str(sampleidnum)+'.wav'
 
-	sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
+	sampleref_obj = cvpj_samplerefs.add(filename, filename)
 	sampleref_obj.set_dur_samples(it_samp.length)
 	sampleref_obj.set_hz(it_samp.C5_speed)
 	sampleref_obj.set_fileformat('wav')
@@ -150,6 +151,7 @@ class input_it(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj init ----------
 		traits_obj = convproj_obj.traits
@@ -310,7 +312,7 @@ class input_it(plugins.base):
 						instrumentnum = sampleregion[0][1]
 
 						filename = samplefolder + str(instrumentnum) + '.wav'
-						sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
+						sampleref_obj = cvpj_samplerefs.add(filename, filename)
 
 						sp_obj = plugin_obj.sampleregion_add(sampleregion[1], sampleregion[2], -(sampleregion[0][0]-60), None)
 						sp_obj.sampleref = filename

@@ -208,6 +208,8 @@ def maketrack_wave(project_obj, placements_obj, convproj_obj, track_obj, muse_bp
 
 	bpmcalc = (120/muse_bpm)
 
+	cvpj_samplerefs = convproj_obj.samplerefs
+
 	for audiopl_obj in placements_obj.pl_audio:
 		time_obj = audiopl_obj.time
 		
@@ -222,14 +224,15 @@ def maketrack_wave(project_obj, placements_obj, convproj_obj, track_obj, muse_bp
 		offset = time_obj.get_offset()
 		frameval = int((offset*(wavetime))*(120/muse_bpm))
 
-		ref_found, sampleref_obj = convproj_obj.sampleref__get(audiopl_obj.sample.sampleref)
+		ref_found, sampleref_obj = cvpj_samplerefs.get(audiopl_obj.sample.sampleref)
 		if ref_found: 
+			fileref_obj = sampleref_obj.fileref
 			samp_hz = sampleref_obj.get_hz()
 			if samp_hz:
 				frameval *= samp_hz/WAVE_FREQUENCY
 	
 				event_obj = muse_part.new_event()
-				event_obj.file = sampleref_obj.fileref.get_path('unix', False)
+				event_obj.file = fileref_obj.get('unix')
 				event_obj.frame = int(frameval)
 				event_obj.poslen.len = (int(duration)*wavetime)*bpmcalc
 				event_obj.poslen.sample = (int(position)*wavetime)*bpmcalc

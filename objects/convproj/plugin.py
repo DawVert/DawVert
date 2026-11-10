@@ -184,10 +184,12 @@ class cvpj_plugin:
 		self.filter = oldstate.filter
 
 	def external__from_pluginfo_obj(self, convproj_obj, pluginfo_obj, cpu_arch_list):
+		cvpj_filerefs = convproj_obj.filerefs
+
 		self.external_info.__init__()
 		vst_cpuarch, vst_path = pluginfo_obj.find_locpath(cpu_arch_list)
 		if vst_cpuarch and vst_path:
-			convproj_obj.fileref__add(vst_path, vst_path, None)
+			cvpj_filerefs.add(vst_path, vst_path, None)
 			self.filerefs_global['plugin'] = vst_path
 			self.external_info.cpu_arch = vst_cpuarch
 
@@ -406,9 +408,11 @@ class cvpj_plugin:
 	# -------------------------------------------------- fileref_global
 
 	def fileref__get_global(self, fileref_name, convproj_obj): 
+		cvpj_filerefs = convproj_obj.filerefs
 		if fileref_name in self.filerefs_global:
 			fileref_id = self.filerefs_global[fileref_name]
-			return convproj_obj.fileref__get(fileref_id)
+			if fileref_id in cvpj_filerefs:
+				return True, cvpj_filerefs[fileref_id]
 		return False, None
 
 	def getpath_fileref_global(self, convproj_obj, refname, os_type, nofile): 

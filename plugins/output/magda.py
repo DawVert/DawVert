@@ -25,6 +25,8 @@ def do_clip_visual(magda_clip, visual_obj):
 def do_clips(session_obj, magda_track, placements_obj, convproj_obj):
 	from objects.file_proj import magda as proj_magda
 
+	cvpj_samplerefs = convproj_obj.samplerefs
+
 	tempo = convproj_obj.params.get('bpm', 120).value
 
 	for notespl_obj in placements_obj.pl_notes:
@@ -74,11 +76,13 @@ def do_clips(session_obj, magda_track, placements_obj, convproj_obj):
 		magda_clip.fadeIn = audiopl_obj.fade_in.get_dur_seconds(tempo)
 		magda_clip.fadeOut = audiopl_obj.fade_out.get_dur_seconds(tempo)
 
-		ref_found, sampleref_obj = convproj_obj.sampleref__get(audiopl_obj.sample.sampleref)
+		ref_found, sampleref_obj = cvpj_samplerefs.get(audiopl_obj.sample.sampleref)
 		manga_audio = magda_clip.audio
 		if ref_found: 
+			fileref_obj = sampleref_obj.fileref
+
 			audiosource = manga_audio.source
-			audiosource.filePath = sampleref_obj.fileref.get_path(None, False)
+			audiosource.filePath = fileref_obj.get()
 			audiosource.durationSeconds = sampleref_obj.get_dur_sec()
 
 			audioplayback = manga_audio.playback

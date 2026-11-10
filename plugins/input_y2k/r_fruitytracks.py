@@ -108,6 +108,7 @@ class input_fruitytracks(plugins.base):
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_transport = convproj_obj.transport
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj params ----------
 		pan_auto = dawvert_intent.input_get_param('pan_auto', 'auto')
@@ -182,7 +183,7 @@ class input_fruitytracks(plugins.base):
 				time_obj = placement_obj.time
 
 				# sampleref
-				sampleref_obj = convproj_obj.sampleref__add(ftr_clip.file, ftr_clip.file, 'win')
+				sampleref_obj = cvpj_samplerefs.add(ftr_clip.file, ftr_clip.file, 'win')
 				sampleref_obj.search_local(dawvert_intent.input_folder)
 
 				sp_obj = placement_obj.sample

@@ -145,7 +145,8 @@ class output_soundation(plugins.base):
 		cvpj_transport = i_convproj_obj.transport
 		cvpj_master = i_convproj_obj.track_master
 		cvpj_plugins = i_convproj_obj.plugins
-		
+		cvpj_samplerefs = convproj_obj.samplerefs
+
 		# ---------- setup ----------
 		audio_id = {}
 		convproj_obj = i_convproj_obj
@@ -238,7 +239,7 @@ class output_soundation(plugins.base):
 
 						# --------- samplepart
 						sp_obj = plugin_obj.samplepart_get('sample')
-						reffound, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
+						reffound, sampleref_obj = cvpj_samplerefs.get(sp_obj.sampleref)
 						if reffound: sp_obj.convpoints_percent(sampleref_obj)
 
 						# --------- asdr
@@ -468,8 +469,8 @@ class output_soundation(plugins.base):
 
 					# audio
 					audiofilename = ''
-					ref_found, sampleref_obj = convproj_obj.sampleref__get(audiopl_obj.sample.sampleref)
-					if ref_found: audiofilename = sampleref_obj.fileref.get_path(None, False)
+					ref_found, sampleref_obj = cvpj_samplerefs.get(audiopl_obj.sample.sampleref)
+					if ref_found: audiofilename = sampleref_obj.fileref.get()
 
 					zipfilename = addsample(zip_sngz, audiofilename, False)
 

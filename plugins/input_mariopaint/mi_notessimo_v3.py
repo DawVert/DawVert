@@ -69,6 +69,7 @@ class sample_manager():
 	extracted_samples = []
 
 	def add_sample(project_obj, convproj_obj, sample_id):
+		cvpj_samplerefs = convproj_obj.samplerefs
 		samplekey = 0
 		sampleref_obj = None
 		if sample_id in project_obj.samples:
@@ -81,7 +82,7 @@ class sample_manager():
 					try: project_obj.zip_data.extract(zipfilepath, path=samplefolder, pwd=None)
 					except: pass
 					realfilepath = os.path.join(samplefolder,zipfilepath)
-					sampleref_obj = convproj_obj.sampleref__add(sample_id, realfilepath, None)
+					sampleref_obj = cvpj_samplerefs.add(sample_id, realfilepath)
 					visual_obj = sampleref_obj.visual
 					visual_obj.name = notet_sample.name
 					if notet_sample.comments: visual_obj.comment = notet_sample.comments

@@ -133,6 +133,8 @@ class input_midi(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
+		cvpj_filerefs = convproj_obj.filerefs
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj params ----------
 		swap_bg_fg = dawvert_intent.input_get_param('swap_bg_fg', False)
@@ -161,7 +163,7 @@ class input_midi(plugins.base):
 		#	cvpj_automation.add_autotick(['main', 'bpm'], 'float', tempopos, temponode.tempo)
 
 		#for audioid, filename in project_obj.files.audio_list.items():
-		#	sampleref_obj = convproj_obj.sampleref__add(audioid, filename, None)
+		#	sampleref_obj = cvpj_samplerefs.add(audioid, filename)
 
 		# ---------- devices ----------
 		for device_obj in project_obj.devices:
@@ -210,7 +212,7 @@ class input_midi(plugins.base):
 					placement_obj.fade_out.set_dur(calcsec(clip.properties.fade_out, ppq), 'seconds')
 
 					# sampleref
-					sampleref_obj = convproj_obj.sampleref__add(filepath, filepath, None)
+					sampleref_obj = cvpj_samplerefs.add(filepath, filepath)
 					sampleref_obj.search_local(os.path.dirname(dawvert_intent.input_file))
 
 					# stretch
@@ -240,6 +242,6 @@ class input_midi(plugins.base):
 					do_clip_base(clip, placement_obj, clipcolor, ppq)
 
 					filepath = clip.midiclip.filename
-					fileref_obj = convproj_obj.fileref__add(filepath, filepath, None)
+					fileref_obj = cvpj_filerefs.add(filepath, filepath, None)
 					fileref_obj.search_local(os.path.dirname(dawvert_intent.input_file))
 					placement_obj.midi_from(fileref_obj.get_path(None, False))

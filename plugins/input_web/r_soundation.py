@@ -55,13 +55,13 @@ def extract_audio(url, zip_data, samplefolder):
 			try: zip_data.extract(url, path=samplefolder, pwd=None)
 			except PermissionError: pass
 
-def create_sampleref(jsondict, convproj_obj, samplefolder, zip_data):
+def create_sampleref(jsondict, cvpj_samplerefs, samplefolder, zip_data):
 	if zip_data and jsondict is not None:
 		if 'url' in jsondict:
 			orgname = jsondict['url']
 			filename = samplefolder+orgname
 			extract_audio(orgname, zip_data, samplefolder)
-			sampleref_obj = convproj_obj.sampleref__add(orgname, filename, 'None')
+			sampleref_obj = cvpj_samplerefs.add(orgname, filename)
 			return orgname, sampleref_obj
 	return None, None
 
@@ -177,6 +177,7 @@ class input_soundation(plugins.base):
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'route'
@@ -244,7 +245,7 @@ class input_soundation(plugins.base):
 
 				if instpluginname == 'com.soundation.simple-sampler':
 					if 'sample' in soundation_inst.data:
-						sampleref, sampleref_obj = create_sampleref(soundation_inst.data['sample'], convproj_obj, samplefolder, zip_data)
+						sampleref, sampleref_obj = create_sampleref(soundation_inst.data['sample'], cvpj_samplerefs, samplefolder, zip_data)
 					else:
 						sampleref, sampleref_obj = None, None
 
@@ -380,7 +381,7 @@ class input_soundation(plugins.base):
 							layer_obj.samplepartid = 'drum_%i' % num
 							sp_obj = plugin_obj.samplepart_add(layer_obj.samplepartid)
 							sp_obj.pitch = (pitch-0.5)*24
-							sp_obj.sampleref, sampleref_obj = create_sampleref(sampfile, convproj_obj, samplefolder, zip_data)
+							sp_obj.sampleref, sampleref_obj = create_sampleref(sampfile, cvpj_samplerefs, samplefolder, zip_data)
 							if env is not None:
 								if sampleref_obj:
 									dur_sec = sampleref_obj.get_dur_sec()
@@ -515,7 +516,7 @@ class input_soundation(plugins.base):
 					conv_clip_base(soundation_region, placement_obj, timing)
 
 					sp_obj = placement_obj.sample
-					sp_obj.sampleref, sampleref_obj = create_sampleref(soundation_region.file, convproj_obj, samplefolder, zip_data)
+					sp_obj.sampleref, sampleref_obj = create_sampleref(soundation_region.file, cvpj_samplerefs, samplefolder, zip_data)
 					sp_obj.reverse = soundation_region.reversed
 					pitch = (soundation_region.pitchShiftSemitones+soundation_region.pitchShiftCents)/100
 

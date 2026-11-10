@@ -156,13 +156,15 @@ def add_window_data(lwd_obj, convproj_obj, w_group, w_name):
 def getvstparams(convproj_obj, plugin_obj, pluginid, lmms_plugin):
 	global autoid_assoc
 	
+	cvpj_filerefs = convproj_obj.filerefs
+
 	pluginpath = str(lmms_plugin.get_param('plugin', ''))
 
 	extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 	extmanu_obj.vst2__replace_data('path', pluginpath, None, None, False)
 
 	vst2_pathid = pluginid+'_vstpath'
-	convproj_obj.fileref__add(vst2_pathid, pluginpath, None)
+	cvpj_filerefs.add(vst2_pathid, pluginpath, None)
 	plugin_obj.filerefs_global['plugin'] = vst2_pathid
 
 	windata_obj = convproj_obj.viswindow__add(['plugin', pluginid])
@@ -268,6 +270,8 @@ def asdflfo(plugin_obj, elenv, asdrtype):
 
 def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 	cvpj_plugins = convproj_obj.plugins
+	cvpj_filerefs = convproj_obj.filerefs
+	cvpj_samplerefs = convproj_obj.samplerefs
 
 	out_color = None
 	pluginid = ''
@@ -286,7 +290,7 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 
 		# file
 		sf2_path = str(lmms_plugin.get_param('src', 0))
-		convproj_obj.fileref__add(sf2_path, sf2_path, None)
+		cvpj_filerefs.add(sf2_path, sf2_path, None)
 		plugin_obj.fileref__set('file', sf2_path)
 
 		# params
@@ -452,7 +456,7 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 				sampleid = pluginid+'_'+out_str
 				filepath = get_sample(lmms_plugin.get_param(out_str, ''))
 				if filepath:
-					sampleref_obj = convproj_obj.sampleref__add(sampleid, filepath, None)
+					sampleref_obj = cvpj_samplerefs.add(sampleid, filepath)
 					sp_obj = plugin_obj.samplepart_add(out_str)
 					sp_obj.sampleid = sampleid
 
@@ -462,7 +466,7 @@ def decodeplugin(convproj_obj, lmms_plugin, pluginname, isbb):
 			pluginid = cvpj_plugins.get_lastid()
 
 			filepath = lmms_plugin.get_param('src', '').value
-			sampleref_obj = convproj_obj.sampleref__add(filepath, filepath, None)
+			sampleref_obj = cvpj_samplerefs.add(filepath, filepath)
 			plugin_obj.datavals.add('fade_out', float(lmms_plugin.get_param('fadeOut', 0).value))
 
 			sp_obj = plugin_obj.samplepart_add('sample')
@@ -567,6 +571,7 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 	cvpj_tracks = convproj_obj.tracks
 	cvpj_automation = convproj_obj.automation
 	cvpj_plugins = convproj_obj.plugins
+	cvpj_samplerefs = convproj_obj.samplerefs
 
 	numbb = 0
 
@@ -777,7 +782,7 @@ def lmms_decode_tracks(convproj_obj, lmms_tracks, isbb, startstr):
 
 				# file
 				filepath = get_sample(lmms_sampletco.src)
-				sampleref_obj = convproj_obj.sampleref__add(filepath, filepath, None)
+				sampleref_obj = cvpj_samplerefs.add(filepath, filepath)
 				if lmms_sampletco.sample_rate:
 					sampleref_obj.set_hz(lmms_sampletco.sample_rate)
 				sp_obj = placement_obj.sample

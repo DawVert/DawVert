@@ -39,6 +39,8 @@ class juce_plugin:
 			self.memoryblock = juce_memoryblock.toJuceBase64Encoding(chunkdata)
 
 	def to_cvpj(self, convproj_obj, pluginid=None):
+		cvpj_filerefs = convproj_obj.filerefs
+		
 		if not self.plugtype:
 			if self.filename.endswith('.vst3'): self.plugtype = 'vst3'
 			else: self.plugtype = 'vst2'
@@ -53,7 +55,7 @@ class juce_plugin:
 
 		if chunkdata:
 			if self.plugtype == 'vst2':
-				#convproj_obj.fileref__add(vst_path, vst_path, None)
+				#cvpj_filerefs.add(vst_path, vst_path, None)
 				extmanu_obj = plugin_obj.create_ext_manu_obj(convproj_obj, pluginid)
 				if chunkdata[0:4] != b'CcnK':
 					extmanu_obj.vst2__replace_data('basename', self.name, chunkdata, None, True)
@@ -64,7 +66,7 @@ class juce_plugin:
 						if self.filename:
 							if os.path.exists(self.filename):
 								vst2_pathid = pluginid+'_vstpath'
-								convproj_obj.fileref__add(vst2_pathid, self.filename)
+								cvpj_filerefs.add(vst2_pathid, self.filename)
 								plugin_obj.filerefs_global['plugin'] = vst2_pathid
 				else: 
 					extmanu_obj.vst2__import_presetdata('raw', chunkdata, None)
@@ -83,7 +85,7 @@ class juce_plugin:
 						if self.filename:
 							if os.path.exists(self.filename):
 								vst3_pathid = pluginid+'_vstpath'
-								convproj_obj.fileref__add(vst3_pathid, self.filename, None)
+								cvpj_filerefs.add(vst3_pathid, self.filename, None)
 								plugin_obj.filerefs_global['plugin'] = vst3_pathid
 
 		return plugin_obj, pluginid

@@ -53,6 +53,7 @@ class input_xewton(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj params ----------
 		INST_ENABLED = dawvert_intent.input_get_param('inst_on', True)
@@ -146,7 +147,7 @@ class input_xewton(plugins.base):
 								wavfilename = os.path.join(samplefolder, s.filename)
 								org_filename =  s.filename
 	 
-								sampleref_obj = convproj_obj.sampleref__add(s.filename, wavfilename, None)
+								sampleref_obj = cvpj_samplerefs.add(s.filename, wavfilename)
 								audio_obj = audio_data.audio_obj()
 								audio_obj.rate = 22050 
 								audio_obj.channels = 2

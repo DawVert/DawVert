@@ -115,7 +115,7 @@ def to_samplepart(fl_channel_obj, sre_obj, convproj_obj, isaudioclip, flp_obj, d
 	sre_obj.data['reversepolarity'] = bool(fl_channel_obj.params.reversepolarity)
 	sre_obj.interpolation = "sinc" if (fl_channel_obj.sampleflags & 1) else "none"
 
-	if sampleref_obj.fileref.file.extension.lower() != 'ds':
+	if sampleref_obj.fileref.get_fileext() != 'ds':
 		sre_obj.loop_active = bool(fl_channel_obj.sampleflags & 8)
 		sre_obj.loop_mode = "normal" if fl_channel_obj.looptype == 0 else "pingpong"
 				  
@@ -235,49 +235,55 @@ class input_flp(plugins.base):
 
 		#:fl_20_32
 
-		fileref_global.add_prefix('flstudio_factory:fl_32_03', 'win', "C:\\Program Files (x86)\\FruityLoops3\\")
-		fileref_global.add_prefix('flstudio_factory:fl_32_035', 'win', "C:\\Program Files (x86)\\FruityLoops3.5\\")
-		fileref_global.add_prefix('flstudio_factory:fl_32_04', 'win', "C:\\Program Files (x86)\\FLStudio4\\")
-		fileref_global.add_prefix('flstudio_factory:fl_32_05', 'win', "C:\\Program Files (x86)\\Image-Line\\FLStudio5\\")
-		fileref_global.add_prefix('flstudio_factory:fl_32_07', 'win', "C:\\Program Files (x86)\\Image-Line\\FL Studio 7\\")
-		fileref_global.add_prefix('flstudio_factory:fl_32_08', 'win', "C:\\Program Files (x86)\\Image-Line\\FL Studio 8\\")
-		fileref_global.add_prefix('flstudio_factory:fl_32_12', 'win', "C:\\Program Files (x86)\\Image-Line\\FL Studio 12\\")
-		fileref_global.add_prefix('flstudio_factory:fl_32_20', 'win', "C:\\Program Files (x86)\\Image-Line\\FL Studio 20\\")
-		fileref_global.add_prefix('flstudio_factory:fl_32_21', 'win', "C:\\Program Files (x86)\\Image-Line\\FL Studio 21\\")
-		fileref_global.add_prefix('flstudio_factory:fl_32_24', 'win', "C:\\Program Files (x86)\\Image-Line\\FL Studio 2024\\")
-		fileref_global.add_prefix('flstudio_factory:fl_64_03', 'win', "C:\\Program Files\\FruityLoops3\\")
-		fileref_global.add_prefix('flstudio_factory:fl_64_035', 'win', "C:\\Program Files\\FruityLoops3.5\\")
-		fileref_global.add_prefix('flstudio_factory:fl_64_04', 'win', "C:\\Program Files\\FLStudio4\\")
-		fileref_global.add_prefix('flstudio_factory:fl_64_05', 'win', "C:\\Program Files\\Image-Line\\FLStudio5\\")
-		fileref_global.add_prefix('flstudio_factory:fl_64_07', 'win', "C:\\Program Files\\Image-Line\\FL Studio 7\\")
-		fileref_global.add_prefix('flstudio_factory:fl_64_08', 'win', "C:\\Program Files\\Image-Line\\FL Studio 8\\")
-		fileref_global.add_prefix('flstudio_factory:fl_64_10', 'win', "C:\\Program Files\\Image-Line VST\\FL Studio 10\\")
-		fileref_global.add_prefix('flstudio_factory:fl_64_12', 'win', "C:\\Program Files\\Image-Line\\FL Studio 12\\")
-		fileref_global.add_prefix('flstudio_factory:fl_64_20', 'win', "C:\\Program Files\\Image-Line\\FL Studio 20\\")
-		fileref_global.add_prefix('flstudio_factory:fl_64_21', 'win', "C:\\Program Files\\Image-Line\\FL Studio 21\\")
-		fileref_global.add_prefix('flstudio_factory:fl_64_24', 'win', "C:\\Program Files\\Image-Line\\FL Studio 2024\\")
+		winprog32 = 'C:\\Program Files (x86)\\'
+		winprog64 = 'C:\\Program Files\\'
 
-		fileref_global.add_prefix_extend('flstudio_factory:fl_32_03', 'flstudio_data:fl_32_03', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_32_035', 'flstudio_data:fl_32_035', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_32_04', 'flstudio_data:fl_32_04', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_32_05', 'flstudio_data:fl_32_05', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_32_07', 'flstudio_data:fl_32_07', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_32_08', 'flstudio_data:fl_32_08', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_32_12', 'flstudio_data:fl_32_12', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_32_20', 'flstudio_data:fl_32_20', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_32_21', 'flstudio_data:fl_32_21', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_32_24', 'flstudio_data:fl_32_24', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_64_03', 'flstudio_data:fl_64_03', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_64_035', 'flstudio_data:fl_64_035', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_64_04', 'flstudio_data:fl_64_04', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_64_05', 'flstudio_data:fl_64_05', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_64_07', 'flstudio_data:fl_64_07', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_64_08', 'flstudio_data:fl_64_08', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_64_10', 'flstudio_data:fl_64_10', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_64_12', 'flstudio_data:fl_64_12', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_64_20', 'flstudio_data:fl_64_20', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_64_21', 'flstudio_data:fl_64_21', ['Data'])
-		fileref_global.add_prefix_extend('flstudio_factory:fl_64_24', 'flstudio_data:fl_64_24', ['Data'])
+		folder_prefixes = convproj_obj.folder_prefixes
+
+		folder_prefixes.add('flstudio_factory:32b_03', winprog32+"FruityLoops3\\")
+		folder_prefixes.add('flstudio_factory:32b_035', winprog32+"FruityLoops3.5\\")
+		folder_prefixes.add('flstudio_factory:32b_04', winprog32+"FLStudio4\\")
+		folder_prefixes.add('flstudio_factory:32b_05', winprog32+"Image-Line\\FLStudio5\\")
+		folder_prefixes.add('flstudio_factory:32b_07', winprog32+"Image-Line\\FL Studio 7\\")
+		folder_prefixes.add('flstudio_factory:32b_08', winprog32+"Image-Line\\FL Studio 8\\")
+		folder_prefixes.add('flstudio_factory:32b_12', winprog32+"Image-Line\\FL Studio 12\\")
+		folder_prefixes.add('flstudio_factory:32b_20', winprog32+"Image-Line\\FL Studio 20\\")
+		folder_prefixes.add('flstudio_factory:32b_21', winprog32+"Image-Line\\FL Studio 21\\")
+		folder_prefixes.add('flstudio_factory:32b_24', winprog32+"Image-Line\\FL Studio 2024\\")
+
+		folder_prefixes.add('flstudio_factory:64b_03', winprog64+"FruityLoops3\\")
+		folder_prefixes.add('flstudio_factory:64b_035', winprog64+"FruityLoops3.5\\")
+		folder_prefixes.add('flstudio_factory:64b_04', winprog64+"FLStudio4\\")
+		folder_prefixes.add('flstudio_factory:64b_05', winprog64+"Image-Line\\FLStudio5\\")
+		folder_prefixes.add('flstudio_factory:64b_07', winprog64+"Image-Line\\FL Studio 7\\")
+		folder_prefixes.add('flstudio_factory:64b_08', winprog64+"Image-Line\\FL Studio 8\\")
+		folder_prefixes.add('flstudio_factory:64b_10', winprog64+"Image-Line VST\\FL Studio 10\\")
+		folder_prefixes.add('flstudio_factory:64b_12', winprog64+"Image-Line\\FL Studio 12\\")
+		folder_prefixes.add('flstudio_factory:64b_20', winprog64+"Image-Line\\FL Studio 20\\")
+		folder_prefixes.add('flstudio_factory:64b_21', winprog64+"Image-Line\\FL Studio 21\\")
+		folder_prefixes.add('flstudio_factory:64b_24', winprog64+"Image-Line\\FL Studio 2024\\")
+
+		folder_prefixes.extend('flstudio_factory:32b_03', 'flstudio_data:32b_03', ['Data'])
+		folder_prefixes.extend('flstudio_factory:32b_035', 'flstudio_data:32b_035', ['Data'])
+		folder_prefixes.extend('flstudio_factory:32b_04', 'flstudio_data:32b_04', ['Data'])
+		folder_prefixes.extend('flstudio_factory:32b_05', 'flstudio_data:32b_05', ['Data'])
+		folder_prefixes.extend('flstudio_factory:32b_07', 'flstudio_data:32b_07', ['Data'])
+		folder_prefixes.extend('flstudio_factory:32b_08', 'flstudio_data:32b_08', ['Data'])
+		folder_prefixes.extend('flstudio_factory:32b_12', 'flstudio_data:32b_12', ['Data'])
+		folder_prefixes.extend('flstudio_factory:32b_20', 'flstudio_data:32b_20', ['Data'])
+		folder_prefixes.extend('flstudio_factory:32b_21', 'flstudio_data:32b_21', ['Data'])
+		folder_prefixes.extend('flstudio_factory:32b_24', 'flstudio_data:32b_24', ['Data'])
+		folder_prefixes.extend('flstudio_factory:64b_03', 'flstudio_data:64b_03', ['Data'])
+		folder_prefixes.extend('flstudio_factory:64b_035', 'flstudio_data:64b_035', ['Data'])
+		folder_prefixes.extend('flstudio_factory:64b_04', 'flstudio_data:64b_04', ['Data'])
+		folder_prefixes.extend('flstudio_factory:64b_05', 'flstudio_data:64b_05', ['Data'])
+		folder_prefixes.extend('flstudio_factory:64b_07', 'flstudio_data:64b_07', ['Data'])
+		folder_prefixes.extend('flstudio_factory:64b_08', 'flstudio_data:64b_08', ['Data'])
+		folder_prefixes.extend('flstudio_factory:64b_10', 'flstudio_data:64b_10', ['Data'])
+		folder_prefixes.extend('flstudio_factory:64b_12', 'flstudio_data:64b_12', ['Data'])
+		folder_prefixes.extend('flstudio_factory:64b_20', 'flstudio_data:64b_20', ['Data'])
+		folder_prefixes.extend('flstudio_factory:64b_21', 'flstudio_data:64b_21', ['Data'])
+		folder_prefixes.extend('flstudio_factory:64b_24', 'flstudio_data:64b_24', ['Data'])
 
 		globalstore.datapack.load('fl_studio', './data/datapack/app/fl_studio.xml')
 
@@ -288,6 +294,7 @@ class input_flp(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_timemarkers = convproj_obj.timemarkers
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -445,7 +452,7 @@ class input_flp(plugins.base):
 						adsr_obj.release_tension = fl_asdr_obj_vol.el_env_release_tension
 
 					elif fl_channel_obj.type == 0:
-						if (chan_loop_enabled or sampleref_obj.fileref.file.extension.lower() == 'ds'):
+						if (chan_loop_enabled or sampleref_obj.fileref.get_fileext() == 'ds'):
 							sp_obj.trigger = 'normal'
 						else:
 							sp_obj.trigger = 'oneshot'
@@ -954,7 +961,7 @@ class input_flp(plugins.base):
 			cvpj_automation.move(autopath, to_autopath)
 
 		if dawvert_intent.input_mode == 'file':
-			convproj_obj.sampleref__searchmissing(dawvert_intent.input_file)
+			cvpj_samplerefs.searchmissing(dawvert_intent.input_file)
 
 		#for n, d in cvpj_automation.data.items():
 		#	print(n, [x.value for x in d.pl_points.data[0].data])

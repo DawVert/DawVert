@@ -10,6 +10,7 @@ from objects import format_detect
 from objects.exceptions import ProjectFileParserException
 from pathlib import Path
 from plugins import base as dv_plugins
+from objects import dawvert_intent as dawvert_intent_class
 
 from PyQt6 import QtWidgets, uic, QtCore, QtGui
 from PyQt6.QtWidgets import (QApplication, QMainWindow,
@@ -42,8 +43,7 @@ class converterstate():
 	is_converting = False
 	is_plugscan = False
 
-dawvert_intent = dv_core.dawvert_intent()
-dawvert_intent.config_load('./__config/config.ini')
+dawvert_intent = dawvert_intent_class.dawvert_intent()
 dawvert_intent.splitter_mode = "num"
 
 dawvert_core = dv_core.core()
@@ -266,7 +266,6 @@ class ConversionWorker(QtCore.QObject):
 			fileref_global.reset()
 			fileref_global.add_prefix('project_root', None, os.path.dirname(dawvert_intent.input_file))
 			fileref_global.add_prefix('dawvert_external_data', None, os.path.join(scriptfiledir, '__external_data'))
-			dawvert_intent.do_fileref_global()
 
 			self.update_ui.emit([1, 0])
 			self.update_ui.emit([0, 'Processing Input...'])

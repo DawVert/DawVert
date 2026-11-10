@@ -66,7 +66,8 @@ class cvpj_sample_entry:
 		return self.data[name] if name in self.data else fallback
 
 	def get_filepath(self, convproj_obj, os_type): 
-		ref_found, sampleref_obj = convproj_obj.sampleref__get(self.sampleref)
+		cvpj_samplerefs = convproj_obj.samplerefs
+		ref_found, sampleref_obj = cvpj_samplerefs.get(self.sampleref)
 		if ref_found: 
 			return sampleref_obj.fileref.get_path(os_type, False)
 		else:
@@ -83,7 +84,8 @@ class cvpj_sample_entry:
 				self.loop_end = sampleref_obj.loop_end
 
 	def from_sampleref(self, convproj_obj, sampleref): 
-		ref_found, sampleref_obj = convproj_obj.sampleref__get(sampleref)
+		cvpj_samplerefs = convproj_obj.samplerefs
+		ref_found, sampleref_obj = cvpj_samplerefs.get(sampleref)
 		if ref_found:
 			self.sampleref = sampleref
 			self.from_sampleref_obj(sampleref_obj)

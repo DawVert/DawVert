@@ -80,6 +80,7 @@ class input_hydrogen(plugins.base):
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_master = convproj_obj.track_master
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj params ----------
 		pb_track = dawvert_intent.input_get_param('pb_track', True)
@@ -121,7 +122,7 @@ class input_hydrogen(plugins.base):
 		if project_obj.playbackTrackFilename and pb_track:
 			playlist_obj = convproj_obj.playlist__add(plnum, 1, True)
 			playlist_obj.visual.from_datapack('hydrogen', 'track', 'playback', False)
-			sampleref_obj = convproj_obj.sampleref__add('playbackTrack', project_obj.playbackTrackFilename, None)
+			sampleref_obj = cvpj_samplerefs.add('playbackTrack', project_obj.playbackTrackFilename)
 			sre_obj = convproj_obj.sampleindex__add('playbackTrack')
 			sre_obj.from_sampleref_obj(sampleref_obj)
 			sre_obj.sampleref = 'playbackTrack'
@@ -206,7 +207,7 @@ class input_hydrogen(plugins.base):
 					outpath = os.path.join(dawvert_intent.path_samples['extracted'], drumkit)
 					outfile = os.path.join(outpath, filename)
 					external_dat.extract(filename, outpath)
-					sampleref_obj = convproj_obj.sampleref__add(sampleid, outfile, None)
+					sampleref_obj = cvpj_samplerefs.add(sampleid, outfile)
 
 				sp_obj = plugin_obj.sampleregion_add(-50, 50, 0, None)
 				sp_obj.sampleref = sampleid

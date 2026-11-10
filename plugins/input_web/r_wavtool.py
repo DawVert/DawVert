@@ -45,6 +45,7 @@ def get_sec(d, n, fb):
 def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 	from objects.inst_params import fx_delay
 	cvpj_plugins = convproj_obj.plugins
+	cvpj_samplerefs = convproj_obj.samplerefs
 
 	if trackid in devices_obj.tracks:
 		device_track = devices_obj.tracks[trackid]
@@ -158,7 +159,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 						if "sample"+endstr in constantsdata:
 							bufferid = constantsdata["sample"+endstr]
 							wave_path = extract_audio(bufferid)
-							convproj_obj.sampleref__add(bufferid, wave_path, None)
+							cvpj_samplerefs.add(bufferid, wave_path)
 					
 							attack = get_sec(inputdata, "attack"+endstr, 0.1)
 							decay = get_sec(inputdata, "decay"+endstr, 0.1)
@@ -237,7 +238,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 									kr = range_notes[keynum]
 									vr = range_vel[velnum]
 									wave_path = extract_audio(bufferid)
-									sampleref_obj = convproj_obj.sampleref__add(bufferid, wave_path, None)
+									sampleref_obj = cvpj_samplerefs.add(bufferid, wave_path)
 									sp_obj = plugin_obj.sampleregion_add(kr[0]-60, kr[1]-60, range_base[keynum]-60, None, samplepartid=deviceid+'_'+samplel)
 									sp_obj.vel_min = vr[0]/127
 									sp_obj.vel_max = vr[1]/127
@@ -292,7 +293,7 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 					bufferid = constantsdata['impulseResponse'] if 'impulseResponse' in constantsdata else None
 					if bufferid:
 						wave_path = extract_audio(bufferid)
-						convproj_obj.sampleref__add(bufferid, wave_path, None)
+						cvpj_samplerefs.add(bufferid, wave_path)
 						samplepart_obj = plugin_obj.samplepart_add('sample')
 						samplepart_obj.sampleref = wave_path
 					effects.append(deviceid)
@@ -468,6 +469,7 @@ class input_wavtool(plugins.base):
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'route'
@@ -558,7 +560,7 @@ class input_wavtool(plugins.base):
 					sp_obj = placement_obj.sample
 					sp_obj.sampleref = audioBufferId
 					audio_filename = extract_audio(audioBufferId)
-					sampleref_obj = convproj_obj.sampleref__add(audioBufferId, audio_filename, None)
+					sampleref_obj = cvpj_samplerefs.add(audioBufferId, audio_filename, None)
 
 					# fade
 					placement_obj.fade_in.set_dur(wavtool_clip.fadeIn, 'beats')

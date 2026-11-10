@@ -109,11 +109,12 @@ class plugconv(plugins.base):
 					if osc_obj.prop.shape == 'triangle': plugin_obj.params.add('wavetype0', 1, 'int')
 					if osc_obj.prop.shape == 'saw': plugin_obj.params.add('wavetype0', 2, 'int')
 					if osc_obj.prop.type == 'wave':
+						cvpj_samplerefs = convproj_obj.samplerefs
 						plugin_obj.params.add('wavetype0', 7, 'int')
 						wave_path = os.path.join(samplefolder, pluginid+'_wave.wav')
 						wave_obj = plugin_obj.wave_get(osc_obj.prop.nameid)
 						wave_obj.to_audio(wave_path)
-						convproj_obj.sampleref__add(pluginid+'_wave', wave_path, None)
+						cvpj_samplerefs.add(pluginid+'_wave', wave_path)
 						sp_obj = plugin_obj.samplepart_add('userwavefile0')
 						sp_obj.sampleref = pluginid+'_wave'
 					return True

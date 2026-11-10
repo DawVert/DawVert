@@ -516,7 +516,7 @@ class output_lmms(plugins.base):
 							lmms_plug_obj.add_param('bank', bank)
 							lmms_plug_obj.add_param('patch', patch)
 							ref_found, fileref_obj = plugin_obj.fileref__get('file', cvpj_obj)
-							if ref_found: lmms_plug_obj.add_param('src', fileref_obj.get_path(None, False))
+							if ref_found: lmms_plug_obj.add_param('src', fileref_obj.get())
 							paramauto(lmms_plug_obj.add_param('gain', 1), plugin_obj.params, 'gain', 1, None, ['plugin', track_obj.plugslots.synth], 'Plugin', 'gain')
 							middlenotefix += 12
 
@@ -639,7 +639,7 @@ class output_lmms(plugins.base):
 						lmms_sampletco.pos = int(position)
 						lmms_sampletco.len = int(duration)
 						ref_found, sampleref_obj = cvpj_obj.sampleref__get(audiopl_obj.sample.sampleref)
-						if ref_found: lmms_sampletco.src = sampleref_obj.fileref.get_path(None, False)
+						if ref_found: lmms_sampletco.src = sampleref_obj.fileref.get()
 						lmms_sampletco.muted = int(audiopl_obj.muted)
 						if audiopl_obj.visual.color: lmms_sampletco.color = '#' + audiopl_obj.visual.color.get_hex()
 						if time_obj.cut_type == 'cut': lmms_sampletco.off = int(time_obj.get_offset()*-1)

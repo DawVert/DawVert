@@ -489,6 +489,7 @@ class output_tracktion_edit(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_transport = convproj_obj.transport
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- project ----------
 		mainp_obj = proj_tracktion_project.tracktion_project()
@@ -496,12 +497,12 @@ class output_tracktion_edit(plugins.base):
 		mainp_obj.props = {'name': convproj_obj.metadata.name, 'description': ''}
 
 		# ---------- sampleref ----------
-		for sampleref_id, sampleref_obj in convproj_obj.sampleref__iter():
+		for sampleref_id, sampleref_obj in cvpj_samplerefs.iter():
 			tr_waveid = gen_hexid('3')
 			wave_obj = mainp_obj.objects[tr_waveid] = proj_tracktion_project.tracktion_project_object()
 			wave_obj.name = sampleref_obj.fileref.file.filename if sampleref_obj.fileref.file.filename else ''
 			wave_obj.type = 'wave'
-			wave_obj.path = sampleref_obj.fileref.get_path(None, False)
+			wave_obj.path = sampleref_obj.fileref.get()
 			wave_obj.info = "Imported|MediaObjectCategory|5"
 			wave_obj.id2 = '40120000'
 			sampleref_assoc[sampleref_id] = tr_projectid+'/'+tr_waveid
@@ -513,7 +514,7 @@ class output_tracktion_edit(plugins.base):
 			wave_obj = mainp_obj.objects[tr_waveid] = proj_tracktion_project.tracktion_project_object()
 			wave_obj.name = videoref_obj.fileref.file.filename if videoref_obj.fileref.file.filename else ''
 			wave_obj.type = 'movie'
-			wave_obj.path = videoref_obj.fileref.get_path(None, False)
+			wave_obj.path = videoref_obj.fileref.get()
 			wave_obj.info = "Imported|MediaObjectCategory|5"
 			wave_obj.id2 = '40120000'
 			videoref_assoc[videoref_id] = tr_projectid+'/'+tr_waveid

@@ -69,6 +69,7 @@ class input_orgyana(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_plugins = convproj_obj.plugins
 		cvpj_transport = convproj_obj.transport
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj params ----------
 		use_groups = dawvert_intent.input_get_param('use_groups', True)
@@ -119,7 +120,7 @@ class input_orgyana(plugins.base):
 							audio_obj.rate = orgsamp_obj.drum_rate
 							audio_obj.pcm_from_list(orgsamp_obj.drum_data[orgtrack_obj.instrument])
 							audio_obj.to_file_wav(drum_filename)
-							sampleref_obj = convproj_obj.sampleref__add(drum_filename, drum_filename, None)
+							sampleref_obj = cvpj_samplerefs.add(drum_filename, drum_filename)
 							sampleref_obj.set_fileformat('wav')
 							audio_obj.to_sampleref_obj(sampleref_obj)
 							orgdrum_sob[orgtrack_obj.instrument] = sampleref_obj

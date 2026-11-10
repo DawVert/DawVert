@@ -515,9 +515,11 @@ class cvpj_plugin_state:
 		self.filerefs[name] = convproj_id
 
 	def fileref__get(self, fileref_name, convproj_obj):
+		cvpj_filerefs = convproj_obj.filerefs
 		if fileref_name in self.filerefs:
 			fileref_id = self.filerefs[fileref_name]
-			return convproj_obj.fileref__get(fileref_id)
+			if fileref_id in cvpj_filerefs:
+				return True, cvpj_filerefs[fileref_id]
 		return False, None
 
 	def getpath_fileref(self, convproj_obj, refname, os_type, relative): 

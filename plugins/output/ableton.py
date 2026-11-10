@@ -45,8 +45,7 @@ def do_sampleref(convproj_obj, als_sampleref, sampleref_obj):
 	als_fileref = als_sampleref.FileRef
 	if sampleref_obj != None:
 		als_fileref.RelativePathType = 0
-		outpath = sampleref_obj.fileref.get_path('win', False)
-		#print(outpath)
+		outpath = sampleref_obj.fileref.get()
 		als_fileref.Path = outpath.replace('\\','/')
 		als_fileref.Type = 1
 
@@ -146,7 +145,9 @@ def do_warpmarkers(convproj_obj, WarpMarkers, stretch_obj, sampleref_obj, dur_se
 	return warpenabled, 1 if stretch_obj.timing.tempo_based else 1/(2**(pitch/12))
 
 def do_samplepart(convproj_obj, als_samplepart, cvpj_samplepart, ignoreresample, warpprop):
-	iffound, sampleref_obj = convproj_obj.sampleref__get(cvpj_samplepart.sampleref)
+	cvpj_samplerefs = convproj_obj.samplerefs
+
+	iffound, sampleref_obj = cvpj_samplerefs.get(cvpj_samplepart.sampleref)
 
 	if iffound:
 		cvpj_samplepart.convpoints_samples(sampleref_obj)
@@ -632,6 +633,8 @@ AUDCLIPVERBOSE = False
 AUDWARPVERBOSE = False
 
 def do_audioclips(convproj_obj, pls_audio, track_color, als_track):
+	cvpj_samplerefs = convproj_obj.samplerefs
+	
 	for clipid, audiopl_obj in enumerate(pls_audio):
 		time_obj = audiopl_obj.time
 		ats = timestate(time_obj)
@@ -657,7 +660,7 @@ def do_audioclips(convproj_obj, pls_audio, track_color, als_track):
 		als_audioclip.Fades.FadeOutCurveSlope = audiopl_obj.fade_out.slope
 	
 		# sampleref
-		ref_found, sampleref_obj = convproj_obj.sampleref__get(audiopl_obj.sample.sampleref)
+		ref_found, sampleref_obj = cvpj_samplerefs.get(audiopl_obj.sample.sampleref)
 		if sampleref_obj:
 			dur_sec = sampleref_obj.get_dur_sec()
 			second_dur = dur_sec if dur_sec else 1
@@ -936,7 +939,7 @@ def add_track(convproj_obj, project_obj, trackid, track_obj):
 		pitchparamkeys = {}
 		als_device_pitch = None
 
-		if plugin_found and not DEBUG_IGNORE_INST:
+		if synth_plugid in cvpj_plugins and not DEBUG_IGNORE_INST:
 			middlenote += plugin_obj.datavals_global.get('middlenotefix', 0)
 
 			#print(str(plugin_obj.type), plugin_obj.external_info.name)

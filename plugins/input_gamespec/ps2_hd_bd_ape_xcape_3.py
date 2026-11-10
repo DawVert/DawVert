@@ -219,6 +219,7 @@ class input_petaporon(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -261,7 +262,7 @@ class input_petaporon(plugins.base):
 					audio_obj.to_file_wav(wav_path)
 					offset_points[vagsamp['offset']] = wav_path
 
-					sampleref_obj = convproj_obj.sampleref__add(sample_id, wav_path, None)
+					sampleref_obj = cvpj_samplerefs.add(sample_id, wav_path)
 					sampleref_obj.set_fileformat('wav')
 					audio_obj.to_sampleref_obj(sampleref_obj)
 

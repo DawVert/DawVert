@@ -74,6 +74,7 @@ class input_acid_old(plugins.base):
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj params ----------
 		groupby = dawvert_intent.input_get_param('groupby', 'none')
@@ -181,12 +182,12 @@ class input_acid_old(plugins.base):
 					os.makedirs(samplefolder, exist_ok=True)
 					wav_fileobj = open(wave_path, 'wb')
 					wav_fileobj.write(outaudio)
-					sampleref_obj = convproj_obj.sampleref__add(wave_path, wave_path, 'win')
+					sampleref_obj = cvpj_samplerefs.add(wave_path, wave_path, 'win')
 					sample_path = wave_path
 			else:
 				sample_path = track.path
-				sampleref_obj = convproj_obj.sampleref__add(sample_path, sample_path, 'win')
-				sampleref_obj.search_local(dawvert_intent.input_folder)
+				sampleref_obj = cvpj_samplerefs.add(sample_path, sample_path, 'win')
+				sampleref_obj.apply_prefix('project')
 
 			# track sample stretch
 			trackpitch = track.pitch

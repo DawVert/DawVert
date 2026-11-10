@@ -47,6 +47,7 @@ class input_s3m(plugins.base):
 		
 		# ---------- convproj objects ----------
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj init ----------
 		traits_obj = convproj_obj.traits
@@ -84,7 +85,7 @@ class input_s3m(plugins.base):
 			inst_obj.params.add('vol', 0.3, 'float')
 
 			if s3m_inst.type == 1:
-				sampleref_obj = convproj_obj.sampleref__add(wave_path, wave_path, None)
+				sampleref_obj = cvpj_samplerefs.add(wave_path, wave_path)
 				sampleref_obj.set_channels(1 if not s3m_inst.stereo else 2)
 				sampleref_obj.set_dur_samples(s3m_inst.get_len())
 				sampleref_obj.set_hz(s3m_inst.c2spd)

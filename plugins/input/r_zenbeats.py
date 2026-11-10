@@ -87,6 +87,7 @@ def add_dataval(datavals_obj, plugin_xml_data, cvpj_name, xml_name, attribname, 
 def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 	pluginid = strproc.uid
 	cvpj_plugins = convproj_obj.plugins
+	cvpj_samplerefs = convproj_obj.samplerefs
 
 	#plugin_obj = cvpj_plugins.add_native('zenbeats', strproc.plugin.name, pluginid)
 	#if strproc.stream_processor_type == 4:
@@ -344,7 +345,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 								if 'filename' in sampattrib:
 									filename = sampattrib['filename']
 									filepath = os.path.join(dawvert_intent.input_folder, 'Drum Sampler Files', filename)
-									sampleref_obj = convproj_obj.sampleref__add(filepath, filepath, 'win')
+									sampleref_obj = cvpj_samplerefs.add(filepath, filepath)
 									sampleref_obj.search_local(dawvert_intent.input_folder)
 									sp_obj.from_sampleref(convproj_obj, filepath)
 
@@ -527,6 +528,7 @@ class input_zenbeats(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
@@ -648,7 +650,7 @@ class input_zenbeats(plugins.base):
 
 						if zb_pattern.audio_file:
 							if zb_pattern.audio_file not in added_samples:
-								sampleref_obj = convproj_obj.sampleref__add(zb_pattern.audio_file, zb_pattern.audio_file, None)
+								sampleref_obj = cvpj_samplerefs.add(zb_pattern.audio_file, zb_pattern.audio_file)
 								sampleref_obj.search_local(os.path.dirname(dawvert_intent.input_file))
 								added_samples.append(zb_pattern.audio_file)
 	

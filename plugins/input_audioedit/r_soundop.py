@@ -134,6 +134,7 @@ class input_soundop(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
 		cvpj_master = convproj_obj.track_master
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -149,7 +150,7 @@ class input_soundop(plugins.base):
 		# ---------- sample files ----------
 		sampleref_ids = {}
 		for file in project_obj.Files:
-			sampleref_obj = convproj_obj.sampleref__add(str(file.FileID), file.FilePath, None)
+			sampleref_obj = cvpj_samplerefs.add(str(file.FileID), file.FilePath)
 			sampleref_obj.set_hz(file.SampleRate)
 			sampleref_obj.set_dur_samples(file.Length)
 			sampleref_obj.set_channels(file.Channel)

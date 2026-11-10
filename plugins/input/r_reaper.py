@@ -206,6 +206,8 @@ class input_reaper(plugins.base):
 		cvpj_master = convproj_obj.track_master
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_filerefs = convproj_obj.filerefs
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -569,7 +571,7 @@ class input_reaper(plugins.base):
 						filename, samplerj = d
 						sampmode = samplerj['mode'] if 'mode' in samplerj else 0
 
-						sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
+						sampleref_obj = cvpj_samplerefs.add(filename, filename)
 
 						if sampmode == 2 and sampleref_obj:
 							key_start = int((samplerj['key_start'] if 'key_start' in samplerj else 0)*127)
@@ -735,8 +737,8 @@ class input_reaper(plugins.base):
 					do_fade(placement_obj.fade_out, rpp_trackitem.fadeout)
 
 					# sample
-					sampleref_obj = convproj_obj.sampleref__add(cvpj_audio_file, cvpj_audio_file, None)
-					sampleref_obj.search_local(dawvert_intent.input_folder)
+					sampleref_obj = cvpj_samplerefs.add(cvpj_audio_file, cvpj_audio_file)
+					sampleref_obj.apply_prefix('project')
 
 					placement_obj.sample.sampleref = cvpj_audio_file
 
@@ -852,7 +854,7 @@ class input_reaper(plugins.base):
 					time_obj.set_offset(startoffset)
 
 					# video
-					convproj_obj.fileref__add(cvpj_audio_file, cvpj_audio_file, None)
+					cvpj_filerefs.add(cvpj_audio_file, cvpj_audio_file, None)
 					videoref_obj = convproj_obj.videoref__add(cvpj_audio_file, cvpj_audio_file, None)
 					videoref_obj.search_local(dawvert_intent.input_folder)
 					placement_obj.videoref = cvpj_audio_file

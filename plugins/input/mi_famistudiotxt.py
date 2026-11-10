@@ -148,7 +148,8 @@ def create_inst(convproj_obj, vol, WaveType, fst_Instrument, fx_num):
 def create_dpcm_inst(DPCMMappings, DPCMSamples, fst_instrument, fx_num, dpcm_freqlist):
 	cvpj_insts = convproj_obj.instruments
 	cvpj_plugins = convproj_obj.plugins
-	
+	cvpj_samplerefs = convproj_obj.samplerefs
+
 	from objects import audio_data
 	global samplefolder
 
@@ -178,7 +179,7 @@ def create_dpcm_inst(DPCMMappings, DPCMSamples, fst_instrument, fx_num, dpcm_fre
 			dpcm_obj = DPCMSamples[dpcm_sample]
 			if instname: filename = samplefolder+'dpcm_'+instname+'_'+dpcm_sample+'_'+str(dpcm_pitch)+'.wav'
 			else: filename = samplefolder+'dpcmg_'+dpcm_sample+'_'+str(dpcm_pitch)+'.wav'
-			sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
+			sampleref_obj = cvpj_samplerefs.add(filename, filename)
 			audio_obj = audio_data.audio_obj()
 			audio_obj.decode_from_codec('dpcm', dpcm_obj.data_bytes)
 			audio_obj.rate = dpcm_freqlist[dpcm_pitch]

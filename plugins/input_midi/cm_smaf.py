@@ -49,6 +49,7 @@ class input_mmf(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'cm'
@@ -166,7 +167,7 @@ class input_mmf(plugins.base):
 					audio_obj.rate = hz
 					audio_obj.to_file_wav(wav_path)
 
-					sampleref_obj = convproj_obj.sampleref__add(sampleid, wav_path, None)
+					sampleref_obj = cvpj_samplerefs.add(sampleid, wav_path)
 					sampleref_obj.set_fileformat('wav')
 					audio_obj.to_sampleref_obj(sampleref_obj)
 

@@ -168,6 +168,7 @@ class output_amped(plugins.base):
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- setup ----------
 		counter_id = counter.counter(10000, '')
@@ -200,11 +201,11 @@ class output_amped(plugins.base):
 		amped_filenames = {}
 		audioidnum = 0
 
-		convproj_obj.sampleref__remove_nonaudiopl()
+		cvpj_samplerefs.remove_nonaudiopl()
 
-		for sampleref_id, sampleref_obj in convproj_obj.sampleref__iter():
+		for sampleref_id, sampleref_obj in cvpj_samplerefs.iter():
 			audio_id[sampleref_id] = audioidnum
-			filepath = sampleref_obj.fileref.get_path(None, False)
+			filepath = sampleref_obj.fileref.get()
 
 			if os.path.exists(filepath): zip_amped.write(filepath, str(audioidnum))
 			amped_filenames[audioidnum] = sampleref_obj.fileref.file.basename

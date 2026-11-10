@@ -191,14 +191,17 @@ def make_dp_audio(convproj_obj, samplepart_obj):
 	dp_warps = None
 	zip_filepath = None
 	filepath = None
-	ref_found, sampleref_obj = convproj_obj.sampleref__get(samplepart_obj.sampleref)
+
+	cvpj_samplerefs = convproj_obj.samplerefs
+	
+	ref_found, sampleref_obj = cvpj_samplerefs.get(samplepart_obj.sampleref)
 
 	maxlen = 0
 
 	if ref_found: 
 		fileref_obj = sampleref_obj.fileref
 
-		filepath = fileref_obj.get_path(None, False)
+		filepath = fileref_obj.get()
 		basename = fileref_obj.file.basename
 
 		#print(samplepart_obj.sampleref, filepath)

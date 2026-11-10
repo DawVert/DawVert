@@ -94,7 +94,8 @@ class output_oldcubase(plugins.base):
 		
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
-		
+		cvpj_samplerefs = convproj_obj.samplerefs
+
 		project_dur = 1000000
 
 		counter_id = counter.counter(5000000, '')
@@ -952,7 +953,7 @@ class output_oldcubase(plugins.base):
 				track_obj.placements.pl_audio.sort()
 				for n, audiopl_obj in enumerate(track_obj.placements.pl_audio):
 					sp_obj = audiopl_obj.sample
-					reffound, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
+					reffound, sampleref_obj = cvpj_samplerefs.get(sp_obj.sampleref)
 					if reffound:
 
 						fileref_obj = sampleref_obj.fileref
@@ -1000,7 +1001,7 @@ class output_oldcubase(plugins.base):
 							audiopath.name = str(fileref_obj.file)
 							audiopath.path = '\\'.join(fileref_obj.folder.getpath('win'))+'\\'
 
-							#print(fileref_obj.get_path(None, 0))
+							#print(fileref_obj.get())
 	
 							audiopart.start, audiopart.length = time_obj.get_posdur()
 							audiopart.offset = time_obj.get_offset()

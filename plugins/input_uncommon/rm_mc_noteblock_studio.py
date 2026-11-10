@@ -72,6 +72,7 @@ class input_gt_mnbs(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_plugins = convproj_obj.plugins
 		cvpj_metadata = convproj_obj.metadata
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'rm'
@@ -138,7 +139,7 @@ class input_gt_mnbs(plugins.base):
 					outfile = os.path.join(dawvert_intent.path_samples['extracted'], wavfile)
 					external_dat.extract(wavfile, outfile)
 
-					sampleref_obj = convproj_obj.sampleref__add(wavfile, outfile, None)
+					sampleref_obj = cvpj_samplerefs.add(wavfile, outfile)
 
 					samplepart_obj = plugin_obj.samplepart_add('sample')
 					samplepart_obj.sampleref = wavfile

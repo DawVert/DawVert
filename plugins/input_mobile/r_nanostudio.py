@@ -45,7 +45,8 @@ class input_nanostudio_v1(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_plugins = convproj_obj.plugins
-		
+		cvpj_samplerefs = convproj_obj.samplerefs
+
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
 		convproj_obj.set_timings(256.0)
@@ -91,7 +92,7 @@ class input_nanostudio_v1(plugins.base):
 										if dawvert_intent.input_mode == 'file':
 											audiopath = os.path.join(dawvert_intent.input_file, sampname)
 
-											sampleref_obj = convproj_obj.sampleref__add(sampname, audiopath, None)
+											sampleref_obj = cvpj_samplerefs.add(sampname, audiopath)
 											sampleref_obj.search_local(dawvert_intent.input_folder)
 
 											layer_obj.samplepartid = 'drum_%i' % padnum

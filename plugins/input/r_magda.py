@@ -65,6 +65,7 @@ class input_magda(plugins.base):
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
 		cvpj_metadata = convproj_obj.metadata
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -266,7 +267,7 @@ class input_magda(plugins.base):
 						audio_source = audiodata.source
 						if audio_source.filePath:
 							filePath = audio_source.filePath
-							sampleref_obj = convproj_obj.sampleref__add(filePath, filePath, None)
+							sampleref_obj = cvpj_samplerefs.add(filePath, filePath)
 							sp_obj.sampleref = filePath
 							if audio_source.durationSeconds:
 								sampleref_obj.set_dur_sec(audio_source.durationSeconds)

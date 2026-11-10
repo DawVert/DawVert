@@ -45,6 +45,7 @@ class input_bajloop(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'mi'
@@ -71,7 +72,7 @@ class input_bajloop(plugins.base):
 			audio_obj.rate = samp.freq
 			audio_obj.set_codec('int16' if samp.bits==16 else 'uint8')
 			audio_obj.pcm_from_bytes(samp.data)
-			sampleref_obj = convproj_obj.sampleref__add(samplerefid, wave_path, None)
+			sampleref_obj = cvpj_samplerefs.add(samplerefid, wave_path)
 			sampleref_obj.set_fileformat('wav')
 			sampleref_obj.visual.name = samp.name
 			audio_obj.to_sampleref_obj(sampleref_obj)

@@ -103,6 +103,8 @@ class input_zmaestro(plugins.base):
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_transport = convproj_obj.transport
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_filerefs = convproj_obj.filerefs
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -155,7 +157,7 @@ class input_zmaestro(plugins.base):
 					plugin_obj.role = 'synth'
 					track_obj.plugslots.set_synth(cvpj_trackid)
 					sf2_path = os.path.join(dawvert_intent.input_folder, zm_track.soundfont)
-					fileref_obj = convproj_obj.fileref__add(sf2_path, sf2_path, None)
+					fileref_obj = cvpj_filerefs.add(sf2_path, sf2_path, None)
 					plugin_obj.filerefs['file'] = sf2_path
 					fileref_obj.search_local(dawvert_intent.input_folder)
 					plugin_obj.midi.from_sf2(zm_track.instrumentbank, zm_track.instrumentcode)
@@ -262,7 +264,7 @@ class input_zmaestro(plugins.base):
 
 						audio_obj.pcm_from_bytes(part.channels)
 						audio_obj.to_file_wav(wave_path)
-						sampleref_obj = convproj_obj.sampleref__add(sampleref_id, wave_path, None)
+						sampleref_obj = cvpj_samplerefs.add(sampleref_id, wave_path)
 						sampleref_obj.set_fileformat('wav')
 						audio_obj.to_sampleref_obj(sampleref_obj)
 
@@ -286,7 +288,7 @@ class input_zmaestro(plugins.base):
 								audio_obj.pcm_from_bytes(channels[0])
 
 							audio_obj.to_file_wav(wave_path)
-							sampleref_obj = convproj_obj.sampleref__add(sampleref_id, wave_path, None)
+							sampleref_obj = cvpj_samplerefs.add(sampleref_id, wave_path)
 							sampleref_obj.set_fileformat('wav')
 							audio_obj.to_sampleref_obj(sampleref_obj)
 							sp_obj.sampleref = sampleref_id

@@ -60,14 +60,16 @@ def get_sample_prefix(i_value):
 		return None, ''
 
 def make_sample_ref(convproj_obj, samplefilename, dawvert_intent, os_type):
+	cvpj_samplerefs = convproj_obj.samplerefs
+
 	samp_prefix, samp_filename = get_sample_prefix(samplefilename)
 	smapleid = (samp_prefix+':::'+samp_filename) if samp_prefix else samp_filename
 
 	if samp_prefix:
-		sampleref_obj = convproj_obj.sampleref__add__prefix(smapleid, samp_prefix, samp_filename)
+		sampleref_obj = cvpj_samplerefs.add__prefix(smapleid, samp_prefix, samp_filename)
 		sampleref_obj.fileref.resolve_prefix()
 	else:
-		sampleref_obj = convproj_obj.sampleref__add(smapleid, samp_filename, os_type)
+		sampleref_obj = cvpj_samplerefs.add(smapleid, samp_filename, os_type)
 	sampleref_obj.fileref.optional_prefixes = ['dawvert_extracted']
 	outd = sampleref_obj.search_local(dawvert_intent.input_folder)
 	#print(outd, samplefilename)
@@ -145,6 +147,8 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 	flplugin.name = flplugin.name.lower()
 
 	cvpj_plugins = convproj_obj.plugins
+	cvpj_filerefs = convproj_obj.filerefs
+	cvpj_samplerefs = convproj_obj.samplerefs
 
 	plugin_obj = cvpj_plugins.add_native('flstudio', flplugin.name, pluginid)
 
@@ -361,7 +365,7 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 						try:
 							numchans = region.sample.channels&0x0f
 							audio_obj = directwave_audio_obj(region.pcmdata, region_sample.hz, numchans, filename)
-							sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
+							sampleref_obj = cvpj_samplerefs.add(filename, filename, None)
 							sp_obj.sampleref = filename
 						except:
 							pass
@@ -370,7 +374,7 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 						try:
 							with open(filename, "wb") as f:
 								f.write(region.flacdata[8:])
-							sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
+							sampleref_obj = cvpj_samplerefs.add(filename, filename, None)
 							sp_obj.sampleref = filename
 						except:
 							pass
@@ -400,7 +404,7 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 					pad_sfilename = get_sample(pad_filename)
 
 					if pad_sfilename:
-						sampleref_obj = convproj_obj.sampleref__add(pad_sfilename, pad_sfilename, 'win')
+						sampleref_obj = cvpj_samplerefs.add(pad_sfilename, pad_sfilename, 'win')
 						#if zipfile: sampleref_obj.find_relative('extracted')
 						#sampleref_obj.find_relative('projectfile')
 						#sampleref_obj.find_relative('factorysamples')
@@ -458,10 +462,10 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 		smapleid = (samp_prefix+':::'+samp_filename) if samp_prefix else samp_filename
 	
 		if samp_prefix:
-			fileref_obj = convproj_obj.fileref__add__prefix(smapleid, samp_prefix, samp_filename)
+			fileref_obj = cvpj_filerefs.add__prefix(smapleid, samp_prefix, samp_filename)
 			fileref_obj.resolve_prefix()
 		else:
-			fileref_obj = convproj_obj.fileref__add(smapleid, samp_filename, None)
+			fileref_obj = cvpj_filerefs.add(smapleid, samp_filename, None)
 			fileref_obj.optional_prefixes = ['dawvert_extracted']
 			fileref_obj.search_local(dawvert_intent.input_folder)
 
@@ -723,10 +727,10 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 					slicexfile.write(wavedata)
 			except PermissionError: pass
 			except: pass
-			sampleref_obj = convproj_obj.sampleref__add(outfilename, outfilename, 'win')
+			sampleref_obj = cvpj_samplerefs.add(outfilename, outfilename, 'win')
 			sre_obj.from_sampleref(convproj_obj, outfilename)
 		else:
-			sampleref_obj = convproj_obj.sampleref__add(slicex_filename, slicex_filename, 'win')
+			sampleref_obj = cvpj_samplerefs.add(slicex_filename, slicex_filename, 'win')
 			sre_obj.from_sampleref(convproj_obj, slicex_filename)
 
 		#sampleref_obj.find_relative('extracted')
@@ -752,7 +756,7 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 			plugin_obj.type_set('external', 'buzz', 'win')
 
 			buzz_pathid = pluginid+'_buzzpath'
-			convproj_obj.fileref__add(buzz_pathid, filename, 'win')
+			cvpj_filerefs.add(buzz_pathid, filename, 'win')
 			plugin_obj.filerefs_global['plugin'] = buzz_pathid
 
 			plugin_obj.state.poly.max = ebrw_readstr.int_s32()
@@ -775,7 +779,7 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 			plugin_obj.type_set('external', 'buzz', 'win')
 
 			buzz_pathid = pluginid+'_buzzpath'
-			convproj_obj.fileref__add(buzz_pathid, filename, 'win')
+			cvpj_filerefs.add(buzz_pathid, filename, 'win')
 			plugin_obj.filerefs_global['plugin'] = buzz_pathid
 
 			ebrw_readstr.skip(4)

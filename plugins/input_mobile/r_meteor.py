@@ -85,6 +85,7 @@ class input_meteor(plugins.base):
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_master = convproj_obj.track_master
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
@@ -164,7 +165,7 @@ class input_meteor(plugins.base):
 					if samplenum not in outsamples:
 						sample_filename = 'S%s.WAV' % str(sampleid).zfill(5)
 						sample_path = os.path.join(data_path, sample_filename)
-						sampleref_obj = convproj_obj.sampleref__add(sampleid, sample_path, None)
+						sampleref_obj = cvpj_samplerefs.add(sampleid, sample_path)
 						outsamples[samplenum] = sampleref_obj
 					sp_obj = placement_obj.sample
 					sp_obj.sampleref = sampleid

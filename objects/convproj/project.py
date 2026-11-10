@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects import counter as idcounter
 from functions import xtramath
 from functions import data_values
 from objects import globalstore
@@ -14,8 +13,6 @@ from objects.convproj import project_traits
 from objects.convproj import song_compat
 from objects.convproj import sample_entry
 from objects.convproj import automation
-from objects.convproj import plugin
-from objects.convproj import fileref
 from objects.convproj import params
 from objects.convproj import tracks
 from objects.convproj import visual
@@ -30,6 +27,7 @@ from objects.convproj import realdevices
 from objects.convproj import placements_marker
 from objects.convproj import fx_rack
 from objects.convproj import groups
+from objects.convproj import project_parts
 
 from objects import tempocalc
 
@@ -118,20 +116,12 @@ logger_project = logging.getLogger('project')
 def autopath_encode(autol):
 	return ';'.join(autol)
 
-def vis_plugin(p_category, p_type, p_subtype):
-	if p_category != None and p_type != None and p_subtype != None: return p_category+':'+p_type+':'+p_subtype
-	elif p_category != None and p_type != None and p_subtype == None: return p_category+':'+p_type
-	elif p_category != None and p_type == None and p_subtype == None: return p_category
-	elif p_category == None and p_type == None and p_subtype == None: return 'None'
-
 def autoloc_getname(autopath):
 	if autopath[0] == 'main': autoname = 'Main'
 	if autopath[0] == 'fxmixer': autoname = 'FX '+autopath[1]
 	if autopath[0] == 'send': autoname = 'Send'
 	if autopath[0] == 'plugin': autoname = autopath[1]
 	if autopath[0] == 'track': autoname = 'Track'
-
-plugin_id_counter = idcounter.counter(1000, 'plugin_')
 
 class cvpj_scene:
 	def __init__(self, time_ppq, projid):
@@ -207,144 +197,11 @@ class cvpj_project_midi:
 		self.num_channels = 16
 		self.num_ports = 1
 
-class cvpj_project_instruments:
-	def __init__(self, convproj_obj):
-		self.data = {}
-		self.order = []
-		self.convproj_obj = convproj_obj
-
-	def __getitem__(self, k):
-		return self.data.__getitem__(k)
-
-	def __contains__(self, k):
-		return self.data.__contains__(k)
-
-	def add(self, inst_id):
-		logger_project.info('Instrument - '+str(inst_id))
-		self.data[inst_id] = tracks.cvpj_instrument()
-		self.order.append(inst_id)
-		return self.data[inst_id]
-
-	def iter(self):
-		for inst_id in self.order:
-			if inst_id in self.data: yield inst_id, self.data[inst_id]
-
-	def enumerate(self):
-		count = 0
-		for inst_id in self.order:
-			if inst_id in self.data: 
-				yield count, inst_id, self.data[inst_id]
-				count += 1
-
-	def clear(self):
-		self.data = {}
-		self.order = []
-
-class cvpj_project_plugins:
-	def __init__(self, convproj_obj):
-		self.convproj_obj = convproj_obj
-		self.data = {}
-		self.last_id = None
-		self.last_obj = None
-
-	def get_lastid(self): return self.last_id
-
-	def __getitem__(self, k):
-		return self.data.__getitem__(k)
-
-	def __contains__(self, k):
-		return self.data.__contains__(k)
-
-	def get(self, plug_id):
-		if plug_id in self.data: return True, self.data[plug_id]
-		else: return False, None
-
-	def add(self, i_category, i_type, i_subtype, plug_id=None):
-		if not plug_id: plug_id = plugin_id_counter.get_str_txt()
-		logger_project.info('Plugin - '+str(plug_id)+' - '+vis_plugin(i_category, i_type, i_subtype))
-		plugin_obj = plugin.cvpj_plugin()
-		plugin_obj.replace(i_category, i_type, i_subtype)
-		self.last_id = plug_id
-		self.last_obj = plugin_obj
-		self.data[plug_id] = plugin_obj
-		return self.data[plug_id]
-
-	def add_uni(self, i_category, i_plugname, plug_id=None):
-		return self.add('universal', i_category, i_plugname, plug_id)
-
-	def add_simple(self, i_category, i_plugname, plug_id=None):
-		return self.add('simple', i_category, i_plugname, plug_id)
-
-	def add_native(self, i_daw, i_plugname, plug_id=None):
-		return self.add('native', i_daw, i_plugname, plug_id)
-
-	def add_external(self, i_plugtype, i_platform, plug_id=None):
-		return self.add('external', i_plugtype, i_platform, plug_id)
-
-	def addspec_sampler(self, file_path, os_type, plug_id=None, **kwargs):
-		convproj_obj = self.convproj_obj
-		if file_path:
-			sampleref = kwargs['sampleid'] if 'sampleid' in kwargs else file_path
-			prefix = kwargs['prefix'] if 'prefix' in kwargs else None
-			if not prefix:
-				sampleref_obj = convproj_obj.sampleref__add(sampleref, file_path, os_type)
-			else:
-				sampleref_obj = convproj_obj.sampleref__add__prefix(sampleref, kwargs['prefix'], file_path)
-				sampleref_obj.fileref.resolve_prefix()
-			is_drumsynth = sampleref_obj.fileref.file.extension.lower() == 'ds'
-		else:
-			sampleref_obj = None
-			is_drumsynth = False
-
-		if not is_drumsynth:
-			plugin_obj = self.add('universal', 'sampler', 'single', plug_id)
-			samplepart_obj = plugin_obj.samplepart_add('sample')
-			if file_path: samplepart_obj.from_sampleref(self.convproj_obj, sampleref)
-		else:
-			plugin_obj = self.add('universal', 'sampler', 'drumsynth', plug_id)
-			samplepart_obj = plugin_obj.samplepart_add('sample')
-			if file_path:
-				samplepart_obj.sampleref = sampleref
-				from objects.inst_params import drumsynth
-				drumsynth_obj = drumsynth.drumsynth_main()
-				drumsynth_obj.load_from_file(file_path)
-				drumsynth_obj.to_plugin(plugin_obj)
-		plugin_obj.role = 'synth'
-		return plugin_obj, sampleref_obj, samplepart_obj
-
-	def addspec_sampler__sampleref(self, sampleref_id, plug_id=None, **kwargs):
-		plugin_obj = self.add('universal', 'sampler', 'single', plug_id)
-		plugin_obj.role = 'synth'
-		samplepart_obj = plugin_obj.samplepart_add('sample')
-		samplepart_obj.from_sampleref(self.convproj_obj, sampleref)
-		return plugin_obj, samplepart_obj
-
-	def addspec_midi(self, plug_id=None):
-		plugin_obj = self.add('universal', 'midi', None, plug_id)
-		plugin_obj.role = 'synth'
-		return plugin_obj
-
-	def addspec_midi__prop(self, indict, plug_id=None):
-		plugin_obj = self.addspec_midi(plug_id)
-		plugin_obj.midi.from_dict(indict)
-		return plugin_obj
-
-	def addspec_midi__datapack(self, ds_id, ds_cat, ds_obj, plug_id=None):
-		dso_obj = globalstore.datapack.get_obj(ds_id, ds_cat, ds_obj)
-		dso_midi = dso_obj.midi if dso_obj else None
-
-		if dso_midi:
-			plugin_obj = self.addspec_midi(plug_id)
-			midi_obj = plugin_obj.midi
-			midi_obj.bank = dso_midi.bank
-			midi_obj.patch = dso_midi.patch
-			midi_obj.drum = dso_midi.is_drum
-			return plugin_obj
-
 class cvpj_project:
 	def __init__(self):
 		self.id = 'global'
 		self.params = params.cvpj_paramset()
+		self.folder_prefixes = project_parts.cvpj_project_folderprefixes(self)
 
 		# type and traits
 		self.type = None
@@ -357,7 +214,7 @@ class cvpj_project:
 		tempocalc.global_stores[self.id] = self.time_tempocalc
 
 		# tracks
-		self.tracks = tracks.cvpj_project_tracks(self)
+		self.tracks = project_parts.cvpj_project_tracks(self)
 		self.track_master = tracks.cvpj_track('master', self.time_ppq, False, False)
 
 		# markers and automation
@@ -367,12 +224,12 @@ class cvpj_project:
 		self.automation = automation.cvpj_automation(self.time_ppq, self.id)
 
 		# file ref
-		self.filerefs = {}
-		self.samplerefs = {}
+		self.filerefs = project_parts.cvpj_project_filerefs(self)
+		self.samplerefs = project_parts.cvpj_project_samplerefs(self)
 		self.videorefs = {}
 
 		# others
-		self.plugins = cvpj_project_plugins(self)
+		self.plugins = project_parts.cvpj_project_plugins(self)
 		self.timesig = [4,4]
 		self.do_actions = []
 		self.metadata = visual.cvpj_metadata()
@@ -390,7 +247,7 @@ class cvpj_project:
 
 		# Multiple, MultipleIndexed and similar
 		self.playlist = {}
-		self.instruments = cvpj_project_instruments(self)
+		self.instruments = project_parts.cvpj_project_instruments(self)
 
 		# *Tracked
 		self.tracker_single = None
@@ -552,81 +409,7 @@ class cvpj_project:
 		for autopath in self.automation:
 			yield autopath.split(';'), self.automation[autopath]
 
-# --------------------------------------------------------- FILEREF ---------------------------------------------------------
-
-	def fileref__add(self, fileid, filepath, os_type):
-		if fileid not in self.filerefs: 
-			self.filerefs[fileid] = fileref.cvpj_fileref()
-			self.filerefs[fileid].set_path(os_type, filepath, 0)
-			logger_project.info('FileRef - '+fileid+' - '+filepath)
-		return self.filerefs[fileid]
-
-	def fileref__add__prefix(self, fileid, prefix, filepath):
-		if fileid not in self.filerefs: 
-			self.filerefs[fileid] = fileref.cvpj_fileref()
-			self.filerefs[fileid].set_path_prefix(prefix, filepath, 1)
-			logger_project.info('FileRef - '+fileid+' - '+filepath)
-		return self.filerefs[fileid]
-
-	def fileref__get(self, fileid):
-		if fileid in self.filerefs: return True, self.filerefs[fileid]
-		else: return False, None
-
-	def fileref__iter(self):
-		for fileid_id, fileid_obj in self.filerefs.items():
-			yield fileid_id, fileid_obj
-
-# --------------------------------------------------------- SAMPLEREF ---------------------------------------------------------
-
-	def sampleref__add(self, fileid, filepath, os_type):
-		if fileid not in self.samplerefs: 
-			self.samplerefs[fileid] = sampleref.cvpj_sampleref()
-			self.samplerefs[fileid].set_path(os_type, filepath)
-			logger_project.info('SampleRef - '+fileid+' - '+filepath)
-		return self.samplerefs[fileid]
-
-	def sampleref__add__prefix(self, fileid, prefix, filepath):
-		if fileid not in self.samplerefs: 
-			self.samplerefs[fileid] = sampleref.cvpj_sampleref()
-			self.samplerefs[fileid].set_path_prefix(prefix, filepath)
-			logger_project.info('SampleRef - '+fileid+' - '+filepath)
-		return self.samplerefs[fileid]
-
-	def sampleref__iter(self):
-		for sampleref_id, sampleref_obj in self.samplerefs.items():
-			yield sampleref_id, sampleref_obj
-
-	def sampleref__get(self, fileid):
-		if fileid in self.samplerefs: return True, self.samplerefs[fileid]
-		else: return False, None
-
-	def sampleref__searchmissing(self, input_file):
-		dirpath = os.path.dirname(input_file)
-		files = fileref.filesearcher.searchcache
-
-		for sampleref_id, sampleref_obj in self.sampleref__iter():
-			if not sampleref_obj.found:
-				fileref.filesearcher.scan_local_files(dirpath)
-				sampleref_obj.search_local(dirpath)
-
-	def sampleref__remove_nonaudiopl(self):
-		sflist = list(self.samplerefs)
-		for trackid, track_obj in self.tracks.iter():
-			for audiopl_obj in track_obj.placements.pl_audio:
-				if audiopl_obj.sample.sampleref in sflist: sflist.remove(audiopl_obj.sample.sampleref)
-
-			for nestedpl_obj in track_obj.placements.pl_audio_nested:
-				for audiopl_obj in nestedpl_obj.events:
-					if audiopl_obj.sample.sampleref in sflist: sflist.remove(audiopl_obj.sample.sampleref)
-
-			for laneid, lane_obj in track_obj.lanes.items():
-				for audiopl_obj in lane_obj.placements.pl_audio:
-					if audiopl_obj.sample.sampleref in sflist: sflist.remove(audiopl_obj.sample.sampleref)
-					
-		for s in sflist: del self.samplerefs[s]
-
 # --------------------------------------------------------- FX ---------------------------------------------------------
-
 
 	def fx__route__add(self, trackid):
 		if trackid not in self.trackroute: 
@@ -690,7 +473,7 @@ class cvpj_project:
 
 	def videoref__add(self, fileid, filepath, os_type):
 		if fileid not in self.videorefs: 
-			self.videorefs[fileid] = videoref.cvpj_videoref()
+			self.videorefs[fileid] = videoref.cvpj_videoref(self)
 			self.videorefs[fileid].set_path(os_type, filepath)
 			logger_project.info('VideoRef - '+fileid+' - '+filepath)
 		return self.videorefs[fileid]
@@ -703,14 +486,14 @@ class cvpj_project:
 		if fileid in self.videorefs: return True, self.videorefs[fileid]
 		else: return False, None
 
-	def videoref__searchmissing(self, input_file):
-		dirpath = os.path.dirname(input_file)
-		files = fileref.filesearcher.searchcache
+	#def videoref__searchmissing(self, input_file):
+	#	dirpath = os.path.dirname(input_file)
+	#	files = fileref.filesearcher.searchcache
 
-		for videoref_id, videoref_obj in self.videoref__iter():
-			if not videoref_obj.found:
-				fileref.filesearcher.scan_local_files(dirpath)
-				videoref_obj.search_local(dirpath)
+	#	for videoref_id, videoref_obj in self.videoref__iter():
+	#		if not videoref_obj.found:
+	#			fileref.filesearcher.scan_local_files(dirpath)
+	#			videoref_obj.search_local(dirpath)
 
 # --------------------------------------------------------- ITER ---------------------------------------------------------
 

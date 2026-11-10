@@ -98,6 +98,7 @@ class input_greysound(plugins.base):
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -202,7 +203,7 @@ class input_greysound(plugins.base):
 
 		# ---------- clips ----------
 		for clip in session_obj.clips:
-			sampleref_obj = convproj_obj.sampleref__add(clip.id, clip.filename, 'win')
+			sampleref_obj = cvpj_samplerefs.add(clip.id, clip.filename)
 			sampleref_obj.set_dur_sec(clip.durationSec)
 			extract_audio(clip, sampleref_obj, dawvert_intent, zip_data)
 

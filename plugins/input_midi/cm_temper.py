@@ -44,6 +44,7 @@ class input_temper(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'cm'
@@ -138,6 +139,6 @@ class input_temper(plugins.base):
 					do_phrase_ui(placement_obj.visual, audio.ui)
 					time_obj = placement_obj.time
 					time_obj.set_posdur(curpos, audio.end)
-					convproj_obj.sampleref__add(audio.file, audio.file, 'win')
+					cvpj_samplerefs.add(audio.file, audio.file, 'win')
 					sp_obj = placement_obj.sample
 					sp_obj.sampleref = audio.file

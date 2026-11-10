@@ -51,6 +51,7 @@ class output_bandlab(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- setup ----------
 		convproj_obj.change_timings(1.0)
@@ -76,9 +77,10 @@ class output_bandlab(plugins.base):
 		sampleref_filename = {}
 		sampleref_filepath = {}
 
-		for sampleref_id, sampleref_obj in convproj_obj.sampleref__iter():
+		for sampleref_id, sampleref_obj in cvpj_samplerefs.iter():
+			fileref_obj = sampleref_obj.fileref
 			uuiddata = str( data_values.bytes__to_uuid( sampleref_id.encode() ) )
-			filename = uuiddata+'.'+sampleref_obj.fileref.file.extension
+			filename = uuiddata+'.'+fileref_obj.get_fileext()
 			sampleref_filename[sampleref_id] = filename
 			filepath = '/'.join(['.', 'Assets', 'Audio', filename])
 			sampleref_filepath[sampleref_id] = filepath
@@ -94,8 +96,9 @@ class output_bandlab(plugins.base):
 			os.makedirs(os.path.join(folder, namet, 'Assets', 'Audio'), exist_ok=True)
 			os.makedirs(os.path.join(folder, namet, 'Assets', 'MIDI'), exist_ok=True)
 
-			for sampleref_id, sampleref_obj in convproj_obj.sampleref__iter():
-				a_in = sampleref_obj.fileref.get_path(None, False)
+			for sampleref_id, sampleref_obj in cvpj_samplerefs.iter():
+				fileref_obj = sampleref_obj.fileref
+				a_in = fileref_obj.get()
 				a_out = os.path.join(folder, namet, 'Assets', 'Audio', sampleref_filename[sampleref_id])
 				try:
 					sampleref_obj.copy_resample(None, a_out)
@@ -155,7 +158,7 @@ class output_bandlab(plugins.base):
 						qt_clip.properties.gain = sp_obj.vol
 						qt_clip.properties.panning = sp_obj.pan
 
-						_, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
+						_, sampleref_obj = cvpj_samplerefs.get(sp_obj.sampleref)
 
 						# stretch
 						stretch_obj = sp_obj.stretch

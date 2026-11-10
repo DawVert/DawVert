@@ -84,8 +84,9 @@ class input_kristal(plugins.base):
 
 		if part.path:
 			if part.path[0] == 'CPath':
+				cvpj_samplerefs = convproj_obj.samplerefs
 				filepath = part.path[1].path
-				sampleref_obj = convproj_obj.sampleref__add(filepath, filepath, 'win')
+				sampleref_obj = cvpj_samplerefs.add(filepath, filepath, 'win')
 				sp_obj.sampleref = filepath
 
 		stretch_obj = sp_obj.stretch

@@ -51,6 +51,7 @@ class input_old_magix_maker(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj params ----------
 		swap_bg_fg = dawvert_intent.input_get_param('swap_bg_fg', False)
@@ -107,7 +108,7 @@ class input_old_magix_maker(plugins.base):
 				if '.' in x.file2:
 					fileext = x.file2.rsplit('.', 1)[1].lower()
 					if fileext.lower() in ['wav', 'ogg']:
-						sampleref_obj = convproj_obj.sampleref__add(sampleid, joinedpath, 'win')
+						sampleref_obj = cvpj_samplerefs.add(sampleid, joinedpath, 'win')
 						sampleref_obj.search_local(dawvert_intent.input_folder)
 						sampleref_obj.set_fileformat(fileext)
 						sampleref_objs[n] = sampleref_obj

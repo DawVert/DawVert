@@ -13,11 +13,9 @@ from functions import plug_conv
 from objects.exceptions import ProjectFileParserException
 
 from objects.convproj import fileref
-fileref_global = fileref.cvpj_fileref_global
+from objects import dawvert_intent as dawvert_intent_class
 
 logger_core = logging.getLogger('core')
-
-scriptfiledir = os.path.dirname(os.path.realpath(__file__))
 
 print('DawVert: Daw Conversion Tool')
 
@@ -88,8 +86,7 @@ if not args.debug_multioutplugs:
 
 conversion_state = core.dawvert_conversion_state()
 
-dawvert_intent = core.dawvert_intent()
-dawvert_intent.config_load('./__config/config.ini')
+dawvert_intent = dawvert_intent_class.dawvert_intent()
 dawvert_intent.plugin_set = True
 dawvert_intent.set_file_input(args.i)
 dawvert_intent.plugin_input = args.it
@@ -111,10 +108,9 @@ plug_conv.load_plugins()
 
 dawvert_intent.input_visname = os.path.splitext(os.path.basename(dawvert_intent.input_file))[0]
 
-dawvert_intent.create_folder_paths()
+dawvert_intent.dir_scriptfile = os.path.dirname(os.path.realpath(__file__))
 
-fileref_global.add_prefix('project_root', None, os.path.dirname(dawvert_intent.input_file))
-fileref_global.add_prefix('dawvert_external_data', None, os.path.join(scriptfiledir, '__external_data'))
+dawvert_intent.create_folder_paths()
 
 if not args.debug_multioutplugs:
 	dawvert_intent.set_file_output(args.o)
@@ -126,7 +122,6 @@ if not args.debug_multioutplugs:
 	out_in_file_pathext = os.path.splitext(os.path.basename(dawvert_intent.output_file))
 	out_file_path = os.path.dirname(dawvert_intent.output_file)
 	dawvert_intent.set_projname_path()
-	dawvert_intent.do_fileref_global()
 
 	out_plug_ext = dawvert_core.output_get_extension()
 	if out_in_file_pathext[1] == '': dawvert_intent.output_file = os.path.join(out_file_path, out_in_file_pathext[0]+'.'+out_plug_ext)
@@ -165,7 +160,6 @@ else:
 		dawvert_intent.plugset_input = psname
 	
 		for plugin_name in plugins_names:
-			print(plugin_name)
 	
 			dawvert_intent.plugin_output = plugin_name
 			dawvert_core.intent_setplugins(dawvert_intent)
@@ -173,11 +167,6 @@ else:
 	
 			test_out_path = os.path.join(test_out_name, 'out.'+out_plug_ext)
 			dawvert_intent.set_file_output(test_out_path)
-	
-			fileref_global.reset()
-			fileref_global.add_prefix('project_root', None, os.path.dirname(dawvert_intent.input_file))
-			fileref_global.add_prefix('dawvert_external_data', None, os.path.join(scriptfiledir, '__external_data'))
-			dawvert_intent.do_fileref_global()
 
 			dawvert_core.parse_input(dawvert_intent)
 			dawvert_core.convert_type_output(dawvert_intent)

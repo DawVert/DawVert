@@ -18,6 +18,8 @@ class plugconv(plugins.base):
 		in_dict['out_daws'] = ['lmms']
 	
 	def convert(self, convproj_obj, plugin_obj, pluginid, dawvert_intent):
+		cvpj_samplerefs = convproj_obj.samplerefs
+
 		if plugin_obj.type.check_matchmulti('native', 'jummbox', ['custom chip', 'chip', 'harmonics']):
 			samplefolder = dawvert_intent.path_samples['generated']
 
@@ -28,7 +30,7 @@ class plugconv(plugins.base):
 			if plugin_obj.type.subtype in ['harmonics']: plugin_obj.harmonics_get('harmonics').to_audio(wave_path)
 
 			plugin_obj.replace('native', 'lmms', 'tripleoscillator')
-			convproj_obj.sampleref__add(pluginid+'_wave', wave_path, None)
+			cvpj_samplerefs.add(pluginid+'_wave', wave_path)
 
 			sampleid = pluginid+'_wave'
 			sp_obj = plugin_obj.samplepart_add('userwavefile0')

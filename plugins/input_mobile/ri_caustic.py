@@ -138,6 +138,7 @@ class input_cvpj_r(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_master = convproj_obj.track_master
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
@@ -255,7 +256,7 @@ class input_cvpj_r(plugins.base):
 						if region.mode not in [0, 1]: audio_obj.loop = [region.start, region.end]
 						audio_obj.to_file_wav(wave_path)
 
-						sampleref_obj = convproj_obj.sampleref__add(wave_path, wave_path, None)
+						sampleref_obj = cvpj_samplerefs.add(wave_path, wave_path)
 						sampleref_obj.set_fileformat('wav')
 						audio_obj.to_sampleref_obj(sampleref_obj)
 
@@ -298,7 +299,7 @@ class input_cvpj_r(plugins.base):
 						audio_obj.pcm_from_bytes(region.data)
 						audio_obj.to_file_wav(wave_path)
 
-					sampleref_obj = convproj_obj.sampleref__add(wave_path, wave_path, None)
+					sampleref_obj = cvpj_samplerefs.add(wave_path, wave_path, None)
 					sampleref_obj.set_fileformat('wav')
 					audio_obj.to_sampleref_obj(sampleref_obj)
 

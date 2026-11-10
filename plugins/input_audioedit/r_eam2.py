@@ -44,6 +44,7 @@ class input_eam2(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_master = convproj_obj.track_master
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -143,7 +144,7 @@ class input_eam2(plugins.base):
 
 					# sample
 					filepath = event.FilePath
-					sampleref_obj = convproj_obj.sampleref__add(filepath, filepath, None)
+					sampleref_obj = cvpj_samplerefs.add(filepath, filepath)
 					sampleref_obj.search_local(dawvert_intent.input_folder)
 					sp_obj = placement_obj.sample
 					sp_obj.sampleref = filepath

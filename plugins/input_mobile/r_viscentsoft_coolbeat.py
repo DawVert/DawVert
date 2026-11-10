@@ -7,6 +7,7 @@ from objects.convproj import fileref
 
 def do_sample(convproj_obj, soundPack, filename, dawvert_intent):
 	from objects import audio_data
+	cvpj_samplerefs = convproj_obj.samplerefs
 	samplefolder = dawvert_intent.path_samples['extracted']
 	sampleid = str(soundPack)+'__________'+str(filename)
 	fileref_obj = fileref.cvpj_fileref()
@@ -20,7 +21,7 @@ def do_sample(convproj_obj, soundPack, filename, dawvert_intent):
 		audio_obj.pcm_from_file(fileref_obj.get_path(None, 0))
 		wave_path = samplefolder+filename+'.wav'
 		audio_obj.to_file_wav(wave_path)
-		sampleref_obj = convproj_obj.sampleref__add(sampleid, wave_path, None)
+		sampleref_obj = cvpj_samplerefs.add(sampleid, wave_path)
 		sampleref_obj.set_fileformat('wav')
 		audio_obj.to_sampleref_obj(sampleref_obj)
 	return sampleid
@@ -73,6 +74,7 @@ class input_coolbeat(plugins.base):
 		cvpj_automation = convproj_obj.automation
 		cvpj_master = convproj_obj.track_master
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_filerefs = convproj_obj.filerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'none'
@@ -147,9 +149,9 @@ class input_coolbeat(plugins.base):
 					plugin_obj = cvpj_plugins.add_uni('soundfont2', None, pluginid)
 					plugin_obj.role = 'synth'
 					track_obj.plugslots.set_synth(pluginid)
-					fileref_obj = convproj_obj.fileref__add(trackid, track.filePath, None)
+					fileref_obj = cvpj_filerefs.add(trackid, track.filePath, None)
 					fileref_obj.search_local(dawvert_intent.input_folder)
-					plugin_obj.fileref__set('file', trackid)
+					plugin_obj.fileref__set('file', cvpj_filerefs.get_lastid())
 					if track.fileName:
 						track_obj.visual_inst.name = track.fileName
 

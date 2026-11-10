@@ -51,12 +51,16 @@ class input_fl_mobile(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
-		fileref_global = fileref.cvpj_fileref_global
-		fileref_global.add_prefix('flmobile_factory:fl_24_64', 'win', "C:\\Program Files\\Image-Line\\FL Studio 2024\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
-		fileref_global.add_prefix('flmobile_factory:fl_21_32', 'win', "C:\\Program Files (x86)\\Image-Line\\FL Studio 21\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
-		fileref_global.add_prefix('flmobile_factory:fl_21_64', 'win', "C:\\Program Files\\Image-Line\\FL Studio 21\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
-		fileref_global.add_prefix('flmobile_factory:fl_20_32', 'win', "C:\\Program Files (x86)\\Image-Line\\FL Studio 20\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
-		fileref_global.add_prefix('flmobile_factory:fl_20_64', 'win', "C:\\Program Files\\Image-Line\\FL Studio 20\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
+		winprog32 = 'C:\\Program Files (x86)\\Image-Line'
+		winprog64 = 'C:\\Program Files\\Image-Line'
+
+		folder_prefixes = convproj_obj.folder_prefixes
+		folder_prefixes.add('flm_f:32b_20_w', winprog32+"\\FL Studio 20\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
+		folder_prefixes.add('flm_f:32b_21_w', winprog32+"\\FL Studio 21\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
+
+		folder_prefixes.add('flm_f:64b_20_w', winprog64+"\\FL Studio 20\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
+		folder_prefixes.add('flm_f:64b_21_w', winprog64+"\\FL Studio 21\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
+		folder_prefixes.add('flm_f:64b_24_w', winprog64+"\\FL Studio 2024\\Plugins\\Fruity\\Generators\\FL Studio Mobile\\Installed")
 
 		globalstore.datapack.load('fl_mobile', './data/datapack/app/fl_mobile.xml')
 
@@ -330,22 +334,22 @@ def extract_audio(audioname, zip_data):
 
 def do_sample(convproj_obj, sample_prefix, sample_path, zipfile, projfile):
 	t_sample_path = sample_path.replace('\\', '/')
+	cvpj_samplerefs = convproj_obj.samplerefs
 
 	if sample_prefix == 'zip' and zipfile:
 		if t_sample_path in zipfile.namelist(): o_sample_path = extract_audio(t_sample_path, zipfile)
-		sampleref_obj = convproj_obj.sampleref__add__prefix(sample_path, 'dawvert_extracted', t_sample_path)
-		sampleref_obj.fileref.resolve_prefix()
-		sampleref_obj.search_local(os.path.dirname(projfile))
+		sampleref_obj = cvpj_samplerefs.add(sample_path, t_sample_path)
+		sampleref_obj.apply_prefix('extracted')
 		return sampleref_obj
 
 	elif sample_prefix == 'factory':
-		sampleref_obj = convproj_obj.sampleref__add__prefix(sample_path, 'flmobile_factory', t_sample_path)
-		sampleref_obj.fileref.resolve_prefix()
+		sampleref_obj = cvpj_samplerefs.add(sample_path, t_sample_path)
+		sampleref_obj.apply_prefix('flm_f')
 		return sampleref_obj
 
 	else:
-		sampleref_obj = convproj_obj.sampleref__add(sample_path, t_sample_path, None)
-		sampleref_obj.search_local(os.path.dirname(projfile))
+		sampleref_obj = cvpj_samplerefs.add(sample_path, t_sample_path)
+		sampleref_obj.apply_prefix('project')
 		return sampleref_obj
 
 def do_devices(devices_order, convproj_obj, devices, plugslots, projfilepath, zipfile, trackid):

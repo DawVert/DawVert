@@ -57,6 +57,7 @@ class output_bandlab(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- project ----------
 		creatorId = str(uuid.uuid4())
@@ -121,7 +122,7 @@ class output_bandlab(plugins.base):
 		sampleref_assoc = {}
 		sampleref_ext = {}
 		used_samples = []
-		for sampleref_id, sampleref_obj in convproj_obj.sampleref__iter():
+		for sampleref_id, sampleref_obj in cvpj_samplerefs.iter():
 			uuiddata = str( data_values.bytes__to_uuid( sampleref_id.encode() ) )
 			sampleref_assoc[sampleref_id] = uuiddata
 			sampleref_ext[sampleref_id] = sampleref_obj.fileref.file.extension
@@ -183,7 +184,7 @@ class output_bandlab(plugins.base):
 						if sp_obj.sampleref in sampleref_assoc:
 							blx_region = proj_bandlab.bandlab_region()
 	
-							ref_found, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
+							ref_found, sampleref_obj = cvpj_samplerefs.get(sp_obj.sampleref)
 	
 							offmod = 1
 							if sp_obj.stretch.timing.time_type == 'speed': 
@@ -286,10 +287,10 @@ class output_bandlab(plugins.base):
 				midipath = os.path.join(folder, namet, 'Assets', 'MIDI', midilist_id+'.mid')
 				midilist_obj.midi_to(midipath)
 
-			for sampleref_id, sampleref_obj in convproj_obj.sampleref__iter():
+			for sampleref_id, sampleref_obj in cvpj_samplerefs.iter():
 				if sampleref_id in used_samples:
 					outfile = sampleref_assoc[sampleref_id]+'.'+sampleref_ext[sampleref_id]
-					a_in = sampleref_obj.fileref.get_path(None, False)
+					a_in = sampleref_obj.fileref.get()
 					a_out = os.path.join(folder, namet, 'Assets', 'Audio', outfile)
 					sampleref_obj.copy_file(None, a_out)
 

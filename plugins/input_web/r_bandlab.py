@@ -55,6 +55,7 @@ class input_bandlab(plugins.base):
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_master = convproj_obj.track_master
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -91,7 +92,7 @@ class input_bandlab(plugins.base):
 			for sample in project_obj.samplerKits.samples:
 				filename = get_audio_path(dawvert_intent, sample.id)
 				for file in glob.glob(filename):
-					sampleref_obj = convproj_obj.sampleref__add(sample.id, file, None)
+					sampleref_obj = cvpj_samplerefs.add(sample.id, file)
 					sampleref_obj.convert__path__fileformat()
 
 		# ---------- tracks ----------
@@ -230,10 +231,12 @@ class input_bandlab(plugins.base):
 					placement_obj.midi_from(midipath)
 
 def add_sample(convproj_obj, dawvert_intent, blx_sample):
+	cvpj_samplerefs = convproj_obj.samplerefs
+	
 	filename = get_audio_path(dawvert_intent, blx_sample.id)
 
 	for file in glob.glob(filename):
-		sampleref_obj = convproj_obj.sampleref__add(blx_sample.id, file, None)
+		sampleref_obj = cvpj_samplerefs.add(blx_sample.id, file)
 		sampleref_obj.convert__path__fileformat()
 		if blx_sample.duration:
 			sampleref_obj.set_dur_sec(blx_sample.duration)

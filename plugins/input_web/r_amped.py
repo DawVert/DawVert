@@ -243,7 +243,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			plugin_obj.role = 'synth'
 
 			#sampleuuid = amped_tr_device.grannySampleGuid
-			#sampleref_obj = convproj_obj.sampleref__add(sampleuuid, '')
+			#sampleref_obj = cvpj_samplerefs.add(sampleuuid, '')
 			#sampleref_obj.visual.name = amped_tr_device.grannySampleName
 			#plugin_obj.samplerefs['sample'] = sampleuuid
 			do_idparams(amped_tr_device.params, plugin_obj, amped_tr_device.className)
@@ -410,13 +410,14 @@ class input_amped(plugins.base):
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 
+		cvpj_samplerefs = convproj_obj.samplerefs
 		for amped_filename, realfilename in amped_filenames.items():
 			old_file = os.path.join(samplefolder,amped_filename)
 			new_file = os.path.join(samplefolder,realfilename)
 			if os.path.exists(new_file) == False:
 				zip_data.extract(amped_filename, path=samplefolder, pwd=None)
 				os.rename(old_file,new_file)
-			sampleref_obj = convproj_obj.sampleref__add(str(amped_filename), new_file, None)
+			sampleref_obj = cvpj_samplerefs.add(str(amped_filename), new_file)
 
 		# -------------------------------------------
 		globalstore.datapack.load('amped', './data/datapack/app/amped.xml')

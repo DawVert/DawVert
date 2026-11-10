@@ -24,7 +24,9 @@ def decode_color(color):
 	return int.from_bytes(bytes(cvpj_color.get_int()), "little")
 
 def from_samplepart(fl_channel_obj, sre_obj, convproj_obj, isaudioclip, flp_obj):
-	ref_found, sampleref_obj = convproj_obj.sampleref__get(sre_obj.sampleref)
+	cvpj_samplerefs = convproj_obj.samplerefs
+	
+	ref_found, sampleref_obj = cvpj_samplerefs.get(sre_obj.sampleref)
 	fl_channel_obj.samplefilename = sre_obj.get_filepath(convproj_obj, 'win')
 
 	if isaudioclip:

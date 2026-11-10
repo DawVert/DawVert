@@ -53,18 +53,20 @@ audiosanua_device_id = {
 op_lfo_shapes = ['saw','square','triangle','random','sine']
 
 def add_sample(convproj_obj, as_cell, as_channum, num, samplefolder):
+	cvpj_samplerefs = convproj_obj.samplerefs
 	if as_cell.url != 'undefined':
 		if as_cell.url.startswith('./sounds/'):
-			sampleref_obj = convproj_obj.sampleref__add__prefix(as_cell.url, 'audiosauna', as_cell.url)
-			sampleref_obj.fileref.resolve_prefix()
+			sampleref_obj = cvpj_samplerefs.add(as_cell.url, as_cell.url)
+			sampleref_obj.apply_prefix('audiosauna')
 		else:
-			sampleref_obj = convproj_obj.sampleref__add(as_cell.url, as_cell.url, None)
+			sampleref_obj = cvpj_samplerefs.add(as_cell.url, as_cell.url)
+			sampleref_obj.apply_prefix('project')
 		return as_cell.url
 	else:
 		samp_filename = 'sample_'+str(as_channum)+'_'+str(num)+'.wav'
 		full_filename = os.path.join(samplefolder,samp_filename)
 		zip_data.extract(samp_filename, path=samplefolder, pwd=None)
-		sampleref_obj = convproj_obj.sampleref__add(full_filename, full_filename, None)
+		sampleref_obj = cvpj_samplerefs.add(full_filename, full_filename)
 		return full_filename
 
 def set_color(visual_obj, colornum, colordata):
@@ -101,9 +103,10 @@ class input_audiosauna(plugins.base):
 
 		from objects.convproj import fileref
 
-		samplefolder = dawvert_intent.path_samples['extracted']
+		folder_prefixes = convproj_obj.folder_prefixes
+		folder_prefixes.extend('extdata', 'audiosauna', ['audiosauna'])
 
-		fileref.cvpj_fileref_global.add_prefix_extend('dawvert_external_data', 'audiosauna', ['audiosauna'])
+		samplefolder = dawvert_intent.path_samples['extracted']
 		globalstore.datapack.load('audiosauna', './data/datapack/app/audiosauna.xml')
 		colordata = colors.colorset.from_datapack('audiosauna', 'track', 'main')
 
@@ -112,6 +115,7 @@ class input_audiosauna(plugins.base):
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'

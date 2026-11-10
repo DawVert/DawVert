@@ -13,8 +13,9 @@ import gzip
 import os
 
 def sampleref__get(convproj_obj, alssampleref_obj, dawvert_intent):
+	cvpj_samplerefs = convproj_obj.samplerefs
 	filename = alssampleref_obj.FileRef.Path
-	sampleref_obj = convproj_obj.sampleref__add(filename, filename, 'win')
+	sampleref_obj = cvpj_samplerefs.add(filename, filename)
 	sampleref_obj.search_local(dawvert_intent.input_folder)
 	sampleref_obj.set_hz(alssampleref_obj.DefaultSampleRate)
 	sampleref_obj.set_dur_samples(alssampleref_obj.DefaultDuration)
@@ -98,6 +99,7 @@ def do_devices(x_trackdevices, track_id, track_obj, convproj_obj, dawvert_intent
 	global vector_shapesdata
 
 	cvpj_plugins = convproj_obj.plugins
+	cvpj_filerefs = convproj_obj.filerefs
 
 	middlenote = 0
 	issampler = False
@@ -196,7 +198,7 @@ def do_devices(x_trackdevices, track_id, track_obj, convproj_obj, dawvert_intent
 
 				if 'Path' in VstPluginInfo:
 					vst_Path = str(VstPluginInfo['Path']).replace('/','\\')
-					convproj_obj.fileref__add(vst_Path, vst_Path, 'win')
+					cvpj_filerefs.add(vst_Path, vst_Path, 'win')
 					plugin_obj.state.filerefs['plugin'] = vst_Path
 
 				plugin_obj.external_info.fourid = vst_UniqueId

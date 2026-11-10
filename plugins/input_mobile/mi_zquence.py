@@ -72,6 +72,7 @@ class input_zquence(plugins.base):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_transport = convproj_obj.transport
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -157,11 +158,11 @@ class input_zquence(plugins.base):
 													files = attrib['File']
 													if isinstance(files, list):
 														for f in files:
-															sampleref_obj = convproj_obj.sampleref__add(f, f, None)
+															sampleref_obj = cvpj_samplerefs.add(f, f)
 															if sampleref_obj: 
 																sampleref_obj.search_local(dawvert_intent.input_folder)
 													else:
-														sampleref_obj = convproj_obj.sampleref__add(files, files, None)
+														sampleref_obj = cvpj_samplerefs.add(files, files)
 														if sampleref_obj: 
 															sampleref_obj.search_local(dawvert_intent.input_folder)
 

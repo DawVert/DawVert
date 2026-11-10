@@ -366,6 +366,7 @@ def do_track(convproj_obj, wf_track, track_obj, store_obj, trackid):
 	do_track_visual(wf_track, track_obj.visual)
 	do_track_params(convproj_obj, wf_track, track_obj.params, ['track', trackid])
 	track_placements = track_obj.placements
+	cvpj_samplerefs = convproj_obj.samplerefs
 
 	bpm = convproj_obj.params.get('bpm', 120).value
 
@@ -453,7 +454,7 @@ def do_track(convproj_obj, wf_track, track_obj, store_obj, trackid):
 			time_obj = placement_obj.time
 	
 			placement_obj.sample.sampleref = audioclip.source
-			sampleref_exists, sampleref_obj = convproj_obj.sampleref__get(audioclip.source)
+			sampleref_exists, sampleref_obj = cvpj_samplerefs.get(audioclip.source)
 			if sampleref_exists:
 				if not sampleref_obj.fileref.exists(None):
 					sampleref_obj.search_local(dawvert_intent.input_folder)
@@ -651,6 +652,7 @@ class input_tracktion_edit(plugins.base):
 		cvpj_timemarkers = convproj_obj.timemarkers
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
@@ -674,7 +676,7 @@ class input_tracktion_edit(plugins.base):
 
 		# ---------- samples ----------
 		for sid, spath in samples.items(): 
-			sampleref_obj = convproj_obj.sampleref__add(sid, spath, None)
+			sampleref_obj = cvpj_samplerefs.add(sid, spath)
 
 		# ---------- videos ----------
 		for sid, spath in videos.items(): 

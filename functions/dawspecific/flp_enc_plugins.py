@@ -31,6 +31,8 @@ def wrapper_addchunk_plugtype(wrapper_data, chunkid, plugtype, chunkdata):
 	#print('O< ', chunkid, chunkdata[0:100])
 
 def setparams(convproj_obj, plugin_obj):
+	cvpj_samplerefs = convproj_obj.samplerefs
+	
 	fl_plugin = None
 	fl_pluginparams = None
 	plug_type = plugin_obj.type_get()
@@ -39,7 +41,7 @@ def setparams(convproj_obj, plugin_obj):
 
 	if plugin_obj.check_wildmatch('universal', 'sampler', 'single'):
 		sp_obj = plugin_obj.samplepart_get('sample')
-		sampleref_found, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
+		sampleref_found, sampleref_obj = cvpj_samplerefs.get(sp_obj.sampleref)
 		if sp_obj.loop_active and sampleref_found:
 			sp_obj.convpoints_samples(sampleref_obj)
 
@@ -88,7 +90,7 @@ def setparams(convproj_obj, plugin_obj):
 			dw_region = firstprogram.add_region()
 
 			sp_obj = plugin_obj.samplepart_get(samplerefid)
-			sampleref_found, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
+			sampleref_found, sampleref_obj = cvpj_samplerefs.get(sp_obj.sampleref)
 			if sampleref_found: 
 				firstprogram.main.used += 1
 				sp_obj.convpoints_samples(sampleref_obj)
@@ -163,7 +165,7 @@ def setparams(convproj_obj, plugin_obj):
 					fpc_layer.vol = int(sre_obj.vol*127)
 					fpc_layer.pan = int(sre_obj.pan*127)
 					fpc_layer.tune = int((sre_obj.pitch/12)*128)
-					ref_found, sampleref_obj = convproj_obj.sampleref__get(sre_obj.sampleref)
+					ref_found, sampleref_obj = cvpj_samplerefs.get(sre_obj.sampleref)
 					if ref_found:
 						filepath = sampleref_obj.fileref.get_path('win', False)
 						fpc_layer.filename = filepath.encode()
@@ -174,7 +176,7 @@ def setparams(convproj_obj, plugin_obj):
 		fl_plugin = 'fruity slicer'
 
 		sre_obj = plugin_obj.samplepart_get('sample')
-		ref_found, sampleref_obj = convproj_obj.sampleref__get(sre_obj.sampleref)
+		ref_found, sampleref_obj = cvpj_samplerefs.get(sre_obj.sampleref)
 
 		stretch_obj = sre_obj.stretch
 

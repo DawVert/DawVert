@@ -72,6 +72,7 @@ class input_xm(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_plugins = convproj_obj.plugins
 		cvpj_metadata = convproj_obj.metadata
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj init ----------
 		traits_obj = convproj_obj.traits
@@ -171,7 +172,7 @@ class input_xm(plugins.base):
 
 				# sampleref
 				filename = samplefolder+str(xm_cursamplenum)+'.wav'
-				sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
+				sampleref_obj = cvpj_samplerefs.add(filename, filename)
 				sampleref_obj.set_channels(1 if not trsamp.stereo else 2)
 				sampleref_obj.set_dur_samples(trsamp.get_len())
 				sampleref_obj.set_fileformat('wav')
@@ -196,7 +197,7 @@ class input_xm(plugins.base):
 
 					# sampleref
 					filename = samplefolder + str(xm_cursamplenum+instnum) + '.wav'
-					sampleref_obj = convproj_obj.sampleref__add(filename, filename, None)
+					sampleref_obj = cvpj_samplerefs.add(filename, filename)
 					sampleref_obj.set_channels(1 if not trsamp.stereo else 2)
 					sampleref_obj.set_dur_samples(trsamp.get_len())
 					sampleref_obj.set_fileformat('wav')

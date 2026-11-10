@@ -53,7 +53,8 @@ class output_greysound(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
-		
+		cvpj_samplerefs = convproj_obj.samplerefs
+
 		# ---------- project ----------
 		session_obj = proj_greysound.greysound_session()
 
@@ -135,7 +136,7 @@ class output_greysound(plugins.base):
 					sampleref_id = greysound_region.clipId = sp_obj.sampleref
 
 					if sampleref_id not in clipsdata:
-						ref_found, sampleref_obj = convproj_obj.sampleref__get(sampleref_id)
+						ref_found, sampleref_obj = cvpj_samplerefs.get(sampleref_id)
 						uuiddata = sampleref_assoc[sampleref_id] = str(data_values.bytes__to_uuid( sampleref_id.encode()))
 
 						sampleref_assoc[sampleref_id] = uuiddata

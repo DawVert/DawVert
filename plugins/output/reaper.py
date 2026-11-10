@@ -123,6 +123,8 @@ def add_auto(rpp_env, autopoints_obj):
 
 def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj, cvpj_automation):
 	cvpj_plugins = convproj_obj.plugins
+	cvpj_samplerefs = convproj_obj.samplerefs
+
 	if pluginid in cvpj_plugins:
 		plugin_obj = cvpj_plugins[pluginid]
 
@@ -132,7 +134,7 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj, cvpj
 
 		if plugin_obj.check_wildmatch('universal', 'sampler', 'single'):
 			sp_obj = plugin_obj.samplepart_get('sample')
-			iffound, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
+			iffound, sampleref_obj = cvpj_samplerefs.get(sp_obj.sampleref)
 			if iffound:
 				sp_obj.convpoints_samples(sampleref_obj)
 		
@@ -166,7 +168,7 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj, cvpj
 						pitch = -60 + key+60 - key
 						sampler_params['pitch_start'] = (pitch/80)/2 + 0.5
 
-						_, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
+						_, sampleref_obj = cvpj_samplerefs.get(sp_obj.sampleref)
 
 						do_sample_part(sampler_params, sampleref_obj, sp_obj)
 						if sampleref_obj:
@@ -193,7 +195,7 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj, cvpj
 				#sampler_params['obey_note_offs'] = int(sp_obj.trigger != 'oneshot')
 				sampler_params['obey_note_offs'] = 1
 
-				_, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
+				_, sampleref_obj = cvpj_samplerefs.get(sp_obj.sampleref)
 
 				do_sample_part(sampler_params, sampleref_obj, sp_obj)
 				if sampleref_obj:
@@ -218,7 +220,7 @@ def add_plugin(rpp_project, rpp_fxchain, pluginid, convproj_obj, track_obj, cvpj
 
 				sampler_params['pitch_start'] = (pitch/80)/2 + 0.5
 				sampler_params['obey_note_offs'] = 0
-				_, sampleref_obj = convproj_obj.sampleref__get(sp_obj.sampleref)
+				_, sampleref_obj = cvpj_samplerefs.get(sp_obj.sampleref)
 
 				#do_sample_part(sampler_params, sampleref_obj, sp_obj)
 				if sampleref_obj:
@@ -434,6 +436,7 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 
 	cvpj_automation = convproj_obj.automation
 	cvpj_plugins = convproj_obj.plugins
+	cvpj_samplerefs = convproj_obj.samplerefs
 
 	rpp_track_obj = rpp_project.add_track()
 	rpp_track_obj.trackid.set(track_uuid)
@@ -630,7 +633,7 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 
 		rpp_item_obj.playrate['stretch_mode'] = (rppart_audio_stretch<<16) + rppart_audio_params
 
-		ref_found, sampleref_obj = convproj_obj.sampleref__get(audiopl_obj.sample.sampleref)
+		ref_found, sampleref_obj = cvpj_samplerefs.get(audiopl_obj.sample.sampleref)
 
 		tempomul = (time_obj.realtime_tempo/120)
 
@@ -678,7 +681,7 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 
 		if ref_found:
 			fileref_obj = sampleref_obj.fileref
-			filename = fileref_obj.get_path(None, False)
+			filename = fileref_obj.get()
 			rpp_source_obj = rpp_item_obj.source = rpp_source.rpp_source()
 			if not audiopl_obj.sample.reverse: file_source(rpp_source_obj, fileref_obj, filename)
 			else:
@@ -717,7 +720,7 @@ def do_track(rpp_project, convproj_obj, track_obj, startauto, track_uuid):
 
 		ref_found, videoref_obj = convproj_obj.videoref__get(videopl_obj.videoref)
 		if ref_found:
-			filename = videoref_obj.fileref.get_path(None, False)
+			filename = videoref_obj.fileref.get()
 			rpp_source_obj = rpp_item_obj.source = rpp_source.rpp_source()
 			rpp_source_obj.type = 'VIDEO'
 			rpp_source_obj.file.set(filename)

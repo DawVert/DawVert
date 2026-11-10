@@ -43,6 +43,7 @@ class input_deflemask(plugins.base):
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'rack'
@@ -114,7 +115,7 @@ class input_deflemask(plugins.base):
 				if sample_obj.rate: audio_obj.rate = [8000,11025,16000,22050,32000][sample_obj.rate-1]
 				audio_obj.to_file_wav(wave_path)
 				sampleid = 'sample_'+str(n).zfill(2)
-				sampleref_obj = convproj_obj.sampleref__add(sampleid, wave_path, None)
+				sampleref_obj = cvpj_samplerefs.add(sampleid, wave_path)
 				sampleref_obj.set_fileformat('wav')
 				audio_obj.to_sampleref_obj(sampleref_obj)
 				sampleparts.append([sampleid, sample_obj])

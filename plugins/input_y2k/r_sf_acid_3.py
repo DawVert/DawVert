@@ -202,6 +202,7 @@ class input_acid_3(plugins.base):
 		cvpj_groups = convproj_obj.groups
 		cvpj_automation = convproj_obj.automation
 		cvpj_timemarkers = convproj_obj.timemarkers
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		def do_orders_groups(riff_data, track_order, tracks_data, ingroup):
 			if not use_groups: ingroup = None
@@ -409,7 +410,7 @@ class input_acid_3(plugins.base):
 									if track_audiostretch is not None:
 										filename = track_header.filename
 	
-										sampleref_obj = convproj_obj.sampleref__add(filename, filename, 'win')
+										sampleref_obj = cvpj_samplerefs.add(filename, filename, 'win')
 										if not project_obj.zipped: sampleref_obj.search_local(dawvert_intent.input_folder)
 										else: extract_audio(filename, sampleref_obj, dawvert_intent, project_obj.zipfile)
 										sampleref_obj.set_dur_sec(track_header.seconds)
@@ -438,7 +439,7 @@ class input_acid_3(plugins.base):
 										for audiodef, audiostretch in track_audiodefs:
 											if audiodef and audiostretch:
 												filename = audiodef.filename
-												sampleref_obj = convproj_obj.sampleref__add(filename, filename, 'win')
+												sampleref_obj = cvpj_samplerefs.add(filename, filename, 'win')
 												if not project_obj.zipped: sampleref_obj.search_local(dawvert_intent.input_folder)
 												else: extract_audio(filename, sampleref_obj, dawvert_intent, project_obj.zipfile)
 												sampleref_obj.set_dur_sec(audiodef.seconds)
@@ -474,7 +475,7 @@ class input_acid_3(plugins.base):
 
 								if track_regions:
 									filename_obj = fileref.cvpj_fileref()
-									filename_obj.set_path('win', track_header.filename, True)
+									filename_obj.set_file(track_header.filename, 'win')
 
 									if not project_obj.zipped:
 										filename_obj.search_local(dawvert_intent.input_folder)
@@ -485,9 +486,9 @@ class input_acid_3(plugins.base):
 										except PermissionError:
 											pass
 										filepath = os.path.join(dawvert_intent.path_samples['extracted'], filename)
-										filename_obj.set_path('win', filepath, True)
+										filename_obj.set_file(filepath, 'win')
 
-									filename = filename_obj.get_path('win', False)
+									filename = filename_obj.get()
 
 									for region in track_regions:
 	

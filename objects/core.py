@@ -11,8 +11,6 @@ import pathlib
 from objects.convproj import project as convproj
 from objects.convproj import fileref
 
-fileref_global = fileref.cvpj_fileref_global
-
 import os
 import configparser
 import platform
@@ -122,125 +120,6 @@ class dawvert_conversion_state:
 		self.project = None
 		self.archive = None
 		self.others = {}
-
-class dawvert_intent:
-	def __init__(self):
-		self.input_file = ''
-		self.input_folder = ''
-		self.input_data = b''
-		self.input_mode = 'file'
-		self.input_visname = ''
-		self.input_params = {}
-		self.input_dawinfo = None
-		
-		self.output_file = ''
-		self.output_folder = ''
-		self.output_mode = 'file'
-		self.output_params = {}
-		self.output_visname = ''
-		self.output_samples = ''
-		self.output_dawinfo = None
-
-		self.convert_params = {}
-
-		self.curdir = None
-
-		self.plugin_set = True
-		self.plugin_input = None
-		self.plugin_output = None
-		self.plugset_input = None
-		self.plugset_output = None
-
-		self.path_samples = {}
-		self.path_soundfonts = {}
-		self.path_external_data = ''
-
-		self.splitter_mode = 'timesig'
-		self.splitter_detect_start = 0
-
-		self.flags_compat = []
-		self.flag_overwrite = False
-
-		self.extplug_cat = []
-		self.songnum = 0
-
-		self.custom_config = {}
-
-		self.download_enabled = True
-
-		self.set_defualt_path()
-
-		self.debug_flags = []
-
-	def input_get_param(self, name, fallback):
-		return self.input_params[name] if name in self.input_params else fallback
-
-	def output_get_param(self, name, fallback):
-		return self.output_params[name] if name in self.output_params else fallback
-
-	def convert_get_param(self, name, fallback):
-		return self.convert_params[name] if name in self.convert_params else fallback
-
-	def copy(self):
-		return copy.deepcopy(self)
-
-	def set_file_input(self, fileloc):
-		if self.curdir: self.curdir = os.getcwd()
-		self.input_mode = 'file'
-		self.input_file = os.path.abspath(fileloc)
-		self.input_folder = os.path.dirname(self.input_file)
-		self.input_visname = os.path.basename(fileloc)
-		self.input_visname = os.path.splitext(self.input_visname)[0]
-
-	def set_file_output(self, fileloc):
-		if self.curdir: self.curdir = os.getcwd()
-		self.output_mode = 'file'
-		self.output_file = os.path.abspath(fileloc)
-		self.output_folder = os.path.dirname(self.output_file)
-		self.output_visname = os.path.basename(fileloc)
-		self.output_visname = os.path.splitext(self.output_visname)[0]
-
-	def set_defualt_path(self):
-		self.path_samples['extracted'] = os.getcwd() + '/__samples_extracted/'
-		self.path_samples['downloaded'] = os.getcwd() + '/__samples_downloaded/'
-		self.path_samples['generated'] = os.getcwd() + '/__samples_generated/'
-		self.path_samples['converted'] = os.getcwd() + '/__samples_converted/'
-		self.path_samples['global_downloaded'] = os.getcwd() + '/__downloaded/'
-
-	def set_projname_path(self):
-		file_name = self.input_visname
-		self.set_defualt_path()
-		self.path_samples['extracted'] += file_name + '/'
-		self.path_samples['downloaded'] += file_name + '/'
-		self.path_samples['generated'] += file_name + '/'
-		self.path_samples['converted'] += file_name + '/'
-
-	def create_folder_paths(self):
-		os.makedirs(self.path_samples['extracted'], exist_ok=True)
-		os.makedirs(self.path_samples['downloaded'], exist_ok=True)
-		os.makedirs(self.path_samples['generated'], exist_ok=True)
-		os.makedirs(self.path_samples['converted'], exist_ok=True)
-		os.makedirs(self.path_samples['global_downloaded'], exist_ok=True)
-
-	def do_fileref_global(self):
-		fileref_global.add_prefix('dawvert_extracted', None, self.path_samples['extracted'])
-		fileref_global.add_prefix('dawvert_downloaded', None, self.path_samples['downloaded'])
-		fileref_global.add_prefix('dawvert_generated', None, self.path_samples['generated'])
-		fileref_global.add_prefix('dawvert_converted', None, self.path_samples['converted'])
-		fileref_global.add_prefix('dawvert_global_downloaded', None, self.path_samples['global_downloaded'])
-
-	def config_load(self, filepath):
-		config = configparser.ConfigParser()
-		if os.path.exists(filepath):
-			config.read_file(open(filepath))
-			for devtype in ['gm', 'xg', 'gs', 'mt32', 'mariopaint']:
-				try: self.path_soundfonts[devtype] = config.get('soundfont2', devtype)
-				except: pass
-			for plugcat in ['foss', 'nonfree', 'shareware', 'old']:
-				try:
-					ifyes = bool(int(config.get('extplug_cat', plugcat)))
-					if ifyes: self.extplug_cat.append(plugcat)
-				except: pass
 
 class dawinfo:
 	def __init__(self):
@@ -464,6 +343,9 @@ class core:
 
 	def parse_input(self, dawvert_intent, conversion_state):
 		self.convproj_obj = convproj.cvpj_project()
+
+		dawvert_intent.do_fileref_global(self.convproj_obj)
+
 		selected_plugin = self.currentplug_input.selected_plugin
 		plug_obj = selected_plugin.plug_obj
 		configdef = selected_plugin.configdef
@@ -503,7 +385,7 @@ class core:
 		if 'do_sorttracks' in self.convproj_obj.do_actions: self.convproj_obj.tracks.sort()
 
 		isconverted = False
-		for sampleref_id, sampleref_obj in self.convproj_obj.samplerefs.items():
+		for sampleref_id, sampleref_obj in self.convproj_obj.samplerefs.iter():
 			if sampleref_obj.get_exists():
 				fileformat = sampleref_obj.get_fileformat()
 				if fileformat not in out_dawinfo.audio_filetypes:

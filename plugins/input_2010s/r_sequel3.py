@@ -228,6 +228,7 @@ class input_sequel3(plugins.base):
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.type = 'r'
@@ -394,7 +395,7 @@ class input_sequel3(plugins.base):
 							partapath = audiopath
 
 							afilepath = str(partapath.path)+str(partapath.name) if partapath else filepath
-							sampleref_obj = convproj_obj.sampleref__add(afilepath, afilepath, None)
+							sampleref_obj = cvpj_samplerefs.add(afilepath, afilepath)
 							sampleref_obj.search_local(dawvert_intent.input_folder)
 							sampleref_obj.set_hz(audiofile.rate)
 							sampleref_obj.set_dur_samples(audiofile.framecount)

@@ -135,8 +135,8 @@ class input_serato(plugins.base):
 		project_obj = conversion_state.project
 		from objects.convproj import sample_entry
 
-		fileref_global = fileref.cvpj_fileref_global
-		fileref_global.add_prefix('serato_content', 'win', contentpath)
+		folder_prefixes = convproj_obj.folder_prefixes
+		folder_prefixes.add('serato_content', contentpath)
 
 		useaudioclips = True
 
@@ -153,6 +153,8 @@ class input_serato(plugins.base):
 		cvpj_master = convproj_obj.track_master
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_plugins = convproj_obj.plugins
+		cvpj_filerefs = convproj_obj.filerefs
+		cvpj_samplerefs = convproj_obj.samplerefs
 
 		# ---------- convproj init ----------
 		convproj_obj.type = 'ms'
@@ -272,7 +274,7 @@ class input_serato(plugins.base):
 				synthid = cvpj_plugins.get_lastid()
 				inst_obj.plugslots.set_synth(synthid)
 				instrument_file = parse_filepath(scene_deck.instrument_file)
-				convproj_obj.fileref__add(scene_deck.instrument_file, instrument_file, 'win')
+				cvpj_filerefs.add(scene_deck.instrument_file, instrument_file, 'win')
 				plugin_obj.state.filerefs['instrument'] = scene_deck.instrument_file
 				adsr_obj = plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, scene_deck.release, 1)
 				adsr_obj.release_tension = -1
@@ -301,10 +303,10 @@ class input_serato(plugins.base):
 						inst_obj.visual.name = urllib.parse.unquote(scene_deck.sample_file).split('/')[-1]
 						sampleprefix, samplepath = parse_sampleref_path(scene_deck.sample_file)
 						if not sampleprefix:
-							convproj_obj.sampleref__add(samplepath, samplepath)
+							cvpj_samplerefs.add(samplepath, samplepath)
 						else:
-							sampleref_obj = convproj_obj.sampleref__add__prefix(samplepath, sampleprefix, samplepath)
-							sampleref_obj.fileref.resolve_prefix()
+							sampleref_obj = cvpj_samplerefs.add(samplepath, samplepath)
+							sampleref_obj.apply_prefix(sampleprefix)
 						samplepart_obj = plugin_obj.samplepart_add('sample')
 						samplepart_obj.sampleref = samplepath
 						stretch_obj = samplepart_obj.stretch
@@ -340,10 +342,10 @@ class input_serato(plugins.base):
 						sampleprefix, samplepath = parse_sampleref_path(scene_deck.sample_file)
 
 						if not sampleprefix:
-							sampleref_obj = convproj_obj.sampleref__add(samplepath, samplepath)
+							sampleref_obj = cvpj_samplerefs.add(samplepath, samplepath)
 						else:
-							sampleref_obj = convproj_obj.sampleref__add__prefix(samplepath, sampleprefix, samplepath)
-							sampleref_obj.fileref.resolve_prefix()
+							sampleref_obj = cvpj_samplerefs.add(samplepath, samplepath)
+							sampleref_obj.apply_prefix(sampleprefix)
 						sampleref_obj.visual.name = urllib.parse.unquote(scene_deck.sample_file).split('/')[-1]
 						samplepart_obj = sample_entry.cvpj_sample_entry()
 						samplepart_obj.sampleref = samplepath

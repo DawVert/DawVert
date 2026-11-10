@@ -7,10 +7,11 @@ import os
 VERBOSE = False
 
 class cvpj_videoref:
-	__slots__ = ['fileref','found','dur_samples','dur_sec','hz','defined_meta']
+	__slots__ = ['convproj_obj', 'fileref','found','dur_samples','dur_sec','hz','defined_meta']
 	
-	def __init__(self):
-		self.fileref = fileref.cvpj_fileref()
+	def __init__(self, convproj_obj):
+		self.convproj_obj = convproj_obj
+		self.fileref = fileref.cvpj_fileref(convproj_obj)
 		self.found = False
 		self.dur_samples = -1
 		self.dur_sec = -1
