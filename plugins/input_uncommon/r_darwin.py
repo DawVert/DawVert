@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import plugins
-import json
 
 def do_track_visual(dw_track, visual_obj):
 	visual_obj.name = dw_track.name

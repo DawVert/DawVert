@@ -13,10 +13,10 @@ def getvalue(i_dict, i_id):
 	return i_dict[i_id] if i_id in i_dict else 0
 
 def setasdr(plugin_obj, asdr_name, i_dict, sustain_hundred, n_attack, n_decay, n_release, n_sustain):
-	out_attack = float(getvalue(i_dict, n_attack)) if n_attack else -1
-	out_decay = float(getvalue(i_dict, n_decay)) if n_decay else -1
-	out_release = float(getvalue(i_dict, n_release)) if n_release else -1
-	out_sustain = float(getvalue(i_dict, n_sustain)) if n_sustain else -1
+	out_attack = float(getvalue(i_dict, n_attack)) if n_attack else 0
+	out_decay = float(getvalue(i_dict, n_decay)) if n_decay else 0
+	out_release = float(getvalue(i_dict, n_release)) if n_release else 0
+	out_sustain = float(getvalue(i_dict, n_sustain)) if n_sustain else 1
 	if out_decay == 0: out_sustain = 1
 	if sustain_hundred: out_sustain = out_sustain/100
 	plugin_obj.env_asdr_add(asdr_name, 0, out_attack, 0, out_decay, out_sustain, out_release, 1)
