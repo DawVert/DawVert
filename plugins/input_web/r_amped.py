@@ -82,7 +82,7 @@ def volt_adsr(plugin_obj, starttxt, env_name, amount):
 
 	eg_A = params_obj.get(starttxt+"A", 0).value*10
 	eg_D = params_obj.get(starttxt+"D", 0).value*10
-	eg_S = params_obj.get(starttxt+"S", 0).value
+	eg_S = params_obj.get(starttxt+"S", 1).value
 	eg_R = params_obj.get(starttxt+"R", 0).value*10
 
 	eg_curveA = params_obj.get(starttxt+"curveA", 0).value

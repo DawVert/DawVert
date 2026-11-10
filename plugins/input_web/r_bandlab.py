@@ -3,7 +3,6 @@
 
 from functions import note_data
 from functions import value_midi
-from objects.convproj import fileref
 from objects import globalstore
 from objects import colors
 import xml.etree.ElementTree as ET

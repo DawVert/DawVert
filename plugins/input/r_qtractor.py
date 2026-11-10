@@ -213,7 +213,7 @@ class input_midi(plugins.base):
 
 					# sampleref
 					sampleref_obj = cvpj_samplerefs.add(filepath, filepath)
-					sampleref_obj.search_local(os.path.dirname(dawvert_intent.input_file))
+					sampleref_obj.apply_prefix('project')
 
 					# stretch
 					stretch_obj = placement_obj.sample.stretch
@@ -243,5 +243,5 @@ class input_midi(plugins.base):
 
 					filepath = clip.midiclip.filename
 					fileref_obj = cvpj_filerefs.add(filepath, filepath, None)
-					fileref_obj.search_local(os.path.dirname(dawvert_intent.input_file))
+					fileref_obj.apply_prefix('project')
 					placement_obj.midi_from(fileref_obj.get_path(None, False))

@@ -145,6 +145,6 @@ class input_eam2(plugins.base):
 					# sample
 					filepath = event.FilePath
 					sampleref_obj = cvpj_samplerefs.add(filepath, filepath)
-					sampleref_obj.search_local(dawvert_intent.input_folder)
+					sampleref_obj.apply_prefix('project')
 					sp_obj = placement_obj.sample
 					sp_obj.sampleref = filepath

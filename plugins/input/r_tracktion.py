@@ -457,7 +457,7 @@ def do_track(convproj_obj, wf_track, track_obj, store_obj, trackid):
 			sampleref_exists, sampleref_obj = cvpj_samplerefs.get(audioclip.source)
 			if sampleref_exists:
 				if not sampleref_obj.fileref.exists(None):
-					sampleref_obj.search_local(dawvert_intent.input_folder)
+					sampleref_obj.apply_prefix('project')
 	
 			time_obj.set_posdur_real(audioclip.start, audioclip.length)
 			placement_obj.fade_in.set_dur(audioclip.fadeIn, 'seconds')
@@ -681,7 +681,7 @@ class input_tracktion_edit(plugins.base):
 		# ---------- videos ----------
 		for sid, spath in videos.items(): 
 			videoref_obj = convproj_obj.videoref__add(sid, spath, None)
-			videoref_obj.search_local(dawvert_intent.input_folder)
+			videoref_obj.apply_prefix('project')
 
 		# ---------- tempo auto ----------
 		if project_obj.temposequence.tempo:

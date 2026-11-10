@@ -2,11 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from objects import globalstore
-from io import BytesIO
 import json
 import plugins
-import struct
-from objects.exceptions import ProjectFileParserException
 
 patletters = ['A','B','C','D']
 patids = []

@@ -2,17 +2,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import plugins
-import json
-import os
-
-from objects.convproj import fileref
 
 def panval(v): (v-64)/64
 
 def calc_tick_val(bpmdiv, inpos): return (inpos/5512)/bpmdiv
 
 class addauto_data():
-	def __init__(self):
+	def __init__(self, convproj_obj):
+		self.convproj_obj = convproj_obj
 		self.autoloc = None
 		self.mpetype = None
 		self.plpos = None
@@ -27,46 +24,57 @@ class addauto_data():
 		self.placement_obj = None
 		self.ftr_clip = None
 
-def do_auto_points(envpoints, autopoints_obj, iseff, defval, bpmdiv, pldur):
-	if envpoints:
-		for pos, val in envpoints:
-			pos = calc_tick_val(bpmdiv, pos)
-			if pos<pldur:
-				autopoints_obj.points__add_normal(pos, val if not iseff else val*defval, 0, None)
+	def get_val(val):
+		return val if not self.iseff else val*self.defval
 
-def make_auto(convproj_obj, addauto_obj):
-	autoloc = addauto_obj.autoloc
-	mpetype = addauto_obj.mpetype
-	plpos = addauto_obj.plpos
-	pldur = addauto_obj.pldur
-	startval = addauto_obj.startval
-	endval = addauto_obj.endval
-	envpoints = addauto_obj.envpoints
-	defval = addauto_obj.defval
-	iseff = addauto_obj.iseff
-	bpmdiv = addauto_obj.bpmdiv
-	auto_method = addauto_obj.auto_method
-	placement_obj = addauto_obj.placement_obj
-	ftr_clip = addauto_obj.ftr_clip
+	def make_auto():
+		autoloc = self.autoloc
+		mpetype = self.mpetype
+		plpos = self.plpos
+		pldur = self.pldur
+		startval = self.startval
+		endval = self.endval
+		envpoints = self.envpoints
+		defval = self.defval
+		iseff = self.iseff
+		bpmdiv = self.bpmdiv
+		auto_method = self.auto_method
+		ftr_clip = self.ftr_clip
+		convproj_obj = self.convproj_obj
+	
+		cvpj_automation = convproj_obj.automation
+	
+		get_val = self.get_val
 
-	cvpj_automation = convproj_obj.automation
+		if auto_method=='auto':
+			autopl_obj = cvpj_automation.add_pl_points(autoloc, 'float')
+			autopl_obj.visual.name = ftr_clip.name
+			time_obj = autopl_obj.time
+			time_obj.set_posdur(plpos, pldur)
+	
+			autopoints_obj = autopl_obj.data
+			autopoints_obj.points__add_normal(1, get_val(startval), 0, None)
+			self.do_auto_points(envpoints, autopoints_obj)
+			autopoints_obj.points__add_normal(pldur-0.0001, get_val(endval), 0, None)
+	
+		elif auto_method=='clip':
+			autopoints_obj = self.placement_obj.add_autopoints(mpetype, 4.0)
+			autopoints_obj.points__add_normal(0, get_val(startval), 0, None)
+			self.do_auto_points(envpoints, autopoints_obj)
+			autopoints_obj.points__add_normal(pldur, get_val(endval), 0, None)
 
-	if auto_method=='auto':
-		autopl_obj = cvpj_automation.add_pl_points(autoloc, 'float')
-		autopl_obj.visual.name = ftr_clip.name
-		time_obj = autopl_obj.time
-		time_obj.set_posdur(plpos, pldur)
+	def do_auto_points(envpoints, autopoints_obj):
+		iseff = self.iseff
+		pldur = self.pldur
+		defval = self.defval
+		bpmdiv = self.bpmdiv
+		get_val = self.get_val
 
-		autopoints_obj = autopl_obj.data
-		autopoints_obj.points__add_normal(1, startval if not iseff else startval*defval, 0, None)
-		do_auto_points(envpoints, autopoints_obj, iseff, defval, bpmdiv, pldur)
-		autopoints_obj.points__add_normal(pldur-0.0001, endval if not iseff else endval*defval, 0, None)
-
-	elif auto_method=='clip':
-		autopoints_obj = placement_obj.add_autopoints(mpetype, 4.0)
-		autopoints_obj.points__add_normal(0, startval if not iseff else startval*defval, 0, None)
-		do_auto_points(envpoints, autopoints_obj, iseff, defval, bpmdiv, pldur)
-		autopoints_obj.points__add_normal(pldur, endval if not iseff else endval*defval, 0, None)
+		if envpoints:
+			for pos, val in envpoints:
+				pos = calc_tick_val(bpmdiv, pos)
+				if pos<pldur:
+					autopoints_obj.points__add_normal(pos, get_val(val), 0, None)
 
 class input_fruitytracks(plugins.base):
 	def is_dawvert_plugin(self):
@@ -184,7 +192,7 @@ class input_fruitytracks(plugins.base):
 
 				# sampleref
 				sampleref_obj = cvpj_samplerefs.add(ftr_clip.file, ftr_clip.file, 'win')
-				sampleref_obj.search_local(dawvert_intent.input_folder)
+				sampleref_obj.apply_prefix('project')
 
 				sp_obj = placement_obj.sample
 				sp_obj.sampleref = ftr_clip.file
@@ -207,7 +215,7 @@ class input_fruitytracks(plugins.base):
 				envpoints = ftr_clip.vol_env
 
 				# auto: vol
-				addauto_obj = addauto_data()
+				addauto_obj = addauto_data(convproj_obj)
 				addauto_obj.autoloc = ('track', trackid, 'vol')
 				addauto_obj.mpetype = 'vol'
 				addauto_obj.plpos = plpos
@@ -226,7 +234,7 @@ class input_fruitytracks(plugins.base):
 				if (ftr_clip.vol_start == ftr_clip.vol_end) and not envpoints:
 					sp_obj.vol = ftr_clip.vol_start/128
 				else:
-					make_auto(convproj_obj, addauto_obj)
+					addauto_obj.make_auto()
 					
 				# auto: pan
 				addauto_obj.autoloc = ('track', trackid, 'pan')
@@ -241,7 +249,7 @@ class input_fruitytracks(plugins.base):
 				if (ftr_clip.pan_start == ftr_clip.pan_end):
 					sp_obj.pan = panval(ftr_clip.pan_start)
 				else:
-					make_auto(convproj_obj, addauto_obj)
+					addauto_obj.make_auto()
 
 		# ---------- automation ----------
 		cvpj_automation.set_persist_all(False)

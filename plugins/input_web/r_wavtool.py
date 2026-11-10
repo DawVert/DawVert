@@ -414,6 +414,10 @@ def add_devices(convproj_obj, track_obj, trackid, devices_obj):
 		if not track_obj.plugslots.synth: 
 			track_obj.plugslots.set_synth(inst_fallback)
 
+def do_visual_clip(wavtool_clip, visual_obj):
+	visual_obj.color.set_hex(wavtool_clip.color)
+	visual_obj.name = wavtool_clip.name
+
 class input_wavtool(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -523,9 +527,7 @@ class input_wavtool(plugins.base):
 					placement_obj = track_placements.add_notes()
 
 					# visual
-					visual_obj = placement_obj.visual
-					visual_obj.color.set_hex(wavtool_clip.color)
-					visual_obj.name = wavtool_clip.name
+					do_visual_clip(wavtool_clip, placement_obj.visual)
 
 					# time
 					time_obj = placement_obj.time
@@ -551,9 +553,7 @@ class input_wavtool(plugins.base):
 					placement_obj = track_placements.add_audio()
 
 					# visual
-					visual_obj = placement_obj.visual
-					visual_obj.color.set_hex(wavtool_clip.color)
-					visual_obj.name = wavtool_clip.name
+					do_visual_clip(wavtool_clip, placement_obj.visual)
 
 					# sampleref
 					audioBufferId = wavtool_clip.audioBufferId

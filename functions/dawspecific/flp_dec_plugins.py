@@ -70,8 +70,7 @@ def make_sample_ref(convproj_obj, samplefilename, dawvert_intent, os_type):
 		sampleref_obj.fileref.resolve_prefix()
 	else:
 		sampleref_obj = cvpj_samplerefs.add(smapleid, samp_filename, os_type)
-	sampleref_obj.fileref.optional_prefixes = ['dawvert_extracted']
-	outd = sampleref_obj.search_local(dawvert_intent.input_folder)
+	outd = sampleref_obj.apply_prefix('project')
 	#print(outd, samplefilename)
 	return smapleid, sampleref_obj
 
@@ -466,8 +465,7 @@ def getparams(convproj_obj, pluginid, flplugin, foldername, zipfile, dawvert_int
 			fileref_obj.resolve_prefix()
 		else:
 			fileref_obj = cvpj_filerefs.add(smapleid, samp_filename, None)
-			fileref_obj.optional_prefixes = ['dawvert_extracted']
-			fileref_obj.search_local(dawvert_intent.input_folder)
+			fileref_obj.apply_prefix('project')
 
 		if zipfile:
 			if fileref_obj is not None:

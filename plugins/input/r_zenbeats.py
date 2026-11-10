@@ -346,7 +346,7 @@ def do_plugin(convproj_obj, strproc, track_obj, dawvert_intent):
 									filename = sampattrib['filename']
 									filepath = os.path.join(dawvert_intent.input_folder, 'Drum Sampler Files', filename)
 									sampleref_obj = cvpj_samplerefs.add(filepath, filepath)
-									sampleref_obj.search_local(dawvert_intent.input_folder)
+									sampleref_obj.apply_prefix('project')
 									sp_obj.from_sampleref(convproj_obj, filepath)
 
 							soundnum += 1
@@ -651,7 +651,7 @@ class input_zenbeats(plugins.base):
 						if zb_pattern.audio_file:
 							if zb_pattern.audio_file not in added_samples:
 								sampleref_obj = cvpj_samplerefs.add(zb_pattern.audio_file, zb_pattern.audio_file)
-								sampleref_obj.search_local(os.path.dirname(dawvert_intent.input_file))
+								sampleref_obj.apply_prefix('project')
 								added_samples.append(zb_pattern.audio_file)
 	
 							sp_obj = placement_obj.sample

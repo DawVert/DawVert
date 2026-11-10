@@ -411,7 +411,7 @@ class input_acid_3(plugins.base):
 										filename = track_header.filename
 	
 										sampleref_obj = cvpj_samplerefs.add(filename, filename, 'win')
-										if not project_obj.zipped: sampleref_obj.search_local(dawvert_intent.input_folder)
+										if not project_obj.zipped: sampleref_obj.apply_prefix('project')
 										else: extract_audio(filename, sampleref_obj, dawvert_intent, project_obj.zipfile)
 										sampleref_obj.set_dur_sec(track_header.seconds)
 										sampleref_obj.convert__path__fileformat()
@@ -440,7 +440,7 @@ class input_acid_3(plugins.base):
 											if audiodef and audiostretch:
 												filename = audiodef.filename
 												sampleref_obj = cvpj_samplerefs.add(filename, filename, 'win')
-												if not project_obj.zipped: sampleref_obj.search_local(dawvert_intent.input_folder)
+												if not project_obj.zipped: sampleref_obj.apply_prefix('project')
 												else: extract_audio(filename, sampleref_obj, dawvert_intent, project_obj.zipfile)
 												sampleref_obj.set_dur_sec(audiodef.seconds)
 												sampleref_obj.convert__path__fileformat()
@@ -478,7 +478,7 @@ class input_acid_3(plugins.base):
 									filename_obj.set_file(track_header.filename, 'win')
 
 									if not project_obj.zipped:
-										filename_obj.search_local(dawvert_intent.input_folder)
+										filename_obj.apply_prefix('project')
 									else:
 										filename = str(filename_obj.file)
 										try:

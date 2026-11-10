@@ -16,7 +16,7 @@ def sampleref__get(convproj_obj, alssampleref_obj, dawvert_intent):
 	cvpj_samplerefs = convproj_obj.samplerefs
 	filename = alssampleref_obj.FileRef.Path
 	sampleref_obj = cvpj_samplerefs.add(filename, filename)
-	sampleref_obj.search_local(dawvert_intent.input_folder)
+	sampleref_obj.apply_prefix('project')
 	sampleref_obj.set_hz(alssampleref_obj.DefaultSampleRate)
 	sampleref_obj.set_dur_samples(alssampleref_obj.DefaultDuration)
 	return sampleref_obj, filename

@@ -154,7 +154,7 @@ class input_soundop(plugins.base):
 			sampleref_obj.set_hz(file.SampleRate)
 			sampleref_obj.set_dur_samples(file.Length)
 			sampleref_obj.set_channels(file.Channel)
-			sampleref_obj.search_local(dawvert_intent.input_folder)
+			sampleref_obj.apply_prefix('project')
 			sampleref_ids[file.FileID] = sampleref_obj
 
 		# ---------- tracks ----------

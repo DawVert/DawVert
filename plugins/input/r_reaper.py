@@ -856,7 +856,7 @@ class input_reaper(plugins.base):
 					# video
 					cvpj_filerefs.add(cvpj_audio_file, cvpj_audio_file, None)
 					videoref_obj = convproj_obj.videoref__add(cvpj_audio_file, cvpj_audio_file, None)
-					videoref_obj.search_local(dawvert_intent.input_folder)
+					videoref_obj.apply_prefix('project')
 					placement_obj.videoref = cvpj_audio_file
 
 					# others

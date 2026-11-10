@@ -12,7 +12,7 @@ def do_sample(convproj_obj, soundPack, filename, dawvert_intent):
 	sampleid = str(soundPack)+'__________'+str(filename)
 	fileref_obj = fileref.cvpj_fileref()
 	fileref_obj.set_path(None, filename, 1)
-	fileref_obj.search_local(dawvert_intent.input_folder)
+	fileref_obj.apply_prefix('project')
 	if fileref_obj.exists(None):
 		audio_obj = audio_data.audio_obj()
 		audio_obj.channels = 1
@@ -150,7 +150,7 @@ class input_coolbeat(plugins.base):
 					plugin_obj.role = 'synth'
 					track_obj.plugslots.set_synth(pluginid)
 					fileref_obj = cvpj_filerefs.add(trackid, track.filePath, None)
-					fileref_obj.search_local(dawvert_intent.input_folder)
+					fileref_obj.apply_prefix('project')
 					plugin_obj.fileref__set('file', cvpj_filerefs.get_lastid())
 					if track.fileName:
 						track_obj.visual_inst.name = track.fileName

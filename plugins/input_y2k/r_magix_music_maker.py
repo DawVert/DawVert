@@ -109,19 +109,19 @@ class input_old_magix_maker(plugins.base):
 					fileext = x.file2.rsplit('.', 1)[1].lower()
 					if fileext.lower() in ['wav', 'ogg']:
 						sampleref_obj = cvpj_samplerefs.add(sampleid, joinedpath, 'win')
-						sampleref_obj.search_local(dawvert_intent.input_folder)
+						sampleref_obj.apply_prefix('project')
 						sampleref_obj.set_fileformat(fileext)
 						sampleref_objs[n] = sampleref_obj
 					elif fileext == 'avi':
 						videoref_obj = convproj_obj.videoref__add(sampleid, joinedpath, 'win')
-						videoref_obj.search_local(dawvert_intent.input_folder)
+						videoref_obj.apply_prefix('project')
 						videoref_objs[n] = videoref_obj
 				elif '.' in x.video:
 					fileext = x.video.rsplit('.', 1)[1].lower()
 					joinedpath = '\\'.join([x.folder, x.video])
 					if fileext == 'avi':
 						videoref_obj = convproj_obj.videoref__add(sampleid, joinedpath, 'win')
-						videoref_obj.search_local(dawvert_intent.input_folder)
+						videoref_obj.apply_prefix('project')
 						videoref_objs[n] = videoref_obj
 
 		# ---------- tracks and sends ----------

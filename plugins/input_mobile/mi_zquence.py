@@ -160,11 +160,11 @@ class input_zquence(plugins.base):
 														for f in files:
 															sampleref_obj = cvpj_samplerefs.add(f, f)
 															if sampleref_obj: 
-																sampleref_obj.search_local(dawvert_intent.input_folder)
+																sampleref_obj.apply_prefix('project')
 													else:
 														sampleref_obj = cvpj_samplerefs.add(files, files)
 														if sampleref_obj: 
-															sampleref_obj.search_local(dawvert_intent.input_folder)
+															sampleref_obj.apply_prefix('project')
 
 											elif instpart.name == 'Node':
 												for i in instpart:

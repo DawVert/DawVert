@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from functions import data_bytes
 from functions import data_values
 from functions import xtramath
 from objects import colors
@@ -10,7 +9,6 @@ from objects.exceptions import ProjectFileParserException
 import plugins
 import json
 import os
-import math
 
 FILTERFREQ = [2378.41, 3363.59, 4756.83, 5656.85, 8000, 9513.66, 11313.71, 13454.34, 16000, 19027.31, None]
 
@@ -105,7 +103,7 @@ def add_eq_data(inst_obj, cvpj_instid, eqfiltbands):
 	plugin_obj.visual.name = 'EQ'
 	for eqfiltdata in eqfiltbands:
 		eqgain_pass = eqfiltdata['linearGain']
-		eqgain = (eqfiltdata['linearGain']-2)*6
+		#eqgain = (eqfiltdata['linearGain']-2)*6
 		eqtype = eqfiltdata['type']
 		filter_obj = plugin_obj.eq_add()
 		filter_obj.freq = eqfiltdata['cutoffHz']

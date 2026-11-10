@@ -161,6 +161,6 @@ class input_gt_mnbs(plugins.base):
 			inst_obj.datavals.add('middlenote', -(custom_obj.key-51))
 			plugin_obj, sampleref_obj, samplepart_obj = cvpj_plugins.addspec_sampler(custom_obj.file, None, pluginid)
 			if sampleref_obj: 
-				sampleref_obj.search_local(dawvert_intent.input_folder)
+				sampleref_obj.apply_prefix('project')
 			plugin_obj.env_asdr_add('vol', 0, 0, 0, 0, 1, 10, 1)
 			inst_obj.plugslots.set_synth(pluginid)

@@ -396,12 +396,12 @@ class input_sequel3(plugins.base):
 
 							afilepath = str(partapath.path)+str(partapath.name) if partapath else filepath
 							sampleref_obj = cvpj_samplerefs.add(afilepath, afilepath)
-							sampleref_obj.search_local(dawvert_intent.input_folder)
+							sampleref_obj.apply_prefix('project')
 							sampleref_obj.set_hz(audiofile.rate)
 							sampleref_obj.set_dur_samples(audiofile.framecount)
 							sampleref_obj.set_channels(audiofile.channels)
 
-							#sampleref_obj.search_local(dawvert_intent.input_folder)
+							#sampleref_obj.apply_prefix('project')
 							sp_obj.sampleref = filepath
 							#for event in maudioevent.events:
 	

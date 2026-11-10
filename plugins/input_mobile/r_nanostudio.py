@@ -93,7 +93,7 @@ class input_nanostudio_v1(plugins.base):
 											audiopath = os.path.join(dawvert_intent.input_file, sampname)
 
 											sampleref_obj = cvpj_samplerefs.add(sampname, audiopath)
-											sampleref_obj.search_local(dawvert_intent.input_folder)
+											sampleref_obj.apply_prefix('project')
 
 											layer_obj.samplepartid = 'drum_%i' % padnum
 											sp_obj = plugin_obj.samplepart_add(layer_obj.samplepartid)

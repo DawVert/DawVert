@@ -159,7 +159,7 @@ class input_zmaestro(plugins.base):
 					sf2_path = os.path.join(dawvert_intent.input_folder, zm_track.soundfont)
 					fileref_obj = cvpj_filerefs.add(sf2_path, sf2_path, None)
 					plugin_obj.filerefs['file'] = sf2_path
-					fileref_obj.search_local(dawvert_intent.input_folder)
+					fileref_obj.apply_prefix('project')
 					plugin_obj.midi.from_sf2(zm_track.instrumentbank, zm_track.instrumentcode)
 
 				if tracktype == 'MIDIDrumTrack': 

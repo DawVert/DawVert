@@ -18,8 +18,7 @@ class notestate:
 	porta: list
 
 	@classmethod
-	def blank(cls):
-		return cls(0,0,0,0,[],[],[])
+	def blank(cls): return cls(0,0,0,0,[],[],[])
 
 def decode_tempo(in_val): return (1/((in_val/40)/2+0.5))*120
 
