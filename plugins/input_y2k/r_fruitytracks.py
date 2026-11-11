@@ -3,11 +3,11 @@
 
 import plugins
 
-def panval(v): (v-64)/64
+def panval(v): return (v-64)/64
 
 def calc_tick_val(bpmdiv, inpos): return (inpos/5512)/bpmdiv
 
-class addauto_data():
+class addauto_data:
 	def __init__(self, convproj_obj):
 		self.convproj_obj = convproj_obj
 		self.autoloc = None
@@ -24,10 +24,10 @@ class addauto_data():
 		self.placement_obj = None
 		self.ftr_clip = None
 
-	def get_val(val):
+	def get_val(self, val):
 		return val if not self.iseff else val*self.defval
 
-	def make_auto():
+	def make_auto(self):
 		autoloc = self.autoloc
 		mpetype = self.mpetype
 		plpos = self.plpos
@@ -35,9 +35,6 @@ class addauto_data():
 		startval = self.startval
 		endval = self.endval
 		envpoints = self.envpoints
-		defval = self.defval
-		iseff = self.iseff
-		bpmdiv = self.bpmdiv
 		auto_method = self.auto_method
 		ftr_clip = self.ftr_clip
 		convproj_obj = self.convproj_obj
@@ -63,10 +60,8 @@ class addauto_data():
 			self.do_auto_points(envpoints, autopoints_obj)
 			autopoints_obj.points__add_normal(pldur, get_val(endval), 0, None)
 
-	def do_auto_points(envpoints, autopoints_obj):
-		iseff = self.iseff
+	def do_auto_points(self, envpoints, autopoints_obj):
 		pldur = self.pldur
-		defval = self.defval
 		bpmdiv = self.bpmdiv
 		get_val = self.get_val
 
@@ -106,6 +101,7 @@ class input_fruitytracks(plugins.base):
 			project_obj.load_from_file(dawvert_intent.input_file)
 			conversion_state.project = project_obj
 			return True
+		return False
 
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		project_obj = conversion_state.project
@@ -203,7 +199,7 @@ class input_fruitytracks(plugins.base):
 					time_obj.set_loop_data(0, 0, (ftr_clip.repeatlen/bpmticks))
 				else:
 					pldur = calc_tick_val(bpmdiv, ftr_clip.dur)
-					repeatlen = calc_tick_val(bpmdiv, ftr_clip.repeatlen)
+					#repeatlen = calc_tick_val(bpmdiv, ftr_clip.repeatlen)
 					offset = 0 if not ftr_clip.dontstart else calc_tick_val(bpmdiv, ftr_clip.pos%ftr_clip.repeatlen)
 					time_obj.set_loop_data(offset, 0, calc_tick_val(bpmdiv, ftr_clip.repeatlen))
 					stretch_obj = sp_obj.stretch
@@ -246,7 +242,7 @@ class input_fruitytracks(plugins.base):
 				addauto_obj.iseff = False
 				addauto_obj.auto_method = pan_auto
 
-				if (ftr_clip.pan_start == ftr_clip.pan_end):
+				if ftr_clip.pan_start==ftr_clip.pan_end:
 					sp_obj.pan = panval(ftr_clip.pan_start)
 				else:
 					addauto_obj.make_auto()

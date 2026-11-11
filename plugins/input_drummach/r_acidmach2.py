@@ -1,9 +1,8 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects import globalstore
-import json
 import plugins
+from objects import globalstore
 
 patletters = ['A','B','C','D']
 patids = []

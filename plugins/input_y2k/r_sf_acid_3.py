@@ -1,13 +1,13 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
 import os.path
-import bisect
+
+import plugins
+from functions import xtramath
 from objects import globalstore
 from objects import regions
 from objects.convproj import fileref
-from functions import xtramath
 
 volumeversion = 5
 
@@ -471,7 +471,7 @@ class input_acid_3(plugins.base):
 								track_obj = cvpj_tracks.add(cvpj_trackid, 'instrument', 1, False)
 								tracks_data[track_header.id] = track_obj
 								track_obj.visual.name = track_header.name
-								color = do_color(colordata, track_obj.visual, track_header.color)
+								do_color(colordata, track_obj.visual, track_header.color)
 
 								if track_regions:
 									filename_obj = fileref.cvpj_fileref()

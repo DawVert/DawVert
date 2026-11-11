@@ -85,7 +85,7 @@ class input_kristal(plugins.base):
 			if part.path[0] == 'CPath':
 				cvpj_samplerefs = convproj_obj.samplerefs
 				filepath = part.path[1].path
-				sampleref_obj = cvpj_samplerefs.add(filepath, filepath, 'win')
+				cvpj_samplerefs.add(filepath, filepath, 'win')
 				sp_obj.sampleref = filepath
 
 		stretch_obj = sp_obj.stretch
@@ -165,28 +165,28 @@ class input_kristal(plugins.base):
 										tracknums[tracknum] = track_obj
 										track_placements = track_obj.placements
 
-									for cid, part in ch_data.parts:
-										if cid == 'CAudioPart': 
-											placement_obj = track_placements.add_nested_audio()
-											time_obj = placement_obj.time
-											time_obj.set_posdur(part.position, part.duration)
-											do_part_visual(placement_obj.visual, part)
-											placement_obj = placement_obj.add()
-											placement_obj.muted = 0 in part.flags
-											placement_obj.locked = 1 in part.flags
-											self.do_audiopart(convproj_obj, placement_obj, part, part.position, bpm)
-										if cid == 'CFolderPart': 
-											placement_obj = track_placements.add_nested_audio()
-											time_obj = placement_obj.time
-											time_obj.set_posdur(part.position, part.duration)
-											time_obj.set_offset(part.offset)
-											do_part_visual(placement_obj.visual, part)
-											placement_obj.muted = 0 in part.flags
-											placement_obj.locked = 1 in part.flags
-											for icid, inpart in part.parts:
-												if icid == 'CAudioPart': 
-													npa_obj = placement_obj.add()
-													self.do_audiopart(convproj_obj, npa_obj, inpart, part.position, bpm)
+										for cid, part in ch_data.parts:
+											if cid == 'CAudioPart':
+												placement_obj = track_placements.add_nested_audio()
+												time_obj = placement_obj.time
+												time_obj.set_posdur(part.position, part.duration)
+												do_part_visual(placement_obj.visual, part)
+												placement_obj = placement_obj.add()
+												placement_obj.muted = 0 in part.flags
+												placement_obj.locked = 1 in part.flags
+												self.do_audiopart(convproj_obj, placement_obj, part, part.position, bpm)
+											if cid == 'CFolderPart':
+												placement_obj = track_placements.add_nested_audio()
+												time_obj = placement_obj.time
+												time_obj.set_posdur(part.position, part.duration)
+												time_obj.set_offset(part.offset)
+												do_part_visual(placement_obj.visual, part)
+												placement_obj.muted = 0 in part.flags
+												placement_obj.locked = 1 in part.flags
+												for icid, inpart in part.parts:
+													if icid == 'CAudioPart':
+														npa_obj = placement_obj.add()
+														self.do_audiopart(convproj_obj, npa_obj, inpart, part.position, bpm)
 
 									tracknum += 1
 

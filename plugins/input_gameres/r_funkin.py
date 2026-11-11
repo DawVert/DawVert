@@ -56,8 +56,8 @@ class input_ex_basic_pitch(plugins.base):
 		traits_obj.placement_loop = ['loop', 'loop_off', 'loop_adv']
 
 		# ---------- data ----------
-		fnf_scrollSpeed = funkin_json['scrollSpeed'] if 'scrollSpeed' in funkin_json else {}
-		fnf_events = funkin_json['events'] if 'events' in funkin_json else {}
+		#fnf_scrollSpeed = funkin_json['scrollSpeed'] if 'scrollSpeed' in funkin_json else {}
+		#fnf_events = funkin_json['events'] if 'events' in funkin_json else {}
 		fnf_notes = funkin_json['notes'].copy() if 'notes' in funkin_json else {}
 
 		numchars = dawvert_intent.input_get_param('numchars', 2)
@@ -82,7 +82,7 @@ class input_ex_basic_pitch(plugins.base):
 				key = note['d']
 				pos = note['t']
 				dur = note['l'] if 'l' in note else 150
-				event = note['k'] if 'k' in note else None
+				#event = note['k'] if 'k' in note else None
 				numtrack = key//numnotes
 				trackchar[numtrack].notelist.add_r(pos, dur, key-(numnotes*numtrack), 1, None)
 				trackchar[numtrack].time.duration = pos+dur

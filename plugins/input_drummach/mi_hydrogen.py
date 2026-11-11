@@ -1,12 +1,13 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
-from objects import globalstore
-from functions import xtramath
+import logging
 import os
 
-import logging
+import plugins
+from functions import xtramath
+from objects import globalstore
+
 logger_input = logging.getLogger('input')
 
 PL_MODE = 0
@@ -22,9 +23,9 @@ class external_data_zip():
 		if os.path.exists(input_file):
 			try: 
 				zip_data = zipfile.ZipFile(input_file, 'r')
+				self.zipfile = zip_data
 			except zipfile.BadZipFile as t: 
 				logger_input.warning('hydrogen: extdata: Bad ZIP File: '+str(t))
-			self.zipfile = zip_data
 
 	def extract(self, arch_file, out_file):
 		if self.zipfile:
@@ -67,7 +68,6 @@ class input_hydrogen(plugins.base):
 		project_obj = conversion_state.project
 		
 		from objects import colors
-		from objects.convproj import fileref
 
 		globalstore.datapack.load('hydrogen', './data/datapack/app/hydrogen.xml')
 		color_pattern = colors.colorset.from_datapack('hydrogen', 'pattern', 'main')
@@ -132,7 +132,7 @@ class input_hydrogen(plugins.base):
 			cvpj_placement.fromindex = 'playbackTrack'
 			dur_sec = sampleref_obj.get_dur_sec()
 			if dur_sec: 
-				time_obj = placement_obj.time
+				time_obj = cvpj_placement.time
 				time_obj.set_posdur(0, dur_sec*48*2*(bpm/120))
 			plnum += 1
 
@@ -207,7 +207,7 @@ class input_hydrogen(plugins.base):
 					outpath = os.path.join(dawvert_intent.path_samples['extracted'], drumkit)
 					outfile = os.path.join(outpath, filename)
 					external_dat.extract(filename, outpath)
-					sampleref_obj = cvpj_samplerefs.add(sampleid, outfile)
+					cvpj_samplerefs.add(sampleid, outfile)
 
 				sp_obj = plugin_obj.sampleregion_add(-50, 50, 0, None)
 				sp_obj.sampleref = sampleid
@@ -257,9 +257,10 @@ class input_hydrogen(plugins.base):
 		else:
 			playlist_obj = convproj_obj.playlist__add(plnum, 1, True)
 			playlist_obj.visual.name = 'Main'
-			playlist_obj.visual.color.set_int(color_track.getcolornum(n))
+			playlist_obj.visual.color.set_int(color_track.getcolornum(0))
 			for p, x in enumerate(project_obj.patternSequence):
 				for fromindex in x:
+					pattern = project_obj.patternList[fromindex]
 					cvpj_placement = playlist_obj.placements.add_notes_indexed()
 					cvpj_placement.fromindex = fromindex
 					time_obj = cvpj_placement.time

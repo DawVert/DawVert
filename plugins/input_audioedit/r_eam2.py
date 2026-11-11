@@ -1,9 +1,11 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
 import struct
+
+import plugins
 from functions import xtramath
+
 
 def conv_color(b_color):
 	color = b_color.to_bytes(4, "little")
@@ -35,9 +37,6 @@ class input_eam2(plugins.base):
 
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		project_obj = conversion_state.project
-		
-		from objects import colors
-		from objects.convproj import fileref
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
@@ -60,19 +59,18 @@ class input_eam2(plugins.base):
 			eamproj = project_obj.EAMFormat1
 
 			# ---------- metadata ----------
-			ExportTagSettings = eamproj.ExportTagSettings
-			if 'tagTitle' in ExportTagSettings: cvpj_metadata.name = ExportTagSettings['tagTitle']
-			if 'tagArtist' in ExportTagSettings: cvpj_metadata.author = ExportTagSettings['tagArtist']
-			if 'tagComment' in ExportTagSettings: cvpj_metadata.comment_text = ExportTagSettings['tagComment']
-			if 'tagAlbum' in ExportTagSettings: cvpj_metadata.album = ExportTagSettings['tagAlbum']
-			if 'tagGenre' in ExportTagSettings: cvpj_metadata.genre = ExportTagSettings['tagGenre']
-			if 'tagYear' in ExportTagSettings: 
-				try: cvpj_metadata.t_year = int(ExportTagSettings['tagYear'])
+			export_tag_settings = eamproj.ExportTagSettings
+			if 'tagTitle' in export_tag_settings: cvpj_metadata.name = export_tag_settings['tagTitle']
+			if 'tagArtist' in export_tag_settings: cvpj_metadata.author = export_tag_settings['tagArtist']
+			if 'tagComment' in export_tag_settings: cvpj_metadata.comment_text = export_tag_settings['tagComment']
+			if 'tagAlbum' in export_tag_settings: cvpj_metadata.album = export_tag_settings['tagAlbum']
+			if 'tagGenre' in export_tag_settings: cvpj_metadata.genre = export_tag_settings['tagGenre']
+			if 'tagYear' in export_tag_settings:
+				try: cvpj_metadata.t_year = int(export_tag_settings['tagYear'])
 				except: pass
 
 			# ---------- tracks ----------
 			convproj_obj.params.add('bpm', eamproj.BPM, 'float')
-			tempomul = 120/eamproj.BPM
 
 			for track in eamproj.AudioChannelsList:
 				cvpj_trackid = str(track.ID)
@@ -100,7 +98,6 @@ class input_eam2(plugins.base):
 
 				# auto
 				for autop in track.AutomationList:
-					autoloc_e = None
 					if autop.AutomationType == 'Pan':
 						autoloc = tuple(autoloc_s+['pan'])
 						auto_obj = cvpj_automation.create(autoloc, 'float', True)
@@ -135,8 +132,8 @@ class input_eam2(plugins.base):
 
 					# time
 					pos_sec = event.BeatPos
-					startsample_sec = (event.StartSampleMS)/1000
-					endsample_sec = (event.EndSampleMS)/1000
+					startsample_sec = event.StartSampleMS / 1000
+					endsample_sec = event.EndSampleMS / 1000
 
 					time_obj = placement_obj.time
 					time_obj.set_posdur_real(pos_sec, endsample_sec-startsample_sec)

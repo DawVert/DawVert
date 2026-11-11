@@ -167,8 +167,7 @@ class input_korg_m1_nds(plugins.base):
 
 			# blocks
 			track_placements = track_obj.placements
-			
-			curpos = 0
+
 			for n, block_obj in enumerate(channel_obj.blocks):
 				placement_obj = track_placements.add_notes()
 

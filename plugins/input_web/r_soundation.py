@@ -1,15 +1,13 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from functions import data_bytes
+import json
+import zipfile
+
+import plugins
 from functions import xtramath
 from objects import globalstore
 from objects.exceptions import ProjectFileParserException
-import plugins
-import struct
-import json
-import math
-import zipfile
 
 def get_param(soundation_device, plugin_obj, i_name, cvpj_autoloc, add_to_param):
 	global convproj_obj
@@ -162,7 +160,6 @@ class input_soundation(plugins.base):
 		soundation_obj = conversion_state.project
 		zip_data = conversion_state.archive
 
-		from objects import colors
 		global convproj_obj
 
 		globalstore.datapack.load('soundation', './data/datapack/app/soundation.xml')
@@ -194,9 +191,9 @@ class input_soundation(plugins.base):
 		traits_obj.audio_stretch = ['rate']
 
 		# ---------- transport ----------
-		timeSignaturesplit = soundation_obj.timeSignature.split('/')
+		time_signaturesplit = soundation_obj.timeSignature.split('/')
 
-		convproj_obj.timesig = [int(timeSignaturesplit[0]), int(timeSignaturesplit[1])]
+		convproj_obj.timesig = [int(time_signaturesplit[0]), int(time_signaturesplit[1])]
 		convproj_obj.params.add('bpm', soundation_obj.bpm, 'float')
 
 		cvpj_transport.loop_active = soundation_obj.looping
@@ -206,7 +203,7 @@ class input_soundation(plugins.base):
 		# ---------- tracks ----------
 		tracknum = 0
 		for soundation_channel in soundation_obj.channels:
-			tracknum_hue = (tracknum/-11) - 0.2
+			#tracknum_hue = (tracknum/-11) - 0.2
 			tracknum += 1
 			sound_chan_type = soundation_channel.type
 			cvpj_trackid = 'soundation'+str(tracknum)
@@ -342,7 +339,7 @@ class input_soundation(plugins.base):
 					track_obj.is_drum = True
 					track_obj.is_multinote_drum = True
 
-					kit_name = get_paramval(soundation_inst, 'kit_name')
+					#kit_name = get_paramval(soundation_inst, 'kit_name')
 					sampdata = [[None, 0.5, 0.5, 0.5, None, None, None, x-24] for x in range(16)]
 
 					instdata = soundation_inst.data
@@ -359,7 +356,7 @@ class input_soundation(plugins.base):
 						for n, v in enumerate(instdata['cuts']): sampdata[n][6] = v
 
 					for n in range(16):
-						paramlist = list(soundation_inst.params.data)
+						#paramlist = list(soundation_inst.params.data)
 						strnum = str(n)
 						samp_gain = get_paramval_opt(soundation_inst, 'gain_'+strnum)
 						samp_pan = get_paramval_opt(soundation_inst, 'pan_'+strnum)

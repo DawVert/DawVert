@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from dataclasses import dataclass
-import os
+
 import plugins
+
 
 @dataclass
 class notestate:
@@ -139,14 +140,16 @@ class input_soundclub2(plugins.base):
 				placement_obj = trscene_obj.add_notes()
 				placement_obj.visual.name = sn2_pat_obj.name
 
-				t_active_notes = [notestate.blank() for x in range(84)]
+				t_active_notes = [notestate.blank() for _ in range(84)]
 
 				n_curvol = 1
-				n_curpan = 0
+				#n_curpan = 0
 				curpos = 0
 
 				cvpj_notelist = placement_obj.notelist
-				
+
+				scnote_obj = None
+
 				for event in patvoice_obj.events:
 					curpos += event.len
 					if event.type == 17: 
@@ -156,13 +159,14 @@ class input_soundclub2(plugins.base):
 						scnote_obj.start = curpos
 						scnote_obj.end = 0
 
-					elif event.type == 19: 
-						scnote_obj.end = curpos-scnote_obj.start
-						scnote_obj = t_active_notes[event.value]
-						if scnote_obj.active:
-							cvpj_notelist.add_r(scnote_obj.start, scnote_obj.end, scnote_obj.key-36, n_curvol, None)
-							for s_pos, s_len, s_key in scnote_obj.porta:
-								cvpj_notelist.last_add_slide(s_pos, s_len, s_key-36, n_curvol, None)
+					elif event.type == 19:
+						if scnote_obj is not None:
+							scnote_obj.end = curpos-scnote_obj.start
+							scnote_obj = t_active_notes[event.value]
+							if scnote_obj.active:
+								cvpj_notelist.add_r(scnote_obj.start, scnote_obj.end, scnote_obj.key-36, n_curvol, None)
+								for s_pos, s_len, s_key in scnote_obj.porta:
+									cvpj_notelist.last_add_slide(s_pos, s_len, s_key-36, n_curvol, None)
 
 					elif event.type == 20: n_curvol = event.value/31
 					elif event.type == 21: 

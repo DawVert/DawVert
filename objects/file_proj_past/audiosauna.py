@@ -40,11 +40,18 @@ class audiosauna_device:
 		self.childIndex = int(xt_device.get('childIndex'))
 		self.samples = {}
 		self.params = {}
+
+		devroot = xt_device
+
 		d_sound = xt_device.findall('sound')
 		if d_sound:
-			for param in d_sound[0]: self.params[param.tag] = param.text
+			devroot = d_sound[0]
 
-		d_sampler = xt_device.findall('sampler')
+		for param in devroot:
+			if param.text:
+				self.params[param.tag] = param.text
+
+		d_sampler = devroot.findall('sampler')
 		if d_sampler:
 			for param in d_sampler[0]: 
 				if param.tag != 'samples': self.params[param.tag] = param.text
@@ -111,16 +118,18 @@ class audiosauna_channel:
 
 class audiosauna_song:
 	def __init__(self):
-		pass
+		self.zipdata = None
 
 	def load_from_file(self, input_file):
 		try:
-			zip_data = zipfile.ZipFile(input_file, 'r')
+			self.zipdata = zipfile.ZipFile(input_file, 'r')
 		except zipfile.BadZipFile as t:
 			raise ProjectFileParserException('audiosauna: Bad ZIP File: '+str(t))
 		
-		as_songdata = zip_data.read('songdata.xml')
+		as_songdata = self.zipdata.read('songdata.xml')
+		self.read(as_songdata)
 
+	def read(self, as_songdata):
 		x_proj = ET.fromstring(as_songdata)
 		x_proj_channels = x_proj.findall('channels')[0]
 		x_proj_tracks = x_proj.findall('tracks')[0]
@@ -189,5 +198,3 @@ class audiosauna_song:
 		xt_devices = x_proj_devices.findall('audioDevice')
 		for num, xt_device in enumerate(xt_devices):
 			self.channels[num].device = audiosauna_device(xt_device)
-
-		return zip_data

@@ -62,7 +62,6 @@ class input_sop(plugins.base):
 		cvpj_insts = convproj_obj.instruments
 		cvpj_automation = convproj_obj.automation
 		cvpj_metadata = convproj_obj.metadata
-		cvpj_plugins = convproj_obj.plugins
 		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(project_obj.tickBeat)
@@ -177,6 +176,7 @@ class input_sop(plugins.base):
 		# ---------- control track ----------
 		autoloc_bpm = ('main', 'bpm')
 		autoloc_vol = ('master', 'vol')
+		curtick = 0
 		for event in project_obj.controltrack:
 			curtick += event[0]
 			if event[1] == 'TEMPO': 

@@ -128,7 +128,7 @@ class input_zmaestro(plugins.base):
 
 		# ---------- key marker ----------
 		if project_obj.key in keynums:
-			timemarker_obj = cvpj_timemarkers.add_key(keynums[project_obj.key])
+			cvpj_timemarkers.add_key(keynums[project_obj.key])
 
 		# ---------- automation ----------
 		do_automation(cvpj_automation, '', 'vol', project_obj.volumetimeline, project_obj.usevolumetimeline)

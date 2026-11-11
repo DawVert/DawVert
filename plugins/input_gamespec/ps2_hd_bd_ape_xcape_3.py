@@ -1,13 +1,13 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
-
-from external.easybinrw import easybinrw
-from functions import data_values
 import logging
-import numpy as np
 import os
+
+import numpy as np
+
+import plugins
+from external.easybinrw import easybinrw
 
 logger_input = logging.getLogger('input')
 
@@ -33,6 +33,17 @@ instpart = np.dtype([
 	]) 
 
 class apeescape_patch:
+	def __init__(self):
+		self.unk1 = 0
+		self.vol = 0
+		self.header = None
+		self.startkey = 0
+		self.unk2 = 0
+		self.data = np.zeros(0, dtype=instpart)
+
+	def __getitem__(self, v):
+		return self.data[v]
+
 	def parse(self, ebrw_readstr):
 		self.unk1 = ebrw_readstr.int_u8()
 		self.vol = ebrw_readstr.int_u8()
@@ -40,9 +51,6 @@ class apeescape_patch:
 		self.startkey = ebrw_readstr.int_u8()
 		self.unk2 = ebrw_readstr.int_u8()
 		self.data = np.frombuffer(ebrw_readstr.list_int_u8(16*((self.unk1%128)+1)), dtype=instpart)
-
-	def __getitem__(self, v):
-		return self.data[v]
 
 	def debugtxt(self):
 		print('PART_HEADER', self.header)
@@ -190,8 +198,6 @@ class input_petaporon(plugins.base):
 		midiread_obj = reader_midifile_class()
 
 		if dawvert_intent.input_mode == 'file':
-			midiread_obj.do_song(dawvert_intent.input_file, convproj_obj)
-
 			path_hd = os.path.splitext(dawvert_intent.input_file)[0]+'.hd'
 			apeinst_obj.load_from_file(path_hd)
 
@@ -232,6 +238,8 @@ class input_petaporon(plugins.base):
 		traits_obj.auto_types = ['nopl_ticks']
 		traits_obj.track_nopl = True
 
+		midiread_obj.do_song(dawvert_intent.input_file, convproj_obj)
+
 		# ---------- inst ----------
 		custinst_obj = convproj_obj.main__add_midi_custom_inst()
 		custinst_obj.bank = 0
@@ -253,7 +261,6 @@ class input_petaporon(plugins.base):
 				sample_id = '_'.join([str(instnum), str(sampnum), sample_offset])
 				wav_path = samplefolder + sample_offset + '.wav'
 
-				audio_obj = None
 				if vagsamp['offset'] not in offset_points:
 					logger_input.info('Ripping Sample #'+str(sampnum+1)+' from Instrument #'+str(instnum+1))
 					sample_data = sample_obj.rip_sample((vagsamp['offset']+2)*8)

@@ -1,14 +1,12 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
-import json
-import struct
-import os.path
-from objects import globalstore
-import zipfile
-
 import logging
+import os.path
+
+import plugins
+from objects import globalstore
+
 logger_input = logging.getLogger('input')
 
 alt_drum_note_map = {
@@ -62,16 +60,17 @@ def parse_notes_drumalt(convproj_obj, trackid, notes_data, track_obj):
 		if pan != 0: autoticks.add_point(pos, (pan-4)/3)
 	cvpj_notelist.sort()
 
-class external_data_zip():
+class external_data_zip:
 	def __init__(self):
 		self.zipfile = None
 
 	def load_data(self, input_file):
 		import zipfile
-		try: zip_data = zipfile.ZipFile(input_file, 'r')
+		try:
+			zip_data = zipfile.ZipFile(input_file, 'r')
+			self.zipfile = zip_data
 		except zipfile.BadZipFile as t: 
 			logger_input.warning('piyopiyo: extdata: Bad ZIP File: '+str(t))
-		self.zipfile = zip_data
 
 	def extract(self, arch_file, out_file):
 		if self.zipfile:
@@ -132,7 +131,6 @@ class input_piyopiyo(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
-		cvpj_metadata = convproj_obj.metadata
 		cvpj_transport = convproj_obj.transport
 		cvpj_plugins = convproj_obj.plugins
 		cvpj_samplerefs = convproj_obj.samplerefs

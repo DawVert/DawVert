@@ -33,7 +33,6 @@ class input_openmpt(plugins.base):
 		openmpt_obj = openmpt.openmpt()
 		openmpt_obj.load_lib()
 		moduledata = None
-		project_obj = proj_hypnospace_hsm.hsm_song()
 		if dawvert_intent.input_mode == 'file':
 			f = open(dawvert_intent.input_file, 'rb')
 			moduledata = f.read()
@@ -52,7 +51,6 @@ class input_openmpt(plugins.base):
 		num_instruments = openmpt_obj.openmpt_module_get_num_instruments()
 		num_samples = openmpt_obj.openmpt_module_get_num_samples()
 		num_patterns = openmpt_obj.openmpt_module_get_num_patterns()
-		uses_instruments = bool(num_instruments)
 
 		# ---------- metadata ----------
 		cvpj_metadata = convproj_obj.metadata

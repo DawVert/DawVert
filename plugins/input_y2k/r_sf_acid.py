@@ -1,12 +1,13 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
 import os.path
-import bisect
+
+import plugins
+from functions import xtramath
 from objects import globalstore
 from objects import regions
-from functions import xtramath
+
 
 def calc_root(proj_root, track_root):
 	roottrack = (proj_root-60)
@@ -132,7 +133,7 @@ class input_acid_old(plugins.base):
 
 		for pos in list(auto_basenotes): rootnote_auto.add_pos(pos)
 		rootnote_auto.add_notes(auto_basenotes)
-		timemarker_obj = cvpj_timemarkers.add_key(auto_basenotes[0]-60)
+		cvpj_timemarkers.add_key(auto_basenotes[0]-60)
 
 		# ---------- markers ----------
 		for marker in project_obj.markers:
@@ -304,9 +305,9 @@ class input_acid_old(plugins.base):
 
 				for env in region.envs:
 					if len(env.points)==1 and env.type == 0:
-						for p in pls: placement_obj.sample.vol = env.points[0][1]
+						for _ in pls: placement_obj.sample.vol = env.points[0][1]
 					if len(env.points)==1 and env.type == 1:
-						for p in pls: placement_obj.sample.pan = env.points[0][1]
+						for _ in pls: placement_obj.sample.pan = env.points[0][1]
 
 					else:
 						autoloc = None

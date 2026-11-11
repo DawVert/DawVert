@@ -2,9 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import plugins
-import json
-from objects import globalstore
 from objects import colors
+from objects import globalstore
 
 def conv_color(b_color):
 	color = b_color.to_bytes(4, "little")
@@ -36,8 +35,6 @@ class input_hypnospace_hsm(plugins.base):
 
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		project_obj = conversion_state.project
-
-		from objects.convproj import fileref
 
 		globalstore.datapack.load('hypnospace_hsm', './data/datapack/app/hypnospace_hsm.xml')
 		colordata = colors.colorset.from_datapack('hypnospace_hsm', 'sample', 'main')
@@ -90,11 +87,10 @@ class input_hypnospace_hsm(plugins.base):
 				plugin_obj, samplepart_obj = cvpj_plugins.addspec_sampler__sampleref(sampleref_id, instid)
 				inst_obj.plugslots.set_synth(instid)
 
-			# adsr: a_predelay, a_attack, a_hold, a_decay, a_sustain, a_release, a_amount
-			plugin_obj.env_asdr_add('vol', 0, 0, 0, sample.decay/4, 1, 0, 1)
+				# adsr: a_predelay, a_attack, a_hold, a_decay, a_sustain, a_release, a_amount
+				plugin_obj.env_asdr_add('vol', 0, 0, 0, sample.decay/4, 1, 0, 1)
 
 		# ---------- patterns ----------
-		firstpat = project_obj.patterns[0]
 		for patnum, pattern_obj in enumerate(project_obj.patterns):
 			tempo, steps, highlight, color = pattern_obj.header
 
