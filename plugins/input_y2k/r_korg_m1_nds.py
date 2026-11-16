@@ -148,6 +148,7 @@ class input_korg_m1_nds(plugins.base):
 							if dset_obj: track_obj.visual.name = dset_obj.visual.name
 							plugin_obj = cvpj_plugins.add_native('korg_m1', instset, cvpj_pluginid)
 							track_obj.plugslots.set_synth(cvpj_pluginid)
+							plugin_obj.midi_fallback__add_inst(realpatch)
 
 							datavals_obj = plugin_obj.datavals
 							params_obj = plugin_obj.params

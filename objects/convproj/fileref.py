@@ -97,7 +97,7 @@ class cvpj_fileref:
 		return self.folder.get_str(str(self.file), os_type)
 
 	def get_filename(self):
-		return self.file.get()
+		return self.file.get_str()
 
 	def get_basename(self):
 		return self.file.filename
@@ -106,10 +106,7 @@ class cvpj_fileref:
 		return self.file.extension.lower()
 
 	def create_state(self):
-		state_obj = cvpj_fileref_state()
-		state_obj.folder = copy.deepcopy(self.folder)
-		state_obj.file = copy.deepcopy(self.file)
-		state_obj.is_file = self.is_file
+		state_obj = cvpj_fileref_state(self)
 		return state_obj
 
 	def restore_state(self, state_obj):
@@ -121,10 +118,7 @@ class cvpj_fileref:
 		self.folder = copy.deepcopy(other_fileref.folder)
 
 	def exists(self):
-		filepath = self.get()
-		if os.path.exists(filepath): 
-			return os.path.isfile(filepath)
-		else: return False
+		return self.folder.exists(self.get_filename())
 
 	def apply_prefix(self, prefixname):
 		folder_prefixes = self.convproj_obj.folder_prefixes
@@ -139,3 +133,28 @@ class cvpj_fileref:
 					self.is_file = combref.is_file
 					return True
 		return False
+
+	def search_prefix(self, prefixname):
+		folder_prefixes = self.convproj_obj.folder_prefixes
+		if prefixname in folder_prefixes:
+			prefixdata = folder_prefixes[prefixname]
+
+			for _, pdata in prefixdata.items():
+				orgl = len(pdata.folder.path)
+				state_obj = self.create_state()
+				orgloc = self.folder.path[:].copy()
+				self.folder = pdata.folder.copy()
+				if self.exists(): return True
+				for x in orgloc[::-1]:
+					self.folder.path.insert(orgl, x)
+					if self.exists(): return True
+				self.restore_state(state_obj)
+
+		return False
+
+	def search_local(self, prefixes):
+		copy_full_ref = self.copy()
+		if not copy_full_ref.exists():
+			for prefixname in prefixes:
+				if self.search_prefix(prefixname):
+					return True

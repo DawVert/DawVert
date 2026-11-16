@@ -188,7 +188,7 @@ class input_acid_old(plugins.base):
 			else:
 				sample_path = track.path
 				sampleref_obj = cvpj_samplerefs.add(sample_path, sample_path, 'win')
-				sampleref_obj.apply_prefix('project')
+				sampleref_obj.search_local(['project'])
 
 			# track sample stretch
 			trackpitch = track.pitch

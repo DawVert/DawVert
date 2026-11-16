@@ -5,6 +5,26 @@ import xml.etree.ElementTree as ET
 
 def getbool(v): return v=='true'
 
+class easyamixr_EAM1_VideoInfo:
+	__slots__ = ['BeatN','Value','ID','Selected']
+
+	def __init__(self, xmldata=None):
+		self.wVideoFile = ''
+		self.wTotalSnapshots = 9
+		self.wSnapshotsIntervalSecs = 2
+		self.wSnapshotCurrentRatio = 0.75
+		self.SnapshotPrefix = 'AAAA-'
+		if xmldata is not None: self.read(xmldata)
+
+	def read(self, xmldata):
+		for xpart in xmldata:
+			tagname = xpart.tag
+			if tagname == 'wVideoFile': self.wVideoFile = xpart.text
+			elif tagname == 'wTotalSnapshots': self.wTotalSnapshots = int(xpart.text)
+			elif tagname == 'wSnapshotsIntervalSecs': self.wSnapshotsIntervalSecs = int(xpart.text)
+			elif tagname == 'wSnapshotCurrentRatio': self.wSnapshotCurrentRatio = float(xpart.text)
+			elif tagname == 'SnapshotPrefix': self.SnapshotPrefix = xpart.text
+
 class easyamixr_EAM1_AutomationPointClass:
 	__slots__ = ['BeatN','Value','ID','Selected']
 
@@ -19,9 +39,9 @@ class easyamixr_EAM1_AutomationPointClass:
 		for xpart in xmldata:
 			tagname = xpart.tag
 			if tagname == 'BeatN': self.BeatN = float(xpart.text)
-			if tagname == 'Value': self.Value = float(xpart.text)
-			if tagname == 'ID': self.ID = int(xpart.text)
-			if tagname == 'Selected': self.Selected = getbool(xpart.text)
+			elif tagname == 'Value': self.Value = float(xpart.text)
+			elif tagname == 'ID': self.ID = int(xpart.text)
+			elif tagname == 'Selected': self.Selected = getbool(xpart.text)
 
 class easyamixr_EAM1_AutomationClass:
 	__slots__ = [
@@ -54,15 +74,15 @@ class easyamixr_EAM1_AutomationClass:
 		for xpart in xmldata:
 			tagname = xpart.tag
 			if tagname == 'ID': self.ID = int(xpart.text)
-			if tagname == 'DestinationID': self.DestinationID = int(xpart.text)
-			if tagname == 'AutomationType': self.AutomationType = xpart.text
-			if tagname == 'OwnerISAudioChannel': self.OwnerISAudioChannel = getbool(xpart.text)
-			if tagname == 'ParameterIndex': self.ParameterIndex = int(xpart.text)
-			if tagname == 'MidiControllerNumber': self.MidiControllerNumber = int(xpart.text)
-			if tagname == 'HTMLColor': self.HTMLColor = xpart.text
-			if tagname == 'Visible': self.Visible = getbool(xpart.text)
-			if tagname == 'DisplayMode': self.DisplayMode = xpart.text
-			if tagname == 'Points':
+			elif tagname == 'DestinationID': self.DestinationID = int(xpart.text)
+			elif tagname == 'AutomationType': self.AutomationType = xpart.text
+			elif tagname == 'OwnerISAudioChannel': self.OwnerISAudioChannel = getbool(xpart.text)
+			elif tagname == 'ParameterIndex': self.ParameterIndex = int(xpart.text)
+			elif tagname == 'MidiControllerNumber': self.MidiControllerNumber = int(xpart.text)
+			elif tagname == 'HTMLColor': self.HTMLColor = xpart.text
+			elif tagname == 'Visible': self.Visible = getbool(xpart.text)
+			elif tagname == 'DisplayMode': self.DisplayMode = xpart.text
+			elif tagname == 'Points':
 				for t in xpart:
 					if t.tag == 'AutomationPointClass':
 						self.Points.append(easyamixr_EAM1_AutomationPointClass(t))
@@ -85,15 +105,15 @@ class easyamixr_EAM1_WaveEventClass:
 		for xpart in xmldata:
 			tagname = xpart.tag
 			if tagname == 'ID': self.ID = int(xpart.text)
-			if tagname == 'FilePath': self.FilePath = xpart.text
-			if tagname == 'StartSampleMS': self.StartSampleMS = float(xpart.text)
-			if tagname == 'EndSampleMS': self.EndSampleMS = float(xpart.text)
-			if tagname == 'Title': self.Title = xpart.text
-			if tagname == 'BeatPos': self.BeatPos = float(xpart.text)
-			if tagname == 'FadeIN_LengthBeats': self.FadeIN_LengthBeats = float(xpart.text)
-			if tagname == 'FadeOUT_LengthBeats': self.FadeOUT_LengthBeats = float(xpart.text)
-			if tagname == 'Muted': self.Muted = getbool(xpart.text)
-			if tagname == 'Gain': self.Gain = float(xpart.text)
+			elif tagname == 'FilePath': self.FilePath = xpart.text
+			elif tagname == 'StartSampleMS': self.StartSampleMS = float(xpart.text)
+			elif tagname == 'EndSampleMS': self.EndSampleMS = float(xpart.text)
+			elif tagname == 'Title': self.Title = xpart.text
+			elif tagname == 'BeatPos': self.BeatPos = float(xpart.text)
+			elif tagname == 'FadeIN_LengthBeats': self.FadeIN_LengthBeats = float(xpart.text)
+			elif tagname == 'FadeOUT_LengthBeats': self.FadeOUT_LengthBeats = float(xpart.text)
+			elif tagname == 'Muted': self.Muted = getbool(xpart.text)
+			elif tagname == 'Gain': self.Gain = float(xpart.text)
 
 class easyamixr_EAM1_FxInfo:
 	def __init__(self, xmldata=None):
@@ -109,11 +129,11 @@ class easyamixr_EAM1_FxInfo:
 		for xpart in xmldata:
 			tagname = xpart.tag
 			if tagname == 'bypass': self.bypass = getbool(xpart.text)
-			if tagname == 'dllPath': self.dllPath = xpart.text
-			if tagname == 'displayName': self.displayName = xpart.text
-			if tagname == 'effectVersion': self.effectVersion = int(xpart.text)
-			if tagname == 'effectType': self.effectType = int(xpart.text)
-			if tagname == 'ID': self.ID = int(xpart.text)
+			elif tagname == 'dllPath': self.dllPath = xpart.text
+			elif tagname == 'displayName': self.displayName = xpart.text
+			elif tagname == 'effectVersion': self.effectVersion = int(xpart.text)
+			elif tagname == 'effectType': self.effectType = int(xpart.text)
+			elif tagname == 'ID': self.ID = int(xpart.text)
 
 class easyamixr_EAM1_AudioChannel:
 	def __init__(self, xmldata=None):
@@ -146,34 +166,34 @@ class easyamixr_EAM1_AudioChannel:
 		for xpart in xmldata:
 			tagname = xpart.tag
 			if tagname == 'ID': self.ID = int(xpart.text)
-			if tagname == 'Name': self.Name = xpart.text
-			if tagname == 'OutputID': self.OutputID = int(xpart.text)
-			if tagname == 'InputID': self.InputID = int(xpart.text)
-			if tagname == 'OutputName': self.OutputName = xpart.text
-			if tagname == 'InputName': self.InputName = xpart.text
-			if tagname == 'Type': self.Type = xpart.text
-			if tagname == 'Pan': self.Pan = float(xpart.text)
-			if tagname == 'Trim': self.Trim = float(xpart.text)
-			if tagname == 'Volume': self.Volume = float(xpart.text)
-			if tagname == 'VoiceRemoval': self.VoiceRemoval = int(xpart.text)
-			if tagname == 'ChannelHeight': self.ChannelHeight = int(xpart.text)
-			if tagname == 'EventsColorRGB': self.EventsColorRGB = int(xpart.text)
-			if tagname == 'TitleColorIndex': self.TitleColorIndex = int(xpart.text)
-			if tagname == 'Muted': self.Muted = getbool(xpart.text)
-			if tagname == 'Solo': self.Solo = getbool(xpart.text)
-			if tagname == 'Record': self.Record = getbool(xpart.text)
-			if tagname == 'MonitorInput': self.MonitorInput = getbool(xpart.text)
-			if tagname == 'IsMusicChannel': self.IsMusicChannel = getbool(xpart.text)
-			if tagname == 'IsVideoAudio': self.IsVideoAudio = getbool(xpart.text)
-			if tagname == 'FXList':
+			elif tagname == 'Name': self.Name = xpart.text
+			elif tagname == 'OutputID': self.OutputID = int(xpart.text)
+			elif tagname == 'InputID': self.InputID = int(xpart.text)
+			elif tagname == 'OutputName': self.OutputName = xpart.text
+			elif tagname == 'InputName': self.InputName = xpart.text
+			elif tagname == 'Type': self.Type = xpart.text
+			elif tagname == 'Pan': self.Pan = float(xpart.text)
+			elif tagname == 'Trim': self.Trim = float(xpart.text)
+			elif tagname == 'Volume': self.Volume = float(xpart.text)
+			elif tagname == 'VoiceRemoval': self.VoiceRemoval = int(xpart.text)
+			elif tagname == 'ChannelHeight': self.ChannelHeight = int(xpart.text)
+			elif tagname == 'EventsColorRGB': self.EventsColorRGB = int(xpart.text)
+			elif tagname == 'TitleColorIndex': self.TitleColorIndex = int(xpart.text)
+			elif tagname == 'Muted': self.Muted = getbool(xpart.text)
+			elif tagname == 'Solo': self.Solo = getbool(xpart.text)
+			elif tagname == 'Record': self.Record = getbool(xpart.text)
+			elif tagname == 'MonitorInput': self.MonitorInput = getbool(xpart.text)
+			elif tagname == 'IsMusicChannel': self.IsMusicChannel = getbool(xpart.text)
+			elif tagname == 'IsVideoAudio': self.IsVideoAudio = getbool(xpart.text)
+			elif tagname == 'FXList':
 				for t in xpart:
 					if t.tag == 'FxInfo':
 						self.FXList.append(easyamixr_EAM1_FxInfo(t))
-			if tagname == 'EventsList':
+			elif tagname == 'EventsList':
 				for t in xpart:
 					if t.tag == 'WaveEventClass':
 						self.EventsList.append(easyamixr_EAM1_WaveEventClass(t))
-			if tagname == 'AutomationList':
+			elif tagname == 'AutomationList':
 				for t in xpart:
 					if t.tag == 'AutomationClass':
 						self.AutomationList.append(easyamixr_EAM1_AutomationClass(t))
@@ -201,15 +221,15 @@ class easyamixr_EAMFormat1:
 				self.ExportTagSettings = {}
 				for inpart in xpart:
 					if inpart.text: self.ExportTagSettings[inpart.tag] = inpart.text
-			if tagname == 'MinorVersion': self.MinorVersion = int(xpart.text)
-			if tagname == 'IDCounter': self.IDCounter = int(xpart.text)
-			if tagname == 'BPM': self.BPM = int(xpart.text)
-			if tagname == 'TimeSignature': self.TimeSignature = int(xpart.text)
-			if tagname == 'SavePath': self.SavePath = xpart.text
-			if tagname == 'TrackEditorAlign': self.TrackEditorAlign = int(xpart.text)
-			if tagname == 'SaveFileDPI': self.SaveFileDPI = int(xpart.text)
-			if tagname == 'ChannelsOrder': self.ChannelsOrder = [int(x.text) for x in xpart if x.tag == 'long']
-			if tagname == 'AudioChannelsList':
+			elif tagname == 'MinorVersion': self.MinorVersion = int(xpart.text)
+			elif tagname == 'IDCounter': self.IDCounter = int(xpart.text)
+			elif tagname == 'BPM': self.BPM = int(xpart.text)
+			elif tagname == 'TimeSignature': self.TimeSignature = int(xpart.text)
+			elif tagname == 'SavePath': self.SavePath = xpart.text
+			elif tagname == 'TrackEditorAlign': self.TrackEditorAlign = int(xpart.text)
+			elif tagname == 'SaveFileDPI': self.SaveFileDPI = int(xpart.text)
+			elif tagname == 'ChannelsOrder': self.ChannelsOrder = [int(x.text) for x in xpart if x.tag == 'long']
+			elif tagname == 'AudioChannelsList':
 				for t in xpart:
 					if t.tag == 'AudioChannel':
 						self.AudioChannelsList.append(easyamixr_EAM1_AudioChannel(t))
@@ -223,5 +243,5 @@ class easyamixr_proj:
 		x_root = ET.parse(input_file).getroot()
 		for xpart in x_root:
 			if xpart.tag == 'Format': self.Format = xpart.text
-			if xpart.tag == 'EAMFormat1': self.EAMFormat1 = easyamixr_EAMFormat1(xpart)
+			elif xpart.tag == 'EAMFormat1': self.EAMFormat1 = easyamixr_EAMFormat1(xpart)
 		return True

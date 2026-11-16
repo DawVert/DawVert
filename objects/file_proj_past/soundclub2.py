@@ -108,9 +108,6 @@ class sn2_song:
 		return self.load(ebrw_readstr)
 
 	def load(self, ebrw_readstr):
-		ebrw_readstr = easybinrw.binread()
-		ebrw_readstr.load_file(input_file)
-
 		try: ebrw_readstr.magic_check(b'SN2')
 		except ValueError as t: raise ProjectFileParserException('soundclub2: '+str(t))
 		
@@ -124,9 +121,10 @@ class sn2_song:
 		self.ts_denum = ebrw_readstr.int_u32()
 
 		for part_obj in chunked.chunk_part_read_all_iso(ebrw_readstr, chunk_size_data):
-			if part_obj.id == b'NAM': self.comment = ebrw_readstr.string(part_obj.size)
-			if part_obj.id == b'SEQ': self.sequence = ebrw_readstr.list_int_s32(part_obj.size//4)
-			if part_obj.id == b'INS': self.instruments.append(sn2_instrument(ebrw_readstr, part_obj.end))
-			if part_obj.id == b'PAT': self.patterns.append(sn2_pattern(ebrw_readstr, part_obj))
+			cid = part_obj.id
+			if cid == b'NAM': self.comment = ebrw_readstr.string(part_obj.size)
+			elif cid == b'SEQ': self.sequence = ebrw_readstr.list_int_s32(part_obj.size//4)
+			elif cid == b'INS': self.instruments.append(sn2_instrument(ebrw_readstr, part_obj.end))
+			elif cid == b'PAT': self.patterns.append(sn2_pattern(ebrw_readstr, part_obj))
 
 		return True

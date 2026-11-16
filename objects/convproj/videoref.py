@@ -97,21 +97,11 @@ class cvpj_videoref:
 			return self.dur_sec
 
 	def get_exists(self):
-		orgpath = self.fileref.get_path(None, False)
+		orgpath = self.fileref.get()
 		return os.path.exists(orgpath)
 
-	def set_path(self, in_os_type, in_path):
-		self.fileref.set_path(in_os_type, in_path, 0)
+	def set_path(self, in_path, in_os_type):
+		self.fileref.set_file(in_path, in_os_type)
 
-	def find_relative(self, searchseries):
-		if not self.found:
-			orgpath = self.fileref.get_path(None, False)
-			iffound = False
-			if not os.path.exists(orgpath):
-				iffound = self.fileref.search(searchseries)
-			return iffound
-		return False
-
-	def search_local(self, dirpath):
-		return self.fileref.search_local(dirpath)
-
+	def search_local(self, prefixes):
+		return self.fileref.search_local(prefixes)

@@ -12,6 +12,8 @@ else: native_os = 'unix'
 import copy
 deepcopy = copy.deepcopy
 
+import os
+
 def path_win_from_unix(pathparts):
 	win_drive = 'z'
 	outpath = pathparts.copy()
@@ -84,15 +86,40 @@ class fileref_folder_completer:
 		return self.full
 # ------------------------------------ pathprov ------------------------------------
 
-class pathprov_partial:
+class pathprov_base:
+	def __init__(self):
+		self.reset()
+
+	def __getitem__(self, num):
+		return self.loc.__getitem__(num)
+
+	def __len__(self):
+		return self.loc.__len__()
+
+	def __iter__(self):
+		return self.loc.__iter__()
+
+	def insert(self, a, b):
+		return self.loc.insert(a, b)
+
+	def append(self, a):
+		return self.loc.append(a)
+
+	def reset(self):
+		self.loc = []
+
+	def exists(self, filename, os_type=None):
+		filepath = self.get(filename, os_type)
+		if os.path.exists(filepath): 
+			return os.path.isfile(filepath)
+		else: return False
+
+class pathprov_partial(pathprov_base):
 	provtype = 'part'
 	provname = 'partial'
 
 	def __init__(self):
-		self.reset()
-
-	def reset(self):
-		self.loc = []
+		super().__init__()
 
 	def set(self, pathparts):
 		self.loc = pathparts
@@ -106,12 +133,12 @@ class pathprov_partial:
 		else: 
 			return '/'.join(outpath)
 
-class pathprov_windows:
+class pathprov_windows(pathprov_base):
 	provtype = 'full'
 	provname = 'win'
 
 	def __init__(self):
-		self.reset()
+		super().__init__()
 
 	def reset(self):
 		self.loc = []
@@ -136,15 +163,12 @@ class pathprov_windows:
 			outpath = ['']+path_unix_from_win(pathparts, self.win_drive)
 			return '/'.join(outpath+[filename])
 
-class pathprov_unix:
+class pathprov_unix(pathprov_base):
 	provtype = 'full'
 	provname = 'unix'
 
 	def __init__(self):
-		self.reset()
-
-	def reset(self):
-		self.loc = []
+		super().__init__()
 
 	def set(self, pathparts):
 		isset = False
@@ -164,25 +188,6 @@ class pathprov_unix:
 		else:
 			outpath = ['']+pathparts.copy()
 			return '/'.join(outpath+[filename])
-
-class pathprov_prefix:
-	provtype = 'prefix'
-	provname = 'prefix'
-
-	def __init__(self):
-		self.reset()
-
-	def reset(self):
-		self.name = ''
-		self.loc = []
-
-	def set(self, name, folderloc):
-		self.name = name
-		self.loc = []
-		return True
-
-	def get(self, filename, os_type=None):
-		return ''
 
 # ------------------------------------ classes ------------------------------------
 
@@ -205,11 +210,11 @@ class cvpj_folderpath:
 		if isvalid: self.path = full_obj
 		return isvalid
 
-	def set_prefix(self, name, pathparts):
-		full_obj = pathprov_prefix()
-		full_obj.set(name, pathparts)
-		self.path = full_obj
-		return True
+	def set_partial(self, pathparts):
+		full_obj = pathprov_partial()
+		isvalid = full_obj.set(pathparts)
+		if isvalid: self.path = full_obj
+		return isvalid
 
 	def set(self, pathparts, os_src):
 		isvalid = False
@@ -231,6 +236,9 @@ class cvpj_folderpath:
 		if not os_type: os_type = native_os
 		return self.path.get(filename, os_type)
 
+	def get_loc(self):
+		return self.path.loc
+
 	def convert_os(self, target):
 		pd = self.path
 		p_type = pd.provtype
@@ -247,3 +255,6 @@ class cvpj_folderpath:
 				new_obj = pathprov_unix()
 				new_obj.folderloc = path_unix_from_win(pathparts, pd.win_drive)
 				self.path = new_obj
+
+	def exists(self, filename, os_type=None):
+		return self.path.exists(filename, os_type)

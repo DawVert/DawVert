@@ -233,6 +233,7 @@ class output_amped(plugins.base):
 
 			# plugin
 			inst_supported = False
+			gm_exists = False
 
 			synth_plugid = track_obj.plugslots.synth
 
@@ -324,6 +325,7 @@ class output_amped(plugins.base):
 					amped_device.add_param(4, 'omni', 1)
 					amped_device.data['sf2Preset'] = {"bank": o_midi_bank, "preset": o_midi_patch, "name": ""}
 					amped_device.bypass = False
+					gm_exists = True
 
 				#if plugin_obj.check_match('vst2', 'win'):
 				#	inst_supported = True
@@ -334,7 +336,7 @@ class output_amped(plugins.base):
 				#		vstcondata['pluginState'] = plugin_obj.rawdata_get_b64('chunk')
 				#	amped_track.devices.append(vstcondata)
 
-			if not inst_supported:
+			if not inst_supported and not gm_exists:
 				midi_inst = track_obj.get_midi(convproj_obj)
 				if midi_inst:
 					o_midi_bank, o_midi_patch = midi_inst.to_sf2()

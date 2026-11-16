@@ -145,9 +145,6 @@ class cvpj_sampleref:
 	def set_path(self, in_os_type, in_path):
 		self.fileref.set_file(in_path, in_os_type)
 
-	def set_path_prefix(self, prefixname, in_path):
-		self.fileref.set_path_prefix(prefixname, in_path, 0)
-
 	def copy_file(self, os_type, outfilename):
 		filename = self.fileref.get()
 		if os.path.exists(filename):
@@ -181,8 +178,14 @@ class cvpj_sampleref:
 			except: pass
 			return False
 
+	def search_local(self, prefixes):
+		return self.fileref.search_local(prefixes)
+
 	def apply_prefix(self, prefixname):
 		return self.fileref.apply_prefix(prefixname)
+
+	def exists(self):
+		return self.fileref.exists()
 
 	def get_info(self, *args):
 		wav_realpath = self.fileref.get(get_path_type(None))
