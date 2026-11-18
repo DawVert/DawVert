@@ -95,8 +95,11 @@ class apeescape:
 			#iparts_obj.debugtxt()
 
 class apeescape_bd:
-	def load_from_file(self, input_file):
+	def __init__(self):
 		self.ebrw_readstr = easybinrw.binread()
+		self.samples = []
+
+	def load_from_file(self, input_file):
 		self.ebrw_readstr.load_file(input_file)
 		self.samples = []
 
@@ -118,7 +121,7 @@ class apeescape_bd:
 			else: outdata += rawdata
 		return outdata
 
-class reader_midifile_class():
+class reader_midifile_class:
 	def do_song(self, input_file, convproj_obj):
 		cvpj_tracks = convproj_obj.tracks
 		

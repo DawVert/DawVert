@@ -35,9 +35,6 @@ class input_notessimo_v2(plugins.base):
 
 		globalstore.datapack.load('notessimo_v2', './data/datapack/app/notessimo_v2.xml')
 
-		global used_insts
-		used_insts = []
-
 		# ---------- convproj objects ----------
 		cvpj_insts = convproj_obj.instruments
 		cvpj_tracks = convproj_obj.tracks
@@ -98,7 +95,7 @@ class input_notessimo_v2(plugins.base):
 						time_obj.set_posdur(0, x.size)
 						cvpj_notelist = placement_obj.notelist
 						for nnn in layer: 
-							cvpj_notelist.add_m(str(nnn.inst), (nnn.pos)*notelen, (nnn.dur/4)*notelen, nnn.get_note(), nnn.vol, None)
+							cvpj_notelist.add_m(str(nnn.inst), nnn.pos * notelen, (nnn.dur / 4) * notelen, nnn.get_note(), nnn.vol, None)
 							if nnn.pan: cvpj_notelist.last_add_pan(nnn.pan)
 
 		# ---------- fxchan ----------
@@ -128,7 +125,7 @@ class input_notessimo_v2(plugins.base):
 		curpos = 0
 		for pat_num in project_obj.order:
 			tempo, notelen = tempo_len[pat_num]
-			size = ((project_obj.patterns[pat_num].size)-32)*notelen
+			size = (project_obj.patterns[pat_num].size - 32) * notelen
 			scenepl_obj = convproj_obj.scene__add_pl()
 			scenepl_obj.position = curpos
 			scenepl_obj.duration = size

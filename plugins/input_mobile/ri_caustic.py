@@ -3,13 +3,8 @@
 
 from dataclasses import dataclass
 
-from objects import globalstore
-from functions import xtramath
-
-import json
-import os.path
 import plugins
-import struct
+from objects import globalstore
 
 caustic_fxtype = {}
 caustic_fxtype[0] = 'delay'
@@ -160,7 +155,7 @@ class input_cvpj_r(plugins.base):
 		convproj_obj.timesig = [project_obj.numerator, 4]
 
 		# ---------- mixer ----------
-		mixer_tracks = [mixertrack() for x in range(14)]
+		mixer_tracks = [mixertrack() for _ in range(14)]
 
 		for mixnum, ctrldata in enumerate(project_obj.mixr.controls):
 			for paramnum in range(7): 
@@ -237,6 +232,8 @@ class input_cvpj_r(plugins.base):
 
 						loopmode_cvpj(region, sp_obj)
 						sp_obj.point_value_type = "samples"
+					else:
+						plugin_obj, sampleref_obj, sp_obj = cvpj_plugins.addspec_sampler(None, None, pluginid)
 
 					middlenote += region.key_root-60
 				else:
@@ -244,7 +241,6 @@ class input_cvpj_r(plugins.base):
 					plugin_obj.role = 'synth'
 					for samplecount, data in enumerate(machdata.samples):
 						region = data
-						loopdata = None
 						sampleref = machid + '_PCMSynth_'+str(samplecount)
 						wave_path = samplefolder+sampleref+'.wav'
 
@@ -291,17 +287,18 @@ class input_cvpj_r(plugins.base):
 					region = bbox_sample
 					sampleref = machid + '_BeatBox_'+str(samplecount)
 					wave_path = samplefolder+sampleref+'.wav'
-					if region.chan != 0 and region.hz != 0: 
+
+					sampleref_obj = cvpj_samplerefs.add(wave_path, wave_path, None)
+					sampleref_obj.set_fileformat('wav')
+
+					if region.chan != 0 and region.hz != 0:
 						audio_obj = audio_data.audio_obj()
 						audio_obj.channels = region.chan
 						audio_obj.rate = region.hz
 						audio_obj.set_codec('int16')
 						audio_obj.pcm_from_bytes(region.data)
 						audio_obj.to_file_wav(wave_path)
-
-					sampleref_obj = cvpj_samplerefs.add(wave_path, wave_path, None)
-					sampleref_obj.set_fileformat('wav')
-					audio_obj.to_sampleref_obj(sampleref_obj)
+						audio_obj.to_sampleref_obj(sampleref_obj)
 
 					drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
 					drumpad_obj.key = samplecount-12
@@ -472,21 +469,21 @@ class input_cvpj_r(plugins.base):
 			track_obj.plugslots.slots_mixer.append(width_plugid)
 		
 		# ---------- sequences ----------
-		for x in project_obj.seqn.parts:
-			x['key'] = x['key']%100 + (x['key']//100)*16
+		for p in project_obj.seqn.parts:
+			p['key'] = p['key'] % 100 + (p['key'] // 100) * 16
 
-			machdata = project_obj.machines[x['mach']].data
+			machdata = project_obj.machines[p['mach']].data
 
-			patmeasures = machdata.patterns.data[x['key']].measures*16
-			autodata = machdata.patterns.auto[x['key']]
+			patmeasures = machdata.patterns.data[p['key']].measures * 16
+			# autodata = machdata.patterns.auto[x['key']]
 			if patmeasures == 0: patmeasures = 16
-			patid = patids[x['key']]
+			patid = patids[p['key']]
 
-			placement_obj = trackstore[x['mach']].placements.add_notes_indexed()
+			placement_obj = trackstore[p['mach']].placements.add_notes_indexed()
 			placement_obj.fromindex = patid
 
 			time_obj = placement_obj.time
-			time_obj.set_posdur(float(x['pos']), float(x['dur']))
+			time_obj.set_posdur(float(p['pos']), float(p['dur']))
 			time_obj.set_loop_data(0, 0, float(patmeasures/4))
 
 			#if autodata:
@@ -507,7 +504,7 @@ class input_cvpj_r(plugins.base):
 		# ---------- automation: mach ----------
 		for machnum, machauto in enumerate(project_obj.seqn.auto_mach):
 			for ctrlid, s_machauto in machauto.data.items():
-				twopoints = [[float(x['pos']), float(x['val'])] for x in s_machauto]
+				twopoints = [[float(p['pos']), float(p['val'])] for p in s_machauto]
 				autoloc = ['plugin', 'machine'+str(machnum+1), str(ctrlid)]
 				add_autopoints_twopoints(cvpj_automation, autoloc, twopoints, 'float')
 
@@ -528,9 +525,9 @@ class input_cvpj_r(plugins.base):
 				elif ctrl_g == 9: autoloc = ['plugin', 'machine'+str(ctrl_s+1+fxsetnum)+'_width', 'width']
 
 				if autoloc: 
-					twopoints = [[float(x['pos']), float(x['val'])] for x in s_machauto]
+					twopoints = [[float(p['pos']), float(p['val'])] for p in s_machauto]
 					if ctrl_g == 8: 
-						for x in twopoints: x[1] = (x[1]-0.5)*2
+						for p in twopoints: p[1] = (p[1]-0.5)*2
 					add_autopoints_twopoints(cvpj_automation, autoloc, twopoints, 'float')
 
 		# ---------- automation: fx ----------
@@ -540,12 +537,12 @@ class input_cvpj_r(plugins.base):
 				autofx_num = (ctrlid//16)
 				autofx_slot = (ctrlid//8)-(autofx_num*2)
 				autofx_ctrl = ctrlid-(autofx_slot*8)-(autofx_num*16)
-				cvpj_fx_autoid = 'machine'+str(autofx_num+1+(fxsetnum))+'_slot'+str(autofx_slot+1)
+				cvpj_fx_autoid = 'machine' + str(autofx_num + 1 + fxsetnum) + '_slot' + str(autofx_slot + 1)
 
-				twopoints = [[float(x['pos']), float(x['val'])] for x in s_machauto]
+				twopoints = [[float(p['pos']), float(p['val'])] for p in s_machauto]
 
 				if autofx_ctrl == 5: 
-					for x in twopoints: x[1] = (x[1]*-1)-1
+					for p in twopoints: p[1] = (p[1]*-1)-1
 					autoloc = ['slot', cvpj_fx_autoid, 'enabled']
 					add_autopoints_twopoints(cvpj_automation, autoloc, twopoints, 'bool')
 				else: 
@@ -553,7 +550,6 @@ class input_cvpj_r(plugins.base):
 					add_autopoints_twopoints(cvpj_automation, autoloc, twopoints, 'float')
 
 		# ---------- automation: master fx ----------
-		master_fxchaindata = []
 		add_caustic_fx(cvpj_plugins, cvpj_master, project_obj.mstr.fxslots, 'master_slot')
 
 		master_controls_data = project_obj.mstr.controls.data
@@ -584,7 +580,7 @@ class input_cvpj_r(plugins.base):
 
 		for ctrlid, s_machauto in project_obj.seqn.auto_master.data.items():
 
-			twopoints = [[float(x['pos']), float(x['val'])] for x in s_machauto]
+			twopoints = [[float(p['pos']), float(p['val'])] for p in s_machauto]
 
 			autoloc = None
 			if 1 <= ctrlid <= 9: autoloc = ['plugin', 'master_delay', str(ctrlid)]
@@ -599,7 +595,7 @@ class input_cvpj_r(plugins.base):
 				cvpj_fx_autoid = 'master_slot'+str(autofx_slot+1)
 
 				if autofx_ctrl-64 == 5:
-					for x in twopoints: x[1] = (x[1]*-1)-1
+					for p in twopoints: p[1] = (p[1]*-1)-1
 					autoloc = ['slot', cvpj_fx_autoid, 'enabled']
 				else:  autoloc = ['plugin', cvpj_fx_autoid, str(autofx_ctrl-64)]
 

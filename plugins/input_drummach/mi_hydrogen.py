@@ -14,7 +14,7 @@ PL_MODE = 0
 
 def get_time(p): return p*48*4
 
-class external_data_zip():
+class external_data_zip:
 	def __init__(self):
 		self.zipfile = None
 

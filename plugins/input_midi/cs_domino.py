@@ -1,9 +1,7 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.exceptions import ProjectFileParserException
 import plugins
-import xml.etree.ElementTree as ET
 from objects import globalstore
 
 class input_domino(plugins.base):

@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import io
-import plugins
 import os.path
+
+import plugins
 from functions import data_values
 
 try: import xmodits
@@ -63,7 +63,6 @@ class input_xm(plugins.base):
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		project_obj = conversion_state.project
 
-		global samplefolder
 		from objects import globalstore
 		globalstore.datapack.load('tracker_various', './data/datapack/app/tracker_various.xml')
 
@@ -99,11 +98,11 @@ class input_xm(plugins.base):
 				for rownum, rowdatas in enumerate(xmpat_obj.data):
 					for channel, cell_note, cell_inst, cell_vol, cell_effect, cell_param in rowdatas:
 						output_note = cell_note
-						if cell_note != None: output_note = 'off' if cell_note == 97 else cell_note-49
+						if cell_note is not None: output_note = 'off' if cell_note == 97 else cell_note - 49
 						pattern_obj.cell_note(channel, rownum, output_note, cell_inst)
 						if cell_vol: pattern_obj.cell_param(channel, rownum, 'vol', cell_vol/64)
 						if cell_effect == 13: pattern_obj.cell_g_param(channel, rownum, 'break_to_row', 0)
-						if cell_effect != None and cell_param != None:
+						if cell_effect is not None and cell_param is not None:
 							pattern_obj.cell_fx_mod(channel, rownum, cell_effect, cell_param)
 							if cell_effect == 12: pattern_obj.cell_param(channel, rownum, 'vol', cell_param/64)
 							elif cell_effect == 15: 
@@ -112,8 +111,10 @@ class input_xm(plugins.base):
 							elif cell_effect == 16: pattern_obj.cell_param(channel, rownum, 'global_volume', cell_param/64)
 							#if cell_effect == 17: pattern_obj.cell_param(channel, rownum, 'global_volume_slide', dv_trackerpattern.getfineval(cell_param))
 							elif cell_effect == 34:
-								panbrello_params = {}
-								panbrello_params['speed'], panbrello_params['depth'] = data_bytes.splitbyte(cell_param)
+								panbrello_params = {
+									'speed': (data_bytes.splitbyte(cell_param))[0],
+									'depth': (data_bytes.splitbyte(cell_param))[1]
+								}
 								pattern_obj.cell_param(channel, rownum, 'panbrello', panbrello_params)
 
 		if project_obj.ompt_pnam:
@@ -163,12 +164,12 @@ class input_xm(plugins.base):
 
 			sampleregions = data_values.list__to_reigons(xm_inst.notesampletable, 48)
 
-			inst_used = False
+			#inst_used = False
 			if xm_inst.num_samples == 0: pass
 			elif xm_inst.num_samples == 1:
-				inst_used = True
+				#inst_used = True
 				trsamp = xm_inst.samp_head[0]
-				inst_obj.params.add('vol', 0.3*(trsamp.vol), 'float')
+				inst_obj.params.add('vol', 0.3 * trsamp.vol, 'float')
 
 				# sampleref
 				filename = samplefolder+str(xm_cursamplenum)+'.wav'
@@ -187,16 +188,16 @@ class input_xm(plugins.base):
 				sp_obj.end = trsamp.length
 				sp_obj.point_value_type = "samples"
 			else:
-				inst_used = True
+				#inst_used = True
 				inst_obj.params.add('vol', 0.3, 'float')
 				plugin_obj = cvpj_plugins.add_uni('sampler', 'multi')
 				plugin_obj.role = 'synth'
 				inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
-				for instnum, r_start, e_end in sampleregions:
-					trsamp = xm_inst.samp_head[instnum]
+				for regnum, r_start, e_end in sampleregions:
+					trsamp = xm_inst.samp_head[regnum]
 
 					# sampleref
-					filename = samplefolder + str(xm_cursamplenum+instnum) + '.wav'
+					filename = samplefolder + str(xm_cursamplenum+regnum) + '.wav'
 					sampleref_obj = cvpj_samplerefs.add(filename, filename)
 					sampleref_obj.set_channels(1 if not trsamp.stereo else 2)
 					sampleref_obj.set_dur_samples(trsamp.get_len())

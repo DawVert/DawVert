@@ -1,10 +1,7 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import shlex
 import plugins
-import json
-from functions import data_values
 from functions import xtramath
 
 from objects import globalstore
@@ -145,15 +142,14 @@ def create_inst(convproj_obj, vol, WaveType, fst_Instrument, fx_num):
 
 	if WaveType in ['VRC7FM']: inst_obj.datavals.add('middlenote', 12)
 
-def create_dpcm_inst(DPCMMappings, DPCMSamples, fst_instrument, fx_num, dpcm_freqlist):
+def create_dpcm_inst(convproj_obj, DPCMMappings, DPCMSamples, fst_instrument, fx_num, dpcm_freqlist, samplefolder):
 	cvpj_insts = convproj_obj.instruments
 	cvpj_plugins = convproj_obj.plugins
 	cvpj_samplerefs = convproj_obj.samplerefs
 
 	from objects import audio_data
-	global samplefolder
 
-	instname = fst_instrument.Name if fst_instrument != None else None
+	instname = fst_instrument.Name if fst_instrument is not None else None
 	cvpj_instid = make_instid(fx_num, 'DPCM', instname)
 
 	inst_obj = cvpj_insts.add(cvpj_instid)
@@ -238,13 +234,13 @@ def make_auto(cvpj_automation, fs_pattern, NoteLength, timemul, patpos, patdur, 
 		autopoints_obj = autopl_obj.data
 		prev_slidetarg = None
 		for c_pos, c_val, slitarget in vol_auto:
-			if prev_slidetarg != None: autopoints_obj.points__add_normal(c_pos, prev_slidetarg/15, 0, None)
+			if prev_slidetarg is not None: autopoints_obj.points__add_normal(c_pos, prev_slidetarg / 15, 0, None)
 			autopoints_obj.points__add_instant(c_pos, c_val/15)
 			prev_slidetarg = slitarget
 
 def parse_notes(cvpj_notelist, fs_notes, chiptype, NoteLength, arpeggios, fxchan, arpeggiochord):
 	for notedata in fs_notes:
-		if notedata.Duration != None:
+		if notedata.Duration is not None:
 			t_duration = float(notedata.Duration)/NoteLength
 			t_position = notedata.Time/NoteLength
 			if chiptype != 'DPCM':
@@ -278,15 +274,6 @@ def get_gcolor(dcat, dgroup, cobj):
 	def_ds_obj = globalstore.datapack.get_obj(dcat, dgroup, cobj)
 	if def_ds_obj: return def_ds_obj.visual.color
 
-def add_nle(convproj_obj, patdata, NoteLength, chantype, patid, bpm):
-	cvpj_patid = chantype+'-'+patid+'-'+str(bpm)
-	nle_obj = convproj_obj.notelistindex__add(cvpj_patid)
-	visual_obj = nle_obj.visual
-	visual_obj.name = patid+' ('+chantype+')'
-	if patdata.Color: visual_obj.color.set_hex(patdata.Color)
-	else: visual_obj.color.set_int(defualt_pattern_color)
-	parse_notes(nle_obj.notelist, patdata.Notes, chantype, NoteLength, project_obj.Arpeggios)
-
 class input_famistudio(plugins.base):
 	def is_dawvert_plugin(self):
 		return 'input'
@@ -318,12 +305,8 @@ class input_famistudio(plugins.base):
 			conversion_state.project = project_obj
 			return True
 
-	def to_convproj(self, i_convproj_obj, dawvert_intent, conversion_state):
+	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		project_obj = conversion_state.project
-
-		global samplefolder
-		global convproj_obj
-		convproj_obj = i_convproj_obj
 
 		globalstore.datapack.load('famistudio', './data/datapack/app/famistudio.xml')
 		samplefolder = dawvert_intent.path_samples['extracted']
@@ -444,7 +427,7 @@ class input_famistudio(plugins.base):
 			instname = used_instgroup[2]
 			fmi = used_instgroup[3]
 
-			cvpj_instid = wavetype+(('-'+instname) if instname else '')
+			# cvpj_instid = wavetype+(('-'+instname) if instname else '')
 
 			outvol = 0
 			if wavetype in ['Square1','Square2','Triangle','Noise']:
@@ -466,9 +449,9 @@ class input_famistudio(plugins.base):
 
 			if wavetype == 'DPCM':
 				if instname:
-					create_dpcm_inst(fmi.DPCMMappings, project_obj.DPCMSamples, fmi, fxchan, dpcm_freqlist)
+					create_dpcm_inst(convproj_obj, fmi.DPCMMappings, project_obj.DPCMSamples, fmi, fxchan, dpcm_freqlist, samplefolder)
 				else:
-					create_dpcm_inst(project_obj.DPCMMappings, project_obj.DPCMSamples, fmi, fxchan, dpcm_freqlist)
+					create_dpcm_inst(convproj_obj, project_obj.DPCMMappings, project_obj.DPCMSamples, fmi, fxchan, dpcm_freqlist, samplefolder)
 			else:
 				if fmi:
 					create_inst(convproj_obj, xtramath.from_db(outvol), wavetype, fmi, fxchan)
@@ -476,8 +459,8 @@ class input_famistudio(plugins.base):
 		# ---------- song ----------
 		for channum, fst_channel in enumerate(fst_currentsong.Channels):
 			fxchan = channum+1
-			playlistnum = str(fxchan)
-			WaveType = get_instshape(fst_channel.Type)
+			# playlistnum = str(fxchan)
+			# WaveType = get_instshape(fst_channel.Type)
 
 			playlist_obj = convproj_obj.playlist__add(channum, 1, True)
 			playlist_obj.visual.name = fst_channel.Type

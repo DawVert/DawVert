@@ -66,6 +66,8 @@ class input_mariopaint_smp(plugins.base):
 	def parse(self, conversion_state, dawvert_intent):
 		if dawvert_intent.input_mode == 'file':
 			f_smp = open(dawvert_intent.input_file, 'r')
+		else:
+			return False
 		try:
 			lines_smp = f_smp.readlines()
 			conversion_state.project = lines_smp

@@ -152,7 +152,6 @@ class input_orgyana(plugins.base):
 				posnotes = dict(sorted(posnotes.items(), key=lambda item: item[0]))
 				endnote = None
 				notedur = 0
-				org_notelist = []
 
 				cvpj_notelist = track_obj.placements.notelist
 
@@ -165,16 +164,17 @@ class input_orgyana(plugins.base):
 					auto_obj = cvpj_automation.create(pan_autoid, 'float', False)
 					pan_auto_obj = auto_obj.make_nopl_points()
 
+				notepos = 0
 				for pos, orgnote in posnotes.items():
 					note, dur, vol, pan = orgnote
 					pan = (pan-6)/6
 
-					if endnote != None: 
+					if endnote is not None:
 						if pos >= endnote: endnote = None
 					if orgnote[1] != 1:
 						notedur = orgnote[1]
 						endnote = pos+notedur
-					if endnote != None: isinsidenote = False if endnote-pos == notedur else True
+					if endnote is not None: isinsidenote = False if endnote - pos == notedur else True
 					else: isinsidenote = False
 					if not isinsidenote: 
 						extradata = None

@@ -1,16 +1,15 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
-import json
-import struct
-import os.path
 import math
-from objects import globalstore
-from objects import colors
-from functions import xtramath
+import os.path
+
+import plugins
 from functions import data_xml
 from functions.juce import juce_memoryblock
+from objects import colors
+from objects import globalstore
+
 
 def do_visual(cvpj_visual, zb_visual, color_index, colordata):
 	cvpj_visual.name = zb_visual.name
@@ -585,7 +584,7 @@ class input_zenbeats(plugins.base):
 		# ---------- tracks ----------
 		for zb_track in project_obj.tracks:
 			master_id = zb_track.sub_track_master_track_uid
-			if master_id in track_groups or master_id==None:
+			if master_id in track_groups or master_id is None:
 				if zb_track.type in [0, 1, 97]:
 					track_obj = cvpj_tracks.add(zb_track.uid, 'instrument', 1, False)
 					track_placements = track_obj.placements

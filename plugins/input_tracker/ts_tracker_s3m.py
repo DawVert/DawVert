@@ -1,9 +1,7 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import io
 import plugins
-import os.path
 from functions import data_bytes
 
 TEXTSTART = 's3m_inst_'
@@ -72,7 +70,7 @@ class input_s3m(plugins.base):
 		
 		# ---------- instruments ----------
 		for s3m_numinst, s3m_inst in enumerate(project_obj.instruments):
-			cvpj_instid = TEXTSTART + str(s3m_numinst+1)
+			#cvpj_instid = TEXTSTART + str(s3m_numinst+1)
 
 			if s3m_inst.filename != '': cvpj_inst_name = s3m_inst.filename
 			elif s3m_inst.name != '': cvpj_inst_name = s3m_inst.name
@@ -113,25 +111,25 @@ class input_s3m(plugins.base):
 
 					if c_note == 255: c_note = None
 
-					if c_vol != None: out_vol = c_vol/64
-					elif c_inst != None and c_inst-1 < len(project_obj.instruments): 
+					if c_vol is not None: out_vol = c_vol / 64
+					elif c_inst is not None and c_inst-1 < len(project_obj.instruments):
 						out_vol = project_obj.instruments[c_inst-1].volume/64
 
-					if out_vol != None: pattern_obj.cell_param(c_channel, rownum, 'vol', out_vol)
+					if out_vol is not None: pattern_obj.cell_param(c_channel, rownum, 'vol', out_vol)
 
-					if c_note != None:
-						if c_inst != None:
+					if c_note is not None:
+						if c_inst is not None:
 							note_oct, note_tone = data_bytes.splitbyte(c_note)
 							out_note = (note_oct-4)*12 + note_tone if c_note != 254 else 'cut'
 						else:
 							out_note = None
 						pattern_obj.cell_note(c_channel, rownum, out_note, None if c_inst == 0 else c_inst)
 
-					if c_command != None or c_info != None:
+					if c_command is not None or c_info is not None:
 						pattern_obj.cell_fx_s3m(c_channel, rownum, c_command, c_info)
 
 						if c_command == 20: 
-							tempoval = c_info
+							#tempoval = c_info
 							if c_info == 0: current_tempo += tempo_slide
 							if 0 < c_info < 32:
 								tempo_slide = c_info-16

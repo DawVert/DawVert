@@ -1,15 +1,13 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
-import os
 import math
-import zipfile
+import os
 
+import plugins
 from objects import globalstore
-
-from objects.convproj import fileref
 from objects.file import audio_wav
+
 
 def do_aud_mpe(placement_obj, mpename, env_data, v_mul, v_sub):
 	if env_data:
@@ -46,9 +44,6 @@ class input_fl_mobile(plugins.base):
 		project_obj = conversion_state.project
 		global samplefolder
 
-		from objects.file import adlib_bnk
-		from objects.convproj import fileref
-
 		samplefolder = dawvert_intent.path_samples['extracted']
 
 		winprog32 = 'C:\\Program Files (x86)\\Image-Line'
@@ -84,7 +79,7 @@ class input_fl_mobile(plugins.base):
 		traits_obj.audio_stretch = ['rate']
 
 		# ---------- transport ----------
-		tempomul = 120/project_obj.tempo
+		# tempomul = 120/project_obj.tempo
 		convproj_obj.params.add('bpm', project_obj.tempo, 'float')
 
 		if project_obj.space_start or project_obj.space_end:
@@ -103,8 +98,6 @@ class input_fl_mobile(plugins.base):
 		for n, d in enumerate(tracks):
 			flm_rack, flm_channel = d
 
-			startloc = []
-
 			if flm_channel.unk1 == 0: 
 				tracktype = 'master'
 			elif flm_channel.unk1 == 128: 
@@ -118,6 +111,8 @@ class input_fl_mobile(plugins.base):
 			devices_order = {}
 			for x in flm_rack.devices:
 				devices_order[x.order] = x
+
+			track_obj = None
 
 			if tracktype == 'master':
 				trackid = 'master'
@@ -157,7 +152,7 @@ class input_fl_mobile(plugins.base):
 				for send in flm_channel.sends:
 					targ = send.target-1
 					if targ != -1:
-						send_obj = sends_obj.add('flm_track_'+str(targ), str(n)+'_'+str(send.target), send.param2)
+						sends_obj.add('flm_track_'+str(targ), str(n)+'_'+str(send.target), send.param2)
 					else:
 						sends_obj.to_master_active = True
 						sends_obj.to_master.params.add('amount', send.param2, 'float')
@@ -167,9 +162,9 @@ class input_fl_mobile(plugins.base):
 				if flm_rack.target != -1:
 					send_target = 'flm_track_'+str(flm_rack.target)
 					sends_obj.to_master_active = False
-					send_obj = sends_obj.add(send_target, None, 1)
+					sends_obj.add(send_target, None, 1)
 
-			if trackid:
+			if trackid and track_obj is not None:
 				for lanenum, lanedata in enumerate(flm_channel.tracks):
 
 					if lanedata.auto_on == 0:
@@ -327,7 +322,7 @@ def extract_audio(audioname, zip_data):
 	for s_file in zip_data.namelist():
 		if audioname in s_file:
 			audio_filename = samplefolder+s_file
-			if os.path.exists(samplefolder+s_file) == False:
+			if not os.path.exists(samplefolder + s_file):
 				zip_data.extract(s_file, path=samplefolder, pwd=None)
 				break
 	return audio_filename
@@ -337,7 +332,7 @@ def do_sample(convproj_obj, sample_prefix, sample_path, zipfile, projfile):
 	cvpj_samplerefs = convproj_obj.samplerefs
 
 	if sample_prefix == 'zip' and zipfile:
-		if t_sample_path in zipfile.namelist(): o_sample_path = extract_audio(t_sample_path, zipfile)
+		# if t_sample_path in zipfile.namelist(): o_sample_path = extract_audio(t_sample_path, zipfile)
 		sampleref_obj = cvpj_samplerefs.add(sample_path, t_sample_path)
 		sampleref_obj.apply_prefix('extracted')
 		return sampleref_obj
@@ -373,7 +368,7 @@ def do_device(convproj_obj, device_obj, projfilepath, zipfile, pluginid, numberi
 
 			for keynum, flm_sample in enumerate(device_obj.drumsamples):
 				sample_prefix, sample_path = get_path(flm_sample.sample_path)
-				sampleref_obj = do_sample(convproj_obj, sample_prefix, sample_path, zipfile, projfilepath)
+				do_sample(convproj_obj, sample_prefix, sample_path, zipfile, projfilepath)
 
 				drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
 				drumpad_obj.key = keynum
@@ -409,11 +404,11 @@ def do_device(convproj_obj, device_obj, projfilepath, zipfile, pluginid, numberi
 							wav_obj = audio_wav.wav_main()
 							wav_obj.readinfo(filepath)
 							wav_inst = wav_obj.inst
-							sp_obj.vel_min = wav_inst.vel_low/127
-							sp_obj.vel_max = wav_inst.vel_high/127
 							sp_obj = plugin_obj.sampleregion_add(wav_inst.note_low-60, wav_inst.note_high-60, (wav_inst.rootnote-60)-middlenote, None)
 							sp_obj.sampleref = sample_path
 							sp_obj.from_sampleref_obj(sampleref_obj)
+							sp_obj.vel_min = wav_inst.vel_low/127
+							sp_obj.vel_max = wav_inst.vel_high/127
 						except:
 							pass
 
@@ -437,7 +432,6 @@ def do_device(convproj_obj, device_obj, projfilepath, zipfile, pluginid, numberi
 
 def get_path(sample_path):
 	prefix = ''
-	out = sample_path
 	if sample_path[0:4] == b'@L@\x00':
 		out = sample_path[4:].split(b'\0')[0].decode()
 		prefix = 'zip'

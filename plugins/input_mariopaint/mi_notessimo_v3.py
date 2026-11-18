@@ -1,14 +1,16 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from functions import note_data
-from functions import xtramath
-from objects import globalstore
-import plugins
+import logging
 import os
+
 import numpy as np
 
-import logging
+import plugins
+from functions import xtramath
+from objects import globalstore
+from functions import note_data
+
 logger_input = logging.getLogger('input')
 
 notess_noteoffset = {}
@@ -57,7 +59,7 @@ def do_layers(project_obj, layer_data):
 		realdur = sheetrealsize[layerspot.id]/2
 		realdur = (realdur/2).__ceil__()*2
 
-		calcd = calcdur*(sheet_tempo/120)
+		# calcd = calcdur*(sheet_tempo/120)
 
 		outdata.append([curpos, realdur, layerspot.id, sheet_tempo, sheetdata.valueSignature, sheetdata.nSignature])
 		prevend = pl_end
@@ -65,12 +67,11 @@ def do_layers(project_obj, layer_data):
 
 	return outdata
 
-class sample_manager():
+class sample_manager:
 	extracted_samples = []
 
 	def add_sample(project_obj, convproj_obj, sample_id):
 		cvpj_samplerefs = convproj_obj.samplerefs
-		samplekey = 0
 		sampleref_obj = None
 		if sample_id in project_obj.samples:
 			notet_sample = project_obj.samples[sample_id]
@@ -91,8 +92,6 @@ class sample_manager():
 			return sample_id, notet_sample, samplekey, sampleref_obj
 		return None, None, 0, None
 
-from functions import note_data
-
 def do_key(pitch, octave, accidental):
 	accidentald = ''
 	if accidental == '(#) Sharp': accidentald = '#'
@@ -105,7 +104,7 @@ def convert_samplepart(sp_obj, notet_sample):
 	sp_obj.loop_end = notet_sample.end
 	sp_obj.start = notet_sample.sample_start
 
-class inst_manager():
+class inst_manager:
 	fxnum = 2
 
 	def proc_inst(convproj_obj, plugin_obj, instid, inst_set, data_obj, notet_inst):

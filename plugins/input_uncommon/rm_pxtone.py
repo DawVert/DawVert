@@ -10,7 +10,7 @@ from objects import globalstore
 
 def get_float(in_int): return struct.unpack("<f", struct.pack("I", in_int))[0]
 
-class pxtone_cmdstream():
+class pxtone_cmdstream:
 	def __init__(self, cvpj_notelist, convproj_obj, cvpj_trackid):
 		self.notestart = 0
 		self.noteend = 0

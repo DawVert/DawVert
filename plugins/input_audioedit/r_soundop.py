@@ -2,10 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import plugins
-import struct
+from external.easybinrw import easybinrw
 from functions import xtramath
 from objects import globalstore
-from external.easybinrw import easybinrw
 
 def do_auto(addauto_obj):
 	cvpj_automation = addauto_obj.cvpj_automation
@@ -29,7 +28,7 @@ def do_fx(convproj_obj, fxdata):
 
 	StateParams = fxdata.StateParams
 	StateChunk = fxdata.StateChunk
-	Envelops = fxdata.Envelops
+	# Envelops = fxdata.Envelops
 	TypeID = fxdata.TypeID
 
 	fxtype = None
@@ -81,7 +80,7 @@ def do_fx(convproj_obj, fxdata):
 				extmanu_obj.vst2__params_output()
 			return cvpj_plugins.get_lastid()
 
-class addauto_data():
+class addauto_data:
 	def __init__(self):
 		self.cvpj_automation = None
 		self.hz = None
@@ -122,9 +121,6 @@ class input_soundop(plugins.base):
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		project_obj = conversion_state.project
 
-		from objects import colors
-		from objects.convproj import fileref
-
 		globalstore.datapack.load('soundop', './data/datapack/app/soundop.xml')
 
 		projformat = project_obj.Format
@@ -161,6 +157,7 @@ class input_soundop(plugins.base):
 		for track in project_obj.Tracks:
 			cvpj_trackid = str(track.ID)
 
+			autoloc_s = None
 			track_obj = None
 			if track.Type == 0:
 				autoloc_s = ['track', cvpj_trackid]
@@ -218,10 +215,10 @@ class input_soundop(plugins.base):
 				
 				# effects
 				for x in track.EffectData.Effects:
-					StateParams = x.StateParams
-					StateChunk = x.StateChunk
-					Envelops = x.Envelops
-					TypeID = x.TypeID
+					# StateParams = x.StateParams
+					# StateChunk = x.StateChunk
+					# Envelops = x.Envelops
+					# TypeID = x.TypeID
 					pluginid = do_fx(convproj_obj, x)
 					if pluginid: track_obj.plugslots.slots_audio.append(pluginid)
 
@@ -252,7 +249,6 @@ class input_soundop(plugins.base):
 					# fx
 					sp_obj.vol = clip.Gain/0.6527777777777778
 					placement_obj.muted = clip.Mute
-					if 'Pitch' in StretchData: sp_obj.pitch = StretchData['Pitch']
 
 					# fade
 					if 'Length' in clip.FadeIn: placement_obj.fade_in.set_dur(clip.FadeIn['Length']/hz, 'seconds')
@@ -264,9 +260,10 @@ class input_soundop(plugins.base):
 
 					# stretch
 					StretchData = clip.StretchData
+					if 'Pitch' in StretchData: sp_obj.pitch = StretchData['Pitch']
 
 					actuallen = dur_samples
-					stretchsize = 0
+					# stretchsize = 0
 					stretch_obj = sp_obj.stretch
 					stretch_obj.preserve_pitch = True
 					#if 'Stretch' in StretchData:

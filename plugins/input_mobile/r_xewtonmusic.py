@@ -1,11 +1,11 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
-from functions import xtramath
-from objects.convproj import fileref
-from objects import globalstore
 import os
+
+import plugins
+from objects import globalstore
+
 
 class input_xewton(plugins.base):
 	def is_dawvert_plugin(self):
@@ -98,9 +98,9 @@ class input_xewton(plugins.base):
 					plugin_obj = cvpj_plugins.add_uni('sampler', 'multi', instplug)
 					plugin_obj.role = 'synth'
 					instplugs[xe_tr.instnum] = [plugin_obj, [track_obj]]
+					track_obj.plugslots.set_synth(instplug)
 				else:
 					instplugs[xe_tr.instnum][1].append(track_obj)
-				track_obj.plugslots.set_synth(instplug)
 
 			# notelist
 			cvpj_notelist = track_obj.placements.notelist
@@ -145,7 +145,7 @@ class input_xewton(plugins.base):
 	
 							for n, s in enumerate(inst_obj.samples):
 								wavfilename = os.path.join(samplefolder, s.filename)
-								org_filename =  s.filename
+								# org_filename =  s.filename
 	 
 								sampleref_obj = cvpj_samplerefs.add(s.filename, wavfilename)
 								audio_obj = audio_data.audio_obj()

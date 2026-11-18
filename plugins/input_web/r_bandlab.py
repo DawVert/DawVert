@@ -1,18 +1,15 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from functions import note_data
-from functions import value_midi
-from objects import globalstore
-from objects import colors
-import xml.etree.ElementTree as ET
-import plugins
-import json
-import os
 import glob
+import os
+
+import plugins
+from objects import colors
+from objects import globalstore
 
 def tempo_calc(mul, seconds):
-	return ((seconds)/mul)*8
+	return (seconds / mul)*8
 
 def get_audio_path(dawvert_intent, idnum):
 	return os.path.join(dawvert_intent.input_folder, 'Assets', 'Audio', idnum+'.*')
@@ -147,6 +144,7 @@ class input_bandlab(plugins.base):
 					sp_obj.pitch = blx_region.pitchShift
 					sp_obj.sampleref = blx_region.sampleId
 					sp_obj.vol = blx_region.gain
+					sp_obj.reverse = reverse
 
 					stretch_obj = sp_obj.stretch
 					stretch_obj.timing.set__real_rate(bpm, speed)
@@ -177,7 +175,7 @@ class input_bandlab(plugins.base):
 									maxKeyRange = layer['maxKeyRange'] if 'maxKeyRange' in layer else 60
 									if (minKeyRange-maxKeyRange): use_drum = False
 
-								sampleids = samplerkit['sampleIds'] if 'sampleIds' in samplerkit else None
+								# sampleids = samplerkit['sampleIds'] if 'sampleIds' in samplerkit else None
 
 								if not use_drum:
 									plugin_obj = cvpj_plugins.add_uni('sampler', 'multi')
@@ -199,7 +197,7 @@ class input_bandlab(plugins.base):
 									plugin_obj.role = 'synth'
 
 									for laynum, layer in enumerate(layers_list):
-										minKeyRange = layer['minKeyRange'] if 'minKeyRange' in layer else pitch
+										minKeyRange = layer['minKeyRange'] if 'minKeyRange' in layer else 60
 
 										drumpad_obj, layer_obj = plugin_obj.drumpad_add_singlelayer()
 										drumpad_obj.vol = layer['volume'] if 'volume' in layer else 1
@@ -246,7 +244,7 @@ def add_sample(convproj_obj, dawvert_intent, blx_sample):
 def do_loop(time_obj, blx_region, tempomul, speed):
 	loopLength = tempo_calc(tempomul, blx_region.loopLength)
 	sampleOffset = tempo_calc(tempomul, blx_region.sampleOffset)
-	duration = tempo_calc(tempomul, blx_region.startPosition-blx_region.endPosition)
+	# duration = tempo_calc(tempomul, blx_region.startPosition-blx_region.endPosition)
 
 	if loopLength == 0:
 		time_obj.set_offset(sampleOffset)
@@ -305,13 +303,13 @@ def do_track_common(convproj_obj, track_obj, blx_track, tempomul):
 					do_automation(cvpj_automation, blx_effect.automation[n], autoloc, tempomul)
 
 		else:
-			for n, v in plugparams.items():
+			for paramid, v in plugparams.items():
 				if not isinstance(v, str) and isinstance(v, dict):
-					plugparams.add(n, v, 'float')
-					if n in blx_effect.automation:
-						autoloc = ('plugin', fxid, n)
-						do_automation(cvpj_automation, blx_effect.automation[n], autoloc, tempomul)
+					plugparams.add(paramid, v, 'float')
+					if paramid in blx_effect.automation:
+						autoloc = ('plugin', fxid, paramid)
+						do_automation(cvpj_automation, blx_effect.automation[paramid], autoloc, tempomul)
 				else:
-					plugin_obj.datavals.add(n, v)
+					plugin_obj.datavals.add(paramid, v)
 
 		track_obj.plugin_autoplace(plugin_obj, fxid)

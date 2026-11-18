@@ -55,10 +55,16 @@ def do_track_params(zm_track, track_obj, is_any_headphones, cvpj_automation, cvp
 	params_obj = track_obj.params
 	params_obj.add('vol', zm_track.volume/100, 'float')
 	params_obj.add('pan', (zm_track.pan-50)/50, 'float')
-	params_obj.add('enabled', True if not is_any_headphones else (zm_track.headphones), 'bool')
+	params_obj.add('enabled', True if not is_any_headphones else zm_track.headphones, 'bool')
 
 	do_automation(cvpj_automation, cvpj_trackid, 'vol', zm_track.volumetimeline, zm_track.usevolumetimeline)
 	do_automation(cvpj_automation, cvpj_trackid, 'pan', zm_track.pantimeline, zm_track.usepantimeline)
+
+def samp_split(in_dtype, lensample, channels):
+	outdata = np.zeros(lensample, dtype=in_dtype)
+	outdata[:lensample][0::2] = np.frombuffer(channels[0], dtype=in_dtype)
+	outdata[:lensample][1::2] = np.frombuffer(channels[1], dtype=in_dtype)
+	return outdata
 
 class input_zmaestro(plugins.base):
 	def is_dawvert_plugin(self):
@@ -275,14 +281,11 @@ class input_zmaestro(plugins.base):
 		
 							if len(channels)==2:
 								if bitss == 16:
-									outdata = np.zeros(lensample, dtype=np.uint16)
-									outdata[:lensample][0::2] = np.frombuffer(channels[0], dtype=np.uint16)
-									outdata[:lensample][1::2] = np.frombuffer(channels[1], dtype=np.uint16)
+									outdata = samp_split(np.uint16, lensample, channels)
+									audio_obj.pcm_from_bytes(outdata.tobytes())
 								elif bitss == 8:
-									outdata = np.zeros(lensample, dtype=np.uint8)
-									outdata[:lensample][0::2] = np.frombuffer(channels[0], dtype=np.uint8)
-									outdata[:lensample][1::2] = np.frombuffer(channels[1], dtype=np.uint8)
-								audio_obj.pcm_from_bytes(outdata.tobytes())
+									outdata = samp_split(np.uint8, lensample, channels)
+									audio_obj.pcm_from_bytes(outdata.tobytes())
 							if len(channels)==1:
 								audio_obj.pcm_from_bytes(channels[0])
 

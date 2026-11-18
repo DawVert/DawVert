@@ -1,10 +1,10 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
-from objects.convproj import fileref
-import os
 import logging
+
+import plugins
+
 logger_input = logging.getLogger('input')
 
 class input_bajloop(plugins.base):

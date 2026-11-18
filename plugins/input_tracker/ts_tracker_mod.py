@@ -1,15 +1,14 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
-import os
-import re
-import numpy as np
 import math
+import re
+
+import numpy as np
+
+import plugins
 
 FINETUNE = [8363, 8413, 8463, 8529, 8581, 8651, 8723, 8757, 7895, 7941, 7985, 8046, 8107, 8169, 8232, 8280]
-
-IGNORE_ERRORS = False
 
 class input_mod(plugins.base):
 	def is_dawvert_plugin(self):
@@ -39,7 +38,7 @@ class input_mod(plugins.base):
 			project_obj.load_from_file(dawvert_intent.input_file, ignore_errors)
 			conversion_state.project = project_obj
 			return True
-		if dawvert_intent.input_mode == 'bytes':
+		elif dawvert_intent.input_mode == 'bytes':
 			project_obj.load_from_raw(dawvert_intent.input_data, ignore_errors)
 			conversion_state.project = project_obj
 			return True
@@ -61,6 +60,8 @@ class input_mod(plugins.base):
 		traits_obj.audio_filetypes = ['wav']
 		traits_obj.auto_types = ['pl_points', 'pl_ticks']
 
+		ignore_errors = dawvert_intent.input_get_param('ignore_errors', False)
+
 		# ---------- metadata ----------
 		convproj_obj.metadata.name = project_obj.title
 
@@ -80,7 +81,7 @@ class input_mod(plugins.base):
 			pluginid = 'sampler_'+strnum
 
 			inst_obj = tracker_obj.add_inst(convproj_obj, num, None)
-			inst_obj.visual.name = sample_obj.name if not IGNORE_ERRORS else re.sub(r'[\x00-\x1f\x7f-\x9f]', '', sample_obj.name)
+			inst_obj.visual.name = sample_obj.name if not ignore_errors else re.sub(r'[\x00-\x1f\x7f-\x9f]', '', sample_obj.name)
 			inst_obj.params.add('vol', 0.3, 'float')
 			
 			if sample_obj.length != 0 and sample_obj.length != 1:
@@ -92,7 +93,7 @@ class input_mod(plugins.base):
 				audio_obj = audio_data.audio_obj()
 				audio_obj.set_codec('int8')
 				audio_obj.pcm_from_bytes(sample_obj.data)
-				if not IGNORE_ERRORS: audiorate = FINETUNE[sample_obj.finetune%len(FINETUNE)]
+				if not ignore_errors: audiorate = FINETUNE[sample_obj.finetune%len(FINETUNE)]
 				else: audiorate = FINETUNE[sample_obj.finetune%len(FINETUNE)]
 				audio_obj.rate = audiorate
 
@@ -101,7 +102,7 @@ class input_mod(plugins.base):
 				audio_obj.pcm_change_bits(16)
 				audio_obj.to_file_wav(wave_path)
 
-				plugin_obj, sampleref_obj, sp_obj = cvpj_plugins.addspec_sampler(wave_path, None)
+				plugin_obj, sampleref_obj, sp_obj = cvpj_plugins.addspec_sampler(wave_path, None, pluginid)
 				inst_obj.plugslots.synth = cvpj_plugins.get_lastid()
 				sampleref_obj.set_fileformat('wav')
 				audio_obj.to_sampleref_obj(sampleref_obj)
@@ -133,7 +134,7 @@ class input_mod(plugins.base):
 
 						if cell_fx_type == 12: pattern_obj.cell_param(num_ch, num_row, 'vol', cell_fx_param/64)
 						else: 
-							if output_inst != None:
+							if output_inst is not None:
 								if output_inst < len(project_obj.samples):
 									instvol = project_obj.samples[output_inst-1].default_vol
 									pattern_obj.cell_param(num_ch, num_row, 'vol', instvol/64)

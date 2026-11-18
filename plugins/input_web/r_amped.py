@@ -108,12 +108,15 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 		pluginid = str(devid)
 		devicetype = [amped_tr_device.className, amped_tr_device.label]
 
+		plugin_obj = None
+
 		if amped_tr_device.className == 'WAM':
 
 			if amped_tr_device.label == 'OBXD': 
 				instnames.append('OBXD')
 				plugin_obj = cvpj_plugins.add('synth', 'discodsp', 'obxd', pluginid)
 				plugin_obj.role = 'synth'
+				track_obj.plugslots.set_synth(pluginid)
 				wampreset = get_wampreset(amped_tr_device)
 				if 'data' in wampreset:
 					for n, v in enumerate(wampreset['data']): plugin_obj.params.add('obxd_'+str(n), v, 'float')
@@ -122,6 +125,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 				instnames.append('Augur')
 				plugin_obj = cvpj_plugins.add('synth', 'smartelectronix', 'augur', pluginid)
 				plugin_obj.role = 'synth'
+				track_obj.plugslots.set_synth(pluginid)
 				wampreset = get_wampreset(amped_tr_device)
 				params_obj = plugin_obj.params
 				if 'data' in wampreset:
@@ -135,13 +139,15 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 				instnames.append('Dexed')
 				plugin_obj = cvpj_plugins.add_native('amped', amped_tr_device.label, pluginid)
 				plugin_obj.role = 'synth'
+				track_obj.plugslots.set_synth(pluginid)
 				plugin_obj.datavals.add('data', amped_tr_device.data['wamPreset'])
-				wampreset = get_wampreset(amped_tr_device)
+				#wampreset = get_wampreset(amped_tr_device)
 
 			elif amped_tr_device.label == 'Europa': 
 				instnames.append('Europa')
 				plugin_obj = cvpj_plugins.add('user', 'reasonstudios', 'europa', pluginid)
 				plugin_obj.role = 'synth'
+				track_obj.plugslots.set_synth(pluginid)
 
 				wampreset = get_wampreset(amped_tr_device)
 				europa_xml = ET.fromstring(wampreset['settings'])
@@ -151,7 +157,7 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 
 				for xmlsub in europa_xml_prop:
 					if xmlsub.tag == 'Object':
-						object_name = xmlsub.get('name')
+						#object_name = xmlsub.get('name')
 						for objsub in xmlsub:
 							if objsub.tag == 'Value':
 								value_name = objsub.get('property')
@@ -177,10 +183,6 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 				plugin_obj.datavals.add('data', amped_tr_device.data['wamPreset'])
 				plugin_obj.role = 'fx'
 				track_obj.plugslots.slots_audio.append(pluginid)
-
-			if amped_tr_device.label in ['OBXD', 'Augur', 'Dexed', 'Europa']:
-				track_obj.plugslots.set_synth(pluginid)
-				plugin_obj.role = 'synth'
 
 		elif devicetype == ['Drumpler', 'Drumpler']:
 			instnames.append('Drumpler')
@@ -300,9 +302,9 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			plugin_obj.role = 'synth'
 			plugin_obj.datavals.add('point_value_type', "percent")
 
-			samplerdata_voiceLimit = samplerdata['voiceLimit']
-			samplerdata_filter = samplerdata['filter']
-			samplerdata_eg = samplerdata['eg']
+			#samplerdata_voiceLimit = samplerdata['voiceLimit']
+			#samplerdata_filter = samplerdata['filter']
+			#samplerdata_eg = samplerdata['eg']
 			samplerdata_zone = samplerdata['zone']
 			#samplerdata_zonefile = amped_tr_device.zonefile
 			
@@ -331,7 +333,8 @@ def encode_devices(convproj_obj, amped_tr_devices, track_obj, amped_autodata):
 			do_idparams(amped_tr_device.params, plugin_obj, amped_tr_device.className)
 			do_idauto(cvpj_automation, amped_autodata, devid, amped_tr_device.params, pluginid)
 
-		plugin_obj.fxdata_add(not amped_tr_device.bypass, None)
+		if plugin_obj is not None:
+			plugin_obj.fxdata_add(not amped_tr_device.bypass, None)
 
 #		#if devicetype != ['VSTConnection', 'VST/Remote Beta']:
 #		#	device_plugindata.fxvisual_add(amped_tr_device.label, None)
@@ -387,7 +390,7 @@ class input_amped(plugins.base):
 		# ---------- file load: project ----------
 		try:
 			jsonproject = zip_data.read('amped-studio-project.json')
-		except KeyError as t:
+		except KeyError:
 			raise ProjectFileParserException('amped: amped-studio-project.json not found')
 		amped_project = json.loads(jsonproject)
 		amped_obj = proj_amped.amped_project(amped_project)
@@ -398,7 +401,7 @@ class input_amped(plugins.base):
 			jsonfilenames = zip_data.read('filenames.json')
 			amped_filenames = json.loads(jsonfilenames)
 			conversion_state.others['filenames'] = amped_filenames
-		except KeyError as t:
+		except KeyError:
 			raise ProjectFileParserException('amped: filenames.json not found')
 
 		return True
@@ -414,10 +417,10 @@ class input_amped(plugins.base):
 		for amped_filename, realfilename in amped_filenames.items():
 			old_file = os.path.join(samplefolder,amped_filename)
 			new_file = os.path.join(samplefolder,realfilename)
-			if os.path.exists(new_file) == False:
+			if not os.path.exists(new_file):
 				zip_data.extract(amped_filename, path=samplefolder, pwd=None)
 				os.rename(old_file,new_file)
-			sampleref_obj = cvpj_samplerefs.add(str(amped_filename), new_file)
+			cvpj_samplerefs.add(str(amped_filename), new_file)
 
 		# -------------------------------------------
 		globalstore.datapack.load('amped', './data/datapack/app/amped.xml')
@@ -480,8 +483,7 @@ class input_amped(plugins.base):
 
 			# armed
 			amped_armed = amped_track.armed if amped_track.armed else None
-			if amped_track.armed:
-				amped_armed = amped_track.armed
+			if amped_armed:
 				track_obj.armed.in_audio = amped_armed['mic'] if 'mic' in amped_armed else False
 				track_obj.armed.in_keys = amped_armed['keys'] if 'keys' in amped_armed else False
 				track_obj.armed.on = track_obj.armed.in_audio or track_obj.armed.in_keys
@@ -537,7 +539,7 @@ class input_amped(plugins.base):
 							if 'mute' in amped_note:
 								if amped_note['mute']: cvpj_notelist.last_flag('disabled')
 
-				if amped_region.clips != []: 
+				if amped_region.clips:
 					placement_obj = track_placements.add_nested_audio()
 					# time
 					time_obj = placement_obj.time

@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import logging
+
 import plugins
-import os
 from objects import colors
 from objects import globalstore
 
-import logging
 logger_input = logging.getLogger('input')
 
 #try: 
@@ -109,6 +109,9 @@ class input_1bitdragon(plugins.base):
 		elif onebitd_scaletype == 4: note_scale, note_ts = [[0 ,2 ,3 ,5 ,7 ,9 ,10,12,14,15,17,19,21,22,24,26] ,-24]
 		elif onebitd_scaletype == 5: note_scale, note_ts = [[0 ,1 ,4 ,5 ,6 ,9 ,10,12,13,16,17,18,21,22,24,25] ,-24]
 		elif onebitd_scaletype == 6: note_scale, note_ts = [range(16),-12]
+		else: 
+			logger_input.warning('1bitdragon: unknown scale type %i' % onebitd_scaletype)
+			note_scale, note_ts = [range(16),0]
 
 		scale_keys = [x for x in note_scale if x<12]
 
@@ -127,7 +130,7 @@ class input_1bitdragon(plugins.base):
 		note_scale = [x+note_ts+onebitd_scalekey for x in note_scale]
 
 		# ---------- blocks ----------
-		instnames = []
+		# instnames = []
 		used_inst = {}
 		used_drums = {}
 		curpos = 0

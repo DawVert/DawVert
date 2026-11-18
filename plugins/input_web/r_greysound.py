@@ -7,6 +7,7 @@ import zipfile
 import os
 from functions import xtramath
 from objects import globalstore
+from objects.exceptions import ProjectFileParserException
 
 def do_track_visual(gs_track, cvpj_track):
 	visual_obj = cvpj_track.visual
@@ -29,15 +30,15 @@ def do_track_params(gs_track, cvpj_track):
 			params_obj.add('splitpan_left', channelPans[0], 'float')
 			params_obj.add('splitpan_right', channelPans[1], 'float')
 
-def extract_audio(clip, sampleref_obj, dawvert_intent, zipfile):
-	filename = str(sampleref_obj.fileref.file)
-	try: zipfile.extract(clip.storagePath, path=dawvert_intent.path_samples['extracted'], pwd=None)
+def extract_audio(clip, sampleref_obj, dawvert_intent, in_zipfile):
+	# filename = str(sampleref_obj.fileref.file)
+	try: in_zipfile.extract(clip.storagePath, path=dawvert_intent.path_samples['extracted'], pwd=None)
 	except PermissionError: pass
 	filepath = os.path.join(dawvert_intent.path_samples['extracted'], clip.storagePath)
 	sampleref_obj.set_path(None, filepath)
 
-def clipGain(clipGain):
-	return xtramath.from_db(clipGain) if clipGain is not None else 0
+def clipGain(x):
+	return xtramath.from_db(x) if x is not None else 0
 
 class input_greysound(plugins.base):
 	def is_dawvert_plugin(self):
@@ -59,13 +60,13 @@ class input_greysound(plugins.base):
 		from objects.file_proj import greysound as proj_greysound
 
 		session_obj = proj_greysound.greysound_session()
-		session_loaded = False
+		# session_loaded = False
 		zip_data = None
 
 		if dawvert_intent.input_mode == 'file':
 			try:
 				zip_data = zipfile.ZipFile(dawvert_intent.input_file, 'r')
-				samplefolder = dawvert_intent.path_samples['extracted']
+				# samplefolder = dawvert_intent.path_samples['extracted']
 				if 'session.json' not in zip_data.namelist(): 
 					raise ProjectFileParserException('greysound: JSON file not found')
 				else:
@@ -142,6 +143,9 @@ class input_greysound(plugins.base):
 		for gs_track in session_obj.tracks:
 			cvpj_trackid = str(gs_track.id)
 			s_autoloc = ['track', cvpj_trackid]
+
+			track_obj = None
+
 			if gs_track.type == 'MASTER':
 				s_autoloc = ['master']
 				track_obj = cvpj_master
@@ -197,7 +201,8 @@ class input_greysound(plugins.base):
 								if 'ticks' in point.position: 
 									autopoints.points__add_point_notype(point.position['ticks']*16, point.value)
 
-			gs_trackids[gs_track.id] = track_obj
+			if track_obj is not None:
+				gs_trackids[gs_track.id] = track_obj
 
 		cvpj_tracks.order = [str(trackorder[x]) for x in sorted(trackorder)]
 
@@ -211,7 +216,7 @@ class input_greysound(plugins.base):
 		track_placements = track_obj.placements
 		
 		for region in session_obj.regions:
-			track_obj = gs_trackids[region.trackId]
+			# track_obj = gs_trackids[region.trackId]
 
 			if region.clipId:
 				placement_obj = track_placements.add_audio()
@@ -244,8 +249,8 @@ class input_greysound(plugins.base):
 				time_obj.duration.set((reg_end['millis']-reg_start['millis'])/1000, 'seconds')
 
 			reg_offs = region.clipStartOffset
-			reg_loopEnabled = region.loopEnabled
-			reg_loopLength = region.loopLength
+			# reg_loopEnabled = region.loopEnabled
+			# reg_loopLength = region.loopLength
 			if 'ticks' in reg_offs: time_obj.set_offset(reg_offs['ticks'])
 			elif 'millis' in reg_offs: time_obj.set_offset_real(reg_offs['millis']/1000)
 
@@ -269,11 +274,11 @@ class input_greysound(plugins.base):
 			fxslots[insert.trackId][insert.slotIndex] = insert
 
 		for trackid, slots in fxslots.items():
-			track_obj = gs_trackids[trackid]
+			# track_obj = gs_trackids[trackid]
 			for slotnum in sorted(slots):
 				fxdata = slots[slotnum]
 				fxid = 'fx_%i_%s' % (trackid, slotnum)
-				pluginname = fxdata.pluginType.lower()
+				# pluginname = fxdata.pluginType.lower()
 				plugin_obj = cvpj_plugins.add_native('greysound', fxdata.pluginType.lower(), fxid)
 				plugin_obj.fxdata_add(not fxdata.bypassed, 1)
 				plugin_obj.role = 'fx'

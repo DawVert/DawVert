@@ -23,7 +23,7 @@ def parsenotes(txt):
 			notestr = [0, '']
 	return notetable
 
-class mss_chord():
+class mss_chord:
 	def __init__(self):
 		self.volume = 8
 		self.notes = {}
@@ -58,8 +58,6 @@ class input_mariopaint_mss(plugins.base):
 			raise ProjectFileParserException('mariopaint_mss: XML parsing error: '+str(t))
 
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
-		root = conversion_state.project
-
 		from objects.songinput import mariopaint
 
 		# ---------- song ----------
@@ -84,7 +82,7 @@ class input_mariopaint_mss(plugins.base):
 						mp_chord.speedmark = int(rnote.get('tempo'))
 					else:
 						instname = rnote.tag if rnote.tag[0] != 'x' else rnote.tag[1:]
-						muted = rnote.tag[0] == 'x'
+						# muted = rnote.tag[0] == 'x'
 
 						for keynum, toff in parsenotes(rnote.text):
 							mp_note = mp_chord.add_note()

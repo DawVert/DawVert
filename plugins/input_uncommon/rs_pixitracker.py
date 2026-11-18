@@ -1,10 +1,11 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
-import os
 import numpy as np
+
+import plugins
 from objects import globalstore
+
 
 class input_pixitracker(plugins.base):
 	def is_dawvert_plugin(self):
@@ -110,10 +111,10 @@ class input_pixitracker(plugins.base):
 				pat_data = np.rot90(pat_data_r.data)
 				numtracks = len(pat_data)
 
-				instnotes = [[] for x in range(16)]
+				instnotes = [[] for _ in range(16)]
 
-				for num in range(numtracks):
-					c_track = (numtracks-1)-num
+				for tracknum in range(numtracks):
+					c_track = (numtracks-1)-tracknum
 					s_data = pat_data[[c_track]][0]
 
 					vol_where = np.where(s_data[:, 0]!=0)[0]

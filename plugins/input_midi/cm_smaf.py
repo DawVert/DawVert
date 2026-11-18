@@ -1,10 +1,11 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
 import math
-import os
+
 import numpy as np
+
+import plugins
 
 vals_timebase = {
 	2: 0.004,
@@ -63,7 +64,7 @@ class input_mmf(plugins.base):
 		convproj_obj.params.add('bpm', 120, 'float')
 
 		# ---------- tracks ----------
-		firstma2 = False
+		# firstma2 = False
 		#if True in [isinstance(x, proj_mmf.smaf_track_ma2) for x in project_obj.tracks2]:
 
 			#for grpnum, track in enumerate(project_obj.tracks2):
@@ -149,7 +150,7 @@ class input_mmf(plugins.base):
 							placement_obj = track_obj.placements.add_audio()
 							placement_obj.sample.sampleref = sampleid
 							placement_obj.sample.vol = int(vol)/127
-							placement_obj.visual.name = 'Stream #%i' % (used_drumnum)
+							placement_obj.visual.name = 'Stream #%i' % used_drumnum
 							time_obj = placement_obj.time
 							time_obj.set_posdur(int(start), int(end))
 							sp_obj = placement_obj.sample

@@ -42,7 +42,8 @@ class input_petaporon(plugins.base):
 	def parse(self, conversion_state, dawvert_intent):
 		if dawvert_intent.input_mode == 'file':
 			bytestream = open(dawvert_intent.input_file, 'r')
-		
+		else: return False
+
 		try:
 			petapo_data = json.load(bytestream)
 		except UnicodeDecodeError:

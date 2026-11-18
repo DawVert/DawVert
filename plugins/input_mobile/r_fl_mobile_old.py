@@ -2,10 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import plugins
-from functions import xtramath
-from objects.convproj import fileref
-from objects import globalstore
-import os
 
 INST_ENABLED = 1
 
@@ -33,14 +29,13 @@ class input_fl_mobile_old(plugins.base):
 			project_obj.load_from_file(dawvert_intent.input_file)
 			conversion_state.project = project_obj
 			return True
-		if dawvert_intent.input_mode == 'bytes':
+		elif dawvert_intent.input_mode == 'bytes':
 			project_obj.load_from_raw(dawvert_intent.input_data)
 			conversion_state.project = project_obj
 			return True
 
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		project_obj = conversion_state.project
-		from objects import audio_data
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks

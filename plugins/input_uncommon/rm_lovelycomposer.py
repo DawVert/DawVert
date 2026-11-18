@@ -28,7 +28,7 @@ lc_instlist[  9] = ('Vocal Like'           ,'Triangle'  ,0  ,0  ,0  ,False ,True
 lc_instlist[ 10] = ('UFO'                  ,'Square'    ,0  ,0  ,0  ,False ,True )
 lc_instlist[ 18] = ('Brass Like'           ,'Saw'       ,0  ,0  ,0  ,False ,True )
 lc_instlist[ 22] = ('Ghost'                ,'Sine'      ,0  ,0  ,0  ,False ,True )
- 
+
 lc_instlist[ 14] = ('Glide Square'         ,'Square'    ,0  ,0  ,0  ,True  ,False)
 lc_instlist[ 13] = ('Glide Triangle'       ,'Triangle'  ,0  ,0  ,0  ,True  ,False)
 lc_instlist[ 12] = ('Glide Pulse'          ,'Pulse25'   ,0  ,0  ,0  ,True  ,False)
@@ -46,7 +46,7 @@ lc_instlist[ 31] = ('Twin Stomp'           ,'Stomp'     ,0  ,1  ,-1 ,False ,Fals
 lc_instlist[ 32] = ('Twin Drum'            ,'Drum'      ,0  ,2  ,0  ,False ,False)
 lc_instlist[ 33] = ('Punch'                ,'Punch'     ,0  ,1  ,1  ,False ,False)
 lc_instlist[ 34] = ('Orchestra Hit'        ,'OrchHit'   ,0  ,0  ,0  ,False ,False)
- 
+
 lc_instlist[ 35] = ('Short Freq Noise'     ,'FreqNoise' ,0  ,0  ,0  ,False ,False)
 lc_instlist[ 36] = ('Hammer'               ,'FreqNoise' ,0  ,1  ,0  ,False ,False)
 lc_instlist[ 37] = ('Robot'                ,'FreqNoise' ,1  ,0  ,0  ,False ,False)
@@ -64,9 +64,9 @@ lc_instlist[ 49] = ('Low-Reso Vocal'       ,'LowResoTri',0  ,0  ,0  ,False ,True
 lc_instlist[ 50] = ('Glide L-Triangle'     ,'LowResoTri',0  ,0  ,0  ,True  ,False)
 lc_instlist[ 51] = ('Low-Reso Flute'       ,'LowResoTri',1  ,0  ,0  ,True  ,False)
 lc_instlist[ 52] = ('Tilted Sawtooth'      ,'TiltedSaw' ,1  ,0  ,0  ,False ,False)
- 
+
 #                   Name,             Type,        FadeIn, FadeOut, PitchMod, Slide, Vib
- 
+
 lc_instlist[ 53] = ('Organ Like Wave'      ,'Organ'     ,0  ,0  ,0  ,False ,False)
 lc_instlist[ 54] = ('Phaser Triangle'      ,'PhaserTri' ,0  ,0  ,0  ,False ,False)
 lc_instlist[ 55] = ('Plucked String'       ,'TiltedSaw' ,0  ,1  ,0  ,False ,False)
@@ -82,7 +82,7 @@ lc_instlist[ 64] = ('Glide Organ'          ,'Organ'     ,0  ,0  ,0  ,True  ,Fals
 lc_instlist[ 65] = ('Glide Tilted Saw'     ,'TiltedSaw' ,0  ,0  ,0  ,True  ,False)
 lc_instlist[ 66] = ('Alien'                ,'LowResoTri',0  ,0  ,-.5,False ,False)
 lc_instlist[ 67] = ('Melodic Tom'          ,'Triangle'  ,0  ,0  ,-.5,False ,False)
- 
+
 lc_instlist[ 68] = ('FastArp Square'       ,'FA-Square' ,0  ,0  ,0  ,False ,False)
 lc_instlist[ 69] = ('FastArp Pulse25'      ,'FA-Pul25'  ,0  ,0  ,0  ,False ,False)
 lc_instlist[ 70] = ('FastArp Pulse125'     ,'FA-Pul125' ,0  ,0  ,0  ,False ,False)
@@ -108,7 +108,7 @@ def decode_pan(panbyte):
 	else: return 0
 
 def chord_parser(chordval):
-	chordid = ((chordval)>>16)&0b111111
+	chordid = (chordval >> 16) & 0b111111
 	extrachord = chordval>>22
 	chordbytes_seven = extrachord&0b11
 	chordbytes_nine = (extrachord>>2)&0b11
@@ -238,12 +238,12 @@ class input_lc(plugins.base):
 
 				used_inst = np.unique(vl[np.where(vl['id']!=-1)]['id'])
 
-				if project_obj.loop_end_bar != None:
+				if project_obj.loop_end_bar is not None:
 					if project_obj.loop_end_bar<patnum: active_chord = [None, 0]
 
 				if tracknum != 4:
 					t_notelist = []
-					prev_inst = None
+					#prev_inst = None
 					prev_key = None
 					for num, vlp in enumerate(vl):
 						instid = vlp['id']
@@ -258,7 +258,7 @@ class input_lc(plugins.base):
 								t_notelist[-1][4].append(vlp['x']/15)
 								t_notelist[-1][5].append(decode_pan(vlp['p']))
 						prev_key = instkey
-						if instid<128: prev_inst = instid
+						#if instid<128: prev_inst = instid
 
 					if t_notelist:
 						p_start, p_steps = tempoblocks.get_posdur(patnum)
@@ -310,7 +310,6 @@ class input_lc(plugins.base):
 									maxvol = max(nnn[4])
 									cvpj_notelist.add_m_multi('chord', nnn[0], nnn[1], chordkeys, maxvol, {})
 								else:
-									maxvol = max(nnn[4])
 									for n in range(nnn[1]):
 										vol = nnn[4][n]
 										cvpj_notelist.add_m_multi('chord', nnn[0]+n, 1, chordkeys, vol, {})

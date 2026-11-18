@@ -2,12 +2,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import plugins
-import numpy as np
+from external.easybinrw import easybinrw
 from functions import xtramath
 from objects import globalstore
-from objects import colors
-from external.easybinrw import easybinrw
-import os
+
 
 def conv_color(b_color):
 	color = b_color.to_bytes(4, "little")
@@ -210,7 +208,6 @@ class input_sequel3(plugins.base):
 		from objects.file_proj import cubasexml as proj_sequel
 		from objects.file_proj._cubasexml import class_audio
 		from objects.file_proj._cubasexml import class_midi
-		from objects import audio_data
 
 		samplefolder = dawvert_intent.path_samples['extracted']
 

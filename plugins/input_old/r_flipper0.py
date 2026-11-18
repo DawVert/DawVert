@@ -53,7 +53,7 @@ class input_petaporon(plugins.base):
 		# ---------- notes ----------
 		curpos = 0
 		for note in project_obj.notes:
-			notedur = (project_obj.duration)*(1/note.duration)
+			notedur = project_obj.duration * (1 / note.duration)
 			for x in range(note.dots): notedur *= 1.5
 			#print(notedur,note.key,note.sharp,note.octave,note.dots, (1.5**note.dots))
 			if note.key != 'P':

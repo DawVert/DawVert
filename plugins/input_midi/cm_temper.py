@@ -1,11 +1,8 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from functions import note_data
-from functions import value_midi
-import xml.etree.ElementTree as ET
 import plugins
-import json
+from functions import note_data
 
 def do_phrase_ui(visual_obj, pui):
 	if pui:
@@ -102,7 +99,6 @@ class input_temper(plugins.base):
 				curpos = 0
 				for phrase in tmp_track.phrases:
 					curpos += phrase.td
-					phraseauto = {}
 					placement_obj = track_placements.add_midi()
 					do_phrase_ui(placement_obj.visual, phrase.ui)
 					time_obj = placement_obj.time

@@ -10,8 +10,8 @@ def do_sample(convproj_obj, soundPack, filename, dawvert_intent):
 	cvpj_samplerefs = convproj_obj.samplerefs
 	samplefolder = dawvert_intent.path_samples['extracted']
 	sampleid = str(soundPack)+'__________'+str(filename)
-	fileref_obj = fileref.cvpj_fileref()
-	fileref_obj.set_path(None, filename, 1)
+	fileref_obj = fileref.cvpj_fileref(self)
+	fileref_obj.set_path(filename)
 	fileref_obj.apply_prefix('project')
 	if fileref_obj.exists(None):
 		audio_obj = audio_data.audio_obj()
@@ -168,7 +168,7 @@ class input_coolbeat(plugins.base):
 						placement_obj.auto_dur(1920, 1920)
 						loop_data = time_obj.get_dur()
 						time_obj.set_loop_data(0, 0, time_obj.get_dur())
-						time_obj.calc_dur_mul((section.length)/loop_data)
+						time_obj.calc_dur_mul(section.length / loop_data)
 
 			elif tracktype == 2:
 				track_obj = cvpj_tracks.add(trackid, 'audio', 1, False)

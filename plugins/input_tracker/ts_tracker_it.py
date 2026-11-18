@@ -1,14 +1,15 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from functions import data_values
-import io
-import os.path
-import plugins
-import tempfile
 import logging
+import os.path
+import tempfile
 
-def env_to_cvpj(it_env, plugin_obj, t_type, i_div): 
+import plugins
+from functions import data_values
+
+
+def env_to_cvpj(it_env, plugin_obj, t_type, i_div):
 	autopoints_obj = plugin_obj.env_points_add(t_type, 48, 'float')
 	autopoints_obj.sustain_on = bool(2 in it_env.flags)
 	autopoints_obj.sustain_point = it_env.susloop_start
@@ -47,11 +48,11 @@ def calc_filter_freq(i_cutoff):
 	return 131.0 * pow(2.0, (i_cutoff*512) * (5.29 / (127.0 * 512.0)))
 
 def add_filter(filter_obj, i_cutoff, i_reso):
-	if i_cutoff != None:
+	if i_cutoff is not None:
 		if i_cutoff != 127:
 			filter_obj.on = True
 			filter_obj.freq = calc_filter_freq(i_cutoff)
-			filter_obj.q = ((i_reso/127)*6 + 1) if i_reso != None else 1
+			filter_obj.q = ((i_reso/127)*6 + 1) if i_reso is not None else 1
 			filter_obj.type.set('low_pass', None)
 
 def idsamp_spobj(it_samp, sp_obj):
@@ -100,6 +101,9 @@ class input_it(plugins.base):
 		in_dict['plugin_included'] = ['universal:sampler:single', 'universal:sampler:multi']
 		in_dict['projtype'] = 'ts'
 
+	def get_configdef(self, configdef):
+		configdef.add_bool('use_xmodits', False, 'Use xmodits')
+
 	def parse(self, conversion_state, dawvert_intent):
 		from objects.file_proj_tracker import tracker_it as proj_it
 		project_obj = proj_it.it_song()
@@ -127,8 +131,10 @@ class input_it(plugins.base):
 		
 		it_useinst = 2 in project_obj.flags
 
-		if False:
-		#if xmodits_exists == True:
+		# ---------- convproj params ----------
+		use_xmodits = dawvert_intent.input_get_param('use_xmodits', False)
+
+		if xmodits_exists == True and use_xmodits:
 			if dawvert_intent.input_mode == 'file':
 				if dawvert_intent.input_file:
 					if not os.path.exists(samplefolder): os.makedirs(samplefolder)
@@ -192,20 +198,20 @@ class input_it(plugins.base):
 						out_vol = 64
 						out_pan = None
 
-						out_inst = cell_instrument if cell_instrument != None else None
+						out_inst = cell_instrument if cell_instrument is not None else None
 						
-						if cell_volpan != None:
+						if cell_volpan is not None:
 							if cell_volpan <= 64: out_vol = cell_volpan
 							elif 192 >= cell_volpan >= 128: out_pan = ((cell_volpan-128)/64-0.5)*2
 		
-						if cell_note != None: out_note = cell_note - 60
+						if cell_note is not None: out_note = cell_note - 60
 						if cell_note == 254: out_note = 'cut'
 						elif cell_note == 255: out_note = 'off'
 						elif cell_note == 246: out_note = 'fade'
 
 						pattern_obj.cell_note(cell_channel, rownum, out_note, out_inst)
 						pattern_obj.cell_param(cell_channel, rownum, 'vol', out_vol/64)
-						if out_pan != None: pattern_obj.cell_param(cell_channel, rownum, 'pan', out_pan)
+						if out_pan is not None: pattern_obj.cell_param(cell_channel, rownum, 'pan', out_pan)
 						pattern_obj.cell_fx_s3m(cell_channel, rownum, cell_commandtype, cell_commandval)
 						if cell_commandtype == 20: pattern_obj.cell_g_param(cell_channel, rownum, 'tempo', cell_commandval)
 						elif cell_commandtype == 26: pattern_obj.cell_param(cell_channel, rownum, 'pan', ((cell_commandval/255)-0.5)*2)
@@ -261,7 +267,7 @@ class input_it(plugins.base):
 				
 				visual_obj.name = cvpj_instname
 				if bn_s_t_ifsame:
-					if (not ''.join(list(map(lambda x: x.strip(), cvpj_instname.split())))):
+					if not ''.join(list(map(lambda k: k.strip(), cvpj_instname.split()))):
 						if bn_s_t_f[1] <= len(project_obj.samples):
 							ssamp = project_obj.samples[int(bn_s_t_f[1])-1]
 							visual_obj.name = ssamp.name
@@ -286,8 +292,9 @@ class input_it(plugins.base):
 					plugin_obj.params.add('amount', it_inst.randomvariation_pan, 'float')
 					inst_obj.plugslots.slots_notes.append(cvpj_plugins.get_lastid())
 
+				plugin_obj = None
 				inst_used = False
-				if bn_s_t_ifsame == True:
+				if bn_s_t_ifsame:
 					if int(bn_s_t_f[1])-1 < len(project_obj.samples):
 						it_samp = project_obj.samples[int(bn_s_t_f[1])-1]
 						global_vol = it_inst.global_vol/128
@@ -324,15 +331,15 @@ class input_it(plugins.base):
 							sampleref_obj.set_hz(it_samp.C5_speed)
 							sampleref_obj.set_fileformat('wav')
 
-				if inst_used:
+				if inst_used and plugin_obj is not None:
 					interpolation = data_values.list__optionalindex(it_inst.resampling, 'linear', ['none','linear','cubic_spline','sinc','sinc_lowpass'])
 					plugin_obj.datavals.add('interpolation', interpolation)
 
-				if it_inst.midi_chan != None: 
+				if it_inst.midi_chan is not None:
 					inst_obj.midi.out_enabled = 1
 					inst_obj.midi.out_chanport.chan = it_inst.midi_chan+1
-				if it_inst.midi_inst != None: inst_obj.midi.out_patch = it_inst.midi_inst+1
-				if it_inst.midi_bank != None: inst_obj.midi.out_bank = it_inst.midi_bank+1
+				if it_inst.midi_inst is not None: inst_obj.midi.out_patch = it_inst.midi_inst + 1
+				if it_inst.midi_bank is not None: inst_obj.midi.out_bank = it_inst.midi_bank + 1
 
 				if inst_used:
 					autopoints_obj, maxvol = env_to_cvpj(it_inst.env_vol, plugin_obj, 'vol', 48)

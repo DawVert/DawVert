@@ -2,17 +2,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import getpass
-username = getpass.getuser()
-
 import platform
+import copy
+import os
+username = getpass.getuser()
+deepcopy = copy.deepcopy
+
 platform_architecture = platform.architecture()
 if platform_architecture[1] == 'WindowsPE': native_os = 'win'
 else: native_os = 'unix'
 
-import copy
-deepcopy = copy.deepcopy
 
-import os
 
 def path_win_from_unix(pathparts):
 	win_drive = 'z'
@@ -87,32 +87,21 @@ class fileref_folder_completer:
 # ------------------------------------ pathprov ------------------------------------
 
 class pathprov_base:
-	def __init__(self):
-		self.reset()
+	def __init__(self): self.reset()
 
-	def __getitem__(self, num):
-		return self.loc.__getitem__(num)
+	def __getitem__(self, num): return self.loc.__getitem__(num)
 
-	def __len__(self):
-		return self.loc.__len__()
+	def __len__(self): return self.loc.__len__()
 
-	def __iter__(self):
-		return self.loc.__iter__()
+	def __iter__(self): return self.loc.__iter__()
 
-	def insert(self, a, b):
-		return self.loc.insert(a, b)
+	def insert(self, a, b): return self.loc.insert(a, b)
 
-	def append(self, a):
-		return self.loc.append(a)
+	def append(self, a): return self.loc.append(a)
 
-	def reset(self):
-		self.loc = []
+	def reset(self): self.loc = []
 
-	def exists(self, filename, os_type=None):
-		filepath = self.get(filename, os_type)
-		if os.path.exists(filepath): 
-			return os.path.isfile(filepath)
-		else: return False
+	def exists(self, filename, os_type=None): return False
 
 class pathprov_partial(pathprov_base):
 	provtype = 'part'
@@ -163,6 +152,12 @@ class pathprov_windows(pathprov_base):
 			outpath = ['']+path_unix_from_win(pathparts, self.win_drive)
 			return '/'.join(outpath+[filename])
 
+	def exists(self, filename, os_type=None):
+		filepath = self.get(filename, os_type)
+		if os.path.exists(filepath): 
+			return os.path.isfile(filepath)
+		else: return False
+
 class pathprov_unix(pathprov_base):
 	provtype = 'full'
 	provname = 'unix'
@@ -188,6 +183,12 @@ class pathprov_unix(pathprov_base):
 		else:
 			outpath = ['']+pathparts.copy()
 			return '/'.join(outpath+[filename])
+
+	def exists(self, filename, os_type=None):
+		filepath = self.get(filename, os_type)
+		if os.path.exists(filepath): 
+			return os.path.isfile(filepath)
+		else: return False
 
 # ------------------------------------ classes ------------------------------------
 

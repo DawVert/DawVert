@@ -68,7 +68,9 @@ def add_sample(convproj_obj, as_cell, as_channum, num, samplefolder, conversion_
 			zipfile.extract(samp_filename, path=samplefolder, pwd=None)
 			sampleref_obj = cvpj_samplerefs.add(samp_id, full_filename)
 			sampleref_obj.apply_prefix('extracted')
-		return samp_id
+			return samp_id
+		else:
+			return None
 
 def set_color(visual_obj, colornum, colordata):
 	visual_obj.color.set_int(colordata.getcolornum(colornum))
@@ -168,7 +170,7 @@ def device_fx_filter(plugin_obj, as_device):
 	else: filter_type = ['low_pass', None]
 
 	pre_t_cutoff = int(getvalue(as_device.params, 'cutoff'))/100
-	filter_cutoff = int(pre_t_cutoff)*7200
+	# filter_cutoff = int(pre_t_cutoff)*7200
 	plugin_obj.filter.on = True
 	plugin_obj.filter.freq = int(pre_t_cutoff)*7200
 	plugin_obj.filter.q = int(getvalue(as_device.params, 'resonance'))/100
@@ -177,7 +179,7 @@ def device_fx_filter(plugin_obj, as_device):
 	device_asdr(plugin_obj, 'cutoff', as_device.params, False, 'filterAttack', 'filterDecay', 'filterRelease', 'filterSustain')
 
 def device_fx_lfo(plugin_obj, as_device):
-	audiosauna_lfoActive = getvalue(as_device.params, 'lfoActive')
+	# audiosauna_lfoActive = getvalue(as_device.params, 'lfoActive')
 	audiosauna_lfoToggled = getvalue(as_device.params, 'lfoToggled') == 'true'
 	audiosauna_lfoTime = float(getvalue(as_device.params, 'lfoTime'))
 	audiosauna_lfoFilter = float(getvalue(as_device.params, 'lfoFilter'))
@@ -244,7 +246,6 @@ class input_audiosauna(plugins.base):
 		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
 		cvpj_plugins = convproj_obj.plugins
-		cvpj_samplerefs = convproj_obj.samplerefs
 		
 		# ---------- convproj init ----------
 		convproj_obj.fxtype = 'groupreturn'
@@ -357,7 +358,7 @@ class input_audiosauna(plugins.base):
 				else:
 					logger_input.warning('audiosauna: pattern not found: '+str(patternId))
 
-			if as_chan.device != None:
+			if as_chan.device is not None:
 				as_device = as_chan.device
 				deviceType = as_device.deviceType
 

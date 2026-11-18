@@ -1,27 +1,26 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import json
-import math
-import plugins
+import logging
 import os
 
-from objects import globalstore
+import plugins
 from functions import xtramath
+from objects import globalstore
 
-import logging
 logger_input = logging.getLogger('input')
 
-class external_data_zip():
+class external_data_zip:
 	def __init__(self):
 		self.zipfile = None
 
 	def load_data(self, input_file):
 		import zipfile
-		try: zip_data = zipfile.ZipFile(input_file, 'r')
+		try:
+			zip_data = zipfile.ZipFile(input_file, 'r')
+			self.zipfile = zip_data
 		except zipfile.BadZipFile as t: 
 			logger_input.warning('mnbs: extdata: Bad ZIP File: '+str(t))
-		self.zipfile = zip_data
 
 	def extract(self, arch_file, out_file):
 		if self.zipfile:
@@ -58,8 +57,6 @@ class input_gt_mnbs(plugins.base):
 
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		project_obj = conversion_state.project
-		
-		from objects.convproj import fileref
 
 		globalstore.datapack.load('noteblockstudio', './data/datapack/app/noteblockstudio.xml')
 
@@ -139,7 +136,7 @@ class input_gt_mnbs(plugins.base):
 					outfile = os.path.join(dawvert_intent.path_samples['extracted'], wavfile)
 					external_dat.extract(wavfile, outfile)
 
-					sampleref_obj = cvpj_samplerefs.add(wavfile, outfile)
+					cvpj_samplerefs.add(wavfile, outfile)
 
 					samplepart_obj = plugin_obj.samplepart_add('sample')
 					samplepart_obj.sampleref = wavfile
@@ -150,7 +147,6 @@ class input_gt_mnbs(plugins.base):
 					if isdrum: inst_obj.is_drum = True
 
 		# ---------- custom insts ----------
-		custominstid = 16
 		for custominstid, custom_obj in enumerate(project_obj.custom):
 			natinstid = custominstid+16
 			instid = 'NoteBlock'+str(natinstid)

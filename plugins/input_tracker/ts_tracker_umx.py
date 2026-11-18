@@ -1,19 +1,15 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond and B0ney
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import logging
+
 import plugins
-import os
-import numpy as np
-import math
-
 from objects import format_detect
-
-from plugins.input_tracker.ts_tracker_s3m import input_s3m as s3m
-from plugins.input_tracker.ts_tracker_mod import input_mod as mod
 from plugins.input_tracker.ts_tracker_it import input_it as it
+from plugins.input_tracker.ts_tracker_mod import input_mod as mod
+from plugins.input_tracker.ts_tracker_s3m import input_s3m as s3m
 from plugins.input_tracker.ts_tracker_xm import input_xm as xm
 
-import logging
 logger_input = logging.getLogger('input')
 
 FORMATS = ["it", "xm", "s3m", "mod"]

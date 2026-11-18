@@ -16,6 +16,7 @@ vals_keyoffset = {
 def add_master_fx(convproj_obj, fx_type, fx_value):
 	fx_id = 'master-effect'
 	cvpj_plugins = convproj_obj.plugins
+	plugin_obj = None
 
 	if fx_type == 0: #delay
 		from objects.inst_params import fx_delay
@@ -29,22 +30,27 @@ def add_master_fx(convproj_obj, fx_type, fx_value):
 
 	elif fx_type == 1: #chorus
 		plugin_obj = cvpj_plugins.add_simple('chorus', None, fx_id)
+		plugin_obj.role = 'fx'
 		plugin_obj.params.add('amount', fx_value/100, 'float')
 
 	elif fx_type == 2: #reverb
 		plugin_obj = cvpj_plugins.add_simple('reverb', None, fx_id)
-		plugin_obj.fxdata_add(1, (0.3)*(fx_value/100))
+		plugin_obj.role = 'fx'
+		plugin_obj.fxdata_add(1, 0.3 * (fx_value / 100))
 
 	elif fx_type == 3: #distortion
 		plugin_obj = cvpj_plugins.add_simple('distortion', None, fx_id)
+		plugin_obj.role = 'fx'
 		plugin_obj.params.add('amount', fx_value/100, 'float')
 
 	elif fx_type == 4: #low_boost
 		plugin_obj = cvpj_plugins.add_simple('bassboost', None, fx_id)
+		plugin_obj.role = 'fx'
 		plugin_obj.fxdata_add(1, fx_value/100)
 
 	elif fx_type == 5: #compressor
 		plugin_obj = cvpj_plugins.add_uni('compressor', None, fx_id)
+		plugin_obj.role = 'fx'
 		params_obj = plugin_obj.params
 		params_obj.add('attack', 0.1, 'float')
 		params_obj.add('pregain', 0, 'float')
@@ -56,15 +62,15 @@ def add_master_fx(convproj_obj, fx_type, fx_value):
 
 	elif fx_type == 6: #high_pass
 		plugin_obj = cvpj_plugins.add_uni('filter', None, fx_id)
+		plugin_obj.role = 'fx'
 		filter_obj = plugin_obj.filter
 		filter_obj.on = True
 		filter_obj.type.set('high_pass', None)
 		filter_obj.freq = xtramath.midi_filter(fx_value/100)
-		
-	plugin_obj.role = 'fx'
 
-	plugin_obj.visual.from_datapack('boscaceoil', 'fx', FX_NAMES[fx_type], True)
-	convproj_obj.track_master.plugslots.slots_audio.append('master-effect')
+	if plugin_obj is not None:
+		plugin_obj.visual.from_datapack('boscaceoil', 'fx', FX_NAMES[fx_type], True)
+		convproj_obj.track_master.plugslots.slots_audio.append('master-effect')
 
 def add_filter(cvpj_plugins, instnum, cutoff, resonance):
 	cvpj_instid = 'ceol_'+str(instnum).zfill(2)
@@ -112,7 +118,6 @@ class input_ceol(plugins.base):
 		project_obj = conversion_state.project
 		from objects.inst_params import fm_opm
 		from objects import colors
-		global ceol_data
 		
 		globalstore.datapack.load('boscaceoil', './data/datapack/app/boscaceoil.xml')
 		color_track = colors.colorset.from_datapack('boscaceoil', 'track', 'main')
@@ -183,7 +188,7 @@ class input_ceol(plugins.base):
 						valsoundid = inst_ds_obj.data['valsoundid']
 						opm_obj = fm_opm.opm_inst()
 						opm_obj.from_valsound(valsoundid)
-						plugin_obj = opm_obj.to_cvpj(convproj_obj)
+						opm_obj.to_cvpj(convproj_obj)
 						inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 
 			# key offset
@@ -250,7 +255,7 @@ class input_ceol(plugins.base):
 		# ---------- placements ----------
 		prev_pl = None
 		for plpos, row_data in enumerate(project_obj.spots):
-			after_filter = [[-1, -1] for x in range(8)]
+			after_filter = [[-1, -1] for _ in range(8)]
 			for plnum, plpatnum in enumerate(row_data):
 
 				if plpatnum != -1:
@@ -265,6 +270,7 @@ class input_ceol(plugins.base):
 					if recordfilter is not None:
 						after_filter[plnum][0] = plpos
 						after_filter[plnum][1] = ceol_pat_obj.inst
+						ceol_inst_obj = project_obj.instruments[ceol_pat_obj.inst]
 						if ceol_pat_obj.inst not in inst_filters: 
 							inst_filters[ceol_pat_obj.inst] = add_filter(cvpj_plugins, ceol_pat_obj.inst, ceol_inst_obj.cutoff, ceol_inst_obj.resonance)
 							inst_objs[ceol_pat_obj.inst].plugslots.slots_audio.append(inst_filters[ceol_pat_obj.inst])
@@ -287,7 +293,7 @@ class input_ceol(plugins.base):
 						for n, x in enumerate(recordfilter_reso):
 							autopoints_obj.points__add_normal(n, x, 0, None)
 
-			if prev_pl != None:
+			if prev_pl is not None:
 				for n in range(8):
 					if prev_pl[n][0] != -1 and after_filter[n][0] == -1:
 						instnum = prev_pl[n][1]

@@ -1,11 +1,11 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import plugins
-from functions import xtramath
-from objects.convproj import fileref
-from objects import globalstore
 import os
+
+import plugins
+from objects import globalstore
+
 
 def do_effect(cvpj_plugins, fxid, plugslots, m_fx):
 	typeid = m_fx.typeid
@@ -17,7 +17,7 @@ def do_effect(cvpj_plugins, fxid, plugslots, m_fx):
 		plugin_obj.role = 'fx'
 		plugin_obj.fxdata_add(True, wetlvl)
 		for param_id, datapack_param in globalstore.datapack.get_params('meteor', 'plugin', strtype):
-			paramval = m_fx.params[param_id] if param_id in m_fx.params else None
+			paramval = fxparams[param_id] if param_id in fxparams else None
 			plugin_obj.datapack_param__add(param_id, paramval, datapack_param)
 		plugslots.slots_audio.append(fxid)
 
@@ -81,7 +81,7 @@ class input_meteor(plugins.base):
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
-		cvpj_automation = convproj_obj.automation
+		# cvpj_automation = convproj_obj.automation
 		cvpj_metadata = convproj_obj.metadata
 		cvpj_master = convproj_obj.track_master
 		cvpj_plugins = convproj_obj.plugins
@@ -114,7 +114,7 @@ class input_meteor(plugins.base):
 		for n, retu in enumerate(project_obj.aux_returns):
 			return_obj = cvpj_master.fx__return__add(str(n))
 			return_obj.params.add('vol', retu.volume/64, 'float')
-			fxid = 'return%i_fx' % (n)
+			fxid = 'return%i_fx' % n
 			do_effect(cvpj_plugins, fxid, return_obj.plugslots, retu.effect)
 			fxtypeid = retu.effect.typeid
 			if fxtypeid!=0: return_obj.visual.name = returnnames[fxtypeid]
@@ -134,15 +134,15 @@ class input_meteor(plugins.base):
 			# visual
 			visual_obj = track_obj.visual
 			visual_obj.name = 'Track #%i' % (n+1)
-			visual_obj.color.set_int(color_track.getcolornum(track.color))
+			visual_obj.color.set_int(color_track.getcolornum(color))
 			visual_obj.color.fx_allowed = ['saturate', 'brighter']
 
 			# sends
 			auxsendenable = track.auxsendenable
-			for n, a in track.auxsend.items():
-				if n in auxsendenable: 
-					if bool(auxsendenable[n]): 
-						track_obj.sends.add(str(n), None, a/64)
+			for auxnum, a in track.auxsend.items():
+				if auxnum in auxsendenable:
+					if bool(auxsendenable[auxnum]):
+						track_obj.sends.add(str(auxnum), None, a/64)
 
 			# effects
 			effects = track.effects

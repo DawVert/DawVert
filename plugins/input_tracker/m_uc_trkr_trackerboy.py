@@ -23,9 +23,7 @@ def parse_fx_event(r_row, pat_obj, fx_p, fx_v):
 	elif fx_p == 16: pat_obj.cell_param(r_row, 'slide_to_note_persist', fx_v)
 	elif fx_p == 17:
 		fine_vib_sp, fine_vib_de = data_bytes.splitbyte(fx_v)
-		vibrato_params = {}
-		vibrato_params['speed'] = fine_vib_sp/16
-		vibrato_params['depth'] = fine_vib_sp/16
+		vibrato_params = {'speed': fine_vib_sp / 16, 'depth': fine_vib_sp / 16}
 		pat_obj.cell_param(r_row, 'vibrato', vibrato_params)
 	elif fx_p == 18: pat_obj.cell_param(r_row, 'vibrato_delay', fx_v)
 
@@ -66,8 +64,6 @@ class input_trackerboy(plugins.base):
 		project_obj = conversion_state.project
 		
 		from objects.tracker import pat_multi
-
-		samplefolder = dawvert_intent.path_samples['extracted']
 
 		globalstore.datapack.load('trackerboy', './data/datapack/app/trackerboy.xml')
 
@@ -152,10 +148,13 @@ class input_trackerboy(plugins.base):
 				if tbm_inst.envs[1]: plugin_obj.env_blocks_add('pan', tbm_inst.envs[1].values, 0.05, 15, 0, 0)
 				if tbm_inst.envs[2]: plugin_obj.env_blocks_add('pitch', tbm_inst.envs[2].values, 0.05, 127, 0, 0)
 				if tbm_inst.envs[3]: 
-					if instname == 'pulse': envname, maxenv = ('duty', 4)
-					if instname == 'wavetable': envname, maxenv = ('vol', 3)
-					if instname == 'noise':  envname, maxenv = ('noise', 3)
-					plugin_obj.env_blocks_add(envname, tbm_inst.envs[3].values, 0.05, maxenv, 0, 0)
+					vals = tbm_inst.envs[3].values
+					if instname == 'pulse': 
+						plugin_obj.env_blocks_add('duty', vals, 0.05, 4, 0, 0)
+					if instname == 'wavetable': 
+						plugin_obj.env_blocks_add('vol', vals, 0.05, 3, 0, 0)
+					if instname == 'noise':  
+						plugin_obj.env_blocks_add('noise', vals, 0.05, 3, 0, 0)
 
 				if instname != 'wavetable':
 					env_attack = 0

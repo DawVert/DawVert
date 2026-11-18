@@ -82,12 +82,12 @@ class input_famitracker_txt(plugins.base):
 		patterndata_obj.add_channel('noise')
 		patterndata_obj.add_channel('dpcm')
 
-		if (1<<0 & project_obj.expansion):
+		if 1<<0 & project_obj.expansion:
 			patterndata_obj.add_channel('vrc6_square')
 			patterndata_obj.add_channel('vrc6_square')
 			patterndata_obj.add_channel('vrc6_saw')
 
-		if (1<<1 & project_obj.expansion):
+		if 1<<1 & project_obj.expansion:
 			patterndata_obj.add_channel('vrc7_fm')
 			patterndata_obj.add_channel('vrc7_fm')
 			patterndata_obj.add_channel('vrc7_fm')
@@ -95,14 +95,14 @@ class input_famitracker_txt(plugins.base):
 			patterndata_obj.add_channel('vrc7_fm')
 			patterndata_obj.add_channel('vrc7_fm')
 
-		if (1<<2 & project_obj.expansion):
+		if 1<<2 & project_obj.expansion:
 			patterndata_obj.add_channel('fds')
 
-		if (1<<3 & project_obj.expansion):
+		if 1<<3 & project_obj.expansion:
 			patterndata_obj.add_channel('mmc5')
 			patterndata_obj.add_channel('mmc5')
 
-		if (1<<4 & project_obj.expansion):
+		if 1<<4 & project_obj.expansion:
 			for _ in range(project_obj.n163channels):
 				patterndata_obj.add_channel('n163')
 
@@ -117,7 +117,7 @@ class input_famitracker_txt(plugins.base):
 					if ft_key == '===': ft_key = 'off'
 
 					pat_obj.cell_note(row_num, ft_key, ft_inst)
-					if ft_vol != None: pat_obj.cell_param(row_num, 'vol_stay', ft_vol/15)
+					if ft_vol is not None: pat_obj.cell_param(row_num, 'vol_stay', ft_vol / 15)
 
 					for fx_type, fx_val in ft_fx:
 						if fx_type == 0: pat_obj.cell_fx_mod(row_num, fx_type, fx_val)

@@ -1,20 +1,17 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from functions import note_data
-from functions import value_midi
-import xml.etree.ElementTree as ET
 import plugins
-import json
 
-class clipinfo():
+
+class clipinfo:
 	def __init__(self):
 		self.track_obj = None
 		self.regioninfo = None
 		self.clipstretch = None
 		self.clipsize = None
 
-class proj_state():
+class proj_state:
 	def __init__(self, convproj_obj):
 		self.convproj_obj = convproj_obj
 		self.cur_track = None
@@ -180,7 +177,7 @@ class proj_state():
 		clipinfop = clipinfo()
 		clipinfop.track_obj = track_obj
 
-		isallaudio = False
+		# isallaudio = False
 
 		if cw_events:
 			firstpos = cw_events[0].time
@@ -240,12 +237,6 @@ class input_cakewalk_wrk(plugins.base):
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		project_obj = conversion_state.project
 
-		# ---------- convproj objects ----------
-		cvpj_tracks = convproj_obj.tracks
-		cvpj_automation = convproj_obj.automation
-		cvpj_timemarkers = convproj_obj.timemarkers
-		cvpj_metadata = convproj_obj.metadata
-		
 		# ---------- convproj init ----------
 		convproj_obj.set_timings(96)
 		traits_obj = convproj_obj.traits

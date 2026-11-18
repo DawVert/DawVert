@@ -59,7 +59,6 @@ class input_musicphrase(plugins.base):
 		convproj_obj.params.add('bpm', (project_obj.tempo/3072000)*120, 'float')
 
 		# ---------- tracks ----------
-		track_pl = []
 		for n, mpxl_track in enumerate(project_obj.tracks):
 			track_obj = cvpj_tracks.add(str(n), 'midi_single', 1, False)
 			track_placements = track_obj.placements

@@ -113,7 +113,7 @@ class input_korg_m1_nds(plugins.base):
 		swing = projsong_obj.swing
 
 		do_group_inst = groupby=='instset'
-		if do_group_inst: grouptrks = {}
+		grouptrks = {}
 
 		for num, channel_obj in enumerate(projsong_obj.channels):
 			cvpj_trackid = 'channel_'+str(num)

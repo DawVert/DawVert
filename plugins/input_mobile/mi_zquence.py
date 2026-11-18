@@ -231,8 +231,8 @@ class input_zquence(plugins.base):
 				referenceattrib = reference.attrib
 
 				ref_Start = int(referenceattrib['Start'])
-				ref_Stop = int(referenceattrib['Stop'])
-				ref_Length = int(referenceattrib['Length'])
+				# ref_Stop = int(referenceattrib['Stop'])
+				# ref_Length = int(referenceattrib['Length'])
 				ref_GraphicLength = int(referenceattrib['GraphicLength'])
 				ref_TrackStationIndex = int(referenceattrib['TrackStationIndex'])
 				ref_ReferencedToPattern_PatternName = referenceattrib['ReferencedToPattern.PatternName']

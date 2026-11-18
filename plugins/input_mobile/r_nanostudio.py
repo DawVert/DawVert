@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import xml.etree.ElementTree as ET
-import plugins
-from objects import globalstore
-from objects import colors
-import math
 import os
+
+import plugins
+from objects import colors
+from objects import globalstore
+
 
 class input_nanostudio_v1(plugins.base):
 	def is_dawvert_plugin(self):
@@ -34,10 +34,6 @@ class input_nanostudio_v1(plugins.base):
 
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		project_obj = conversion_state.project
-		
-		from objects import audio_data
-
-		samplefolder = dawvert_intent.path_samples['extracted']
 
 		globalstore.datapack.load('nanostudio_v1', './data/datapack/app/nanostudio_v1.xml')
 		colordata = colors.colorset.from_datapack('nanostudio_v1', 'clips', 'main')

@@ -81,11 +81,11 @@ class input_deflemask(plugins.base):
 					elif r_note == 100: output_note = 'off'
 					else: output_note = (r_note + r_oct*12)-60
 
-					if output_note != None and output_note != 'off':
+					if output_note is not None and output_note != 'off':
 						if chantype == 'square': output_note += 36
 						elif chantype == 'opn2': output_note += 12
 
-					if r_inst != -1 and output_note != None: output_inst = r_inst
+					if r_inst != -1 and output_note is not None: output_inst = r_inst
 
 					pat_obj.cell_note(r_row, output_note, output_inst)
 
@@ -149,7 +149,7 @@ class input_deflemask(plugins.base):
 
 					elif dmf_inst.mode == 0:
 						# plugin
-						plugin_obj = plugin_obj.add_uni('synth-osc', None)
+						plugin_obj = cvpj_plugins.add_uni('synth-osc', None)
 						plugin_obj.role = 'synth'
 						inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 						osc_data = plugin_obj.osc_add()
@@ -182,14 +182,14 @@ class input_deflemask(plugins.base):
 
 					if sampleid:
 						inst_obj.is_drum = True
-						inst_obj.params.add('vol', (sample_obj.amp)/70, 'float')
+						inst_obj.params.add('vol', sample_obj.amp / 70, 'float')
 
 						# pitch
 						sample_pitch = xtramath.speed_to_pitch(proj_deflemask.samplePitches[sample_obj.pitch])
 						inst_obj.datavals.add('middlenote', -int(sample_pitch))
 
 						# plugin
-						plugin_obj = plugin_obj.add_uni('sampler', 'single')
+						plugin_obj = cvpj_plugins.add_uni('sampler', 'single')
 						plugin_obj.role = 'synth'
 						inst_obj.plugslots.set_synth(cvpj_plugins.get_lastid())
 						samplepart_obj = plugin_obj.samplepart_add('sample')

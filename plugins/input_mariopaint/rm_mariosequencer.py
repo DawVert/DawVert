@@ -53,9 +53,10 @@ class input_mariopaint_msq(plugins.base):
 		in_dict['projtype'] = 'rm'
 	
 	def parse(self, conversion_state, dawvert_intent):
-		from objects.file_proj_past import temper as proj_temper
 		if dawvert_intent.input_mode == 'file':
 			f_msq = open(dawvert_intent.input_file, 'r')
+		else:
+			return False
 
 		try:
 			lines_msq = f_msq.readlines()

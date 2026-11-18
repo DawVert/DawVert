@@ -1,11 +1,8 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from functions import note_data
-from functions import value_midi
-import xml.etree.ElementTree as ET
 import plugins
-import json
+
 
 class input_evolution_midi(plugins.base):
 	def is_dawvert_plugin(self):
@@ -49,7 +46,6 @@ class input_evolution_midi(plugins.base):
 
 		# ---------- tracks and arranger ----------
 		arranger_valid = -1
-		arranger_data = []
 
 		track_pl = []
 		for n, evo_track in enumerate(project_obj.tracks):

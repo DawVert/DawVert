@@ -2,9 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import plugins
-from objects import globalstore
 from functions import xtramath
-import os
 
 class sample_speedtemp:
 	def __init__(self):
@@ -12,6 +10,17 @@ class sample_speedtemp:
 		self.sample_pitch = 0
 		self.resample = False
 		self.fx_found = False
+
+def do_color(data_objc, placement_obj, swap_bg_fg):
+	bg_color = list(data_objc.bg_color[0:3])
+	fg_color = list(data_objc.fg_color[0:3])
+
+	if not swap_bg_fg:
+		placement_obj.visual.color.set_int(bg_color)
+		placement_obj.visual.altcolor_add('fg').set_int(fg_color)
+	else:
+		placement_obj.visual.color.set_int(fg_color)
+		placement_obj.visual.altcolor_add('fg').set_int(bg_color)
 
 class input_old_magix_maker(plugins.base):
 	def is_dawvert_plugin(self):
@@ -44,12 +53,10 @@ class input_old_magix_maker(plugins.base):
 
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		project_obj = conversion_state.project
-		from objects import colors
-		
+
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks
 		cvpj_automation = convproj_obj.automation
-		cvpj_transport = convproj_obj.transport
 		cvpj_master = convproj_obj.track_master
 		cvpj_samplerefs = convproj_obj.samplerefs
 
@@ -66,17 +73,6 @@ class input_old_magix_maker(plugins.base):
 		traits_obj.audio_stretch = ['rate']
 		traits_obj.audio_filetypes = ['wav']
 		traits_obj.track_hybrid = True
-
-		def do_color(data_objc, placement_obj):
-			bg_color = list(data_objc.bg_color[0:3])
-			fg_color = list(data_objc.fg_color[0:3])
-
-			if not swap_bg_fg:
-				placement_obj.visual.color.set_int(bg_color)
-				placement_obj.visual.altcolor_add('fg').set_int(fg_color)
-			else:
-				placement_obj.visual.color.set_int(fg_color)
-				placement_obj.visual.altcolor_add('fg').set_int(bg_color)
 
 		# ---------- transport ----------
 		sample_time = 44100//2
@@ -169,7 +165,7 @@ class input_old_magix_maker(plugins.base):
 								placement_obj.fade_out.set_dur(fade_out, 'beats')
 								placement_obj.group = str(data_objc.group) if data_objc.group else None
 
-								do_color(data_objc, placement_obj)
+								do_color(data_objc, placement_obj, swap_bg_fg)
 
 								time_obj.set_startend(data_objc.start, data_objc.end)
 								if data_objc.loop_end: time_obj.set_loop_data(data_objc.offset, 0, data_objc.loop_end)
@@ -231,7 +227,7 @@ class input_old_magix_maker(plugins.base):
 								
 								placement_obj.visual.name = data_objc.name
 
-								do_color(data_objc, placement_obj)
+								do_color(data_objc, placement_obj, swap_bg_fg)
 
 								time_obj.set_startend(data_objc.start, data_objc.end)
 								if data_objc.loop_end: time_obj.set_loop_data(data_objc.offset, 0, data_objc.loop_end)
@@ -267,10 +263,10 @@ class input_old_magix_maker(plugins.base):
 							v_min = 1
 							v_max = -1
 						elif paramnum == 4: 
-							autoloc = ('send', 'send_%i_aux1' % (tracknum), 'amount')
+							autoloc = ('send', 'send_%i_aux1' % tracknum, 'amount')
 							aux1_track_used = True
 						elif paramnum == 5: 
-							autoloc = ('send', 'send_%i_aux2' % (tracknum), 'amount')
+							autoloc = ('send', 'send_%i_aux2' % tracknum, 'amount')
 							aux2_track_used = True
 						if autoloc:
 							auto_obj = cvpj_automation.create(autoloc, 'float', True)
@@ -282,9 +278,9 @@ class input_old_magix_maker(plugins.base):
 					# aux
 					if data_trci is not None:
 						if aux1_track_used:
-							track_obj.sends.add('aux1', 'send_%i_aux1' % (tracknum), data_trci.aux1)
+							track_obj.sends.add('aux1', 'send_%i_aux1' % tracknum, data_trci.aux1)
 						if aux2_track_used:
-							track_obj.sends.add('aux2', 'send_%i_aux2' % (tracknum), data_trci.aux2)
+							track_obj.sends.add('aux2', 'send_%i_aux2' % tracknum, data_trci.aux2)
 
 					if aux1_track_used: aux1_used = True
 					if aux2_track_used: aux2_used = True

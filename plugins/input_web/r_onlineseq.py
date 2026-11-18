@@ -109,11 +109,11 @@ class input_onlinesequencer(plugins.base):
 		for target, params in project_obj.seperate_markers().items(): 
 			if target != -1:
 				if target in used_fx:
-					if ((3 in params) or (4 in params) or (5 in params)) and 'eq' not in used_fx[target]: used_fx[instid].append('eq')
-					if (6 in params) and 'delay' not in used_fx[target]: used_fx[instid].append('delay')
-					if ((7 in params) or (12 in params)) and 'reverb' not in used_fx[target]: used_fx[instid].append('reverb')
-					if ((13 in params) or (14 in params)) and 'distort' not in used_fx[target]: used_fx[instid].append('distort')
-					if ((18 in params) or (19 in params) or (20 in params)) and 'bitcrush' not in used_fx[target]: used_fx[instid].append('bitcrush')
+					if ((3 in params) or (4 in params) or (5 in params)) and 'eq' not in used_fx[target]: used_fx[target].append('eq')
+					if (6 in params) and 'delay' not in used_fx[target]: used_fx[target].append('delay')
+					if ((7 in params) or (12 in params)) and 'reverb' not in used_fx[target]: used_fx[target].append('reverb')
+					if ((13 in params) or (14 in params)) and 'distort' not in used_fx[target]: used_fx[target].append('distort')
+					if ((18 in params) or (19 in params) or (20 in params)) and 'bitcrush' not in used_fx[target]: used_fx[target].append('bitcrush')
 
 			for paramid, markers in params.items(): 
 				autoloc = get_autoloc(target, paramid)
@@ -283,7 +283,7 @@ class input_onlinesequencer(plugins.base):
 						catgrp[catname] += v
 
 			for k, v in catgrp.items():
-				dset_obj = dset_cat_obj.objects.get(str(k))
+				# dset_obj = dset_cat_obj.objects.get(str(k))
 				if len(v)>groupmin:
 					group_obj = cvpj_groups.add(k)
 					group_obj.visual.name = k

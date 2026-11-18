@@ -1,10 +1,7 @@
 # SPDX-FileCopyrightText: 2024 SatyrDiamond
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from objects.exceptions import ProjectFileParserException
 import plugins
-import xml.etree.ElementTree as ET
-from objects import globalstore
 
 class input_v2m(plugins.base):
 	def is_dawvert_plugin(self):
@@ -30,10 +27,11 @@ class input_v2m(plugins.base):
 			project_obj.load_from_file(dawvert_intent.input_file)
 			conversion_state.project = project_obj
 			return True
+		else:
+			return False
 
 	def to_convproj(self, convproj_obj, dawvert_intent, conversion_state):
 		project_obj = conversion_state.project
-		from objects import colors
 
 		# ---------- convproj objects ----------
 		cvpj_tracks = convproj_obj.tracks

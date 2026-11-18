@@ -46,7 +46,7 @@ class rawchipwaves:
 			wave_obj = plugin_obj.wave_add(wave_id)
 			wave_obj.set_all(self.waves[name].samples)
 
-class jummbox_autotype():
+class jummbox_autotype:
 	def __init__(self): 
 		self.tracknum = -100
 		self.instrument = 0
@@ -444,7 +444,7 @@ class input_jummbox(plugins.base):
 			
 						noenv = False
 						if 'chord type' in bb_fx.used:
-							if (bb_fx.chord == 'arpeggio' and bb_fx.arpeggioSpeed): noenv = True
+							if (bb_fx.chord == 'arpeggio') and bb_fx.arpeggioSpeed: noenv = True
 
 						if not noenv: get_asdr(plugin_obj, bb_inst, jummbox_obj)
 						plugin_obj.role = 'synth'
